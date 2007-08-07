@@ -8,6 +8,9 @@ import edu.cmu.sphinx.tools.confdesigner.propedit.TableProperty;
 import edu.cmu.sphinx.util.props.*;
 
 import javax.swing.*;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.TableModel;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -21,7 +24,7 @@ import java.util.Map;
  *
  * @author Holger Brandl
  */
-public class PropertyEditorPanel extends JPanel {
+public class PropertyEditorPanel extends JPanel implements TableModelListener {
 
     ConfigurationManager cm;
     PropertySheet currentPS;
@@ -35,6 +38,8 @@ public class PropertyEditorPanel extends JPanel {
     public PropertyEditorPanel() {
 
         propEditor = new SimplePropEditor();
+        propEditor.getTable().getModel().addTableModelListener(this);
+
         setLayout(new BorderLayout());
         add(propEditor);
 //        addKeyListener(new KeyAdapter() {
@@ -46,6 +51,19 @@ public class PropertyEditorPanel extends JPanel {
 //                }
 //            }
 //        });
+    }
+
+
+    public void tableChanged(TableModelEvent e) {
+        int row = e.getFirstRow();
+        int column = e.getColumn();
+        TableModel model = (TableModel) e.getSource();
+        String columnName = model.getColumnName(column);
+//        Object data = model.getValueAt(row, column);
+
+        System.out.println("table model changed");
+
+        // Do something with the data...
     }
 
 

@@ -1,5 +1,8 @@
 package edu.cmu.sphinx.tools.confdesigner.propedit;
 
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 
 /**
@@ -21,9 +24,7 @@ public abstract class TableProperty {
     }
 
 
-    public void setValue(Object value) {
-        myValue = value;
-    }
+    public abstract void setValue(Object value);
 
 
     public Object getValue() {
@@ -39,4 +40,17 @@ public abstract class TableProperty {
     public Color getFieldColor() {
         return Color.GREEN;
     }
+
+
+    public TableCellRenderer getNameRenderer() {
+        return new DefaultTableCellRenderer();
+    }
+
+
+    public TableCellRenderer getValueRenderer() {
+        return new DefaultTableCellRenderer();
+    }
+
+
+    public abstract TableCellEditor getValueEditor();
 }

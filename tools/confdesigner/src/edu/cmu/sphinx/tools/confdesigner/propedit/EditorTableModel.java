@@ -41,6 +41,12 @@ public class EditorTableModel extends AbstractTableModel {
     }
 
 
+    public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+        assert columnIndex == 1;
+        props.get(rowIndex).setValue(aValue);
+    }
+
+
     public void addProperty(TableProperty property) {
         assert props != null;
         props.add(property);
@@ -57,5 +63,10 @@ public class EditorTableModel extends AbstractTableModel {
 
     public boolean isCellEditable(int rowIndex, int columnIndex) {
         return columnIndex > 0 && !(getValueAt(rowIndex, columnIndex) instanceof JComboBox);
+    }
+
+
+    public TableProperty getProperty(int row) {
+        return props.get(row);
     }
 }

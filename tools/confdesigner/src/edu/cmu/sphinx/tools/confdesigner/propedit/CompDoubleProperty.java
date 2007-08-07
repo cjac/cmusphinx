@@ -3,6 +3,10 @@ package edu.cmu.sphinx.tools.confdesigner.propedit;
 import edu.cmu.sphinx.util.props.PropertySheet;
 import edu.cmu.sphinx.util.props.S4Double;
 
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
+
 /**
  * DOCUMENT ME!
  *
@@ -13,12 +17,15 @@ public class CompDoubleProperty extends TableProperty {
     private PropertySheet currentPS;
     private String propName;
     private S4Double s4Double;
+    private double[] range;
 
 
     public CompDoubleProperty(PropertySheet currentPS, String propName, S4Double s4Double) {
         this.currentPS = currentPS;
         this.propName = propName;
         this.s4Double = s4Double;
+
+        this.range = s4Double.range();
 
         setDisplayName(propName);
 
@@ -35,5 +42,29 @@ public class CompDoubleProperty extends TableProperty {
 
 
     public void add(SimplePropEditor simplePropEditor) {
+    }
+
+
+    public void setValue(Object value) {
+        assert value instanceof Double;
+
+        Double newValue = (Double) value;
+        // range checking is automatically done by the attached cell editor
+        currentPS.setDouble(propName, newValue);
+    }
+
+
+    public TableCellRenderer getNameRenderer() {
+        return new DefaultTableCellRenderer();
+    }
+
+
+    public TableCellRenderer getValueRenderer() {
+        return new DefaultTableCellRenderer();
+    }
+
+
+    public TableCellEditor getValueEditor() {
+        return new DoubleEditor(range[0], range[1]);
     }
 }

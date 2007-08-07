@@ -4,6 +4,8 @@ import edu.cmu.sphinx.util.props.PropertySheet;
 import edu.cmu.sphinx.util.props.S4String;
 
 import javax.swing.*;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
 
 /**
  * DOCUMENT ME!
@@ -43,5 +45,24 @@ public class CompStringProperty extends TableProperty {
 
 
     public void add(SimplePropEditor simplePropEditor) {
+    }
+
+
+    public void setValue(Object value) {
+    }
+
+
+    public TableCellRenderer getNameRenderer() {
+        return null;
+    }
+
+
+    public TableCellRenderer getValueRenderer() {
+        return null;
+    }
+
+
+    public TableCellEditor getValueEditor() {
+        return null;
     }
 }
