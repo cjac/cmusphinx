@@ -1,6 +1,5 @@
 package edu.cmu.sphinx.tools.confdesigner.propedit;
 
-import com.l2fprod.common.propertysheet.DefaultProperty;
 import edu.cmu.sphinx.util.props.PropertySheet;
 import edu.cmu.sphinx.util.props.S4Double;
 
@@ -9,7 +8,7 @@ import edu.cmu.sphinx.util.props.S4Double;
  *
  * @author Holger Brandl
  */
-public class ConfDoubleProperty extends DefaultProperty {
+public class ConfDoubleProperty extends TableProperty {
 
     private PropertySheet currentPS;
     private String propName;
@@ -23,13 +22,27 @@ public class ConfDoubleProperty extends DefaultProperty {
 
         setDisplayName(propName);
 
-        setType(Double.class);
-        if (currentPS.getRaw(propName) != null)
+        if (currentPS.getRaw(propName) != null) {
             setValue(currentPS.getDouble(propName));
+        } else {
+            double defValue = s4Double.defaultValue();
+            if (defValue != S4Double.NOT_DEFINED)
+                setValue(defValue);
+
+            // set color to gray to indicate the defaultness
+        }
         setEditable(true);
     }
 
 
-    public ConfDoubleProperty(String propName, S4Double s4Double) {
+    private void setEditable(boolean b) {
+    }
+
+
+    private void setValue(double aDouble) {
+    }
+
+
+    private void setDisplayName(String propName) {
     }
 }

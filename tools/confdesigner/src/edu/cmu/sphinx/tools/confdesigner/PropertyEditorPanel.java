@@ -3,6 +3,7 @@ package edu.cmu.sphinx.tools.confdesigner;
 import com.l2fprod.common.propertysheet.DefaultProperty;
 import com.l2fprod.common.propertysheet.Property;
 import edu.cmu.sphinx.tools.confdesigner.propedit.ConfDoubleProperty;
+import edu.cmu.sphinx.tools.confdesigner.propedit.PropertySheetPanel;
 import edu.cmu.sphinx.util.props.*;
 
 import javax.swing.*;
@@ -20,7 +21,7 @@ import java.util.Map;
  *
  * @author Holger Brandl
  */
-public class PropertyEditorPanel {
+public class PropertyEditorPanel extends PropertySheetPanel {
 
     ConfigurationManager cm;
     PropertySheet currentPS;
