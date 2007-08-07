@@ -175,11 +175,6 @@ hyp_free(srch_hyp_t * list)
 /*
  * Link two DAG nodes with the given arguments
  * Return value: 0 if successful, -1 if maxedge limit exceeded.
- *
- * ARCHAN Comment: dag_link were used in decode_anytopo, dag and
- * astar. Therefore, the information is unfortunately duplicated.
- * l->bypass and l->is_filler_bypass is one of this example. Likely
- * only one of them need to be there.
  */
 int32
 dag_link(dag_t * dagp, dagnode_t * pd, dagnode_t * d, int32 ascr,
@@ -192,7 +187,7 @@ dag_link(dag_t * dagp, dagnode_t * pd, dagnode_t * d, int32 ascr,
 	    return 0;
 
     /* Link d into successor list for pd */
-    if (pd) {                   /* Special condition for root node which doesn't have a predecessor */
+    if (pd) { /* Special condition for root node which doesn't have a predecessor */
         l = (daglink_t *) listelem_alloc(sizeof(*l));
         l->node = d;
         l->src = pd;
@@ -204,9 +199,8 @@ dag_link(dag_t * dagp, dagnode_t * pd, dagnode_t * d, int32 ascr,
         l->ef = ef;
         l->next = pd->succlist;
 	assert(pd->succlist != l);
-        l->bypass = byp;        /* DAG-specific: This is a FORWARD link!! */
-        l->is_filler_bypass = 0;        /* Astar-specific */
-        l->hook = NULL;         /* Hopefully, this is the last argument we put into the dag_link structure */
+        l->bypass = byp;
+        l->hook = NULL;
 
         pd->succlist = l;
     }
@@ -221,50 +215,48 @@ dag_link(dag_t * dagp, dagnode_t * pd, dagnode_t * d, int32 ascr,
     l->pscr_valid = 0;
     l->history = NULL;
     l->ef = ef;
-    l->bypass = byp;            /* DAG-specific: This is a FORWARD link!! */
-    l->is_filler_bypass = 0;    /* Astar-specific */
-    l->hook = NULL;             /* Hopefully, this is the last argument we put into the dag_link structure */
+    l->bypass = byp;
+    l->hook = NULL;
 
     l->next = d->predlist;
     assert(d->predlist != l);
     d->predlist = l;
 
-    if (byp)
-        dagp->nbypass++;
+    if (byp) dagp->nbypass++;
     dagp->nlink++;
 
     return (dagp->nlink > dagp->maxedge) ? -1 : 0;
 }
 
-
-#if 0
-static void
-daglinks_dump(dagnode_t * d)
-{
-    daglink_t *l;
-
-    for (l = d->succlist; l; l = l->next)
-        printf("%6d %5d %12d %s\n", l->node->seqid, l->node->sf, l->ascr,
-               dict_wordstr(dict, l->node->wid));
-}
-#endif
-
-
 daglink_t *
-find_succlink(dagnode_t * src, dagnode_t * dst)
+find_succlink(dagnode_t * src, dagnode_t * dst, int32 bypass)
 {
     daglink_t *l;
 
-    for (l = src->succlist; l && (l->node != dst); l = l->next);
+    for (l = src->succlist; l; l = l->next) {
+        if (l->node == dst) {
+            if (bypass && !l->bypass)
+                continue;
+            else
+                break;
+        }
+    }
     return l;
 }
 
 daglink_t *
-find_predlink(dagnode_t * src, dagnode_t * dst)
+find_predlink(dagnode_t * src, dagnode_t * dst, int32 bypass)
 {
     daglink_t *l;
 
-    for (l = src->predlist; l && (l->node != dst); l = l->next);
+    for (l = src->predlist; l; l = l->next) {
+        if (l->node == dst) {
+            if (bypass && !l->bypass)
+                continue;
+            else
+                break;
+        }
+    }
     return l;
 }
 
@@ -278,13 +270,13 @@ dag_update_link(dag_t * dagp, dagnode_t * pd, dagnode_t * d, int32 ascr,
                 int32 ef, daglink_t * byp)
 {
     daglink_t *l, *r;
-    l = find_succlink(pd, d);
+    l = find_succlink(pd, d, (byp != NULL));
 
     if (!l)
         return (dag_link(dagp, pd, d, ascr, 0, ef, byp));
 
     if (l->ascr < ascr) {
-        r = find_predlink(d, pd);
+        r = find_predlink(d, pd, (byp != NULL));
 
         assert(r && (r->ascr == l->ascr));
         l->ascr = r->ascr = ascr;
@@ -569,7 +561,7 @@ dag_backtrace(srch_hyp_t ** hyp, daglink_t * l, float64 lwf, dict_t * dict,
                 if (l->bypass) {
                     dst = l->bypass->src;
                     assert(dict_filler_word(dict, dst->wid));
-                    bl = find_succlink(src, dst);
+                    bl = find_succlink(src, dst, FALSE);
                     assert(bl);
                 }
                 else
@@ -850,30 +842,30 @@ dag_add_fudge_edges(dag_t * dagp, int32 fudge, int32 min_ef_range,
 }
 
 
-/*
- * Remove filler nodes from DAG by replacing each link TO a filler with links
- * to its successors.  In principle, successors can be fillers and the process
- * must be repeated.  But removing fillers in the order in which they appear in
- * dag.list ensures that succeeding fillers have already been eliminated.
- * Return value: 0 if successful; -1 if DAG maxedge limit exceeded.
+/**
+ * Add auxiliary links bypassing filler nodes in DAG.  In principle, a new such
+ * auxiliary link can end up at ANOTHER filler node, and the process must be repeated
+ * for complete transitive closure.  But removing fillers in the order in which they
+ * appear in dag->list ensures that succeeding fillers have already been bypassed.
+ * @return: 0 if successful; -1 if DAG maxedge limit exceeded.
  */
 
 int32
-dag_remove_filler_nodes(dag_t * dagp, float64 lwf, dict_t * dict,
+dag_bypass_filler_nodes(dag_t * dag, float64 lwf, dict_t * dict,
                         fillpen_t * fpen)
 {
     dagnode_t *d, *pnode, *snode;
     daglink_t *plink, *slink;
     int32 ascr = 0;
 
-    assert(dagp->list);
+    assert(dag->list);
 
-    for (d = dagp->list; d; d = d->alloc_next) {
-
-        if (!dict_filler_word(dict, d->wid))
+    /* Create additional links in DAG bypassing filler nodes */
+    for (d = dag->list; d; d = d->alloc_next) {
+        if (!dict_filler_word(dict, d->wid))    /* No need to bypass this node */
             continue;
 
-        /* Replace each link TO d with links to d's successors */
+        /* For each link TO d add a link to d's successors */
         for (plink = d->predlist; plink; plink = plink->next) {
             pnode = plink->node;
 
@@ -885,20 +877,54 @@ dag_remove_filler_nodes(dag_t * dagp, float64 lwf, dict_t * dict,
             /* Link this predecessor of d to successors of d */
             for (slink = d->succlist; slink; slink = slink->next) {
                 snode = slink->node;
-                /* Link only to non-filler successors; fillers have been eliminated */
-                if (!dict_filler_word(dict, snode->wid)) {
-                    /* Update because a link may already exist */
-                    if (dag_update_link(dagp, pnode, snode,
-                                        ascr + slink->ascr, plink->ef,
-                                        slink) < 0)
+
+                /* Link only to non-filler successors; fillers have been bypassed */
+                if (!dict_filler_word(dict, snode->wid))
+                    if (dag_update_link
+                        (dag, pnode, snode, ascr + slink->ascr, plink->ef, slink) < 0)
                         return -1;
-                }
             }
         }
     }
+
     return 0;
 }
 
+void
+dag_remove_bypass_links(dag_t *dag)
+{
+    dagnode_t *d;
+    daglink_t *l, *pl, *nl;
+
+    for (d = dag->list; d; d = d->alloc_next) {
+        pl = NULL;
+        for (l = d->succlist; l; l = nl) {
+            nl = l->next;
+            if (l->bypass) {
+                if (!pl)
+                    d->succlist = nl;
+                else
+                    pl->next = nl;
+                listelem_free(l, sizeof(*l));
+            }
+            else
+                pl = l;
+        }
+        pl = NULL;
+        for (l = d->predlist; l; l = nl) {
+            nl = l->next;
+            if (l->bypass) {
+                if (!pl)
+                    d->predlist = nl;
+                else
+                    pl->next = nl;
+                listelem_free(l, sizeof(*l));
+            }
+            else
+                pl = l;
+        }
+    }
+}
 
 dag_t *
 dag_load(char *file,          /**< Input: File to lod from */

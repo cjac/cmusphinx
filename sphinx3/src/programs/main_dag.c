@@ -407,7 +407,7 @@ decode_utt(char *uttid, FILE * _matchfp, FILE * _matchsegfp)
     }
     if (dict_filler_word(dict, dag->end->wid))
         dag->end->wid = dict->finishwid;
-    if (dag_remove_filler_nodes(dag, 1.0, dict, fpen) < 0)
+    if (dag_bypass_filler_nodes(dag, 1.0, dict, fpen) < 0)
         E_ERROR("maxedge limit (%d) exceeded\n", dag->maxedge);
     else
         dag->filler_removed = 1;

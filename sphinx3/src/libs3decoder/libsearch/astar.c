@@ -163,85 +163,6 @@
 #include "dag.h"
 #include "vithist.h"
 
-/**
- * Add a filler-bypass link between the two nodes or update an existing bypass link if
- * the new score is better.
- * Return value: 0 if successful, -1 if maxedge limit exceeded.
- */
-static int32
-astar_dag_link_bypass(dag_t *dag, dagnode_t * pd, dagnode_t * d, int32 ascr)
-{
-    daglink_t *l;
-
-    /* Find the existing bypass link, if any, between pd and d */
-    for (l = pd->succlist; l && ((!l->is_filler_bypass) || (l->node != d));
-         l = l->next);
-
-    if (!l) {
-        /* No existing bypass link; create one from pd to d */
-        l = (daglink_t *) listelem_alloc(sizeof(*l));
-        l->node = d;
-        l->ascr = ascr;
-        l->is_filler_bypass = 1;
-        l->next = pd->succlist;
-        pd->succlist = l;
-
-        dag->nlink++;
-        dag->nbypass++;
-    }
-    else if (l->ascr < ascr) {
-        /* Link pd -> d exists; update link score for it */
-        l->ascr = ascr;
-    }
-
-    return (dag->nlink > dag->maxedge) ? -1 : 0;
-}
-
-
-/**
- * Add auxiliary links bypassing filler nodes in DAG.  In principle, a new such
- * auxiliary link can end up at ANOTHER filler node, and the process must be repeated
- * for complete transitive closure.  But removing fillers in the order in which they
- * appear in dag.list ensures that succeeding fillers have already been bypassed.
- * (See comment before s3astar_dag_load.)
- * Return value: 0 if successful; -1 if DAG maxedge limit exceeded.
- */
-static int32
-dag_bypass_filler_nodes(dag_t *dag, float64 lwf, dict_t *dict, fillpen_t *fpen)
-{
-    dagnode_t *d, *pnode, *snode;
-    daglink_t *plink, *slink;
-    int32 scr;
-
-    /* Create additional links in DAG bypassing filler nodes */
-    for (d = dag->list; d; d = d->alloc_next) {
-        if (!dict_filler_word(dict, d->wid))    /* No need to bypass this node */
-            continue;
-
-        /* For each link TO d add a link to d's successors */
-        for (plink = d->predlist; plink; plink = plink->next) {
-            pnode = plink->node;
-            scr = plink->ascr;
-            scr += ((fillpen(fpen, dict_basewid(dict, d->wid))
-                     - logs3(fpen->wip)) * lwf
-                    + logs3(fpen->wip));
-
-            /* Link this predecessor of d to successors of d */
-            for (slink = d->succlist; slink; slink = slink->next) {
-                snode = slink->node;
-
-                /* Link only to non-filler successors; fillers have been bypassed */
-                if (!dict_filler_word(dict, snode->wid))
-                    if (astar_dag_link_bypass
-                        (dag, pnode, snode, scr + slink->ascr) < 0)
-                        return -1;
-            }
-        }
-    }
-
-    return 0;
-}
-
 
 /**
  * For each link compute the heuristic score (hscr) from the END of the link to the
@@ -308,31 +229,6 @@ dag_compute_hscr(dag_t *dag, dict_t *dict, lm_t *lm)
     }
 }
 
-
-static void
-dag_remove_bypass_links(dag_t *dag)
-{
-    dagnode_t *d;
-    daglink_t *l, *pl, *nl;
-
-    for (d = dag->list; d; d = d->alloc_next) {
-        pl = NULL;
-        for (l = d->succlist; l; l = nl) {
-            nl = l->next;
-            if (l->is_filler_bypass) {
-                if (!pl)
-                    d->succlist = nl;
-                else
-                    pl->next = nl;
-                listelem_free(l, sizeof(*l));
-            }
-            else
-                pl = l;
-        }
-    }
-}
-
-
 dag_t *
 s3astar_dag_load(char *file, dict_t *dict, lm_t *lm, fillpen_t *fpen)
 {
@@ -368,17 +264,6 @@ s3astar_dag_load(char *file, dict_t *dict, lm_t *lm, fillpen_t *fpen)
 
     E_INFO("%5d frames, %6d nodes, %8d edges, %8d bypass\n",
            dag->nfrm, dag->nnode, dag->nlink, dag->nbypass);
-
-    /*
-     * Set limit on max LM ops allowed after which utterance is aborted.
-     * Limit is lesser of absolute max and per frame max.
-     */
-    dag->maxlmop = cmd_ln_int32("-maxlmop");
-    k = cmd_ln_int32("-maxlpf");
-    k *= dag->nfrm;
-    if (k > 0 && dag->maxlmop > k)
-        dag->maxlmop = k;
-    dag->lmop = 0;
 
     return dag;
 }
@@ -792,22 +677,19 @@ nbest_search(dag_t *dag, char *filename, char *uttid, dict_t *dict, lm_t *lm, fi
         /* Expand to successors of top (i.e. via each link leaving top) */
         d = top->dagnode;
         for (l = d->succlist; l; l = l->next) {
-            assert(l->node->reachable && (!l->is_filler_bypass));
+            assert(l->node->reachable && (!l->bypass));
 
             /* Obtain LM score for link */
             bw2 = dict_basewid(dict, l->node->wid);
-
-            /* ARCHAN , bw2 is bypassed, so we can savely ignored it */
             lscr =
-                (dict_filler_word(dict, bw2)) ? fillpen(fpen,
-                                                        bw2) :
-                lm_tg_score(lm,
-                            (bw0 ==
-                             BAD_S3WID) ? BAD_LMWID(lm) : lm->
-                            dict2lmwid[bw0],
-                            (bw1 ==
-                             BAD_S3WID) ? BAD_LMWID(lm) : lm->
-                            dict2lmwid[bw1], lm->dict2lmwid[bw2], bw2);
+                (dict_filler_word(dict, bw2))
+                ? fillpen(fpen, bw2)
+                : lm_tg_score(lm,
+                              (bw0 == BAD_S3WID)
+                              ? BAD_LMWID(lm) : lm->dict2lmwid[bw0],
+                              (bw1 == BAD_S3WID)
+                              ? BAD_LMWID(lm) : lm->dict2lmwid[bw1],
+                              lm->dict2lmwid[bw2], bw2);
 
             if (dag->lmop++ > dag->maxlmop) {
                 E_ERROR("%s: Max LM ops (%d) exceeded\n", uttid,

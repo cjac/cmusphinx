@@ -171,15 +171,12 @@ typedef struct daglink_s {
                                    corrupted because of filler node deletion.) */
     int32 lscr;			/**< LM score to the SUCCESSOR node */
     int32 pscr;			/**< Best path score to root beginning with this link */
-
+    int32 hscr;			/**< Heuristic score from end of link to dag exit node */
 
     s3frmid_t ef;		/**< End time for this link.  Should be 1 before the start
 				   time of destination node (or source node for reverse
 				   links), but gets corrupted because of filler deletion */
-    uint8 pscr_valid;		/**< Flag to avoid evaluating the same path multiple times */
-
-    int32 hscr;			/**< Astar specific:Heuristic score from end of link to dag exit node */
-    int32 is_filler_bypass;       /**< Astar specific:Whether this is a filler bypass link */
+    int16 pscr_valid;		/**< Flag to avoid evaluating the same path multiple times */
 
     void *hook;                           /**< A hook that could allow arbitrary data structure to use daglink_t */
 
@@ -248,16 +245,22 @@ int32 dag_link (dag_t * dagp,    /**< A pointer to a DAG */
     );
 
 
-daglink_t *find_succlink (dagnode_t *src, dagnode_t *dst);
+daglink_t *find_succlink (dagnode_t *src,
+                          dagnode_t *dst,
+                          int32 bypass    /**< Find bypass links only? */
+    );
 
-daglink_t *find_predlink (dagnode_t *src, dagnode_t *dst);
+daglink_t *find_predlink (dagnode_t *src,
+                          dagnode_t *dst,
+                          int32 bypass    /**< Find bypass links only? */
+    );
 
 int32 dag_update_link (dag_t* dagp,  /**< A pointer to a DAG */
 		       dagnode_t *pd, 
 		       dagnode_t *d, 
 		       int32 ascr,  /**< The acoustic scores */
 		       int32 ef,    /**< The ending frame */
-		       daglink_t *byp
+		       daglink_t *byp /**< A filler link being bypassed by this one */
     );
 
 /** Routine to read the dag header 
@@ -359,25 +362,28 @@ void dag_add_fudge_edges (dag_t* dagp,  /** An initialized DAG */
 
 
 /**
- * Remove filler nodes from DAG by replacing each link TO a filler with links
- * to its successors.  In principle, successors can be fillers and the process
- * must be repeated.  But removing fillers in the order in which they appear in
- * dag.list ensures that succeeding fillers have already been eliminated.
- *
+ * Add auxiliary links bypassing filler nodes in DAG.  In principle, a new such
+ * auxiliary link can end up at ANOTHER filler node, and the process must be repeated
+ * for complete transitive closure.  But removing fillers in the order in which they
+ * appear in dag->list ensures that succeeding fillers have already been bypassed.
  * @return: 0 if successful; -1 if DAG maxedge limit exceeded.
  */
 
-int32 dag_remove_filler_nodes (dag_t* dagp,  /**< DAG */
+int32 dag_bypass_filler_nodes (dag_t* dagp,  /**< DAG */
 			       float64 lwf,  /**< language weight factor */
 			       dict_t *dict,  /**< Dictionary */
 			       fillpen_t *fpen /**< The filler penalty */
     );
 
 /**
+ * Remove links created by dag_bypass_filler_nodes().
+ */
+void dag_remove_bypass_links(dag_t *dag);
+
+/**
  * Remove nodes from which the final exit node is not reachable.
  */
 void dag_remove_unreachable(dag_t *dag);
-
 
 /**
  * Load a DAG from a file: each unique <word-id,start-frame> is a node, i.e. with

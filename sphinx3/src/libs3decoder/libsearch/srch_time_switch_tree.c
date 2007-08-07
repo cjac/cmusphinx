@@ -1291,7 +1291,7 @@ srch_TST_bestpath_impl(void *srch,          /**< A void pointer to a search stru
         if (dict_filler_word(s->kbc->dict, dag->end->wid))
             dag->end->wid = s->kbc->dict->finishwid;
 
-        if (dag_remove_filler_nodes(dag, lwf, s->kbc->dict, s->kbc->fillpen) < 0)
+        if (dag_bypass_filler_nodes(dag, lwf, s->kbc->dict, s->kbc->fillpen) < 0)
             E_ERROR("maxedge limit (%d) exceeded\n", dag->maxedge);
         else
             dag->filler_removed = 1;
