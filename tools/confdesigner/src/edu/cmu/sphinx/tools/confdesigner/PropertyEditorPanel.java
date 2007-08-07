@@ -1,14 +1,14 @@
 package edu.cmu.sphinx.tools.confdesigner;
 
 import com.l2fprod.common.propertysheet.DefaultProperty;
-import com.l2fprod.common.propertysheet.Property;
-import edu.cmu.sphinx.tools.confdesigner.propedit.ConfDoubleProperty;
-import edu.cmu.sphinx.tools.confdesigner.propedit.PropertySheetPanel;
+import edu.cmu.sphinx.tools.confdesigner.propedit.CompDoubleProperty;
+import edu.cmu.sphinx.tools.confdesigner.propedit.CompStringProperty;
+import edu.cmu.sphinx.tools.confdesigner.propedit.SimplePropEditor;
+import edu.cmu.sphinx.tools.confdesigner.propedit.TableProperty;
 import edu.cmu.sphinx.util.props.*;
 
 import javax.swing.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Proxy;
@@ -21,7 +21,7 @@ import java.util.Map;
  *
  * @author Holger Brandl
  */
-public class PropertyEditorPanel extends PropertySheetPanel {
+public class PropertyEditorPanel extends JPanel {
 
     ConfigurationManager cm;
     PropertySheet currentPS;
@@ -29,26 +29,31 @@ public class PropertyEditorPanel extends PropertySheetPanel {
 
     boolean isShowingGlobalProps = true;
 
+    private SimplePropEditor propEditor;
+
 
     public PropertyEditorPanel() {
-        addKeyListener(new KeyAdapter() {
 
-            public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_DELETE) {
-                    int delRow = getTable().getSelectedRow();
-                    getTable().removeRowSelectionInterval(delRow, delRow + 1);
-                }
-            }
-        });
+        propEditor = new SimplePropEditor();
+        setLayout(new BorderLayout());
+        add(propEditor);
+//        addKeyListener(new KeyAdapter() {
+//
+//            public void keyPressed(KeyEvent e) {
+//                if (e.getKeyCode() == KeyEvent.VK_DELETE) {
+//                    int delRow = getTable().getSelectedRow();
+//                    getTable().removeRowSelectionInterval(delRow, delRow + 1);
+//                }
+//            }
+//        });
     }
 
 
     // todo add the appropriate javadoc of the underlying s4property as tooltip to all generated prop-fields
     public void rebuildPanel(PropertySheet ps) {
-        currentPS = ps;
 
-        for (Property p : getProperties())
-            removeProperty(p);
+        propEditor.clear();
+        currentPS = ps;
 
         // show the default properties if nothing is selected
         if (ps == null) {
@@ -59,7 +64,7 @@ public class PropertyEditorPanel extends PropertySheetPanel {
         isShowingGlobalProps = false;
         PropertyChangeListener pChangeListener = createPropSheetListener();
 
-        DefaultProperty p = null, type;
+        TableProperty p = null, type;
         try {
 
             for (String propName : ps.getRegisteredProperties()) {
@@ -70,82 +75,78 @@ public class PropertyEditorPanel extends PropertySheetPanel {
 
                     case COMP:
                         S4Component s4Component = ((S4Component) currentPS.getProperty(propName, S4Component.class).getAnnotation());
-
-                        p = new DefaultProperty();
-                        p.setDisplayName(propName);
-                        type = new DefaultProperty();
-                        type.setDisplayName("type");
-                        type.setValue(s4Component.type().getName());
-                        p.addSubProperty(type);
-
-                        if (!s4Component.defaultClass().equals(Configurable.class)) {
-                            DefaultProperty defClassProperty = new DefaultProperty();
-                            defClassProperty.setDisplayName("default type");
-                            defClassProperty.setValue(s4Component.defaultClass().getName());
-                            p.addSubProperty(defClassProperty);
-                        }
+//
+//                        p = new DefaultProperty();
+//                        p.setDisplayName(propName);
+//                        type = new DefaultProperty();
+//                        type.setDisplayName("type");
+//                        type.setValue(s4Component.type().getName());
+//                        p.addSubProperty(type);
+//
+//                        if (!s4Component.defaultClass().equals(Configurable.class)) {
+//                            DefaultProperty defClassProperty = new DefaultProperty();
+//                            defClassProperty.setDisplayName("default type");
+//                            defClassProperty.setValue(s4Component.defaultClass().getName());
+//                            p.addSubProperty(defClassProperty);
+//                        }
                         break;
                     case COMPLIST:
                         S4ComponentList s4CompList = ((S4ComponentList) currentPS.getProperty(propName, S4ComponentList.class).getAnnotation());
-
-                        p = new DefaultProperty();
-                        p.setDisplayName(propName);
-                        type = new DefaultProperty();
-                        type.setDisplayName("type");
-                        type.setValue(s4CompList.type().getName());
-                        p.addSubProperty(type);
+//
+//                        p = new DefaultProperty();
+//                        p.setDisplayName(propName);
+//                        type = new DefaultProperty();
+//                        type.setDisplayName("type");
+//                        type.setValue(s4CompList.type().getName());
+//                        p.addSubProperty(type);
                         break;
                     case BOOL:
                         S4Boolean s4bool = ((S4Boolean) currentPS.getProperty(propName, S4Boolean.class).getAnnotation());
-                        p = new DefaultProperty();
-                        p.setDisplayName(propName);
-                        // todo support that
-//                    if (s4bool.isNotDefined())
-//                        System.err.println("non-defaulting booleans are not supported");
-
-                        p.setType(Boolean.class);
-                        if (currentPS.getRaw(propName) != null)
-                            p.setValue(currentPS.getBoolean(propName));
-                        p.setEditable(true);
+//                        p = new DefaultProperty();
+//                        p.setDisplayName(propName);
+//                        // todo support that
+////                    if (s4bool.isNotDefined())
+////                        System.err.println("non-defaulting booleans are not supported");
+//
+//                        p.setType(Boolean.class);
+//                        if (currentPS.getRaw(propName) != null)
+//                            p.setValue(currentPS.getBoolean(propName));
+//                        p.setEditable(true);
                         break;
                     case DOUBLE:
-                        S4Double s4Double = ((S4Double) wrapper);
+                        S4Double s4Double = ((S4Double) currentPS.getProperty(propName, S4Double.class).getAnnotation());
 
-                        p = new ConfDoubleProperty(propName, s4Double);
-                        p.setDisplayName(propName);
-
-                        p.setType(Double.class);
-                        if (currentPS.getRaw(propName) != null)
-                            p.setValue(currentPS.getDouble(propName));
-                        p.setEditable(true);
+                        p = new CompDoubleProperty(currentPS, propName, s4Double);
                         break;
                     case INT:
                         S4Integer s4Integer = ((S4Integer) wrapper);
 
-                        p = new DefaultProperty();
-                        p.setDisplayName(propName);
-
-                        p.setType(Integer.class);
-                        if (currentPS.getRaw(propName) != null)
-                            p.setValue(currentPS.getInt(propName));
-                        p.setEditable(true);
-
-                        // todo check whether the property is in range
+//                        p = new DefaultProperty();
+//                        p.setDisplayName(propName);
+//
+//                        p.setType(Integer.class);
+//                        if (currentPS.getRaw(propName) != null)
+//                            p.setValue(currentPS.getInt(propName));
+//                        p.setEditable(true);
+//
+//                        // todo check whether the property is in range
                         break;
                     case STRING:
-                        S4String s4string = ((S4String) wrapper);
+                        S4String s4string = ((S4String) currentPS.getProperty(propName, S4String.class).getAnnotation());
+                        p = new CompStringProperty(currentPS, propName, s4string);
 
-                        p = new DefaultProperty();
-                        p.setDisplayName(propName);
-
-                        p.setType(String.class);
-                        if (currentPS.getRaw(propName) != null)
-                            p.setValue(currentPS.getString(propName));
-                        p.setEditable(true);
+//                        p = new DefaultProperty();
+//                        p.setDisplayName(propName);
+//
+//                        p.setType(String.class);
+//                        if (currentPS.getRaw(propName) != null)
+//                            p.setValue(currentPS.getString(propName));
+//                        p.setEditable(true);
                 }
 
-                p.addPropertyChangeListener(pChangeListener);
-                addProperty(p);
+                //todo uncomment me
+//                p.addPropertyChangeListener(pChangeListener);
+                propEditor.addProperty(p);
             }
         } catch (PropertyException e) {
             e.printStackTrace();
@@ -238,7 +239,7 @@ public class PropertyEditorPanel extends PropertySheetPanel {
                     newProp.setType(String.class);
                     newProp.setEditable(true);
                     newProp.addPropertyChangeListener(this);
-                    addProperty(newProp);
+//                    addProperty(newProp);
                 }
 
                 if (p.getValue().equals("")) {
@@ -246,7 +247,7 @@ public class PropertyEditorPanel extends PropertySheetPanel {
                         int status = JOptionPane.showConfirmDialog(null, "Do you want to delete the empty property '" + p.getDisplayName() + "' ?");
                         if (status == JOptionPane.YES_OPTION) {
                             cm.setGlobalProperty(p.getDisplayName(), null);
-                            removeProperty(p);
+//                            removeProperty(p);
                         }
                     }
                 } else {
@@ -268,7 +269,7 @@ public class PropertyEditorPanel extends PropertySheetPanel {
             p.setValue(properties.get(globPropName));
             p.setEditable(true);
 
-            addProperty(p);
+//            addProperty(p);
             p.addPropertyChangeListener(pChangeListener);
         }
 
@@ -279,7 +280,7 @@ public class PropertyEditorPanel extends PropertySheetPanel {
         p.setType(String.class);
         p.setEditable(true);
         p.addPropertyChangeListener(pChangeListener);
-        addProperty(p);
+//        addProperty(p);
     }
 
 

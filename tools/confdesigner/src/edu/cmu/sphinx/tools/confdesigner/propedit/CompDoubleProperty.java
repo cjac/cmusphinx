@@ -8,14 +8,14 @@ import edu.cmu.sphinx.util.props.S4Double;
  *
  * @author Holger Brandl
  */
-public class ConfDoubleProperty extends TableProperty {
+public class CompDoubleProperty extends TableProperty {
 
     private PropertySheet currentPS;
     private String propName;
     private S4Double s4Double;
 
 
-    public ConfDoubleProperty(PropertySheet currentPS, String propName, S4Double s4Double) {
+    public CompDoubleProperty(PropertySheet currentPS, String propName, S4Double s4Double) {
         this.currentPS = currentPS;
         this.propName = propName;
         this.s4Double = s4Double;
@@ -31,18 +31,9 @@ public class ConfDoubleProperty extends TableProperty {
 
             // set color to gray to indicate the defaultness
         }
-        setEditable(true);
     }
 
 
-    private void setEditable(boolean b) {
-    }
-
-
-    private void setValue(double aDouble) {
-    }
-
-
-    private void setDisplayName(String propName) {
+    public void add(SimplePropEditor simplePropEditor) {
     }
 }
