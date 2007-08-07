@@ -106,10 +106,6 @@ fillpen_init(dict_t * dict, char *file, float64 silprob, float64 fillprob,
     /* Initialize all words with filler penalty (HACK!! backward compatibility) */
     prob = fillprob;
     for (w = dict->filler_start; w <= dict->filler_end; w++)
-#if 0                           /* Language weight need not apply to wip */
-        _fillpen->prob[w - dict->filler_start] =
-            (int32) ((logs3(prob) + logs3(wip)) * lw);
-#endif
     _fillpen->prob[w - dict->filler_start] =
         (int32) ((logs3(prob) * lw + logs3(wip)));
 
@@ -119,10 +115,6 @@ fillpen_init(dict_t * dict, char *file, float64 silprob, float64 fillprob,
         E_FATAL("%s not a filler word in the given dictionary\n",
                 S3_SILENCE_WORD);
     prob = silprob;
-#if 0                           /* language weight need not apply to wip */
-    _fillpen->prob[w - dict->filler_start] =
-        (int32) ((logs3(prob) + logs3(wip)) * lw);
-#endif
     _fillpen->prob[w - dict->filler_start] =
         (int32) ((logs3(prob) * lw + logs3(wip)));
 
@@ -146,10 +138,6 @@ fillpen_init(dict_t * dict, char *file, float64 silprob, float64 fillprob,
             E_FATAL("%s not a filler word in the given dictionary\n",
                     S3_SILENCE_WORD);
 
-#if 0                           /* language weight need not apply to wip */
-        _fillpen->prob[w - dict->filler_start] =
-            (int32) ((logs3(prob) + logs3(wip)) * lw);
-#endif
         _fillpen->prob[w - dict->filler_start] =
             (int32) ((logs3(prob) * lw + logs3(wip)));
     }

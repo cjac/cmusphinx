@@ -581,20 +581,21 @@ dag_write_header(FILE * fp, int32 nfr, int32 printminfr)
     if (cmd_ln_str("-lm"))
 	fprintf(fp, "# -lm %s\n", cmd_ln_str("-lm"));
     /* We might have one or many of these arguments */
-    if (cmd_ln_str("-hmm")) 
+    if (cmd_ln_exists("-hmm") && cmd_ln_str("-hmm")) 
         fprintf(fp, "# -hmm %s\n", cmd_ln_str("-hmm"));
-    if (cmd_ln_str("-mdef")) 
+    if (cmd_ln_exists("-mdef") && cmd_ln_str("-mdef")) 
         fprintf(fp, "# -mdef %s\n", cmd_ln_str("-mdef"));
-    if (cmd_ln_str("-mean")) 
+    if (cmd_ln_exists("-mean") && cmd_ln_str("-mean")) 
         fprintf(fp, "# -mean %s\n", cmd_ln_str("-mean"));
-    if (cmd_ln_str("-var")) 
+    if (cmd_ln_exists("-var") && cmd_ln_str("-var")) 
         fprintf(fp, "# -var %s\n", cmd_ln_str("-var"));
-    if (cmd_ln_str("-mixw")) 
+    if (cmd_ln_exists("-mixw") && cmd_ln_str("-mixw")) 
         fprintf(fp, "# -mixw %s\n", cmd_ln_str("-mixw"));
-    if (cmd_ln_str("-tmat")) 
+    if (cmd_ln_exists("-tmat") && cmd_ln_str("-tmat")) 
         fprintf(fp, "# -tmat %s\n", cmd_ln_str("-tmat"));
-    fprintf(fp, "# -senmgau %s\n", cmd_ln_str("-senmgau"));
-    if (printminfr) {
+    if (cmd_ln_exists("-senmgau") && cmd_ln_str("-senmgau"))
+        fprintf(fp, "# -senmgau %s\n", cmd_ln_str("-senmgau"));
+    if (printminfr && cmd_ln_exists("-min_endfr")) {
         fprintf(fp, "# -min_endfr %d\n", cmd_ln_int32("-min_endfr"));
     }
     fprintf(fp, "#\n");
@@ -766,7 +767,9 @@ dag_remove_filler_nodes(dag_t * dagp, float64 lwf, dict_t * dict,
             pnode = plink->node;
 
             ascr = plink->ascr;
-            ascr += lwf * fillpen(fpen, dict_basewid(dict, d->wid));
+            ascr += ((fillpen(fpen, dict_basewid(dict, d->wid))
+                      - logs3(fpen->wip)) * lwf
+                     + logs3(fpen->wip));
 
             /* Link this predecessor of d to successors of d */
             for (slink = d->succlist; slink; slink = slink->next) {
