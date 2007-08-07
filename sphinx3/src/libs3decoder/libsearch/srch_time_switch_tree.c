@@ -1360,12 +1360,6 @@ srch_TST_nbest_impl(void *srch,          /**< A void pointer to a search structu
     f32arg = (float32 *) cmd_ln_access("-bestpathlw");
     lwf = f32arg ? ((*f32arg) / *((float32 *) cmd_ln_access("-lw"))) : 1.0;
 
-#if 0
-    dag_write(dag, "foo.lat.gz", kbcore_lm(s->kbc), kbcore_dict(s->kbc));
-    dag = dag_load("foo.lat.gz", cmd_ln_int32("-maxedge"), cmd_ln_float32("-logbase"),
-                   cmd_ln_int32("-dagfudge"), kbcore_dict(s->kbc), s->kbc->fillpen);
-#endif
-
     /* FIXME: This is some bogus crap to do with the different
      * treatment of <s> and </s> in the flat vs. the tree decoder.  If
      * we don't do this then bestpath search will fail because
@@ -1384,7 +1378,7 @@ srch_TST_nbest_impl(void *srch,          /**< A void pointer to a search structu
         }
     }
 
-    dag_compute_hscr(dag, kbcore_dict(s->kbc), kbcore_lm(s->kbc), 1.0);
+    dag_compute_hscr(dag, kbcore_dict(s->kbc), kbcore_lm(s->kbc), lwf);
     dag_remove_bypass_links(dag);
     dag->filler_removed = 0;
 

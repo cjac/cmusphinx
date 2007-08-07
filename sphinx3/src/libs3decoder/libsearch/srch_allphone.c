@@ -1030,6 +1030,7 @@ srch_allphone_gen_dag(void *srch,         /**< a pointer of srch_t */
     dn->seqid = 0;
     dag->root = dn;
     dag->end->seqid = 0;
+    dag->final.node = dag->end;
 
     /* Now prune dagnodes with <min_endfr end frames if not validated above */
     i = 0;
@@ -1062,7 +1063,7 @@ srch_allphone_gen_dag(void *srch,         /**< a pointer of srch_t */
                     dn2 = (dagnode_t *) gnode_ptr(gn3);
                     if (dn2->seqid >= 0) {
 			dag_link(dag, dn, dn2, ve->score,
-				 ve->tscore, sf, NULL);
+				 ve->tscore, ve->ef, NULL);
                     }
                 }
             }
@@ -1194,8 +1195,6 @@ srch_allphone_bestpath_impl(void *srch,          /**< A void pointer to a search
 
     /* For some reason these bogus links are necessary */
     dag_link(dag, NULL, dag->root, 0, 0, -1, NULL);
-    dag->final.node = dag->end;
-
     bph = dag_search(dag, s->uttid,
                      lwf,
                      dag->end,
@@ -1214,6 +1213,35 @@ srch_allphone_bestpath_impl(void *srch,          /**< A void pointer to a search
         return NULL;
     }
 
+}
+
+glist_t
+srch_allphone_nbest_impl(void *srch,          /**< A void pointer to a search structure */
+			 dag_t * dag)
+{
+    float32 *f32arg;
+    float64 lwf;
+    srch_t *s = (srch_t *) srch;
+    char str[2000];
+
+    if (!(cmd_ln_exists("-nbestdir") && cmd_ln_str("-nbestdir")))
+        return NULL;
+    ctl_outfile(str, cmd_ln_str("-nbestdir"), cmd_ln_str("-nbestext"),
+                (s->uttfile ? s->uttfile : s->uttid), s->uttid);
+
+    f32arg = (float32 *) cmd_ln_access("-bestpathlw");
+    lwf = f32arg ? ((*f32arg) / *((float32 *) cmd_ln_access("-lw"))) : 1.0;
+
+    if (kbcore_lm(s->kbc) == NULL)
+	E_FATAL("N-best search requires a language model\n");
+
+    dag_remove_unreachable(dag);
+    dag_compute_hscr(dag, kbcore_dict(s->kbc), kbcore_lm(s->kbc), lwf);
+    nbest_search(dag, str, s->uttid, lwf,
+                 kbcore_dict(s->kbc),
+                 kbcore_lm(s->kbc), kbcore_fillpen(s->kbc)
+        );
+    return NULL;
 }
 
 int
@@ -1281,6 +1309,6 @@ srch_funcs_t srch_allphone_funcs = {
 	/* dump_vithist */		NULL,
 	/* bestpath_impl */		srch_allphone_bestpath_impl,
 	/* dag_dump */			srch_allphone_dag_dump,
-        /* nbest_impl */                NULL,
+        /* nbest_impl */                srch_allphone_nbest_impl,
 	NULL
 };

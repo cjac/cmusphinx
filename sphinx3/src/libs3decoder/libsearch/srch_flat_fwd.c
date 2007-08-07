@@ -747,6 +747,55 @@ srch_FLAT_FWD_dag_dump(void *srch, dag_t *dag)
     return SRCH_SUCCESS;
 }
 
+glist_t
+srch_FLAT_FWD_nbest_impl(void *srch,           /**< A void pointer to a search structure */
+                         dag_t * dag)
+{
+    srch_t *s;
+    srch_FLAT_FWD_graph_t *fwg;
+    float32 *f32arg;
+    float64 lwf;
+    char str[2000];
+
+    s = (srch_t *) srch;
+    fwg = (srch_FLAT_FWD_graph_t *) s->grh->graph_struct;
+    assert(fwg->lathist);
+
+    if (!(cmd_ln_exists("-nbestdir") && cmd_ln_str("-nbestdir")))
+        return NULL;
+    ctl_outfile(str, cmd_ln_str("-nbestdir"), cmd_ln_str("-nbestext"),
+                (s->uttfile ? s->uttfile : s->uttid), s->uttid);
+
+    f32arg = (float32 *) cmd_ln_access("-bestpathlw");
+    lwf = f32arg ? ((*f32arg) / *((float32 *) cmd_ln_access("-lw"))) : 1.0;
+
+    flat_fwd_dag_add_fudge_edges(fwg,
+				 dag,
+				 cmd_ln_int32("-dagfudge"),
+				 cmd_ln_int32("-min_endfr"),
+				 (void *) fwg->lathist, s->kbc->dict);
+
+    /* Bypass filler nodes */
+    if (!dag->filler_removed) {
+        /* If Viterbi search terminated in filler word coerce final DAG node to FINISH_WORD */
+        if (dict_filler_word(s->kbc->dict, dag->end->wid))
+            dag->end->wid = s->kbc->dict->finishwid;
+        dag_remove_unreachable(dag);
+        if (dag_bypass_filler_nodes(dag, lwf, s->kbc->dict, s->kbc->fillpen) < 0)
+            E_ERROR("maxedge limit (%d) exceeded\n", dag->maxedge);
+    }
+
+    dag_compute_hscr(dag, kbcore_dict(s->kbc), kbcore_lm(s->kbc), lwf);
+    dag_remove_bypass_links(dag);
+    dag->filler_removed = 0;
+
+    nbest_search(dag, str, s->uttid, lwf,
+                 kbcore_dict(s->kbc),
+                 kbcore_lm(s->kbc), kbcore_fillpen(s->kbc)
+        );
+    return NULL;
+}
+
 /* Pointers to all functions */
 srch_funcs_t srch_FLAT_FWD_funcs = {
 	/* init */			srch_FLAT_FWD_init,
@@ -783,6 +832,6 @@ srch_funcs_t srch_FLAT_FWD_funcs = {
 	/* dump_vithist */		srch_FLAT_FWD_dump_vithist,
 	/* bestpath_impl */		srch_FLAT_FWD_bestpath_impl,
 	/* dag_dump */			srch_FLAT_FWD_dag_dump,
-        /* nbest_impl */                NULL,
+        /* nbest_impl */                srch_FLAT_FWD_nbest_impl,
 	NULL
 };
