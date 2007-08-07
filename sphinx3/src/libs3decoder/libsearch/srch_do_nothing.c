@@ -111,5 +111,6 @@ srch_funcs_t srch_do_nothing_funcs = {
 	/* dump_vithist */		NULL,
 	/* bestpath_impl */		NULL,
 	/* dag_dump */			NULL,
+        /* nbest_impl */                NULL,
 	NULL
 };

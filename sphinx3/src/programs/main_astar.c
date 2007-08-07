@@ -395,7 +395,7 @@ utt_astar(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
             E_ERROR("maxedge limit (%d) exceeded\n", dag->maxedge);
 	    goto search_done;
 	}
-	dag_compute_hscr(dag, dict, lmset->cur_lm);
+	dag_compute_hscr(dag, dict, lmset->cur_lm, 1.0);
 	dag_remove_bypass_links(dag);
 
 	E_INFO("%5d frames, %6d nodes, %8d edges, %8d bypass\n",
@@ -405,7 +405,7 @@ utt_astar(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
 	build_output_uttfile(nbestfile, nbestdir, uttid, ur->uttfile);
 	strcat(nbestfile, ".");
 	strcat(nbestfile, nbestext);
-        nbest_search(dag, nbestfile, uttid, dict, lmset->cur_lm, fpen);
+        nbest_search(dag, nbestfile, uttid, 1.0, dict, lmset->cur_lm, fpen);
 
         lm_cache_stats_dump(lmset->cur_lm);
         lm_cache_reset(lmset->cur_lm);

@@ -704,7 +704,6 @@ srch_FLAT_FWD_bestpath_impl(void *srch,           /**< A void pointer to a searc
 
         /* For some reason these bogus links are necessary */
         dag_link(dag, NULL, dag->root, 0, 0, -1, NULL);
-        dag->final.node = dag->end;
     }
 
     bph =
@@ -784,5 +783,6 @@ srch_funcs_t srch_FLAT_FWD_funcs = {
 	/* dump_vithist */		srch_FLAT_FWD_dump_vithist,
 	/* bestpath_impl */		srch_FLAT_FWD_bestpath_impl,
 	/* dag_dump */			srch_FLAT_FWD_dag_dump,
+        /* nbest_impl */                NULL,
 	NULL
 };

@@ -683,6 +683,13 @@ typedef struct srch_funcs_s {
                      dag_t *dag
         );
 
+    /**
+       Interface of N-best search. 
+    */
+    glist_t (*nbest_impl)(void *srch_struct, /**< a pointer of srch_t */
+                          dag_t *dag 
+        );
+
     /** Empty "guard" element which does nothing. */
     void *nothing;
 } srch_funcs_t;

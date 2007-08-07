@@ -614,7 +614,27 @@ us a better architecture.
     { "-bestpathlw", \
       ARG_FLOAT32, \
       NULL, \
-      "Language weight for bestpath DAG search (default: same as -lw)" },
+      "Language weight for bestpath DAG search (default: same as -lw)" }, \
+    {"-nbestdir", \
+     ARG_STRING, \
+     NULL, \
+     "Input word-lattice directory with per-utt files for restricting words searched"}, \
+    {"-nbestext", \
+     ARG_STRING, \
+     "nbest.gz", \
+     "N-best filename extension (.gz or .Z extension for compression)"}, \
+    {"-nbest", \
+     ARG_INT32, \
+     "200", \
+     "Max. n-best hypotheses to generate per utterance"}, \
+    {"-maxppath", \
+     ARG_INT32, \
+     "1000000", \
+     "Max partial paths created after which utterance aborted; controls CPU/memory use"}, \
+    {"-ppathdebug", \
+     ARG_BOOLEAN, \
+     "no", \
+     "Generate debugging information for N-best search. "}, \
 
 #define input_lattice_handling_command_line_macro() \
     { "-inlatdir", \

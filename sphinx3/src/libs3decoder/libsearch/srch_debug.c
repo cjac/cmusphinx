@@ -242,6 +242,13 @@ srch_debug_dag_dump(void *srch, dag_t *dag)
     return SRCH_SUCCESS;
 }
 
+glist_t
+srch_debug_nbest_impl(void *srch,          /**< A void pointer to a search structure */
+		      dag_t * dag)
+{
+    return SRCH_SUCCESS;
+}
+
 /* Pointers to all functions */
 srch_funcs_t srch_debug_funcs = {
 	/* init */			srch_debug_init,
@@ -278,5 +285,6 @@ srch_funcs_t srch_debug_funcs = {
 	/* dump_vithist */		srch_debug_dump_vithist,
 	/* bestpath_impl */		srch_debug_bestpath_impl,
 	/* dag_dump */			srch_debug_dag_dump,
+        /* nbest_impl */                NULL,
 	NULL
 };

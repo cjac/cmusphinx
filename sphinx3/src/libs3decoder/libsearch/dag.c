@@ -512,7 +512,7 @@ dag_destroy(dag_t * dagp)
  * exit node.
  */
 void
-dag_compute_hscr(dag_t *dag, dict_t *dict, lm_t *lm)
+dag_compute_hscr(dag_t *dag, dict_t *dict, lm_t *lm, float64 lwf)
 {
     dagnode_t *d, *d1, *d2;
     daglink_t *l1, *l2;
@@ -553,12 +553,12 @@ dag_compute_hscr(dag_t *dag, dict_t *dict, lm_t *lm)
                     /* ARCHAN , bw2 is bypassed, so we can savely ignored it */
                     hscr = l2->hscr
                         + l2->ascr
-                        + lm_tg_score(lm,
-                                      (bw0 == BAD_S3WID)
-                                      ? BAD_LMWID(lm) : lm->dict2lmwid[bw0],
-                                      (bw1 == BAD_S3WID)
-                                      ? BAD_LMWID(lm) : lm->dict2lmwid[bw1],
-                                      lm->dict2lmwid[bw2], bw2);
+                        + lwf * lm_tg_score(lm,
+                                            (bw0 == BAD_S3WID)
+                                            ? BAD_LMWID(lm) : lm->dict2lmwid[bw0],
+                                            (bw1 == BAD_S3WID)
+                                            ? BAD_LMWID(lm) : lm->dict2lmwid[bw1],
+                                            lm->dict2lmwid[bw2], bw2);
 
 
                     if (hscr > best_hscr)

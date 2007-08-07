@@ -305,7 +305,7 @@ int32 dag_destroy (
  * end of the utterance; i.e. the best score from the end of the link to the dag
  * exit node.
  */
-void dag_compute_hscr(dag_t *dag, dict_t *dict, lm_t *lm);
+void dag_compute_hscr(dag_t *dag, dict_t *dict, lm_t *lm, float64 lwf);
 
 /**
  * Recursive backtrace through DAG (from final node to root) using daglink_t.history.
@@ -418,7 +418,7 @@ dag_t* dag_load (
 /**
  * Temporary functions for A* search (will be removed) 
  */
-void nbest_search(dag_t *dag, char *filename, char *uttid,
+void nbest_search(dag_t *dag, char *filename, char *uttid, float64 lwf,
                   dict_t *dict, lm_t *lm, fillpen_t *fpen);
 
 #endif

@@ -533,6 +533,7 @@ srch_utt_end(srch_t * s)
     /* Generate a DAG if needed */
     if (s->funcs->gen_dag &&
 	(cmd_ln_str("-outlatdir")
+	 || cmd_ln_str("-nbestdir")
 	 || cmd_ln_boolean("-bestpath"))) {
         ptmr_start(&(st->tm_srch));
 	if ((dag = s->funcs->gen_dag(s, hyp)) == NULL) {
@@ -588,8 +589,13 @@ srch_utt_end(srch_t * s)
 	}
     }
 
+    /* Write N-best lists */
+    if (dag && s->funcs->nbest_impl && cmd_ln_str("-nbestdir")) {
+	s->funcs->nbest_impl(s, dag);
+    }
+
     /* Do second stage search */
-    if (dag && cmd_ln_boolean("-bestpath")) {
+    if (dag && s->funcs->bestpath_impl &&  cmd_ln_boolean("-bestpath")) {
 	glist_t rhyp;
 
         ptmr_start(&(st->tm_srch));

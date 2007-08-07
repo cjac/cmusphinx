@@ -1281,5 +1281,6 @@ srch_funcs_t srch_allphone_funcs = {
 	/* dump_vithist */		NULL,
 	/* bestpath_impl */		srch_allphone_bestpath_impl,
 	/* dag_dump */			srch_allphone_dag_dump,
+        /* nbest_impl */                NULL,
 	NULL
 };

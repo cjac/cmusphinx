@@ -455,7 +455,8 @@ nbest_hyp_write(FILE * fp, ppath_t * top, dict_t *dict, lm_t *lm, int32 pscr, in
 
 
 void
-nbest_search(dag_t *dag, char *filename, char *uttid, dict_t *dict, lm_t *lm, fillpen_t *fpen)
+nbest_search(dag_t *dag, char *filename, char *uttid, float64 lwf,
+             dict_t *dict, lm_t *lm, fillpen_t *fpen)
 {
     FILE *fp;
     float32 f32arg;
@@ -485,11 +486,12 @@ nbest_search(dag_t *dag, char *filename, char *uttid, dict_t *dict, lm_t *lm, fi
         E_ERROR("fopen_comp (%s,w) failed\n", filename);
         fp = stdout;
     }
+    E_INFO("Writing N-Best list to %s\n", filename);
     fprintf(fp, "# %s\n", uttid);
     fprintf(fp, "# frames %d\n", dag->nfrm);
     f32arg = cmd_ln_float32("-logbase");
     fprintf(fp, "# logbase %e\n", f32arg);
-    f32arg = cmd_ln_float32("-lw");
+    f32arg = cmd_ln_float32("-lw") * lwf;
     fprintf(fp, "# langwt %e\n", f32arg);
     f32arg = cmd_ln_float32("-wip");
     fprintf(fp, "# inspen %e\n", f32arg);
@@ -509,7 +511,7 @@ nbest_search(dag_t *dag, char *filename, char *uttid, dict_t *dict, lm_t *lm, fi
     /* Insert start node into heap and into list of nodes-by-frame */
     pp = (ppath_t *) ckd_calloc(1, sizeof(*pp));
 
-    pp->dagnode = dag->entry.node;
+    pp->dagnode = dag->root;
     pp->hist = NULL;
     pp->lmhist = NULL;
     pp->lscr = 0;
@@ -578,12 +580,12 @@ nbest_search(dag_t *dag, char *filename, char *uttid, dict_t *dict, lm_t *lm, fi
             lscr =
                 (dict_filler_word(dict, bw2))
                 ? fillpen(fpen, bw2)
-                : lm_tg_score(lm,
-                              (bw0 == BAD_S3WID)
-                              ? BAD_LMWID(lm) : lm->dict2lmwid[bw0],
-                              (bw1 == BAD_S3WID)
-                              ? BAD_LMWID(lm) : lm->dict2lmwid[bw1],
-                              lm->dict2lmwid[bw2], bw2);
+                : lwf * lm_tg_score(lm,
+                                    (bw0 == BAD_S3WID)
+                                    ? BAD_LMWID(lm) : lm->dict2lmwid[bw0],
+                                    (bw1 == BAD_S3WID)
+                                    ? BAD_LMWID(lm) : lm->dict2lmwid[bw1],
+                                    lm->dict2lmwid[bw2], bw2);
 
             if (dag->lmop++ > dag->maxlmop) {
                 E_ERROR("%s: Max LM ops (%d) exceeded\n", uttid,
@@ -637,6 +639,6 @@ nbest_search(dag_t *dag, char *filename, char *uttid, dict_t *dict, lm_t *lm, fi
     n_pp = ppath_free(&astar);
     ckd_free(astar.heap_root);
 
-    printf("CTR(%s): %5d frm %4d hyp %6d pop %6d exp %8d pp\n",
-           uttid, dag->nfrm, n_hyp, n_pop, n_exp, n_pp);
+    E_INFO("N-Best search(%s): %5d frm %4d hyp %6d pop %6d exp %8d pp\n",
+          uttid, dag->nfrm, n_hyp, n_pop, n_exp, n_pp);
 }

@@ -1290,15 +1290,11 @@ srch_TST_bestpath_impl(void *srch,          /**< A void pointer to a search stru
         /* If Viterbi search terminated in filler word coerce final DAG node to FINISH_WORD */
         if (dict_filler_word(s->kbc->dict, dag->end->wid))
             dag->end->wid = s->kbc->dict->finishwid;
-
         if (dag_bypass_filler_nodes(dag, lwf, s->kbc->dict, s->kbc->fillpen) < 0)
             E_ERROR("maxedge limit (%d) exceeded\n", dag->maxedge);
         else
             dag->filler_removed = 1;
-
-        /* For some reason these bogus links are necessary */
         dag_link(dag, NULL, dag->root, 0, 0, -1, NULL);
-        dag->final.node = dag->end;
     }
 
     /* FIXME: This is some bogus crap to do with the different
@@ -1347,6 +1343,60 @@ srch_TST_dag_dump(void *srch, dag_t *dag)
     return SRCH_SUCCESS;
 }
 
+glist_t
+srch_TST_nbest_impl(void *srch,          /**< A void pointer to a search structure */
+                    dag_t * dag)
+{
+    float32 *f32arg;
+    float64 lwf;
+    srch_t *s = (srch_t *) srch;
+    char str[2000];
+
+    if (!(cmd_ln_exists("-nbestdir") && cmd_ln_str("-nbestdir")))
+        return NULL;
+    ctl_outfile(str, cmd_ln_str("-nbestdir"), cmd_ln_str("-nbestext"),
+                (s->uttfile ? s->uttfile : s->uttid), s->uttid);
+
+    f32arg = (float32 *) cmd_ln_access("-bestpathlw");
+    lwf = f32arg ? ((*f32arg) / *((float32 *) cmd_ln_access("-lw"))) : 1.0;
+
+#if 0
+    dag_write(dag, "foo.lat.gz", kbcore_lm(s->kbc), kbcore_dict(s->kbc));
+    dag = dag_load("foo.lat.gz", cmd_ln_int32("-maxedge"), cmd_ln_float32("-logbase"),
+                   cmd_ln_int32("-dagfudge"), kbcore_dict(s->kbc), s->kbc->fillpen);
+#endif
+
+    /* FIXME: This is some bogus crap to do with the different
+     * treatment of <s> and </s> in the flat vs. the tree decoder.  If
+     * we don't do this then bestpath search will fail because
+     * trigrams ending in </s> can't be scored. */
+    linksilences(kbcore_lm(s->kbc), s->kbc, kbcore_dict(s->kbc));
+
+    /* Bypass filler nodes */
+    if (!dag->filler_removed) {
+        /* If Viterbi search terminated in filler word coerce final DAG node to FINISH_WORD */
+        if (dict_filler_word(s->kbc->dict, dag->end->wid))
+            dag->end->wid = s->kbc->dict->finishwid;
+        dag_remove_unreachable(dag);
+        if (dag_bypass_filler_nodes(dag, lwf, s->kbc->dict, s->kbc->fillpen) < 0) {
+            E_ERROR("maxedge limit (%d) exceeded\n", dag->maxedge);
+            return NULL;
+        }
+    }
+
+    dag_compute_hscr(dag, kbcore_dict(s->kbc), kbcore_lm(s->kbc), 1.0);
+    dag_remove_bypass_links(dag);
+    dag->filler_removed = 0;
+
+    nbest_search(dag, str, s->uttid, lwf,
+                 kbcore_dict(s->kbc),
+                 kbcore_lm(s->kbc), kbcore_fillpen(s->kbc)
+        );
+    unlinksilences(kbcore_lm(s->kbc), s->kbc, kbcore_dict(s->kbc));
+
+    return NULL;
+}
+
 /* Pointers to all functions */
 srch_funcs_t srch_TST_funcs = {
 	/* init */			srch_TST_init,
@@ -1383,5 +1433,6 @@ srch_funcs_t srch_TST_funcs = {
 	/* dump_vithist */		srch_TST_dump_vithist,
 	/* bestpath_impl */		srch_TST_bestpath_impl,
 	/* dag_dump */			srch_TST_dag_dump,
+	/* nbest_impl */		srch_TST_nbest_impl,
 	NULL
 };
