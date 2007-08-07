@@ -383,7 +383,24 @@ utt_astar(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
     ptmr_start(&tm_utt);
 
     nfrm = 0;
-    if ((dag = s3astar_dag_load(dagfile, dict, lmset->cur_lm, fpen)) != NULL) {
+    if ((dag = dag_load(dagfile,
+			cmd_ln_int32("-maxedge"),
+			cmd_ln_float32("-logbase"),
+			cmd_ln_int32("-dagfudge"), dict, fpen)) != NULL) {
+        if (dict_filler_word(dict, dag->end->wid))
+            dag->end->wid = dict->finishwid;
+
+	dag_remove_unreachable(dag);
+        if (dag_bypass_filler_nodes(dag, 1.0, dict, fpen) < 0) {
+            E_ERROR("maxedge limit (%d) exceeded\n", dag->maxedge);
+	    goto search_done;
+	}
+	dag_compute_hscr(dag, dict, lmset->cur_lm);
+	dag_remove_bypass_links(dag);
+
+	E_INFO("%5d frames, %6d nodes, %8d edges, %8d bypass\n",
+	       dag->nfrm, dag->nnode, dag->nlink, dag->nbypass);
+
 	nfrm = dag->nfrm;
 	build_output_uttfile(nbestfile, nbestdir, uttid, ur->uttfile);
 	strcat(nbestfile, ".");
@@ -395,6 +412,7 @@ utt_astar(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
     }
     else
         E_ERROR("Dag load (%s) failed\n", uttid);
+search_done:
     dag_destroy(dag);
 
     ptmr_stop(&tm_utt);

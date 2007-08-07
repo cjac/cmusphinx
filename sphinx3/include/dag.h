@@ -301,6 +301,13 @@ int32 dag_destroy (
     );
 
 /**
+ * For each link compute the heuristic score (hscr) from the END of the link to the
+ * end of the utterance; i.e. the best score from the end of the link to the dag
+ * exit node.
+ */
+void dag_compute_hscr(dag_t *dag, dict_t *dict, lm_t *lm);
+
+/**
  * Recursive backtrace through DAG (from final node to root) using daglink_t.history.
  * Restore bypassed links during backtrace.
  */
@@ -411,11 +418,7 @@ dag_t* dag_load (
 /**
  * Temporary functions for A* search (will be removed) 
  */
-
-dag_t *s3astar_dag_load(char *file, dict_t *dict, lm_t *lm, fillpen_t *fpen);
 void nbest_search(dag_t *dag, char *filename, char *uttid,
                   dict_t *dict, lm_t *lm, fillpen_t *fpen);
-void nbest_init(void);
-
 
 #endif

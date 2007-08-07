@@ -507,6 +507,71 @@ dag_destroy(dag_t * dagp)
 }
 
 /**
+ * For each link compute the heuristic score (hscr) from the END of the link to the
+ * end of the utterance; i.e. the best score from the end of the link to the dag
+ * exit node.
+ */
+void
+dag_compute_hscr(dag_t *dag, dict_t *dict, lm_t *lm)
+{
+    dagnode_t *d, *d1, *d2;
+    daglink_t *l1, *l2;
+    s3wid_t bw0, bw1, bw2;
+    int32 hscr, best_hscr;
+
+    for (d = dag->list; d; d = d->alloc_next) {
+        bw0 =
+            dict_filler_word(dict, d->wid)
+            ? BAD_S3WID
+            : dict_basewid(dict, d->wid);
+
+        /* For each link from d, compute heuristic score */
+        for (l1 = d->succlist; l1; l1 = l1->next) {
+            assert(l1->node->reachable);
+
+            d1 = l1->node;
+            if (d1 == dag->final.node)
+                l1->hscr = 0;
+            else {
+                bw1 =
+                    dict_filler_word(dict, d1->wid)
+                    ? BAD_S3WID
+                    : dict_basewid(dict, d1->wid);
+                if (NOT_S3WID(bw1)) {
+                    bw1 = bw0;
+                    bw0 = BAD_S3WID;
+                }
+
+                best_hscr = (int32) 0x80000000;
+                for (l2 = d1->succlist; l2; l2 = l2->next) {
+                    d2 = l2->node;
+                    if (dict_filler_word(dict, d2->wid))
+                        continue;
+
+                    bw2 = dict_basewid(dict, d2->wid);
+
+                    /* ARCHAN , bw2 is bypassed, so we can savely ignored it */
+                    hscr = l2->hscr
+                        + l2->ascr
+                        + lm_tg_score(lm,
+                                      (bw0 == BAD_S3WID)
+                                      ? BAD_LMWID(lm) : lm->dict2lmwid[bw0],
+                                      (bw1 == BAD_S3WID)
+                                      ? BAD_LMWID(lm) : lm->dict2lmwid[bw1],
+                                      lm->dict2lmwid[bw2], bw2);
+
+
+                    if (hscr > best_hscr)
+                        best_hscr = hscr;
+                }
+
+                l1->hscr = best_hscr;
+            }
+        }
+    }
+}
+
+/**
  * Recursive backtrace through DAG (from final node to root) using daglink_t.history.
  * Restore bypassed links during backtrace.
  */
