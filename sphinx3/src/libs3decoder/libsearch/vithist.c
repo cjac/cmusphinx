@@ -1976,7 +1976,7 @@ latticehist_dag_build(latticehist_t * vh, glist_t hyp, dict_t * dict,
     dag->maxlmop = cmd_ln_int32("-maxlmop");
     k = cmd_ln_int32("-maxlpf");
     k *= dag->nfrm;
-    if (dag->maxlmop > k)
+    if (k > 0 && dag->maxlmop > k)
         dag->maxlmop = k;
     dag->lmop = 0;
 
