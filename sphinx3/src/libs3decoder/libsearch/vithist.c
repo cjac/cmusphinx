@@ -1202,6 +1202,12 @@ vithist_dag_build(vithist_t * vh, glist_t hyp, dict_t * dict, int32 endid)
     assert(dn->wid == dict_startwid(dict));
     dn->seqid = 0;
     dag->root = dn;
+    dag->entry.node = dn;
+    dag->entry.ascr = 0;
+    dag->entry.next = NULL;
+    dag->entry.pscr_valid = 0;
+    dag->entry.bypass = NULL;
+
     dn = (dagnode_t *) gnode_ptr(sfwid[vh->n_frm]);
     assert(dn->wid == dict_finishwid(dict));
     dn->seqid = 0;
@@ -1212,6 +1218,17 @@ vithist_dag_build(vithist_t * vh, glist_t hyp, dict_t * dict, int32 endid)
         dag->end = dn;
     }
     dag->end->seqid = 0;
+    dag->final.node = dag->end;
+    dag->final.ascr = 0;
+    dag->final.next = NULL;
+    dag->final.pscr_valid = 0;
+    dag->final.bypass = NULL;
+    /* Find the exit score for the end node. */
+    for (gn = (glist_t)dag->end->hook; gn; gn = gnode_next(gn)) {
+        ve2 = (vithist_entry_t *) gnode_ptr(gn);
+        if (ve2->ef == vh->n_frm)
+            dag->final.ascr = ve2->ascr;
+    }
 
     /* Now prune dagnodes with <min_endfr end frames if not validated above */
     i = 0;
@@ -1241,7 +1258,7 @@ vithist_dag_build(vithist_t * vh, glist_t hyp, dict_t * dict, int32 endid)
                 for (gn3 = sfwid[sf]; gn3; gn3 = gnode_next(gn3)) {
                     dn2 = (dagnode_t *) gnode_ptr(gn3);
                     if (dn2->seqid >= 0)
-                        dag_link(dag, dn, dn2, ve->ascr, ve->lscr, sf, NULL);
+                        dag_link(dag, dn, dn2, ve->ascr, ve->lscr, sf - 1, NULL);
                 }
             }
         }
@@ -1832,10 +1849,27 @@ latticehist_dag_build(latticehist_t * vh, glist_t hyp, dict_t * dict,
     assert(dn->wid == dict_startwid(dict));
     dn->seqid = 0;
     dag->root = dn;
+    dag->entry.node = dn;
+    dag->entry.ascr = 0;
+    dag->entry.next = NULL;
+    dag->entry.pscr_valid = 0;
+    dag->entry.bypass = NULL;
+
     /* The end word is a real (silence) word in flat forward search so
      * it is not necessarily in the last frame (in fact it usually
      * isn't). */
     dag->end->seqid = 0;
+    dag->final.node = dag->end;
+    dag->final.ascr = 0;
+    dag->final.next = NULL;
+    dag->final.pscr_valid = 0;
+    dag->final.bypass = NULL;
+    /* Find the exit score for the end node. */
+    for (gn = (glist_t)dag->end->hook; gn; gn = gnode_next(gn)) {
+        ve2 = (lattice_t *) gnode_ptr(gn);
+        if (ve2->frm == vh->n_frm)
+            dag->final.ascr = ve2->ascr;
+    }
 
     /* Now prune dagnodes with <min_endfr end frames if not validated above */
     i = 0;
@@ -1878,7 +1912,7 @@ latticehist_dag_build(latticehist_t * vh, glist_t hyp, dict_t * dict,
                         lat_seg_ascr_lscr(vh, l, dn2->wid, &ve->ascr, &ve->lscr, lm,
                                           dict, ctxt, fpen);
                         if (ve->ascr > S3_LOGPROB_ZERO)
-                            dag_link(dag, dn, dn2, ve->ascr, ve->lscr, sf, NULL);
+                            dag_link(dag, dn, dn2, ve->ascr, ve->lscr, ve->frm, NULL);
                     }
                 }
             }
