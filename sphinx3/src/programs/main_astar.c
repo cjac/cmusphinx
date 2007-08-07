@@ -424,10 +424,6 @@ main(int32 argc, char *argv[])
     /* Read in input databases */
     models_init();
 
-    /* Initialize search module */
-    nbest_init();
-    printf("\n");
-
     ptmr_init(&tm_utt);
 
     nbestdir = cmd_ln_str("-nbestdir");

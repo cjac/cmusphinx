@@ -258,9 +258,9 @@ dag_compute_hscr(dag_t *dag, dict_t *dict, lm_t *lm)
 
     for (d = dag->list; d; d = d->alloc_next) {
         bw0 =
-            dict_filler_word(dict, d->wid) ? BAD_S3WID : dict_basewid(dict,
-                                                                      d->
-                                                                      wid);
+            dict_filler_word(dict, d->wid)
+            ? BAD_S3WID
+            : dict_basewid(dict, d->wid);
 
         /* For each link from d, compute heuristic score */
         for (l1 = d->succlist; l1; l1 = l1->next) {
@@ -271,11 +271,9 @@ dag_compute_hscr(dag_t *dag, dict_t *dict, lm_t *lm)
                 l1->hscr = 0;
             else {
                 bw1 =
-                    dict_filler_word(dict,
-                                     d1->
-                                     wid) ? BAD_S3WID : dict_basewid(dict,
-                                                                     d1->
-                                                                     wid);
+                    dict_filler_word(dict, d1->wid)
+                    ? BAD_S3WID
+                    : dict_basewid(dict, d1->wid);
                 if (NOT_S3WID(bw1)) {
                     bw1 = bw0;
                     bw0 = BAD_S3WID;
@@ -290,22 +288,14 @@ dag_compute_hscr(dag_t *dag, dict_t *dict, lm_t *lm)
                     bw2 = dict_basewid(dict, d2->wid);
 
                     /* ARCHAN , bw2 is bypassed, so we can savely ignored it */
-                    hscr = l2->hscr + l2->ascr + lm_tg_score(lm,
-                                                             (bw0 ==
-                                                              BAD_S3WID) ?
-                                                             BAD_LMWID(lm)
-                                                             : lm->
-                                                             dict2lmwid
-                                                             [bw0],
-                                                             (bw1 ==
-                                                              BAD_S3WID) ?
-                                                             BAD_LMWID(lm)
-                                                             : lm->
-                                                             dict2lmwid
-                                                             [bw1],
-                                                             lm->
-                                                             dict2lmwid
-                                                             [bw2], bw2);
+                    hscr = l2->hscr
+                        + l2->ascr
+                        + lm_tg_score(lm,
+                                      (bw0 == BAD_S3WID)
+                                      ? BAD_LMWID(lm) : lm->dict2lmwid[bw0],
+                                      (bw1 == BAD_S3WID)
+                                      ? BAD_LMWID(lm) : lm->dict2lmwid[bw1],
+                                      lm->dict2lmwid[bw2], bw2);
 
 
                     if (hscr > best_hscr)
@@ -414,9 +404,6 @@ typedef struct ppath_s {
     struct ppath_s *next;       /** Links all allocated nodes for reclamation at the end;
 				   NULL if last in list */
 } ppath_t;
-static ppath_t *ppath_list;     /** Complete list of allocated ppath nodes */
-static int32 n_ppath;           /** #Partial paths allocated (to control memory usage) */
-static int32 maxppath;          /** Max partial paths allowed before aborting */
 
 /** Heap (sorted) partial path nodes */
 typedef struct heap_s {
@@ -425,8 +412,17 @@ typedef struct heap_s {
     struct heap_s *left;        /** Root of left descendant heap */
     struct heap_s *right;       /** Root of right descendant heap */
 } aheap_t;
-static aheap_t *heap_root;
 
+/** Search structure (agenda) for A* search */
+typedef struct astar_s {
+    dict_t *dict;            /** Dictionary */
+    lm_t *lm;                /** Language Model */
+    fillpen_t *fpen;         /** Filler word probabilities */
+    ppath_t *ppath_list;     /** Complete list of allocated ppath nodes */
+    int32 n_ppath;           /** #Partial paths allocated (to control memory usage) */
+    int32 maxppath;          /** Max partial paths allowed before aborting */
+    aheap_t *heap_root;
+#define HISTHASH_MOD	200003  /* A prime */
 /**
  * For tracking ppath nodes with identical histories.  For rapid location of duplicates
  * keep a separate list of nodes for each (ppath_t.histhash % HISTHASH_MOD) value.
@@ -434,8 +430,8 @@ static aheap_t *heap_root;
  * 	1. Their tail nodes have the same dagnode (same <wid,sf> value), and
  * 	2. Their LM histories are identical.
  */
-#define HISTHASH_MOD	200003  /* A prime */
-static ppath_t **hash_list;     /* A separate list for each hashmod value (see above) */
+    ppath_t **hash_list;     /* A separate list for each hashmod value (see above) */
+} astar_t;
 
 
 /* It is reasonable to replace the implementation with heap_t */
@@ -526,7 +522,7 @@ aheap_pop(aheap_t * root)
  * an inferior path did exist, mark it as pruned.
  */
 static int32
-ppath_dup(ppath_t * hlist, ppath_t * lmhist, dict_t *dict,
+ppath_dup(astar_t *astar, ppath_t * hlist, ppath_t * lmhist,
           dagnode_t * node, uint32 hval, int32 pscr)
 {
     ppath_t *h1, *h2;
@@ -539,8 +535,8 @@ ppath_dup(ppath_t * hlist, ppath_t * lmhist, dict_t *dict,
         for (h1 = hlist->lmhist, h2 = lmhist; h1 && h2;
              h1 = h1->lmhist, h2 = h2->lmhist) {
             if ((h1 == h2) ||   /* Histories converged; identical */
-                (dict_basewid(dict, h1->dagnode->wid) !=
-                 dict_basewid(dict, h2->dagnode->wid)))
+                (dict_basewid(astar->dict, h1->dagnode->wid) !=
+                 dict_basewid(astar->dict, h2->dagnode->wid)))
                 break;
         }
 
@@ -570,8 +566,8 @@ ppath_dup(ppath_t * hlist, ppath_t * lmhist, dict_t *dict,
  * inferior score, in which case do not insert.
  */
 static void
-ppath_insert(ppath_t * top, dict_t *dict,
-             daglink_t * l, int32 pscr, int32 tscr, int32 lscr)
+ppath_insert(astar_t *astar, ppath_t * top, daglink_t * l,
+             int32 pscr, int32 tscr, int32 lscr)
 {
     ppath_t *pp, *lmhist;
     uint32 h, hmod;
@@ -584,15 +580,16 @@ ppath_insert(ppath_t * top, dict_t *dict,
      * Check if extended path would be a duplicate one with an inferior score.
      * First, find hash value for new node.
      */
-    lmhist = dict_filler_word(dict, top->dagnode->wid) ? top->lmhist : top;
+    lmhist = dict_filler_word(astar->dict, top->dagnode->wid)
+        ? top->lmhist : top;
     w = lmhist->dagnode->wid;
-    h = lmhist->histhash - w + dict_basewid(dict, w);
+    h = lmhist->histhash - w + dict_basewid(astar->dict, w);
     h = (h >> 5) | (h << 27);   /* Rotate right 5 bits */
     h += l->node->wid;
     hmod = h % HISTHASH_MOD;
 
     /* If new node would be an inferior duplicate, skip creating it */
-    if (ppath_dup(hash_list[hmod], lmhist, dict, l->node, h, pscr))
+    if (ppath_dup(astar, astar->hash_list[hmod], lmhist, l->node, h, pscr))
         return;
 
     /* Add heuristic score from END OF l until end of utterance */
@@ -608,30 +605,28 @@ ppath_insert(ppath_t * top, dict_t *dict,
     pp->pscr = pscr;
     pp->tscr = tscr;
     pp->histhash = h;
-    pp->hashnext = hash_list[hmod];
-    hash_list[hmod] = pp;
+    pp->hashnext = astar->hash_list[hmod];
+    astar->hash_list[hmod] = pp;
     pp->pruned = 0;
 
-    pp->next = ppath_list;
-    ppath_list = pp;
-
-    heap_root = aheap_insert(heap_root, pp);
-
-    n_ppath++;
+    pp->next = astar->ppath_list;
+    astar->ppath_list = pp;
+    astar->heap_root = aheap_insert(astar->heap_root, pp);
+    astar->n_ppath++;
 }
 
 
 static int32
-ppath_free(void)
+ppath_free(astar_t *astar)
 {
     ppath_t *pp;
     int32 n;
 
     n = 0;
-    while (ppath_list) {
-        pp = ppath_list->next;
-        ckd_free((char *) ppath_list);
-        ppath_list = pp;
+    while (astar->ppath_list) {
+        pp = astar->ppath_list->next;
+        ckd_free((char *) astar->ppath_list);
+        astar->ppath_list = pp;
         n++;
     }
 
@@ -697,6 +692,14 @@ nbest_search(dag_t *dag, char *filename, char *uttid, dict_t *dict, lm_t *lm, fi
     int32 ispipe;
     int32 ppathdebug;
     int32 beam;
+    astar_t astar;
+
+    astar.dict = dict;
+    astar.lm = lm;
+    astar.fpen = fpen;
+    astar.heap_root = NULL;
+    astar.ppath_list = NULL;
+    astar.hash_list = (ppath_t **) ckd_calloc(HISTHASH_MOD, sizeof(ppath_t *));
 
     /* Create Nbest file and write header comments */
     if ((fp = fopen_comp(filename, "w", &ispipe)) == NULL) {
@@ -717,16 +720,12 @@ nbest_search(dag_t *dag, char *filename, char *uttid, dict_t *dict, lm_t *lm, fi
 
     beam = logs3(f64arg);
 
-    assert(heap_root == NULL);
-    assert(ppath_list == NULL);
-
-
     /* Set limit on max #ppaths allocated before aborting utterance */
-    maxppath = cmd_ln_int32("-maxppath");
-    n_ppath = 0;
+    astar.maxppath = cmd_ln_int32("-maxppath");
+    astar.n_ppath = 0;
 
     for (i = 0; i < HISTHASH_MOD; i++)
-        hash_list[i] = NULL;
+        astar.hash_list[i] = NULL;
 
     /* Insert start node into heap and into list of nodes-by-frame */
     pp = (ppath_t *) ckd_calloc(1, sizeof(*pp));
@@ -742,13 +741,13 @@ nbest_search(dag_t *dag, char *filename, char *uttid, dict_t *dict, lm_t *lm, fi
     pp->pruned = 0;
 
     pp->next = NULL;
-    ppath_list = pp;
+    astar.ppath_list = pp;
 
     /* Insert into heap of partial paths to be expanded */
-    heap_root = aheap_insert(heap_root, pp);
+    astar.heap_root = aheap_insert(astar.heap_root, pp);
 
     /* Insert at head of (empty) list of ppaths with same hashmod value */
-    hash_list[pp->histhash % HISTHASH_MOD] = pp;
+    astar.hash_list[pp->histhash % HISTHASH_MOD] = pp;
 
     /* Astar-search */
     n_hyp = n_pop = n_exp = n_pp = 0;
@@ -756,10 +755,10 @@ nbest_search(dag_t *dag, char *filename, char *uttid, dict_t *dict, lm_t *lm, fi
     besthyp = besttscr = (int32) 0x80000000;
     worsthyp = (int32) 0x7fffffff;
 
-    while ((n_hyp < nbest_max) && heap_root) {
+    while ((n_hyp < nbest_max) && astar.heap_root) {
         /* Extract top node from heap */
-        top = heap_root->ppath;
-        heap_root = aheap_pop(heap_root);
+        top = astar.heap_root->ppath;
+        astar.heap_root = aheap_pop(astar.heap_root);
 
         n_pop++;
 
@@ -829,10 +828,10 @@ nbest_search(dag_t *dag, char *filename, char *uttid, dict_t *dict, lm_t *lm, fi
 
             /* Insert extended path if within beam of best so far */
             if (tscr - beam >= besttscr) {
-                ppath_insert(top, dict, l, pscr, tscr, lscr);
-                if (n_ppath > maxppath) {
+                ppath_insert(&astar, top, l, pscr, tscr, lscr);
+                if (astar.n_ppath > astar.maxppath) {
                     E_ERROR("%s: Max PPATH limit (%d) exceeded\n", uttid,
-                            maxppath);
+                            astar.maxppath);
                     break;
                 }
 
@@ -856,19 +855,12 @@ nbest_search(dag_t *dag, char *filename, char *uttid, dict_t *dict, lm_t *lm, fi
     }
 
     /* Free partial path nodes and any unprocessed heap */
-    while (heap_root)
-        heap_root = aheap_pop(heap_root);
+    while (astar.heap_root)
+        astar.heap_root = aheap_pop(astar.heap_root);
 
-    n_pp = ppath_free();
+    n_pp = ppath_free(&astar);
+    ckd_free(astar.heap_root);
 
     printf("CTR(%s): %5d frm %4d hyp %6d pop %6d exp %8d pp\n",
            uttid, dag->nfrm, n_hyp, n_pop, n_exp, n_pp);
-}
-
-void
-nbest_init(void)
-{
-    heap_root = NULL;
-    ppath_list = NULL;
-    hash_list = (ppath_t **) ckd_calloc(HISTHASH_MOD, sizeof(ppath_t *));
 }
