@@ -1056,14 +1056,14 @@ lextree_realloc_active_list(lextree_t * lt, int32 num_active)
                                             lextree_n_alloc_node(lt) *
                                             sizeof(lextree_node_t *));
         if (lt->active == NULL) {
-            E_INFO("help.");
+            E_INFO("help.\n");
         }
         lt->next_active =
             (lextree_node_t **) ckd_realloc(lt->next_active,
                                             lextree_n_alloc_node(lt) *
                                             sizeof(lextree_node_t *));
         if (lt->next_active == NULL) {
-            E_INFO("help.");
+            E_INFO("help.\n");
         }
 
         E_INFO("Reallocating more memory, now has node %d\n",

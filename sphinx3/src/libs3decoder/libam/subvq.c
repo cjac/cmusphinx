@@ -287,10 +287,9 @@ subvq_init(char *file, float64 varfloor, int32 max_sv, mgau_model_t * g)
     for (s = 0; s < vq->n_sv; s++) {
         E_INFO("SV %d feature dims(%d): ", s, vq->gautbl[s].veclen);
         for (c = 0; c < vq->gautbl[s].veclen; c++)
-            fprintf(stderr, " %2d", vq->featdim[s][c]);
-        fprintf(stderr, "\n");
+            E_INFOCONT(" %2d", vq->featdim[s][c]);
+        E_INFOCONT("\n");
     }
-    fflush(stderr);
 
     /* Read VQ codebooks and maps for each subvector */
     for (s = 0; s < n_sv; s++) {

@@ -601,7 +601,8 @@ kbcore_init(float64 logbase,
     }
     else if (fsgfile || fsgctlfile) {
         E_INFO
-            ("kbcore will not let the srch_fsg take care of initialization of the search. Hand it to srch_fsg.");
+            ("kbcore will not let the srch_fsg take care of "
+             "initialization of the search. Hand it to srch_fsg.\n");
     }
 
     if (fillpenfile || kb->dict) {

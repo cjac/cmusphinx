@@ -454,33 +454,29 @@ mgau_dump(mgau_model_t * g, int32 type)
     if (type == MGAU_MEAN) {
         for (d = 0; d < mgau_n_mgau(g); d++) {
             m = g->mgau[d];
-            sprintf(tmpstr, "Mean of %d\n", d);
-            E_INFO("%s", tmpstr);
+            E_INFO("Mean of %d\n", d);
 
             for (c = 0; c < mgau_n_comp(g, d); c++) {
                 sprintf(tmpstr, "Component %d", c);
                 for (i = 0; i < mgau_veclen(g); i++) {
                     sprintf(tmpstr, "%s %f", tmpstr, m.mean[c][i]);
                 }
-                sprintf(tmpstr, "%s\n", tmpstr);
-                E_INFO("%s", tmpstr);
+                E_INFO("%s\n", tmpstr);
             }
         }
     }
     if (type == MGAU_VAR) {
         for (d = 0; d < mgau_n_mgau(g); d++) {
             m = g->mgau[d];
-            sprintf(tmpstr, "Variance of %d", d);
-            E_INFO("%s", tmpstr);
+            E_INFO("Variance of %d\n", d);
 
             for (c = 0; c < mgau_n_comp(g, d); c++) {
                 sprintf(tmpstr, "Component %d\n", c);
                 for (i = 0; i < mgau_veclen(g); i++) {
                     sprintf(tmpstr, "%s %f", tmpstr, m.var[c][i]);
                 }
-                sprintf(tmpstr, "%s\n", tmpstr);
+                E_INFO("%s\n", tmpstr);
             }
-            E_INFO("%s", tmpstr);
         }
     }
 

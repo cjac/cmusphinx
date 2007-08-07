@@ -398,10 +398,9 @@ histprune_showhistbin(histprune_t * hp, int32 nfr, char *uttid)
     E_INFO("HMMHist[0..%d](%s):", j, uttid);
     for (i = 0, k = 0; i <= j; i++) {
         k += hp->hmm_hist[i];
-        fprintf(stderr, " %d(%d)", hp->hmm_hist[i], (k * 100) / nfr);
+        E_INFOCONT(" %d(%d)", hp->hmm_hist[i], (k * 100) / nfr);
     }
-    fprintf(stderr, "\n");
-    fflush(stderr);
+    E_INFOCONT("\n");
 }
 
 
