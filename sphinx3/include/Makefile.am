@@ -40,6 +40,7 @@ pkginclude_HEADERS =				\
 	logs3.h					\
 	lts.h					\
 	mdef.h					\
+	misc.h					\
 	mllr.h					\
 	ms_gauden.h				\
 	ms_mgau.h				\
