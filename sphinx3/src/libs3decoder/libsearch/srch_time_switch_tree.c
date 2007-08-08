@@ -139,6 +139,7 @@
  */
 
 #include "srch.h"
+#include "astar.h"
 #include "dict.h"
 #include "cmd_ln.h"
 #include "corpus.h"
@@ -1294,7 +1295,6 @@ srch_TST_bestpath_impl(void *srch,          /**< A void pointer to a search stru
             E_ERROR("maxedge limit (%d) exceeded\n", dag->maxedge);
         else
             dag->filler_removed = 1;
-        dag_link(dag, NULL, dag->root, 0, 0, -1, NULL);
     }
 
     /* FIXME: This is some bogus crap to do with the different

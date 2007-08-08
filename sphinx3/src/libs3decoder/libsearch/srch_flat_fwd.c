@@ -78,6 +78,7 @@
 
 #include "srch_flat_fwd.h"
 #include "srch.h"
+#include "astar.h"
 #include "whmm.h"
 #include "corpus.h"
 
@@ -701,9 +702,6 @@ srch_FLAT_FWD_bestpath_impl(void *srch,           /**< A void pointer to a searc
             E_ERROR("maxedge limit (%d) exceeded\n", dag->maxedge);
         else
             dag->filler_removed = 1;
-
-        /* For some reason these bogus links are necessary */
-        dag_link(dag, NULL, dag->root, 0, 0, -1, NULL);
     }
 
     bph =

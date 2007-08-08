@@ -796,6 +796,12 @@ dag_search(dag_t * dagp, char *utt, float64 lwf, dagnode_t * final,
     int32 bestscore;
     srch_hyp_t *hyp;
 
+    /* Add a "stop" link to the entry node if none exists. */
+    assert(dagp);
+    assert(dagp->root);
+    if (dagp->root->predlist == NULL)
+        dag_link(dagp, NULL, dagp->root, 0, 0, -1, NULL);
+
     /* Find the backward link from the final DAG node that has the best path to root */
     bestscore = (int32) 0x80000000;
     bestl = NULL;
@@ -811,7 +817,6 @@ dag_search(dag_t * dagp, char *utt, float64 lwf, dagnode_t * final,
     assert(dict);
     assert(lm);
     assert(fpen);
-    assert(dagp);
 
     for (l = final->predlist; l; l = l->next) {
         d = l->node;

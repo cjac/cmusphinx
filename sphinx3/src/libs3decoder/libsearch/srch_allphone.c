@@ -44,6 +44,7 @@
  */
 
 #include "srch.h"
+#include "astar.h"
 #include "srch_allphone.h"
 #include "hmm.h"
 #include "s3types.h"
@@ -1193,8 +1194,6 @@ srch_allphone_bestpath_impl(void *srch,          /**< A void pointer to a search
     if (kbcore_lm(s->kbc) == NULL)
 	E_FATAL("Bestpath search requires a language model\n");
 
-    /* For some reason these bogus links are necessary */
-    dag_link(dag, NULL, dag->root, 0, 0, -1, NULL);
     bph = dag_search(dag, s->uttid,
                      lwf,
                      dag->end,
