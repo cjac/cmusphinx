@@ -296,12 +296,12 @@ static void
 models_init(void)
 {
     /* HMM model definition */
-    mdef = mdef_init((char *) cmd_ln_access("-mdef"), 1);
+    mdef = mdef_init(cmd_ln_str("-mdef"), 1);
 
     /* Dictionary */
     dict = dict_init(mdef,
-                     (char *) cmd_ln_access("-dict"),
-                     (char *) cmd_ln_access("-fdict"),
+                     cmd_ln_str("-dict"),
+                     cmd_ln_str("-fdict"),
                      0, cmd_ln_int32("-lts_mismatch"), 1);
 
     /* LM Set */
@@ -315,11 +315,11 @@ models_init(void)
                        cmd_ln_float32("-uw"), dict);
 
     /* Filler penalties */
-    fpen = fillpen_init(dict, (char *) cmd_ln_access("-fillpen"),
-                        *(float32 *) cmd_ln_access("-silprob"),
-                        *(float32 *) cmd_ln_access("-fillprob"),
-                        *(float32 *) cmd_ln_access("-lw"),
-                        *(float32 *) cmd_ln_access("-wip"));
+    fpen = fillpen_init(dict, cmd_ln_str("-fillpen"),
+                        cmd_ln_float32("-silprob"),
+                        cmd_ln_float32("-fillprob"),
+                        cmd_ln_float32("-lw"),
+                        cmd_ln_float32("-wip"));
 
 }
 

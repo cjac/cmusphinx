@@ -81,7 +81,7 @@ model_set_mllr(ms_mgau_model_t * msg, const char *mllrfile,
     int32 gid, sid, nclass;
     uint8 *mgau_xform;
 
-    gauden_mean_reload(msg->g, (char *) cmd_ln_access("-mean"));
+    gauden_mean_reload(msg->g, cmd_ln_str("-mean"));
 
     if (ms_mllr_read_regmat(mllrfile, &A, &B,
                             fcb->stream_len, feat_n_stream(fcb),

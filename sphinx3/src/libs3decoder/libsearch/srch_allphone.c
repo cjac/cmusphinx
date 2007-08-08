@@ -816,7 +816,7 @@ srch_allphone_end(void *srch)
 
     /* Log phoneme segmentation */
     if (cmd_ln_exists("-phsegdir"))
-	write_phseg(s, (char *) cmd_ln_access("-phsegdir"), s->uttid, allp->phseg);
+	write_phseg(s, cmd_ln_str("-phsegdir"), s->uttid, allp->phseg);
 
     /* Reset language model stuff */
     if (kbcore_lm(s->kbc)) {
@@ -1183,13 +1183,13 @@ srch_allphone_bestpath_impl(void *srch,          /**< A void pointer to a search
 			    dag_t * dag)
 {
     glist_t ghyp, rhyp;
-    float32 *f32arg;
+    float32 bestpathlw;
     float64 lwf;
     srch_hyp_t *tmph, *bph;
     srch_t *s = (srch_t *) srch;
 
-    f32arg = (float32 *) cmd_ln_access("-bestpathlw");
-    lwf = f32arg ? ((*f32arg) / *((float32 *) cmd_ln_access("-lw"))) : 1.0;
+    bestpathlw = cmd_ln_float32("-bestpathlw");
+    lwf = bestpathlw ? (bestpathlw / cmd_ln_float32("-lw")) : 1.0;
 
     if (kbcore_lm(s->kbc) == NULL)
 	E_FATAL("Bestpath search requires a language model\n");
@@ -1218,7 +1218,7 @@ glist_t
 srch_allphone_nbest_impl(void *srch,          /**< A void pointer to a search structure */
 			 dag_t * dag)
 {
-    float32 *f32arg;
+    float32 bestpathlw;
     float64 lwf;
     srch_t *s = (srch_t *) srch;
     char str[2000];
@@ -1228,8 +1228,8 @@ srch_allphone_nbest_impl(void *srch,          /**< A void pointer to a search st
     ctl_outfile(str, cmd_ln_str("-nbestdir"), cmd_ln_str("-nbestext"),
                 (s->uttfile ? s->uttfile : s->uttid), s->uttid);
 
-    f32arg = (float32 *) cmd_ln_access("-bestpathlw");
-    lwf = f32arg ? ((*f32arg) / *((float32 *) cmd_ln_access("-lw"))) : 1.0;
+    bestpathlw = cmd_ln_float32("-bestpathlw");
+    lwf = bestpathlw ? (bestpathlw / cmd_ln_float32("-lw")) : 1.0;
 
     if (kbcore_lm(s->kbc) == NULL)
 	E_FATAL("N-best search requires a language model\n");

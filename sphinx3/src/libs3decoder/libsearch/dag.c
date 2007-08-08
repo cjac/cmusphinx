@@ -1062,7 +1062,7 @@ dag_load(char *file,          /**< Input: File to lod from */
         goto load_error;
     }
 
-    f32arg = *((float32 *) cmd_ln_access("-logbase"));
+    f32arg = cmd_ln_float32("-logbase");
     if ((strncmp(line, "# -logbase ", 11) != 0)
         || (sscanf(line + 11, "%f", &lb) != 1)) {
         E_WARN("%s: Cannot find -logbase in header\n", file);
@@ -1090,7 +1090,7 @@ dag_load(char *file,          /**< Input: File to lod from */
 
 
     /* Min. endframes value that a node must persist for it to be not ignored */
-    min_ef_range = *((int32 *) cmd_ln_access("-min_endfr"));
+    min_ef_range = cmd_ln_int32("-min_endfr");
 
     /* Read Frames parameter */
     dag->nfrm = dag_param_read(fp, "Frames", &lineno);

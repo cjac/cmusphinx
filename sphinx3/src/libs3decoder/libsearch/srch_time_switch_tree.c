@@ -1281,13 +1281,13 @@ srch_TST_bestpath_impl(void *srch,          /**< A void pointer to a search stru
                        dag_t * dag)
 {
     glist_t ghyp, rhyp;
-    float32 *f32arg;
+    float32 bestpathlw;
     float64 lwf;
     srch_hyp_t *tmph, *bph;
     srch_t *s = (srch_t *) srch;
 
-    f32arg = (float32 *) cmd_ln_access("-bestpathlw");
-    lwf = f32arg ? ((*f32arg) / *((float32 *) cmd_ln_access("-lw"))) : 1.0;
+    bestpathlw = cmd_ln_float32("-bestpathlw");
+    lwf = bestpathlw ? (bestpathlw / cmd_ln_float32("-lw")) : 1.0;
 
     /* Bypass filler nodes */
     if (!dag->filler_removed) {
@@ -1350,7 +1350,7 @@ glist_t
 srch_TST_nbest_impl(void *srch,          /**< A void pointer to a search structure */
                     dag_t * dag)
 {
-    float32 *f32arg;
+    float32 bestpathlw;
     float64 lwf;
     srch_t *s = (srch_t *) srch;
     char str[2000];
@@ -1360,8 +1360,8 @@ srch_TST_nbest_impl(void *srch,          /**< A void pointer to a search structu
     ctl_outfile(str, cmd_ln_str("-nbestdir"), cmd_ln_str("-nbestext"),
                 (s->uttfile ? s->uttfile : s->uttid), s->uttid);
 
-    f32arg = (float32 *) cmd_ln_access("-bestpathlw");
-    lwf = f32arg ? ((*f32arg) / *((float32 *) cmd_ln_access("-lw"))) : 1.0;
+    bestpathlw = cmd_ln_float32("-bestpathlw");
+    lwf = bestpathlw ? (bestpathlw / cmd_ln_float32("-lw")) : 1.0;
 
     /* FIXME: This is some bogus crap to do with the different
      * treatment of <s> and </s> in the flat vs. the tree decoder.  If

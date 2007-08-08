@@ -216,7 +216,7 @@ main(int argc, char **argv)
         return -1;
     }
 
-    if (cmd_ln_parse_file(S3_DECODE_ARG_DEFS, argv[1])) {
+    if (cmd_ln_parse_file(S3_DECODE_ARG_DEFS, argv[1], TRUE)) {
         printf("Bad arguments file (%s).\n", argv[1]);
         return -1;
     }

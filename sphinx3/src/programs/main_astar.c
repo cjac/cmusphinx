@@ -299,12 +299,12 @@ static void
 models_init(void)
 {
     /* HMM model definition */
-    mdef = mdef_init((char *) cmd_ln_access("-mdef"), 1);
+    mdef = mdef_init(cmd_ln_str("-mdef"), 1);
 
     /* Dictionary */
     dict = dict_init(mdef,
-                     (char *) cmd_ln_access("-dict"),
-                     (char *) cmd_ln_access("-fdict"),
+                     cmd_ln_str("-dict"),
+                     cmd_ln_str("-fdict"),
                      0, cmd_ln_int32("-lts_mismatch"), 1);
 
     lmset = lmset_init(cmd_ln_str("-lm"),

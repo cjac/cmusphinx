@@ -174,7 +174,7 @@ main(int _argc, char **_argv)
     rawdirfn = _argv[2];
     cfgfn = _argv[3];
 
-    if (cmd_ln_parse_file(S3_DECODE_ARG_DEFS, cfgfn))
+    if (cmd_ln_parse_file(S3_DECODE_ARG_DEFS, cfgfn, TRUE))
         E_FATAL("Bad configuration file %s.\n", cfgfn);
 
     fe = fe_init_auto(); 

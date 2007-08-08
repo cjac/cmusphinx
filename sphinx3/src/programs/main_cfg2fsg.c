@@ -36,7 +36,7 @@ main(int _argc, char **_argv)
   int n_trans = 0;
 
   print_appl_info(_argv[0]);
-  cmd_ln_parse(defn, _argc, _argv);
+  cmd_ln_parse(defn, _argc, _argv, TRUE);
 
   cfg_file = cmd_ln_str("-cfg");
   fsg_file = cmd_ln_str("-fsg");

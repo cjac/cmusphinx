@@ -352,8 +352,8 @@ models_init(void)
                cmd_ln_int32("-log3table"));
 
     /* Initialize feaure stream type */
-    fcb = feat_init((char *) cmd_ln_access("-feat"),
-                    cmn_type_from_str(cmd_ln_access("-cmn")),
+    fcb = feat_init(cmd_ln_str("-feat"),
+                    cmn_type_from_str(cmd_ln_str("-cmn")),
                     cmd_ln_boolean("-varnorm"),
 		    agc_type_from_str(cmd_ln_str("-agc")), 1,
 		    cmd_ln_int32("-ceplen"));
@@ -367,7 +367,10 @@ models_init(void)
     assert(kbc->tmat);
 
     /* Dictionary */
-    dict = dict_init(kbc->mdef, (char *) cmd_ln_access("-dict"), (char *) cmd_ln_access("-fdict"), '_', cmd_ln_int32("-lts_mismatch"), 1);      /* Compound word separator.  Default: none. */
+    dict = dict_init(kbc->mdef, cmd_ln_str("-dict"),
+		     cmd_ln_str("-fdict"), 
+		     '_',      /* Compound word separator.  Default: none. */
+		     cmd_ln_int32("-lts_mismatch"), 1);
 
 
 
@@ -1058,12 +1061,12 @@ main(int32 argc, char *argv[])
             E_FATAL("fopen(%s,r) failed\n", outsentfile);
     }
 
-    if ((cmd_ln_access("-s2stsegdir") == NULL) &&
-        (cmd_ln_access("-stsegdir") == NULL) &&
-        (cmd_ln_access("-phlabdir") == NULL) &&
-        (cmd_ln_access("-phsegdir") == NULL) &&
-        (cmd_ln_access("-wdsegdir") == NULL) &&
-        (cmd_ln_access("-outsent") == NULL))
+    if ((cmd_ln_str("-s2stsegdir") == NULL) &&
+        (cmd_ln_str("-stsegdir") == NULL) &&
+        (cmd_ln_str("-phlabdir") == NULL) &&
+        (cmd_ln_str("-phsegdir") == NULL) &&
+        (cmd_ln_str("-wdsegdir") == NULL) &&
+        (cmd_ln_str("-outsent") == NULL))
         E_FATAL("Missing output file/directory argument(s)\n");
 
     /* Read in input databases */
@@ -1083,7 +1086,7 @@ main(int32 argc, char *argv[])
     align_init(kbc->mdef, kbc->tmat, dict);
     printf("\n");
 
-    if (cmd_ln_access("-mllr") != NULL) {
+    if (cmd_ln_str("-mllr") != NULL) {
         if (kbc->mgau)
             adapt_set_mllr(adapt_am, kbc->mgau, cmd_ln_str("-mllr"), NULL,
                            kbc->mdef);

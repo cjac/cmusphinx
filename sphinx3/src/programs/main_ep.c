@@ -135,10 +135,10 @@ main(int _argc, char **_argv)
         cfg_fn = _argv[1];
         mfcc_fn = _argv[2];
 
-        cmd_ln_parse_file(defn, cfg_fn);
+        cmd_ln_parse_file(defn, cfg_fn, TRUE);
     }
     else {
-        cmd_ln_parse(defn, _argc, _argv);
+        cmd_ln_parse(defn, _argc, _argv, TRUE);
         mfcc_fn = cmd_ln_str("-input");
     }
 

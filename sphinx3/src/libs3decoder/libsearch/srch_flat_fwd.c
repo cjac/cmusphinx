@@ -103,7 +103,7 @@ init_fwd_dbg(srch_FLAT_FWD_graph_t * fwg)
 
     assert(fd);
     /* Word to be traced in detail */
-    if ((tmpstr = (char *) cmd_ln_access("-tracewhmm")) != NULL) {
+    if ((tmpstr = cmd_ln_str("-tracewhmm")) != NULL) {
         fd->trace_wid = dict_wordid(fwg->kbcore->dict, tmpstr);
         if (NOT_S3WID(fd->trace_wid))
             E_ERROR("%s not in dictionary; cannot be traced\n", tmpstr);
@@ -217,9 +217,9 @@ srch_FLAT_FWD_init(kb_t * kb,    /**< The KB */
     fwg->word_ugprob = init_word_ugprob(mdef, lm, dict);
 
     /* Input candidate-word lattices information to restrict search; if any */
-    fwg->word_cand_dir = (char *) cmd_ln_access("-inlatdir");
-    fwg->latfile_ext = (char *) cmd_ln_access("-latext");
-    fwg->word_cand_win = *((int32 *) cmd_ln_access("-inlatwin"));
+    fwg->word_cand_dir = cmd_ln_str("-inlatdir");
+    fwg->latfile_ext = cmd_ln_str("-latext");
+    fwg->word_cand_win = cmd_ln_int32("-inlatwin");
     if (fwg->word_cand_win < 0) {
         E_ERROR("Invalid -inlatwin argument: %d; set to 50\n",
                 fwg->word_cand_win);
@@ -672,7 +672,7 @@ srch_FLAT_FWD_bestpath_impl(void *srch,           /**< A void pointer to a searc
     srch_t *s;
     srch_FLAT_FWD_graph_t *fwg;
 
-    float32 *f32arg;
+    float32 bestpathlw;
     float64 lwf;
     srch_hyp_t *tmph, *bph;
     glist_t ghyp, rhyp;
@@ -682,8 +682,8 @@ srch_FLAT_FWD_bestpath_impl(void *srch,           /**< A void pointer to a searc
 
     assert(fwg->lathist);
 
-    f32arg = (float32 *) cmd_ln_access("-bestpathlw");
-    lwf = f32arg ? ((*f32arg) / *((float32 *) cmd_ln_access("-lw"))) : 1.0;
+    bestpathlw = cmd_ln_float32("-bestpathlw");
+    lwf = bestpathlw ? (bestpathlw / cmd_ln_float32("-lw")) : 1.0;
 
     flat_fwd_dag_add_fudge_edges(fwg,
 				 dag,
@@ -751,7 +751,7 @@ srch_FLAT_FWD_nbest_impl(void *srch,           /**< A void pointer to a search s
 {
     srch_t *s;
     srch_FLAT_FWD_graph_t *fwg;
-    float32 *f32arg;
+    float32 bestpathlw;
     float64 lwf;
     char str[2000];
 
@@ -764,8 +764,8 @@ srch_FLAT_FWD_nbest_impl(void *srch,           /**< A void pointer to a search s
     ctl_outfile(str, cmd_ln_str("-nbestdir"), cmd_ln_str("-nbestext"),
                 (s->uttfile ? s->uttfile : s->uttid), s->uttid);
 
-    f32arg = (float32 *) cmd_ln_access("-bestpathlw");
-    lwf = f32arg ? ((*f32arg) / *((float32 *) cmd_ln_access("-lw"))) : 1.0;
+    bestpathlw = cmd_ln_float32("-bestpathlw");
+    lwf = bestpathlw ? (bestpathlw / cmd_ln_float32("-lw")) : 1.0;
 
     flat_fwd_dag_add_fudge_edges(fwg,
 				 dag,
