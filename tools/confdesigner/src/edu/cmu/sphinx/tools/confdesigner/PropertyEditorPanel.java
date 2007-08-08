@@ -1,10 +1,7 @@
 package edu.cmu.sphinx.tools.confdesigner;
 
 import com.l2fprod.common.propertysheet.DefaultProperty;
-import edu.cmu.sphinx.tools.confdesigner.propedit.CompDoubleProperty;
-import edu.cmu.sphinx.tools.confdesigner.propedit.CompStringProperty;
-import edu.cmu.sphinx.tools.confdesigner.propedit.SimplePropEditor;
-import edu.cmu.sphinx.tools.confdesigner.propedit.TableProperty;
+import edu.cmu.sphinx.tools.confdesigner.propedit.*;
 import edu.cmu.sphinx.util.props.*;
 
 import javax.swing.*;
@@ -93,7 +90,8 @@ public class PropertyEditorPanel extends JPanel implements TableModelListener {
 
                     case COMP:
                         S4Component s4Component = ((S4Component) currentPS.getProperty(propName, S4Component.class).getAnnotation());
-//
+//                        p = new TableCompProperty(currentPS, propName, s4Component);
+
 //                        p = new DefaultProperty();
 //                        p.setDisplayName(propName);
 //                        type = new DefaultProperty();
@@ -120,6 +118,9 @@ public class PropertyEditorPanel extends JPanel implements TableModelListener {
                         break;
                     case BOOL:
                         S4Boolean s4bool = ((S4Boolean) currentPS.getProperty(propName, S4Boolean.class).getAnnotation());
+
+                        p = new TableBoolProperty(currentPS, propName, s4bool);
+
 //                        p = new DefaultProperty();
 //                        p.setDisplayName(propName);
 //                        // todo support that
@@ -134,7 +135,7 @@ public class PropertyEditorPanel extends JPanel implements TableModelListener {
                     case DOUBLE:
                         S4Double s4Double = ((S4Double) currentPS.getProperty(propName, S4Double.class).getAnnotation());
 
-                        p = new CompDoubleProperty(currentPS, propName, s4Double);
+                        p = new TableDoubleProperty(currentPS, propName, s4Double);
                         break;
                     case INT:
                         S4Integer s4Integer = ((S4Integer) wrapper);
@@ -151,7 +152,7 @@ public class PropertyEditorPanel extends JPanel implements TableModelListener {
                         break;
                     case STRING:
                         S4String s4string = ((S4String) currentPS.getProperty(propName, S4String.class).getAnnotation());
-                        p = new CompStringProperty(currentPS, propName, s4string);
+                        p = new TableStringProperty(currentPS, propName, s4string);
 
 //                        p = new DefaultProperty();
 //                        p.setDisplayName(propName);
@@ -164,7 +165,8 @@ public class PropertyEditorPanel extends JPanel implements TableModelListener {
 
                 //todo uncomment me
 //                p.addPropertyChangeListener(pChangeListener);
-                propEditor.addProperty(p);
+                if (p != null)
+                    propEditor.addProperty(p);
             }
         } catch (PropertyException e) {
             e.printStackTrace();
