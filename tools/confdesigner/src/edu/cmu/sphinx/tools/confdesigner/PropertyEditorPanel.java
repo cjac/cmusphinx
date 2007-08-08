@@ -1,27 +1,30 @@
 package edu.cmu.sphinx.tools.confdesigner;
 
 import com.l2fprod.common.propertysheet.DefaultProperty;
-import edu.cmu.sphinx.tools.confdesigner.propedit.*;
+import com.l2fprod.common.propertysheet.Property;
+import com.l2fprod.common.propertysheet.PropertySheetPanel;
 import edu.cmu.sphinx.util.props.*;
+import org.netbeans.api.visual.model.ObjectSceneEvent;
+import org.netbeans.api.visual.model.ObjectSceneListener;
+import org.netbeans.api.visual.model.ObjectState;
 
 import javax.swing.*;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.TableModel;
-import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Proxy;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * A self-rebuilding gui which allows to edit simple property-types (int, double, booelean, String).
  *
  * @author Holger Brandl
  */
-public class PropertyEditorPanel extends JPanel implements TableModelListener {
+public class PropertyEditorPanel extends PropertySheetPanel implements ObjectSceneListener {
 
     ConfigurationManager cm;
     PropertySheet currentPS;
@@ -29,46 +32,26 @@ public class PropertyEditorPanel extends JPanel implements TableModelListener {
 
     boolean isShowingGlobalProps = true;
 
-    private SimplePropEditor propEditor;
-
 
     public PropertyEditorPanel() {
+        addKeyListener(new KeyAdapter() {
 
-        propEditor = new SimplePropEditor();
-        propEditor.getTable().getModel().addTableModelListener(this);
-
-        setLayout(new BorderLayout());
-        add(propEditor);
-//        addKeyListener(new KeyAdapter() {
-//
-//            public void keyPressed(KeyEvent e) {
-//                if (e.getKeyCode() == KeyEvent.VK_DELETE) {
-//                    int delRow = getTable().getSelectedRow();
-//                    getTable().removeRowSelectionInterval(delRow, delRow + 1);
-//                }
-//            }
-//        });
-    }
-
-
-    public void tableChanged(TableModelEvent e) {
-        int row = e.getFirstRow();
-        int column = e.getColumn();
-        TableModel model = (TableModel) e.getSource();
-        String columnName = model.getColumnName(column);
-//        Object data = model.getValueAt(row, column);
-
-        System.out.println("table model changed");
-
-        // Do something with the data...
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_DELETE) {
+                    int delRow = getTable().getSelectedRow();
+                    getTable().removeRowSelectionInterval(delRow, delRow + 1);
+                }
+            }
+        });
     }
 
 
     // todo add the appropriate javadoc of the underlying s4property as tooltip to all generated prop-fields
     public void rebuildPanel(PropertySheet ps) {
-
-        propEditor.clear();
         currentPS = ps;
+
+        for (Property p : getProperties())
+            removeProperty(p);
 
         // show the default properties if nothing is selected
         if (ps == null) {
@@ -79,7 +62,7 @@ public class PropertyEditorPanel extends JPanel implements TableModelListener {
         isShowingGlobalProps = false;
         PropertyChangeListener pChangeListener = createPropSheetListener();
 
-        TableProperty p = null, type;
+        DefaultProperty p = null, type;
         try {
 
             for (String propName : ps.getRegisteredProperties()) {
@@ -90,83 +73,82 @@ public class PropertyEditorPanel extends JPanel implements TableModelListener {
 
                     case COMP:
                         S4Component s4Component = ((S4Component) currentPS.getProperty(propName, S4Component.class).getAnnotation());
-//                        p = new TableCompProperty(currentPS, propName, s4Component);
 
-//                        p = new DefaultProperty();
-//                        p.setDisplayName(propName);
-//                        type = new DefaultProperty();
-//                        type.setDisplayName("type");
-//                        type.setValue(s4Component.type().getName());
-//                        p.addSubProperty(type);
-//
-//                        if (!s4Component.defaultClass().equals(Configurable.class)) {
-//                            DefaultProperty defClassProperty = new DefaultProperty();
-//                            defClassProperty.setDisplayName("default type");
-//                            defClassProperty.setValue(s4Component.defaultClass().getName());
-//                            p.addSubProperty(defClassProperty);
-//                        }
+                        p = new DefaultProperty();
+                        p.setDisplayName(propName);
+                        type = new DefaultProperty();
+                        type.setDisplayName("type");
+                        type.setValue(s4Component.type().getName());
+                        p.addSubProperty(type);
+
+                        if (!s4Component.defaultClass().equals(Configurable.class)) {
+                            DefaultProperty defClassProperty = new DefaultProperty();
+                            defClassProperty.setDisplayName("default type");
+                            defClassProperty.setValue(s4Component.defaultClass().getName());
+                            p.addSubProperty(defClassProperty);
+                        }
                         break;
                     case COMPLIST:
                         S4ComponentList s4CompList = ((S4ComponentList) currentPS.getProperty(propName, S4ComponentList.class).getAnnotation());
-//
-//                        p = new DefaultProperty();
-//                        p.setDisplayName(propName);
-//                        type = new DefaultProperty();
-//                        type.setDisplayName("type");
-//                        type.setValue(s4CompList.type().getName());
-//                        p.addSubProperty(type);
+
+                        p = new DefaultProperty();
+                        p.setDisplayName(propName);
+                        type = new DefaultProperty();
+                        type.setDisplayName("type");
+                        type.setValue(s4CompList.type().getName());
+                        p.addSubProperty(type);
                         break;
                     case BOOL:
                         S4Boolean s4bool = ((S4Boolean) currentPS.getProperty(propName, S4Boolean.class).getAnnotation());
+                        p = new DefaultProperty();
+                        p.setDisplayName(propName);
+                        // todo support that
+//                    if (s4bool.isNotDefined())
+//                        System.err.println("non-defaulting booleans are not supported");
 
-                        p = new TableBoolProperty(currentPS, propName, s4bool);
-
-//                        p = new DefaultProperty();
-//                        p.setDisplayName(propName);
-//                        // todo support that
-////                    if (s4bool.isNotDefined())
-////                        System.err.println("non-defaulting booleans are not supported");
-//
-//                        p.setType(Boolean.class);
-//                        if (currentPS.getRaw(propName) != null)
-//                            p.setValue(currentPS.getBoolean(propName));
-//                        p.setEditable(true);
+                        p.setType(Boolean.class);
+                        if (currentPS.getRaw(propName) != null)
+                            p.setValue(currentPS.getBoolean(propName));
+                        p.setEditable(true);
                         break;
                     case DOUBLE:
-                        S4Double s4Double = ((S4Double) currentPS.getProperty(propName, S4Double.class).getAnnotation());
+                        S4Double s4Double = ((S4Double) wrapper);
 
-                        p = new TableDoubleProperty(currentPS, propName, s4Double);
+                        p = new DefaultProperty();
+                        p.setDisplayName(propName);
+
+                        p.setType(Double.class);
+                        if (currentPS.getRaw(propName) != null)
+                            p.setValue(currentPS.getDouble(propName));
+                        p.setEditable(true);
                         break;
                     case INT:
                         S4Integer s4Integer = ((S4Integer) wrapper);
 
-//                        p = new DefaultProperty();
-//                        p.setDisplayName(propName);
-//
-//                        p.setType(Integer.class);
-//                        if (currentPS.getRaw(propName) != null)
-//                            p.setValue(currentPS.getInt(propName));
-//                        p.setEditable(true);
-//
-//                        // todo check whether the property is in range
+                        p = new DefaultProperty();
+                        p.setDisplayName(propName);
+
+                        p.setType(Integer.class);
+                        if (currentPS.getRaw(propName) != null)
+                            p.setValue(currentPS.getInt(propName));
+                        p.setEditable(true);
+
+                        // todo check whether the property is in range
                         break;
                     case STRING:
-                        S4String s4string = ((S4String) currentPS.getProperty(propName, S4String.class).getAnnotation());
-                        p = new TableStringProperty(currentPS, propName, s4string);
+                        S4String s4string = ((S4String) wrapper);
 
-//                        p = new DefaultProperty();
-//                        p.setDisplayName(propName);
-//
-//                        p.setType(String.class);
-//                        if (currentPS.getRaw(propName) != null)
-//                            p.setValue(currentPS.getString(propName));
-//                        p.setEditable(true);
+                        p = new DefaultProperty();
+                        p.setDisplayName(propName);
+
+                        p.setType(String.class);
+                        if (currentPS.getRaw(propName) != null)
+                            p.setValue(currentPS.getString(propName));
+                        p.setEditable(true);
                 }
 
-                //todo uncomment me
-//                p.addPropertyChangeListener(pChangeListener);
-                if (p != null)
-                    propEditor.addProperty(p);
+                p.addPropertyChangeListener(pChangeListener);
+                addProperty(p);
             }
         } catch (PropertyException e) {
             e.printStackTrace();
@@ -259,7 +241,7 @@ public class PropertyEditorPanel extends JPanel implements TableModelListener {
                     newProp.setType(String.class);
                     newProp.setEditable(true);
                     newProp.addPropertyChangeListener(this);
-//                    addProperty(newProp);
+                    addProperty(newProp);
                 }
 
                 if (p.getValue().equals("")) {
@@ -267,7 +249,7 @@ public class PropertyEditorPanel extends JPanel implements TableModelListener {
                         int status = JOptionPane.showConfirmDialog(null, "Do you want to delete the empty property '" + p.getDisplayName() + "' ?");
                         if (status == JOptionPane.YES_OPTION) {
                             cm.setGlobalProperty(p.getDisplayName(), null);
-//                            removeProperty(p);
+                            removeProperty(p);
                         }
                     }
                 } else {
@@ -289,7 +271,7 @@ public class PropertyEditorPanel extends JPanel implements TableModelListener {
             p.setValue(properties.get(globPropName));
             p.setEditable(true);
 
-//            addProperty(p);
+            addProperty(p);
             p.addPropertyChangeListener(pChangeListener);
         }
 
@@ -300,14 +282,51 @@ public class PropertyEditorPanel extends JPanel implements TableModelListener {
         p.setType(String.class);
         p.setEditable(true);
         p.addPropertyChangeListener(pChangeListener);
-//        addProperty(p);
+        addProperty(p);
     }
 
 
     public void setConfigurationManager(ConfigurationManager cm) {
         assert cm != null;
-        this.cm = cm;
 
+        this.cm = cm;
+//        if (currentPS == null)
         rebuildPanel(null);
+    }
+
+
+    public void objectAdded(ObjectSceneEvent event, Object addedObject) {
+        System.err.println("object added(" + addedObject + ")");
+    }
+
+
+    public void objectRemoved(ObjectSceneEvent event, Object removedObject) {
+        System.err.println("object removed (" + removedObject + ")");
+    }
+
+
+    public void objectStateChanged(ObjectSceneEvent event, Object changedObject, ObjectState previousState, ObjectState newState) {
+        System.err.println("object state added (" + newState + ")\"");
+
+    }
+
+
+    public void selectionChanged(ObjectSceneEvent event, Set<Object> previousSelection, Set<Object> newSelection) {
+        System.err.println("selection changed (" + newSelection + ")");
+    }
+
+
+    public void highlightingChanged(ObjectSceneEvent event, Set<Object> previousHighlighting, Set<Object> newHighlighting) {
+
+    }
+
+
+    public void hoverChanged(ObjectSceneEvent event, Object previousHoveredObject, Object newHoveredObject) {
+        System.err.println("hover changed (new hover object =" + newHoveredObject + ")");
+    }
+
+
+    public void focusChanged(ObjectSceneEvent event, Object previousFocusedObject, Object newFocusedObject) {
+
     }
 }
