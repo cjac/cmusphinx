@@ -9,20 +9,12 @@ echo "YOU SHOULD SEE THE RECOGNITION RESULT 'E I T G S B U R G H' (don't panic!)
 margs="-mdef $hmmdir/RM1_cd_semi/RM1.1000.mdef \
 -fdict $an4lm/filler.dict \
 -dict $an4lm/an4.dict \
--mean $hmmdir/RM1_cd_semi/means \
--var $hmmdir/RM1_cd_semi/variances \
--mixw $hmmdir/RM1_cd_semi/mixture_weights \
--tmat $hmmdir/RM1_cd_semi/transition_matrices \
--kdtree $hmmdir/RM1_cd_semi/kdtrees \
+-hmm $hmmdir/RM1_cd_semi \
 -ctl $an4lm/an4.ctl \
 -cepdir $an4lm/ \
 -senmgau .s2semi. \
--agc none \
--varnorm no \
--cmn current \
 -ds 2 \
--lw 6.5 \
--feat s2_4x"
+-lw 6.5"
 
 lmargs="-lm $an4lm/an4.ug.lm.DMP"
 

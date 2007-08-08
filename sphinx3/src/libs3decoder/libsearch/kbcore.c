@@ -146,6 +146,8 @@
 #include "logs3.h"
 #include "s3types.h"
 #include "strfuncs.h"
+#include "fe.h"
+#include "cmdln_macro.h"
 #define REPORT_KBCORE 1
 
 
@@ -384,6 +386,13 @@ New_kbcore()
     return kbc;
 }
 
+/* Feature and front-end parameters that may be in feat.params */
+static const arg_t feat_defn[] = {
+    waveform_to_cepstral_command_line_macro(),
+    cepstral_to_feature_command_line_macro()
+    { NULL, 0, NULL, NULL }
+};
+
 kbcore_t *
 kbcore_init(void)
 {
@@ -405,6 +414,14 @@ kbcore_init(void)
     kb->svq = NULL;
     kb->tmat = NULL;
 
+    /* Look for a feat.params very early on, because it influences
+     * everything below. */
+    if (cmd_ln_str("-hmm")) {
+	str = string_join(cmd_ln_str("-hmm"), "/feat.params", NULL);
+	if (cmd_ln_parse_file(feat_defn, str, FALSE) == 0) {
+	    E_INFO("Parsed model-specific feature parameters from %s\n", str);
+	}
+    }
 
     if (!logs3_init(cmd_ln_float32("-logbase"),
 		    REPORT_KBCORE, cmd_ln_int32("-log3table")))
