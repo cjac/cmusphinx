@@ -148,7 +148,7 @@
 #include <time.h>
 #include <s3types.h>
 #include <err.h>
-#include <str2words.h>
+#include <strfuncs.h>
 #include <ckd_alloc.h>
 #include <dict.h>
 #include <logs3.h>
