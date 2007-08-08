@@ -223,9 +223,8 @@
 
 /**
    The many operation modes of srch.c. 
-   A note at 20060708
 
-   Mode 0-5 are working modes.  Not all of them are functioning as at
+   Mode 1-4 are working modes.  Not all of them are functioning as at
    but we have plans to migrate to that.
 
    Just for the sake of it. mode 6-10 are assigned to 5 working
@@ -236,17 +235,12 @@
  */
 
 #define OPERATION_ALIGN         0 /**< (Reserved but not used) force
-				     alignment mode. It was assigned
-				     long time ago to Yitao Sun but we
-				     all sorta forgot it.
-				     sphinx3_align seems to work fine
-				     so no one wants to touch it for
-				     the moment.
+				     alignment mode. It is
+				     questionable whether this belongs
+				     in the decoder at all since it's
+				     mostly used in training.
 				  */
-#define OPERATION_ALLPHONE      1 /**< (Reserved but not used) phoneme
-				     recognition. It was assigned long
-				     time ago to Dave Huggins-Daines
-				     but we sorta forget it. 
+#define OPERATION_ALLPHONE      1 /**< Phoneme recognition.
 				    */
 #define OPERATION_GRAPH         2 /**< FSG mode, adapated from sphinx 2 
 				     specify -fsg in the current decode
@@ -757,29 +751,21 @@ typedef struct srch_s {
 }srch_t;
 
 /** 
-    Translate search mode string to mode number 
+    Translate mode string (as passed in the -mode argument) to number.
+    Names chosen for familiarity with Sphinx2/PocketSphinx.
 
-    The current operation mode are 
+    The currently valid operation modes are 
 
     Strings        Operation Mode(Mode Idx)
+    ---------------------------------------
+    allphone       OPERATION_ALLPHONE(1)
 
-    OP_ALIGN       OPERATION_ALIGN(0)
+    fsg            OPERATION_GRAPH(2)
 
-    OP_ALLPHONE    OPERATION_ALLPHONE(1)
-
-    OP_FSG         OPERATION_GRAPH(2)
-
-    OP_FLATFWD     OPERATION_FLATFWD(3)
+    fwdflat        OPERATION_FLATFWD(3)
     
-    There are two names for OPERATION_TST_DECODE (Mode 4)
-
-    OP_MAGICWHEEL  OPERATION_TST_DECODE(4)
-    OP_TST_DECODE  OPERATION_TST_DECODE(4)
+    fwdtree        OPERATION_TST_DECODE(4)
     
-    OP_WST_DECODE  OPERATION_WST_DECODE(5)
-
-    OP_DEBUG       OPERATION_WST_DECODE(1369) 
-
     @return the mode index if it is valid, -1 if it is not.  
 */
 

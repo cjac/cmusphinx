@@ -164,6 +164,9 @@ srch_TST_init(kb_t * kb, void *srch)
 
     ptmr_init(&(tm_build));
 
+    /* Unlink silences */
+    for (i = 0; i < kbc->lmset->n_lm; i++)
+        unlinksilences(kbc->lmset->lmarray[i], kbc, kbc->dict);
 
     if (cmd_ln_int32("-Nstalextree"))
         E_WARN("-Nstalextree is omitted in TST search.\n");

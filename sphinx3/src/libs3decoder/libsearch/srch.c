@@ -223,40 +223,17 @@
 int32
 srch_mode_str_to_index(const char *mode_str)
 {
-    if (!strcmp(mode_str, "OP_ALIGN")) {
-        return OPERATION_ALIGN;
-    }
-
-    if (!strcmp(mode_str, "OP_ALLPHONE")) {
+    if (!strcmp(mode_str, "allphone")) {
         return OPERATION_ALLPHONE;
     }
-
-    if (!strcmp(mode_str, "OP_FSG")) {
+    if (!strcmp(mode_str, "fsg")) {
         return OPERATION_GRAPH;
     }
-
-    if (!strcmp(mode_str, "OP_FLATFWD")) {
+    if (!strcmp(mode_str, "fwdflat")) {
         return OPERATION_FLATFWD;
     }
-
-    if (!strcmp(mode_str, "OP_MAGICWHEEL")) {
+    if (!strcmp(mode_str, "fwdtree")) {
         return OPERATION_TST_DECODE;
-    }
-
-    if (!strcmp(mode_str, "OP_TST_DECODE")) {
-        return OPERATION_TST_DECODE;
-    }
-
-    if (!strcmp(mode_str, "OP_WST_DECODE")) {
-        return OPERATION_WST_DECODE;
-    }
-
-    if (!strcmp(mode_str, "OP_DEBUG")) {
-        return OPERATION_DEBUG;
-    }
-
-    if (!strcmp(mode_str, "OP_DO_NOTHING")) {
-        return OPERATION_DO_NOTHING;
     }
 
     E_WARN("UNKNOWN MODE NAME %s\n", mode_str);
@@ -269,29 +246,23 @@ srch_mode_index_to_str(int32 index)
 {
     char *str;
     str = NULL;
-    if (index == OPERATION_ALIGN) {
-        str = ckd_salloc("OP_ALIGN");
-    }
-    else if (index == OPERATION_ALLPHONE) {
-        str = ckd_salloc("OP_ALLPHONE");
+    if (index == OPERATION_ALLPHONE) {
+        str = ckd_salloc("allphone");
     }
     else if (index == OPERATION_GRAPH) {
-        str = ckd_salloc("OP_FSG");
+        str = ckd_salloc("fsg");
     }
     else if (index == OPERATION_FLATFWD) {
-        str = ckd_salloc("OP_FLATFWD");
+        str = ckd_salloc("fwdflat");
     }
     else if (index == OPERATION_TST_DECODE) {
-        str = ckd_salloc("OP_TST_DECODE");
-    }
-    else if (index == OPERATION_WST_DECODE) {
-        str = ckd_salloc("OP_WST_DECODE");
+        str = ckd_salloc("fwdtree");
     }
     else if (index == OPERATION_DEBUG) {
-        str = ckd_salloc("OP_DEBUG");
+        str = ckd_salloc("debug");
     }
     else if (index == OPERATION_DO_NOTHING) {
-        str = ckd_salloc("OP_DO_NOTHING");
+        str = ckd_salloc("do_nothing");
     }
     return str;
 }
@@ -400,19 +371,10 @@ srch_init(kb_t * kb, int32 op_mode)
 
     E_INFO("Search Initialization. \n");
     s->op_mode = op_mode;
-    s->grh = (grp_str_t *) ckd_calloc(1, sizeof(grp_str_t));
-    s->cache_win = cmd_ln_int32("-pl_window");
-    s->cache_win_strt = 0;
-    s->senscale = 0;
-
-    s->ascale = (int32 *) ckd_calloc(DFLT_UTT_SIZE, sizeof(int32));
-    s->ascale_sz = DFLT_UTT_SIZE;
-    s->segsz = (int32 *) ckd_calloc(DFLT_NUM_SEGS, sizeof(int32));
-    s->segsz_sz = DFLT_NUM_SEGS;
-
     /* A switch here to decide all function pointers */
     if (op_mode == OPERATION_ALIGN) {
-        E_FATAL("Alignment mode is not supported yet");
+        E_ERROR("Alignment mode is not supported yet");
+	return NULL;
     }
     else if (op_mode == OPERATION_ALLPHONE) {
 	s->funcs = &srch_allphone_funcs;
@@ -427,7 +389,8 @@ srch_init(kb_t * kb, int32 op_mode)
 	s->funcs = &srch_TST_funcs;
     }
     else if (op_mode == OPERATION_WST_DECODE) {
-        E_FATAL("Word Conditioned Tree Search is currently unmaintained.");
+        E_ERROR("Word Conditioned Tree Search is currently unmaintained.");
+	return NULL;
     }
     else if (op_mode == OPERATION_DEBUG) {
 	s->funcs = &srch_debug_funcs;
@@ -438,8 +401,18 @@ srch_init(kb_t * kb, int32 op_mode)
     else {
         E_ERROR("Unknown mode %d, failed to initialized srch_t\n",
                 op_mode);
-
+	return NULL;
     }
+
+    s->grh = (grp_str_t *) ckd_calloc(1, sizeof(grp_str_t));
+    s->cache_win = cmd_ln_int32("-pl_window");
+    s->cache_win_strt = 0;
+    s->senscale = 0;
+
+    s->ascale = (int32 *) ckd_calloc(DFLT_UTT_SIZE, sizeof(int32));
+    s->ascale_sz = DFLT_UTT_SIZE;
+    s->segsz = (int32 *) ckd_calloc(DFLT_NUM_SEGS, sizeof(int32));
+    s->segsz_sz = DFLT_NUM_SEGS;
 
     srch_assert_funcptrs(s);
 
@@ -460,6 +433,10 @@ srch_init(kb_t * kb, int32 op_mode)
     /* Do search-specific initialization here. */
     if (s->funcs->init(kb, s) == SRCH_FAILURE) {
         E_INFO("search initialization failed for op-mode %d\n", op_mode);
+	ckd_free(s->grh);
+	ckd_free(s->ascale);
+	ckd_free(s->segsz);
+	ckd_free(s);
 	return NULL;
     }
 

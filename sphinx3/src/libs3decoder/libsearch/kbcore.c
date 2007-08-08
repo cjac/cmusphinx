@@ -582,20 +582,10 @@ kbcore_init(float64 logbase,
                                cmd_ln_str("-lmname"),
                                lmdumpdir, langwt, inspen, uw, kb->dict);
 
-        /* CHECK: check whether LM has a start word and end word 
-           Also make sure silences are unlinked. */
+        /* CHECK: check whether LM has a start word and end word  */
         for (i = 0; i < kb->lmset->n_lm; i++) {
             checkLMstartword(kb->lmset->lmarray[i],
                              lmset_idx_to_name(kb->lmset, i));
-
-            /*HACK! Only thing that is op_mode-specific. (Hopefully),
-               op-mode name is also hard-wired. Evandro will kill me.
-	    */
-
-	    if (cmd_ln_exists("-op_mode")
-		&& (cmd_ln_int32("-op_mode") == 4
-		    || cmd_ln_int32("-op_mode") == 5))
-                unlinksilences(kb->lmset->lmarray[i], kb, kb->dict);
         }
 
     }

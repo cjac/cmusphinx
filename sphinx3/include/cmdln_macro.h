@@ -550,10 +550,14 @@ us a better architecture.
    share between decode/livepretend/livedecode
 */
 #define decode_specific_command_line_macro() \
+    { "-mode", \
+    ARG_STRING, \
+    "fwdtree",\
+    "Decoding mode, one of allphone, fsg, fwdflat, fwdtree."}, \
     { "-op_mode", \
       ARG_INT32, \
-      "4", \
-      "Operation Mode.  1: allphone, 2: FSG, 3: flat lexicon, 4: multi-tree lexicon."}, \
+      "-1", \
+      "Operation mode, for internal use only."}, \
     { "-hmmdump", \
       ARG_BOOLEAN, \
       "no", \

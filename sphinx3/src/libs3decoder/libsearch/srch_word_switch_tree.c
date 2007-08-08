@@ -149,6 +149,10 @@ srch_WST_init(kb_t * kb, void *srch)
     s = (srch_t *) srch;
     wstg = (srch_WST_graph_t *) ckd_calloc(1, sizeof(srch_WST_graph_t));
 
+    /* Unlink silences */
+    for (i = 0; i < kbc->lmset->n_lm; i++)
+        unlinksilences(kbc->lmset->lmarray[i], kbc, kbc->dict);
+
     /* Only initialized one + n_static copies of trees in the initialization. */
     if (cmd_ln_int32("-epl"))
         E_WARN("-epl is omitted in WST search.\n");

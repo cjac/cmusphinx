@@ -330,17 +330,19 @@ kb_init(kb_t * kb)
 
     /* STRUCTURE INITIALIZATION : The search data structure, done only
        after kb is initialized kb is acted as a clipboard. */
-
-    /* No op_mode means we are not using the search crap. */
     if (cmd_ln_exists("-op_mode")) {
+	/* -op_mode, if set (i.e. not -1), takes precedence over -mode. */
+	if (cmd_ln_int32("-op_mode") != -1)
 	    kb->op_mode = cmd_ln_int32("-op_mode");
-	    if ((kb->srch = (srch_t *) srch_init(kb, kb->op_mode)) == NULL) {
-		    E_FATAL("Search initialization failed. Forced exit\n");
-	    }
-
-	    if (REPORT_KB) {
-		    srch_report(kb->srch);
-	    }
+	else
+	    kb->op_mode = srch_mode_str_to_index(cmd_ln_str("-mode"));
+	E_INFO("SEARCH MODE INDEX %d\n", kb->op_mode);
+	if ((kb->srch = (srch_t *) srch_init(kb, kb->op_mode)) == NULL) {
+	    E_FATAL("Search initialization failed. Forced exit\n");
+	}
+	if (REPORT_KB) {
+	    srch_report(kb->srch);
+	}
     }
 }
 
