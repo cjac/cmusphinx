@@ -115,12 +115,17 @@ public class SimplePropEditor extends JPanel {
         public TableCellRenderer getCellRenderer(int row, int column) {
             TableProperty tableProperty = tableModel.getProperty(row);
 
-            if (column == 0) {
-                return tableProperty.getNameRenderer();
+            if (row >= 0 && column >= 0) {
+                if (column == 0) {
+                    return tableProperty.getNameRenderer();
+                } else {
+                    return tableProperty.getValueRenderer();
+                }
             } else {
-                return tableProperty.getValueRenderer();
+                super.getCellRenderer(row, column);
             }
 
+            return null;
         }
 
 

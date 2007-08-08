@@ -12,14 +12,14 @@ import javax.swing.table.TableCellRenderer;
  *
  * @author Holger Brandl
  */
-public class CompStringProperty extends TableProperty {
+public class TableCompProperty extends TableProperty {
 
     private PropertySheet currentPS;
     private String propName;
     private S4String s4Double;
 
 
-    public CompStringProperty(PropertySheet currentPS, String propName, S4String s4String) {
+    public TableCompProperty(PropertySheet currentPS, String propName, S4String s4String) {
         this.currentPS = currentPS;
         this.propName = propName;
         this.s4Double = s4String;
