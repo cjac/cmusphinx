@@ -163,78 +163,17 @@ typedef struct {
 kbcore_t *New_kbcore(void);
 
 /**
-   Initialize just the acoustic model for kbcore
+   Initialize just the acoustic model for kbcore, taking parameters
+   from the global command-line module.
 */
-void s3_am_init(kbcore_t *kbc, /**< kbcore to be initialized*/
-		char *s3hmmdir,  /**< an s3 hmmdir */
-		char *mdeffile,  /**< a model definition file */
-		char *meanfile,  /**< a mean file */
-		char *varfile,   /**< a variance file */
-		float64 varfloor, /**< variance floor */
-		char *mixwfile,   /**< a mixture weight file */
-		float64 mixwfloor, /**< mixture weight floor */
-		char *tmatfile,   /**< transition matrices file*/
-		float64 tmatfloor,  /**< transition floor */
-		char *senmgau,     /**< .cont. for CDHMM, .semi. for SCHMM , due to the potential
-				      inconsistency between s3.0 and s3.x GMM computation routine, I also
-				      add .s3cont. to represent Gaussian computation using gauden and senone.
-				      It is hidden in command-line deliberately. 
-				   */
-		char *lambdafile,  /**< (specific to 3.0 GMM computation) an interpolation file */
-		int32 topn         /**< (specific to 3.0 GMM computation) number of Gaussian to compute */
-    );
-
+void s3_am_init(kbcore_t *kbc);
 
 
 /**
  * Initialize one or more of all the major models:  pronunciation dictionary, acoustic models,
- * language models.  Several arguments are optional (e.g., pointers may be NULL); however, they
- * may not all be independently so.  The logbase argument is required (i.e. must be valid).
- * A number of consistency verifications are carried out.  It's recommended that a reasonable
- * default be provided for any real or integer argument, even if it's unused.
- * Return value: (obvious) pointer to structure encapsulating the individual data bases.
- * NOTE: If any model fails to initialize, the call fails with a FATAL ERROR.
+ * language models.  Parameters are taken from the command line (see cmdln_macro.h)
  */
-kbcore_t *kbcore_init (float64 logbase,		/**< log bases used in logs3.c Must be specified */
-		       char *feattype,          /**< feature type*/
-		       char *cmn,               /**< Type of CMN */
-		       int32 varnorm,           /**< Type of variance normalization */
-		       char *agc,               /**< Type of AGC */
-		       char *mdeffile,          /**< Model definition file */
-		       char *dictfile,          /**< Dictionary file */
-		       char *fdictfile,         /**< filler dictionary file */
-		       char *compsep,		/**< Must be valid if dictfile specified */
-		       char *lmfile,            /**< LM file */
-		       char *lmctlfile,         /**< LM control file, mutually exclusive with lmfile */
-		       char *lmdumpdir,         /**< Dump LM  */
-
-		       char *fsgfile,           /**< FSG file */
-		       char *fsgctlfile,        /**< FSG control file, mutually exclusive with fsgfile (Not handled yet)*/
-
-		       char *fillpenfile,       /**< Filler penality file,*/
-		       char *senmgau,           /**< NOT USED */
-		       float64 silprob,		/**< Silence probablity Must be valid if lmfile/fillpenfile is
-						   specified */
-		       float64 fillprob,	/**< Filler penalty Must be valid if lmfile/fillpenfile is
-						   specified */
-		       float64 langwt,		/**< Language model weight, Must be valid if lmfile/fillpenfile is
-						   specified. */
-		       float64 inspen,		/**< Insertion penalty. Must be valid if lmfile/fillpenfile is
-						   specified. */
-		       float64 uw,		/**< Unigram weight Must be valid if lmfile/fillpenfile is
-						   specified. */
-		       char *s3hmmdir,          /**< s3 hmm directory, if it is specified, "means", "variances", "mixture_weights", "transition_matrices", "mdef" will be used. meanfile, varfile, tmatfile,mdefile, mixwfile will overide this decision.*/
-		       char *meanfile,		/**< Means Acoustic model... */
-		       char *varfile,		/**< Variance file, must be specified if meanfile specified */
-		       float64 varfloor,	/**< Variance floowr, must be valid if varfile specified */
-		       char *mixwfile,		/**< Mixture weight file, must be specified if meanfile specified */
-		       float64 mixwfloor,	/**< Mixture weight floor, must be valid if mixwfile specified */
-		       char *subvqfile,		/**< Subvector quantized acoustic model
-						   (quantized mean/var values), optional */
-		       char *gsfile,		/**< Gaussian Selection Mapping*/
-		       char *tmatfile,          /**< Transition matrix */
-		       float64 tmatfloor	/**< Transition probability floors, must be valid if tmatfile specified */
-    );
+kbcore_t *kbcore_init(void);
 
 /** free the kbcore */
 void kbcore_free (kbcore_t *kbcore  /**< The kbcore structure */
@@ -245,7 +184,7 @@ void kbcore_free (kbcore_t *kbcore  /**< The kbcore structure */
    to BAD_S3WID) before used. Whereas the flat lexicon decoder
    doesn't have such assumption.  These two functions change this
    behavior.  Called in mode 3, 4 and 5 to make sure different code
-   works. 
+   works.  FIXME: This is dumb.
 */
 void unlinksilences(lm_t* l,kbcore_t *kbc, dict_t *d);
 

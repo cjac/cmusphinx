@@ -248,10 +248,11 @@ static arg_t defn[] = {
         control_file_handling_command_line_macro()
         hypothesis_file_handling_command_line_macro()
         control_mllr_file_command_line_macro()
-        cepstral_input_handling_command_line_macro(){"-lambda",
-                                                     ARG_STRING,
-                                                     NULL,
-                                                     "Interpolation weights (CD/CI senone) parameters input file"},
+        cepstral_input_handling_command_line_macro()
+    {"-lambda",
+     ARG_STRING,
+     NULL,
+     "Interpolation weights (CD/CI senone) parameters input file"},
 
     /* align-specific argument */
     {"-beam",
@@ -359,19 +360,7 @@ models_init(void)
 
     kbc = New_kbcore();
 
-    s3_am_init(kbc,
-               cmd_ln_str("-hmm"),
-               cmd_ln_str("-mdef"),
-               cmd_ln_str("-mean"),
-               cmd_ln_str("-var"),
-               cmd_ln_float32("-varfloor"),
-               cmd_ln_str("-mixw"),
-               cmd_ln_float32("-mixwfloor"),
-               cmd_ln_str("-tmat"),
-               cmd_ln_float32("-tmatfloor"),
-               cmd_ln_str("-senmgau"),
-               cmd_ln_str("-lambda"), cmd_ln_int32("-topn")
-        );
+    s3_am_init(kbc);
 
     assert(kbc);
     assert(kbc->mdef);

@@ -188,40 +188,7 @@ kb_init(kb_t * kb)
 
     /* STRUCTURE: Initialize the kb structure to zero, just in case */
     memset(kb, 0, sizeof(*kb));
-    kb->kbcore = NULL;
-    kb->kbcore = kbcore_init(cmd_ln_float32("-logbase"),
-			     cmd_ln_str("-feat"),
-			     cmd_ln_str("-cmn"),
-			     cmd_ln_boolean("-varnorm"),
-			     cmd_ln_str("-agc"),
-			     cmd_ln_str("-mdef"),
-			     cmd_ln_str("-dict"),
-			     cmd_ln_str("-fdict"),
-			     "",       /* Hack!! Hardwired constant for -compsep argument */
-                             cmd_ln_str("-lm"),
-                             cmd_ln_str("-lmctlfn"),
-                             cmd_ln_str("-lmdumpdir"), cmd_ln_str("-fsg"),
-#if 0
-                             cmd_ln_str("-fsgctlfn"),
-#endif
-                             NULL,      /*Currently, not try to handle the -fsgctlfn */
-                             cmd_ln_str("-fillpen"),
-                             cmd_ln_str("-senmgau"),
-                             cmd_ln_float32("-silprob"),
-                             cmd_ln_float32("-fillprob"),
-                             cmd_ln_float32("-lw"),
-                             cmd_ln_float32("-wip"),
-                             cmd_ln_float32("-uw"),
-                             cmd_ln_str("-hmm"),
-                             cmd_ln_str("-mean"),
-                             cmd_ln_str("-var"),
-                             cmd_ln_float32("-varfloor"),
-                             cmd_ln_str("-mixw"),
-                             cmd_ln_float32("-mixwfloor"),
-                             cmd_ln_str("-subvq"),
-                             cmd_ln_str("-gs"),
-                             cmd_ln_str("-tmat"),
-                             cmd_ln_float32("-tmatfloor"));
+    kb->kbcore = kbcore_init();
     if (kb->kbcore == NULL)
         E_FATAL("Initialization of kb failed\n");
 
