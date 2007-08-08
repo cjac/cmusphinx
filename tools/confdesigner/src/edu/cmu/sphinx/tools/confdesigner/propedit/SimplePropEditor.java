@@ -1,8 +1,5 @@
 package edu.cmu.sphinx.tools.confdesigner.propedit;
 
-import de.hondari.carl.azubi.dsp.VadSegment;
-import de.hondari.carl.azubi.segspot.SegmentHypothesis;
-
 import javax.swing.*;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
@@ -86,19 +83,19 @@ public class SimplePropEditor extends JPanel {
 
 
         private Color getColor(JList list, int index) {
-            ListModel listModel = list.getModel();
-
-            if ((index + 1) >= listModel.getSize())
-                return Color.BLACK;
-
-            if (listModel.getElementAt(index + 1) instanceof VadSegment && listModel.getElementAt(index) instanceof VadSegment) {
-                return Color.GREEN;
-            }
-
-            if (listModel.getElementAt(index + 1) instanceof SegmentHypothesis && listModel.getElementAt(index) instanceof SegmentHypothesis) {
-                return Color.RED;
-            }
-
+//            ListModel listModel = list.getModel();
+//
+//            if ((index + 1) >= listModel.getSize())
+//                return Color.BLACK;
+//
+//            if (listModel.getElementAt(index + 1) instanceof VadSegment && listModel.getElementAt(index) instanceof VadSegment) {
+//                return Color.GREEN;
+//            }
+//
+//            if (listModel.getElementAt(index + 1) instanceof SegmentHypothesis && listModel.getElementAt(index) instanceof SegmentHypothesis) {
+//                return Color.RED;
+//            }
+//
             return Color.BLACK;
         }
     }
