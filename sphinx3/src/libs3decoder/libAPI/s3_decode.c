@@ -409,6 +409,22 @@ s3_decode_hypothesis(s3_decode_t * _decode, char **_uttid, char **_hyp_str,
     return rv;
 }
 
+dag_t *
+s3_decode_word_graph(s3_decode_t *_decode)
+{
+    srch_t *s;
+    assert(_decode != NULL);
+
+    if (_decode->state != S3_DECODE_STATE_IDLE) {
+        E_WARN("Cannot retrieve word graph in current decoder state.\n");
+        return NULL;
+    }
+
+    s = (srch_t *) _decode->kb.srch;
+    assert(s != NULL);
+
+    return srch_get_dag(s);
+}
 
 void
 s3_decode_read_lm(s3_decode_t * _decode,

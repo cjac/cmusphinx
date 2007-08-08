@@ -343,6 +343,16 @@ void s3_decode_process(s3_decode_t *_decode,
 int s3_decode_hypothesis(s3_decode_t *_decode, char **_uttid,
                          char **_hyp_str, hyp_t ***_hyp_segs);
 
+/** Retrieve a word graph of final hypothesis.  You must call
+ * s3_decode_end_utt() before this.  See {@link dag.h} and {@link
+ * astar.h} for information on what to do with this structure.
+ *
+ * @param decoder Pointer to the decoder.
+ * @return A dag_t structure, or NULL on failure.  This pointer
+ * becomes invalid after a call to s3_decode_begin_utt().
+ */
+dag_t *s3_decode_word_graph(s3_decode_t *_decode);
+
 /** Set LM 
     @param _decode Pointer to the decode
     @param lmname the language model name
