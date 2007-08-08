@@ -735,6 +735,7 @@ typedef struct srch_s {
     */
     int32 exit_id;		/**< Lattice ID for exit word (-1 if
                                  * utterance is not complete) */
+    dag_t *dag;			/**< Word graph representation of completed utterance. */
 
     /* ARCHAN: Various pruning beams, put them together such that it looks more logical. */
     ascr_t *ascr;		  /**< Pointer to Senone and composite senone scores for one frame */
@@ -862,6 +863,13 @@ int32 srch_uninit(srch_t* srch /**< In: a search structure */
  * You must free this with glist_free() after using it. */
 glist_t srch_get_hyp(srch_t *srch /**< In: a search structure */
     );
+
+/**
+ * Get the complete set of possible hypotheses, as a word graph (DAG).
+ * The dag_t returned by this function remains owned by srch_t.  Do
+ * NOT attempt to free it.
+ */
+dag_t *srch_get_dag(srch_t *srch);
 
 
 /** Dump recognition result */

@@ -485,6 +485,9 @@ srch_utt_begin(srch_t * srch)
     for (i = 0; i < srch->segsz_sz; i++)
         srch->segsz[i] = 0;
     srch->exit_id = -1;
+    if (srch->dag)
+	dag_destroy(srch->dag);
+    srch->dag = NULL;
 
     srch->funcs->utt_begin(srch);
 
@@ -498,7 +501,6 @@ srch_utt_end(srch_t * s)
     int32 rv;
     glist_t hyp;
     gnode_t *gn;
-    dag_t *dag = NULL;
     stat_t *st = s->stat;
 
     if (s->funcs->utt_end == NULL) {
@@ -536,7 +538,7 @@ srch_utt_end(srch_t * s)
 	 || cmd_ln_str("-nbestdir")
 	 || cmd_ln_boolean("-bestpath"))) {
         ptmr_start(&(st->tm_srch));
-	if ((dag = s->funcs->gen_dag(s, hyp)) == NULL) {
+	if ((s->dag = s->funcs->gen_dag(s, hyp)) == NULL) {
 	    E_ERROR("Failed to generate DAG.\n");
 	}
         ptmr_stop(&(st->tm_srch));
@@ -550,7 +552,7 @@ srch_utt_end(srch_t * s)
     }
 
     /* Write hypothesis strings */
-    if (!(dag && cmd_ln_boolean("-bestpath"))) {
+    if (!(s->dag && cmd_ln_boolean("-bestpath"))) {
 	if (s->matchfp)
 	    match_write(s->matchfp, hyp, s->uttid, kbcore_dict(s->kbc), NULL);
 	if (s->matchsegfp)
@@ -583,23 +585,23 @@ srch_utt_end(srch_t * s)
     }
 
     /* Write lattices */
-    if (dag && cmd_ln_str("-outlatdir")) {
-	if ((s->funcs->dag_dump(s, dag)) != SRCH_SUCCESS) {
+    if (s->dag && cmd_ln_str("-outlatdir")) {
+	if ((s->funcs->dag_dump(s, s->dag)) != SRCH_SUCCESS) {
 	    E_ERROR("Failed to write DAG file.\n");
 	}
     }
 
     /* Write N-best lists */
-    if (dag && s->funcs->nbest_impl && cmd_ln_str("-nbestdir")) {
-	s->funcs->nbest_impl(s, dag);
+    if (s->dag && s->funcs->nbest_impl && cmd_ln_str("-nbestdir")) {
+	s->funcs->nbest_impl(s, s->dag);
     }
 
     /* Do second stage search */
-    if (dag && s->funcs->bestpath_impl &&  cmd_ln_boolean("-bestpath")) {
+    if (s->dag && s->funcs->bestpath_impl &&  cmd_ln_boolean("-bestpath")) {
 	glist_t rhyp;
 
         ptmr_start(&(st->tm_srch));
-	rhyp = s->funcs->bestpath_impl(s, dag);
+	rhyp = s->funcs->bestpath_impl(s, s->dag);
         ptmr_stop(&(st->tm_srch));
 	if (rhyp == NULL) {
 	    E_ERROR("Bestpath search failed.\n");
@@ -630,8 +632,6 @@ srch_utt_end(srch_t * s)
 	}
     }
 
-    if (dag)
-	dag_destroy(dag);
     for (gn = hyp; gn; gn = gnode_next(gn)) {
         ckd_free(gnode_ptr(gn));
     }
@@ -846,6 +846,8 @@ srch_uninit(srch_t * srch)
     }
     srch->funcs->uninit(srch);
 
+    if (srch->dag)
+	dag_destroy(srch->dag);
     ckd_free(srch->segsz);
     ckd_free(srch->ascale);
     ckd_free(srch->grh);
@@ -880,6 +882,38 @@ srch_get_hyp(srch_t *srch)
         return NULL;
     }
     return srch->funcs->gen_hyp(srch);
+}
+
+dag_t *
+srch_get_dag(srch_t *s)
+{
+    glist_t hyp = NULL;
+    gnode_t *gn;
+
+    if (s->funcs->gen_dag == NULL) {
+	E_ERROR("Cannot generate DAG in current search mode.\n");
+	return NULL;
+    }
+    if (s->dag == NULL) {
+	if (s->funcs->gen_hyp == NULL) {
+	    E_WARN("srch->funcs->gen_hyp is NULL.  Please make sure it is set.\n");
+	    return NULL;
+	}
+	if ((hyp = s->funcs->gen_hyp(s)) == NULL) {
+	    E_ERROR("s->funcs->gen_hyp failed\n");
+	    return NULL;
+	}
+	if ((s->dag = s->funcs->gen_dag(s, hyp)) == NULL) {
+	    E_ERROR("Failed to generate DAG.\n");
+	    goto free_hyp;
+	}
+    }
+free_hyp:
+    for (gn = hyp; gn; gn = gnode_next(gn)) {
+        ckd_free(gnode_ptr(gn));
+    }
+    glist_free(hyp);
+    return s->dag;
 }
 
 /** using file name of the LM or defined lmctlfn mechanism */

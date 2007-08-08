@@ -415,10 +415,4 @@ dag_t* dag_load (
     fillpen_t *fpen    /**< Filler penalty structure */
     );
 
-/**
- * Temporary functions for A* search (will be removed) 
- */
-void nbest_search(dag_t *dag, char *filename, char *uttid, float64 lwf,
-                  dict_t *dict, lm_t *lm, fillpen_t *fpen);
-
 #endif

@@ -418,6 +418,7 @@ dag_bestpath(dag_t * dagp,      /* A pointer of the dag */
         if (pl->pscr > (int32) 0x80000000) {
             score = pl->pscr + l->ascr;
             if (score > l->pscr) {      /* rkm: Added 20-Nov-1996 */
+                /* FIXME: This scales the wip implicitly */
                 if (pd)
                     lscr = lwf * lm_tg_score(lm,
                                              dict2lmwid[dict_basewid
@@ -555,6 +556,7 @@ dag_compute_hscr(dag_t *dag, dict_t *dict, lm_t *lm, float64 lwf)
                     /* ARCHAN , bw2 is bypassed, so we can savely ignored it */
                     hscr = l2->hscr
                         + l2->ascr
+                        /* FIXME: This scales the wip implicitly */
                         + lwf * lm_tg_score(lm,
                                             (bw0 == BAD_S3WID)
                                             ? BAD_LMWID(lm) : lm->dict2lmwid[bw0],
@@ -622,7 +624,7 @@ dag_backtrace(srch_hyp_t ** hyp, daglink_t * l, float64 lwf, dict_t * dict,
                 h->sf = src->sf;
 
                 if (hhead)
-                    h->lscr =
+                    h->lscr = /* FIXME: This scales the wip implicitly... */
                         lwf * fillpen(fpen, dict_basewid(dict, src->wid));
 
                 if (l->bypass) {

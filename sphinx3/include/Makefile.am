@@ -2,6 +2,7 @@ pkginclude_HEADERS =				\
 	adaptor.h				\
 	approx_cont_mgau.h			\
 	ascr.h					\
+	astar.h                                 \
 	blkarray_list.h				\
 	cb2mllr_io.h				\
 	classifier.h				\

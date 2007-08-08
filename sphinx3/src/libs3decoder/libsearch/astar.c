@@ -152,6 +152,7 @@
 #include <string.h>
 #include <assert.h>
 
+#include "astar.h"
 #include "s3types.h"
 #include "mdef.h"
 #include "tmat.h"
@@ -160,7 +161,6 @@
 #include "fillpen.h"
 #include "search.h"
 #include "logs3.h"
-#include "dag.h"
 #include "vithist.h"
 
 
@@ -193,13 +193,18 @@ typedef struct heap_s {
 } aheap_t;
 
 /** Search structure (agenda) for A* search */
-typedef struct astar_s {
+struct astar_s {
+    dag_t *dag;              /** DAG */
     dict_t *dict;            /** Dictionary */
     lm_t *lm;                /** Language Model */
     fillpen_t *fpen;         /** Filler word probabilities */
     ppath_t *ppath_list;     /** Complete list of allocated ppath nodes */
     int32 n_ppath;           /** #Partial paths allocated (to control memory usage) */
     int32 maxppath;          /** Max partial paths allowed before aborting */
+    int32 beam;
+    int32 besttscr;
+    int32 n_pop, n_exp, n_pp;
+    float32 lwf;
     aheap_t *heap_root;
 #define HISTHASH_MOD	200003  /* A prime */
 /**
@@ -210,7 +215,7 @@ typedef struct astar_s {
  * 	2. Their LM histories are identical.
  */
     ppath_t **hash_list;     /* A separate list for each hashmod value (see above) */
-} astar_t;
+};
 
 
 /* It is reasonable to replace the implementation with heap_t */
@@ -422,6 +427,7 @@ ppath_seg_write(FILE * fp, ppath_t * pp, dict_t *dict, lm_t *lm, int32 ascr)
         ppath_seg_write(fp, pp->hist, dict, lm,
                         pp->pscr - pp->hist->pscr - pp->lscr);
 
+    /* FIXME: This will be wrong if lwf != 1.0 */
     lscr_base = pp->hist ? lm_rawscore(lm, pp->lscr) : 0;
 
     fprintf(fp, " %d %d %d %s",
@@ -439,7 +445,7 @@ nbest_hyp_write(FILE * fp, ppath_t * top, dict_t *dict, lm_t *lm, int32 pscr, in
 
     lscr_base = 0;
     for (lscr = 0, pp = top; pp; lscr += pp->lscr, pp = pp->hist) {
-        if (pp->hist)
+        if (pp->hist) /* FIXME: This will be wrong if lw != 1.0 */
             lscr_base += lm_rawscore(lm, pp->lscr);
         else
             assert(pp->lscr == 0);
@@ -453,60 +459,30 @@ nbest_hyp_write(FILE * fp, ppath_t * top, dict_t *dict, lm_t *lm, int32 pscr, in
     fflush(fp);
 }
 
-
-void
-nbest_search(dag_t *dag, char *filename, char *uttid, float64 lwf,
-             dict_t *dict, lm_t *lm, fillpen_t *fpen)
+astar_t *
+astar_init(dag_t *dag, dict_t *dict, lm_t *lm, fillpen_t *fpen, float64 beam, float64 lwf)
 {
-    FILE *fp;
-    float32 f32arg;
-    float64 f64arg;
-    int32 nbest_max, n_pop, n_exp, n_hyp, n_pp;
-    int32 besthyp, worsthyp, besttscr;
-    ppath_t *top, *pp;
-    dagnode_t *d;
-    daglink_t *l;
-    int32 lscr, pscr, tscr;
-    s3wid_t bw0, bw1, bw2;
-    int32 i;
-    int32 ispipe;
-    int32 ppathdebug;
-    int32 beam;
-    astar_t astar;
+    astar_t *astar;
+    ppath_t *pp;
+    int i;
 
-    astar.dict = dict;
-    astar.lm = lm;
-    astar.fpen = fpen;
-    astar.heap_root = NULL;
-    astar.ppath_list = NULL;
-    astar.hash_list = (ppath_t **) ckd_calloc(HISTHASH_MOD, sizeof(ppath_t *));
-
-    /* Create Nbest file and write header comments */
-    if ((fp = fopen_comp(filename, "w", &ispipe)) == NULL) {
-        E_ERROR("fopen_comp (%s,w) failed\n", filename);
-        fp = stdout;
-    }
-    E_INFO("Writing N-Best list to %s\n", filename);
-    fprintf(fp, "# %s\n", uttid);
-    fprintf(fp, "# frames %d\n", dag->nfrm);
-    f32arg = cmd_ln_float32("-logbase");
-    fprintf(fp, "# logbase %e\n", f32arg);
-    f32arg = cmd_ln_float32("-lw") * lwf;
-    fprintf(fp, "# langwt %e\n", f32arg);
-    f32arg = cmd_ln_float32("-wip");
-    fprintf(fp, "# inspen %e\n", f32arg);
-    f64arg = cmd_ln_float64("-beam");
-    fprintf(fp, "# beam %e\n", f64arg);
-    ppathdebug = cmd_ln_boolean("-ppathdebug");
-
-    beam = logs3(f64arg);
-
-    /* Set limit on max #ppaths allocated before aborting utterance */
-    astar.maxppath = cmd_ln_int32("-maxppath");
-    astar.n_ppath = 0;
+    astar = ckd_calloc(1, sizeof(*astar));
+    astar->dag = dag;
+    astar->dict = dict;
+    astar->lm = lm;
+    astar->fpen = fpen;
+    astar->lwf = lwf;
+    astar->beam = logs3(beam);
+    astar->heap_root = NULL;
+    astar->ppath_list = NULL;
+    astar->hash_list = (ppath_t **) ckd_calloc(HISTHASH_MOD, sizeof(ppath_t *));
 
     for (i = 0; i < HISTHASH_MOD; i++)
-        astar.hash_list[i] = NULL;
+        astar->hash_list[i] = NULL;
+
+    /* Set limit on max #ppaths allocated before aborting utterance */
+    astar->maxppath = cmd_ln_int32("-maxppath");
+    astar->n_ppath = 0;
 
     /* Insert start node into heap and into list of nodes-by-frame */
     pp = (ppath_t *) ckd_calloc(1, sizeof(*pp));
@@ -522,46 +498,61 @@ nbest_search(dag_t *dag, char *filename, char *uttid, float64 lwf,
     pp->pruned = 0;
 
     pp->next = NULL;
-    astar.ppath_list = pp;
+    astar->ppath_list = pp;
 
     /* Insert into heap of partial paths to be expanded */
-    astar.heap_root = aheap_insert(astar.heap_root, pp);
+    astar->heap_root = aheap_insert(astar->heap_root, pp);
 
     /* Insert at head of (empty) list of ppaths with same hashmod value */
-    astar.hash_list[pp->histhash % HISTHASH_MOD] = pp;
+    astar->hash_list[pp->histhash % HISTHASH_MOD] = pp;
 
-    /* Astar-search */
-    n_hyp = n_pop = n_exp = n_pp = 0;
-    nbest_max = cmd_ln_int32("-nbest");
-    besthyp = besttscr = (int32) 0x80000000;
-    worsthyp = (int32) 0x7fffffff;
+    astar->n_pop = astar->n_exp = astar->n_pp = 0;
+    astar->besttscr = (int32) 0x80000000;
 
-    while ((n_hyp < nbest_max) && astar.heap_root) {
+    return astar;
+}
+
+void
+astar_free(astar_t *astar)
+{
+    /* Free partial path nodes and any unprocessed heap */
+    while (astar->heap_root)
+        astar->heap_root = aheap_pop(astar->heap_root);
+    ppath_free(astar);
+    ckd_free(astar->heap_root);
+}
+
+static ppath_t *
+astar_next_ppath(astar_t *astar)
+{
+    ppath_t *top, *pp;
+    dagnode_t *d;
+    daglink_t *l;
+    int32 lscr, pscr, tscr;
+    s3wid_t bw0, bw1, bw2;
+    int32 ppathdebug;
+    dict_t *dict = astar->dict;
+    lm_t *lm = astar->lm;
+    fillpen_t *fpen = astar->fpen;
+    float64 lwf = astar->lwf;
+
+    ppathdebug = cmd_ln_boolean("-ppathdebug");
+    while (astar->heap_root) {
         /* Extract top node from heap */
-        top = astar.heap_root->ppath;
-        astar.heap_root = aheap_pop(astar.heap_root);
+        top = astar->heap_root->ppath;
+        astar->heap_root = aheap_pop(astar->heap_root);
 
-        n_pop++;
+        astar->n_pop++;
 
         if (top->pruned)
             continue;
 
-        if (top->dagnode == dag->final.node) {  /* Complete hypotheses; output */
-            nbest_hyp_write(fp, top, dict, lm,
-                            top->pscr + dag->final.ascr,
-                            dag->nfrm);
-            n_hyp++;
-            if (besthyp < top->pscr)
-                besthyp = top->pscr;
-            if (worsthyp > top->pscr)
-                worsthyp = top->pscr;
-
-            continue;
-        }
+        if (top->dagnode == astar->dag->final.node) /* Complete hypothesis; return */
+            return top;
 
         /* Find two word (trigram) history beginning at this node */
-        pp = (dict_filler_word(dict, top->dagnode->wid)) ? top->
-            lmhist : top;
+        pp = (dict_filler_word(dict, top->dagnode->wid))
+            ? top->lmhist : top;
         if (pp) {
             bw1 = dict_basewid(dict, pp->dagnode->wid);
             pp = pp->lmhist;
@@ -587,10 +578,9 @@ nbest_search(dag_t *dag, char *filename, char *uttid, float64 lwf,
                                     ? BAD_LMWID(lm) : lm->dict2lmwid[bw1],
                                     lm->dict2lmwid[bw2], bw2);
 
-            if (dag->lmop++ > dag->maxlmop) {
-                E_ERROR("%s: Max LM ops (%d) exceeded\n", uttid,
-                        dag->maxlmop);
-                break;
+            if (astar->dag->lmop++ > astar->dag->maxlmop) {
+                E_ERROR("Max LM ops (%d) exceeded\n", astar->dag->maxlmop);
+                return NULL;
             }
 
             /* Obtain partial path score and hypothesized total utt score */
@@ -601,44 +591,121 @@ nbest_search(dag_t *dag, char *filename, char *uttid, float64 lwf,
                 printf("pscr= %11d, tscr= %11d, sf= %5d, %s%s\n",
                        pscr, tscr, l->node->sf, dict_wordstr(dict,
                                                              l->node->wid),
-                       (tscr - beam >= besttscr) ? "" : " (pruned)");
+                       (tscr - astar->beam >= astar->besttscr) ? "" : " (pruned)");
             }
 
             /* Insert extended path if within beam of best so far */
-            if (tscr - beam >= besttscr) {
-                ppath_insert(&astar, top, l, pscr, tscr, lscr);
-                if (astar.n_ppath > astar.maxppath) {
-                    E_ERROR("%s: Max PPATH limit (%d) exceeded\n", uttid,
-                            astar.maxppath);
-                    break;
+            if (tscr - astar->beam >= astar->besttscr) {
+                ppath_insert(astar, top, l, pscr, tscr, lscr);
+                if (astar->n_ppath > astar->maxppath) {
+                    E_ERROR("Max PPATH limit (%d) exceeded\n",
+                            astar->maxppath);
+                    return NULL;
                 }
 
-                if (tscr > besttscr)
-                    besttscr = tscr;
+                if (tscr > astar->besttscr)
+                    astar->besttscr = tscr;
             }
         }
         if (l)                  /* Above loop was aborted */
-            break;
+            return NULL;
 
-        n_exp++;
+        astar->n_exp++;
+    }
+
+    return NULL;
+}
+
+glist_t
+astar_next_hyp(astar_t *astar)
+{
+    srch_hyp_t *h;
+    glist_t hyp;
+    ppath_t *p, *pp;
+    int32 ascr;
+
+    pp = astar_next_ppath(astar);
+    if (pp == NULL)
+        return NULL;
+
+    hyp = NULL;
+    ascr = pp->pscr + astar->dag->final.ascr;
+    for (p = pp; p; p = p->hist) {
+        h = ckd_calloc(1, sizeof(*h));
+        h->id = p->dagnode->wid;
+        /* FIXME: This will be wrong if lwf != 1.0 */
+        h->lscr = p->hist ? lm_rawscore(astar->lm, h->lscr) : 0;
+        h->ascr = ascr;
+        h->word = dict_wordstr(astar->dict, h->id);
+        h->sf = p->dagnode->sf;
+
+        hyp = glist_add_ptr(hyp, h);
+        if (p->hist)
+            ascr = ascr - p->hist->pscr - p->lscr;
+    }
+
+    return hyp;
+}
+
+void
+nbest_search(dag_t *dag, char *filename, char *uttid, float64 lwf,
+             dict_t *dict, lm_t *lm, fillpen_t *fpen)
+{
+    FILE *fp;
+    float64 fbeam;
+    int32 nbest_max, n_hyp;
+    int32 besthyp, worsthyp;
+    ppath_t *top;
+    int32 ispipe;
+    astar_t *astar;
+
+    fbeam = cmd_ln_float64("-beam");
+    astar = astar_init(dag, dict, lm, fpen, fbeam, lwf);
+
+    /* Create Nbest file and write header comments */
+    if ((fp = fopen_comp(filename, "w", &ispipe)) == NULL) {
+        E_ERROR("fopen_comp (%s,w) failed\n", filename);
+        fp = stdout;
+    }
+    E_INFO("Writing N-Best list to %s\n", filename);
+    fprintf(fp, "# %s\n", uttid);
+    fprintf(fp, "# frames %d\n", dag->nfrm);
+    fprintf(fp, "# logbase %e\n", cmd_ln_float32("-logbase"));
+    fprintf(fp, "# langwt %e\n", cmd_ln_float32("-lw") * lwf);
+    fprintf(fp, "# inspen %e\n", cmd_ln_float32("-wip"));
+    fprintf(fp, "# beam %e\n", fbeam);
+
+    /* Astar-search */
+    n_hyp = 0;
+    nbest_max = cmd_ln_int32("-nbest");
+    besthyp = (int32) 0x80000000;
+    worsthyp = (int32) 0x7fffffff;
+
+    while (n_hyp < nbest_max) {
+        top = astar_next_ppath(astar);
+        if (top == NULL)
+            break;
+        nbest_hyp_write(fp, top, dict, lm,
+                        top->pscr + dag->final.ascr,
+                        dag->nfrm);
+        n_hyp++;
+        if (besthyp < top->pscr)
+            besthyp = top->pscr;
+        if (worsthyp > top->pscr)
+            worsthyp = top->pscr;
     }
 
     fprintf(fp, "End; best %d worst %d diff %d beam %d\n",
             besthyp + dag->final.ascr, worsthyp + dag->final.ascr,
-            worsthyp - besthyp, beam);
+            worsthyp - besthyp, astar->beam);
     fclose_comp(fp, ispipe);
     if (n_hyp <= 0) {
         unlink(filename);
         E_ERROR("%s: A* search failed\n", uttid);
     }
 
-    /* Free partial path nodes and any unprocessed heap */
-    while (astar.heap_root)
-        astar.heap_root = aheap_pop(astar.heap_root);
-
-    n_pp = ppath_free(&astar);
-    ckd_free(astar.heap_root);
+    astar_free(astar);
 
     E_INFO("N-Best search(%s): %5d frm %4d hyp %6d pop %6d exp %8d pp\n",
-          uttid, dag->nfrm, n_hyp, n_pop, n_exp, n_pp);
+          uttid, dag->nfrm, n_hyp, astar->n_pop, astar->n_exp, astar->n_pp);
 }
