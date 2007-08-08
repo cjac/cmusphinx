@@ -127,7 +127,7 @@ static arg_t defn[] = {
      "-2000.0",
      "Confidence threshold"},
     {"-confoutputfmt",
-     ARG_INT32,
+     ARG_STRING,
      "scores",
      "hypseg format, temporarily supersedes option -hypsegfmt, either `s3' or `scores'. "},
     {"-output",
