@@ -557,13 +557,13 @@ srch_utt_end(srch_t * s)
 	    match_write(s->matchfp, hyp, s->uttid, kbcore_dict(s->kbc), NULL);
 	if (s->matchsegfp)
 	    matchseg_write(s->matchsegfp, hyp, s->uttid, NULL,
-			   cmd_ln_int32("-hypsegfmt"), kbcore_lm(s->kbc),
+			   kbcore_lm(s->kbc),
 			   kbcore_dict(s->kbc), s->stat->nfr, s->ascale,
 			   cmd_ln_int32("-hypsegscore_unscale"));
     }
     match_write(stderr, hyp, s->uttid, kbcore_dict(s->kbc), "\nFWDVIT: ");
     matchseg_write(stderr, hyp, s->uttid, "FWDXCT: ",
-                   cmd_ln_int32("-hypsegfmt"), kbcore_lm(s->kbc),
+                   kbcore_lm(s->kbc),
                    kbcore_dict(s->kbc), s->stat->nfr, s->ascale,
                    cmd_ln_int32("-hypsegscore_unscale"));
     fprintf(stderr, "\n");
@@ -615,13 +615,12 @@ srch_utt_end(srch_t * s)
 		match_write(s->matchfp, rhyp, s->uttid, kbcore_dict(s->kbc), NULL);
 	    if (s->matchsegfp)
 		matchseg_write(s->matchsegfp, rhyp, s->uttid, NULL,
-			       cmd_ln_int32("-hypsegfmt"), kbcore_lm(s->kbc),
+			       kbcore_lm(s->kbc),
 			       kbcore_dict(s->kbc), s->stat->nfr, s->ascale,
 			       cmd_ln_int32("-hypsegscore_unscale"));
 	    match_write(stderr, rhyp, s->uttid,
 			kbcore_dict(s->kbc), "BSTPTH: ");
 	    matchseg_write(stderr, rhyp, s->uttid, "BSTXCT: ",
-			   cmd_ln_int32("-hypsegfmt"),
 			   kbcore_lm(s->kbc), kbcore_dict(s->kbc),
 			   s->stat->nfr, s->ascale,
 			   cmd_ln_int32("-hypsegscore_unscale"));

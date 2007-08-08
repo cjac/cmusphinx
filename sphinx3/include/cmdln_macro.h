@@ -494,11 +494,7 @@ us a better architecture.
     { "-hypseg", \
       ARG_STRING, \
       NULL, \
-      "Recognition result file, with word segmentations and scores" }, \
-    { "-hypsegfmt", \
-      ARG_INT32, \
-      "0", \
-      "Hypothesis segmentation format, 0: Sphinx 3 format, 1: Sphinx 2 format, 2: NIST CTM format"},
+      "Recognition result file, with word segmentations and scores" },
 
 #define score_handling_command_line_macro() \
     { "-hypsegscore_unscale", \
@@ -533,10 +529,6 @@ us a better architecture.
       ARG_BOOLEAN, \
       "yes", \
       "Whether to dump lattices in old format when Sphinx file format is used. " }, \
-    { "-outlatfmt", \
-      ARG_INT32, \
-      "0", \
-      "output lattice format, 0: Sphinx format of dag (node-based), 1: IBM format (link-based)."}, \
     { "-latext", \
       ARG_STRING, \
       "lat.gz", \

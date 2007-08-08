@@ -128,8 +128,8 @@ static arg_t defn[] = {
      "Confidence threshold"},
     {"-confoutputfmt",
      ARG_INT32,
-     "3",
-     "hypseg format, temporarily supersede option -hypsegfmt, support 0: s3 segment format, 1: s2 segment format, 2: ctm format, 3: Rong's format of confidence scores. "},
+     "scores",
+     "hypseg format, temporarily supersedes option -hypsegfmt, either `s3' or `scores'. "},
     {"-output",
      REQARG_STRING,
      NULL,
@@ -222,8 +222,7 @@ confidence_utt(char *uttid, FILE * _confmatchsegfp)
     seg_hyp_line_t s_hypline;
     char line[16384];
     char dagfile[16384];
-    int32 fmt;
-
+    char *fmt;
     char *latdir, *latext;
     E_INFO("Processing %s\n", uttid);
     if (fgets(line, sizeof(line), _confmatchsegfp) == NULL)
@@ -286,27 +285,24 @@ confidence_utt(char *uttid, FILE * _confmatchsegfp)
         E_FATAL("Fail to compute lm type\n");
 
     /* Dump pwp line */
-    fmt = cmd_ln_int32("-confoutputfmt");
-    if (fmt == 3) {
+    fmt = cmd_ln_str("-confoutputfmt");
+    if (!strcmp(fmt, "scores")) {
         dump_line(stdout, &s_hypline, dict);
         dump_line(outconfmatchsegfp, &s_hypline, dict);
     }
-    else if (fmt <= 2 && fmt >= 0) {
+    else {
         glist_t hyp;
         srch_hyp_t *s;
         conf_srch_hyp_t *h;
-
-        if (fmt == 1 || fmt == 0)
-            E_WARN("No confidence score will actually be generated.\n");
 
         hyp = NULL;
         for (h = (conf_srch_hyp_t *) s_hypline.wordlist; h; h = h->next) {
             s = &(h->sh);
             hyp = glist_add_ptr(hyp, (void *) s);
         }
-        matchseg_write(stdout, hyp, uttid, NULL, fmt,
+        matchseg_write(stdout, hyp, uttid, NULL,
                        lmset->cur_lm, dict, 0, NULL, 0);
-        matchseg_write(outconfmatchsegfp, hyp, uttid, NULL, fmt,
+        matchseg_write(outconfmatchsegfp, hyp, uttid, NULL,
                        lmset->cur_lm, dict, 0, NULL, 0);
     }
 

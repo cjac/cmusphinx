@@ -1,3 +1,4 @@
+/* -*- c-basic-offset:4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -99,7 +100,7 @@ match_write(FILE * fp, glist_t hyp, char *uttid, dict_t * dict, char *hdr)
 
 
 void
-matchseg_write(FILE * fp, glist_t hyp, char *uttid, char *hdr, int32 fmt,
+matchseg_write(FILE * fp, glist_t hyp, char *uttid, char *hdr,
                lm_t * lm, dict_t * dict, int32 num_frm, int32 * ascale,
                int32 unnorm)
 {
@@ -128,83 +129,23 @@ matchseg_write(FILE * fp, glist_t hyp, char *uttid, char *hdr, int32 fmt,
     for (i = 0; i < num_frm; i++)
         scl += ascale[i];
 
-    if (fmt > SEG_FMT_CTM || fmt < 0) {
-        E_ERROR("Unknown file format %d, backoff to the default fmt\n");
-        fmt = SEG_FMT_SPHINX3;
-    }
+    fprintf(fp, "%s%s S %d T %d A %d L %d", (hdr ? hdr : ""), uttid,
+	    scl, ascr + lscr + global_hypscale, ascr + global_hypscale,
+	    lscr);
 
-    if (fmt == SEG_FMT_SPHINX3) {
-
-        fprintf(fp, "%s%s S %d T %d A %d L %d", (hdr ? hdr : ""), uttid,
-                scl, ascr + lscr + global_hypscale, ascr + global_hypscale,
-                lscr);
-
-
-        for (gn = hyp; gn; gn = gnode_next(gn)) {
+    for (gn = hyp; gn; gn = gnode_next(gn)) {
             h = (srch_hyp_t *) gnode_ptr(gn);
 
             hypscale = 0;
             if (unnorm)
-                hypscale += compute_scale(h->sf, h->ef, ascale);
+		    hypscale += compute_scale(h->sf, h->ef, ascale);
 
 
             fprintf(fp, " %d %d %d %s", h->sf, h->ascr + hypscale,
                     lm ? lm_rawscore(lm, h->lscr) : h->lscr,
 		    dict_wordstr(dict, h->id));
-        }
-        fprintf(fp, " %d\n", num_frm);
     }
-    else if (fmt == SEG_FMT_SPHINX2) {
-        fprintf(fp, "%s%s   ", (hdr ? hdr : ""), uttid);
-
-        for (gn = hyp; gn; gn = gnode_next(gn)) {
-            h = (srch_hyp_t *) gnode_ptr(gn);
-
-            hypscale = 0;
-            if (unnorm)
-                hypscale += compute_scale(h->sf, h->ef, ascale);
-
-            /*FIXME!, what is the second output of the matchseg file? */
-            fprintf(fp, "%s 0 %d %d %d %d ", dict_wordstr(dict, h->id),
-                    h->sf, h->ef, h->ascr,
-		    lm ? lm_rawscore(lm, h->lscr) : h->lscr);
-
-        }
-
-        fprintf(fp, "(S= %d (A= %d L= %d))\n",
-                ascr + lscr + global_hypscale, ascr + global_hypscale,
-                lscr);
-    }
-    else if (fmt == SEG_FMT_CTM) {
-
-        for (gn = hyp; gn; gn = gnode_next(gn)) {
-
-            h = (srch_hyp_t *) gnode_ptr(gn);
-            /*FIXME!, what is the second output of the matchseg file? */
-
-            fprintf(fp, "%s%s %s %f %f %s",
-                    (hdr ? hdr : ""),
-                    uttid,
-                    CTM_CHANNEL_MARKER,
-                    (float32) (h->sf) / 100.0,
-                    (float32) (h->ef) / 100.0,
-		    dict_wordstr(dict, h->id));
-
-
-            if (h->cscr <= 0) { /*This is a bad way to decide whether to dump the score */
-                /* The score is in log domain and prescaled by logs3_10base() * 39.5  / lm->lw */
-                /* BUG! What about underflow? */
-                fprintf(fp, " %f\n",
-                        (float32) logs3_to_log(h->cscr * (int) lm->lw /
-                                               (int) 39.5));
-            }
-            else {
-                fprintf(fp, " %f\n", CTM_CONFIDENCE_SCORE_STUB);
-            }
-        }
-
-    }
-
+    fprintf(fp, " %d\n", num_frm);
 
     fflush(fp);
 

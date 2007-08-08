@@ -59,16 +59,9 @@
 #ifndef _SRCH_OUTPUT_H_
 #define _SRCH_OUTPUT_H_
 
-#define SEG_FMT_SPHINX3 0
-#define SEG_FMT_SPHINX2 1
-#define SEG_FMT_CTM 2
-#define CTM_CHANNEL_MARKER "A"
-#define CTM_CONFIDENCE_SCORE_STUB 0.7
-
-#define WORST_CONFIDENCE_SCORE ((int)0xE0000000)
-
 #define HYPSEG_SUCCESS 1
 #define HYPSEG_FAILURE 0
+#define WORST_CONFIDENCE_SCORE ((int)0xE0000000)
 
 int32 compute_scale(int32 sf, int32 ef, int32* scalearray);
 
@@ -95,11 +88,6 @@ void matchseg_write (FILE *fp,  /**< The file pointer */
 		     glist_t hyp, /**< A link-list that contains the hypotheesis*/
 		     char *uttid, /**< Utterance ID of the file */
 		     char *hdr, /**< The header */
-		     int32 fmt, /**< The format of segmentation file 
-				   SEG_FMT_SPHINX3 : Sphinx 3 segmentation format. 
-				   SEG_FMT_SPHINX2 : Sphinx 2 segmentation format. 
-				   CTM : CTM format used by NIST sctk rescoring kit. 
-				*/
 		     lm_t * lm, /**< Language model */
 		     dict_t * dict, /**< Dictionary */
 		     int32 num_frm, /**< Number of frames */
