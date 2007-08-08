@@ -1,9 +1,9 @@
 package edu.cmu.sphinx.tools.confdesigner.propedit;
 
+import edu.cmu.sphinx.util.props.Configurable;
 import edu.cmu.sphinx.util.props.PropertySheet;
-import edu.cmu.sphinx.util.props.S4String;
+import edu.cmu.sphinx.util.props.S4Component;
 
-import javax.swing.*;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
@@ -16,10 +16,10 @@ public class TableCompProperty extends TableProperty {
 
     private PropertySheet currentPS;
     private String propName;
-    private S4String s4Double;
+    private S4Component s4Double;
 
 
-    public TableCompProperty(PropertySheet currentPS, String propName, S4String s4String) {
+    public TableCompProperty(PropertySheet currentPS, String propName, S4Component s4String) {
         this.currentPS = currentPS;
         this.propName = propName;
         this.s4Double = s4String;
@@ -29,22 +29,10 @@ public class TableCompProperty extends TableProperty {
         if (currentPS.getRaw(propName) != null) {
             setValue(currentPS.getDouble(propName));
         } else {
-            String defValue = s4String.defaultValue();
-            String[] range = s4String.range();
-            if (range.length != 0) {
-                JComboBox box = new JComboBox(range);
-                setValue(box);
-            } else {
-                if (defValue.equals(S4String.NOT_DEFINED))
-                    setValue(defValue);
-            }
+            Class<? extends Configurable> defValue = s4String.type();
 
             // set color to gray to indicate the defaultness
         }
-    }
-
-
-    public void add(SimplePropEditor simplePropEditor) {
     }
 
 

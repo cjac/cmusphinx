@@ -25,8 +25,8 @@ public class SimplePropEditor extends JPanel {
 
     public SimplePropEditor() {
         tableModel = new EditorTableModel();
-//        myTable = new JTable(tableModel);
-        myTable = new CellSpecificRenderTable(tableModel);
+        myTable = new JTable(tableModel);
+//        myTable = new CellSpecificRenderTable(tableModel);
 
         myTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
@@ -51,8 +51,6 @@ public class SimplePropEditor extends JPanel {
 
     public void clear() {
         tableModel.clear();
-
-
     }
 
 

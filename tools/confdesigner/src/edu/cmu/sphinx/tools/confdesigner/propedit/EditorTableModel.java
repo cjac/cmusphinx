@@ -48,7 +48,7 @@ public class EditorTableModel extends AbstractTableModel {
 
 
     public void addProperty(TableProperty property) {
-        assert props != null;
+        assert property != null;
         props.add(property);
 
         fireTableDataChanged();

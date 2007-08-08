@@ -16,15 +16,14 @@ public abstract class TableProperty {
     private Object myValue;
 
 
-    public abstract void add(SimplePropEditor simplePropEditor);
-
-
     public void setDisplayName(String propName) {
         myName = propName;
     }
 
 
-    public abstract void setValue(Object value);
+    public void setValue(Object value) {
+        myValue = value;
+    }
 
 
     public Object getValue() {

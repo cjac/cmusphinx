@@ -1,7 +1,7 @@
 package edu.cmu.sphinx.tools.confdesigner.propedit;
 
 import edu.cmu.sphinx.util.props.PropertySheet;
-import edu.cmu.sphinx.util.props.S4Double;
+import edu.cmu.sphinx.util.props.S4Boolean;
 
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
@@ -12,32 +12,18 @@ import javax.swing.table.TableCellRenderer;
  *
  * @author Holger Brandl
  */
-public class TableDoubleProperty extends TableProperty {
+public class TableBoolProperty extends TableProperty {
 
     private PropertySheet currentPS;
     private String propName;
-    private S4Double s4Double;
-    private double[] range;
+    private S4Boolean s4Boolean;
 
 
-    public TableDoubleProperty(PropertySheet currentPS, String propName, S4Double s4Double) {
+    public TableBoolProperty(PropertySheet currentPS, String propName, S4Boolean s4Boolean) {
+        super();
         this.currentPS = currentPS;
         this.propName = propName;
-        this.s4Double = s4Double;
-
-        this.range = s4Double.range();
-
-        setDisplayName(propName);
-
-        if (currentPS.getRaw(propName) != null) {
-            setValue(currentPS.getDouble(propName));
-        } else {
-            double defValue = s4Double.defaultValue();
-            if (defValue != S4Double.NOT_DEFINED)
-                setValue(defValue);
-
-            // set color to gray to indicate the defaultness
-        }
+        this.s4Boolean = s4Boolean;
     }
 
 
@@ -45,6 +31,7 @@ public class TableDoubleProperty extends TableProperty {
         assert value instanceof Double;
 
         Double newValue = (Double) value;
+//        setValue();
         // range checking is automatically done by the attached cell editor
         currentPS.setDouble(propName, newValue);
     }
@@ -61,6 +48,6 @@ public class TableDoubleProperty extends TableProperty {
 
 
     public TableCellEditor getValueEditor() {
-        return new DoubleEditor(range[0], range[1]);
+        return new IntegerEditor(0, 1);
     }
 }

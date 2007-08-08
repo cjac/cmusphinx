@@ -44,10 +44,6 @@ public class TableStringProperty extends TableProperty {
     }
 
 
-    public void add(SimplePropEditor simplePropEditor) {
-    }
-
-
     public void setValue(Object value) {
     }
 
