@@ -421,6 +421,7 @@ kbcore_init(void)
 	if (cmd_ln_parse_file(feat_defn, str, FALSE) == 0) {
 	    E_INFO("Parsed model-specific feature parameters from %s\n", str);
 	}
+	ckd_free(str);
     }
 
     if (!logs3_init(cmd_ln_float32("-logbase"),
