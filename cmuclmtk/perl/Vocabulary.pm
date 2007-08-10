@@ -147,7 +147,7 @@ sub add_transcript {
     local $_;
     while (<$fh>) {
 	# Remove utterance IDs
-	s,\([^\)]+\)$,,;
+	s,\([^\)\(]+\)$,,;
 	# Handle class tags if present
 	while (m,<([^sS>]|[^>][^>]+)>\s*([^<]+?)\s*</\1>,g) {
 	    next if $1 eq 'unmarked';

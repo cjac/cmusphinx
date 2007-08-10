@@ -354,7 +354,7 @@ sub run {
 		or die "Failed to open $in: $!";
 	    while (<$infh>) {
 		# Remove utterance ID if present
-		s/\([^)]+\)$//;
+		s/\([^\)\(]+\)$//;
 		# Handle class tags if present
 		while (m,<([^sS>]|[^>][^>]+)>\s*([^<]+?)\s*</\1>,g) {
 		    next if $1 eq 'unmarked';
@@ -363,7 +363,7 @@ sub run {
 		s,<unmarked>\s*([^<]+?)\s*</unmarked>,$1,g;
 		s,<([^sS>]|[^>][^>]+)>\s*([^<]+?)\s*</\1>,[$1],g;
 		# Remove utterance IDs
-		s,\([^\)]+\)$,,;
+		s,\([^\)\(]+\)$,,;
 		print WRITER $_
 		    or die "Failed to write to child: $!";
 	    }
@@ -479,7 +479,7 @@ sub evaluate {
 		s,<unmarked>\s*([^<]+?)\s*</unmarked>,$1,g;
 		s,<([^sS>]|[^>][^>]+)>\s*([^<]+?)\s*</\1>,[$1],g;
 		# Remove utterance IDs
-		s,\([^\)]+\)$,,;
+		s,\([^\)\(]+\)$,,;
 		print $testfh $_;
 	    }
 	}
@@ -491,7 +491,7 @@ sub evaluate {
 	    s,<unmarked>\s*([^<]+?)\s*</unmarked>,$1,g;
 	    s,<([^sS>]|[^>][^>]+)>\s*([^<]+?)\s*</\1>,[$1],g;
 	    # Remove utterance IDs
-	    s,\([^\)]+\)$,,;
+	    s,\([^\)\(]+\)$,,;
 	    print $testfh $_;
 	}
     }
