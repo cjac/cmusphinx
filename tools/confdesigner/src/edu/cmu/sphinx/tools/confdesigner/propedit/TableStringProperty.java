@@ -16,13 +16,14 @@ public class TableStringProperty extends TableProperty {
 
     private PropertySheet currentPS;
     private String propName;
-    private S4String s4Double;
+    private S4String s4String;
 
 
-    public TableStringProperty(PropertySheet currentPS, String propName, S4String s4String) {
+    public TableStringProperty(PropertySheet currentPS, String propName) {
+        super(propName);
         this.currentPS = currentPS;
         this.propName = propName;
-        this.s4Double = s4String;
+        this.s4String = s4String;
 
         setDisplayName(propName);
 
@@ -45,6 +46,12 @@ public class TableStringProperty extends TableProperty {
 
 
     public void setValue(Object value) {
+
+    }
+
+
+    public Object getValue() {
+        return null;
     }
 
 

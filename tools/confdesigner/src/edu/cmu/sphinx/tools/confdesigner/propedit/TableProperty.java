@@ -12,27 +12,31 @@ import java.awt.*;
  */
 public abstract class TableProperty {
 
-    private String myName;
-    private Object myValue;
+    private String propName;
+
+
+    public TableProperty(String propName) {
+        this.propName = propName;
+    }
 
 
     public void setDisplayName(String propName) {
-        myName = propName;
     }
 
 
-    public void setValue(Object value) {
-        myValue = value;
+    public abstract void setValue(Object value);
+
+
+    public abstract Object getValue();
+
+
+    public String getPropName() {
+        return propName;
     }
 
 
-    public Object getValue() {
-        return myValue;
-    }
-
-
-    public String getDisplayName() {
-        return myName;
+    public String toString() {
+        return propName;
     }
 
 
@@ -46,10 +50,8 @@ public abstract class TableProperty {
     }
 
 
-    public TableCellRenderer getValueRenderer() {
-        return new DefaultTableCellRenderer();
-    }
-
-
     public abstract TableCellEditor getValueEditor();
+
+
+    public abstract TableCellRenderer getValueRenderer();
 }

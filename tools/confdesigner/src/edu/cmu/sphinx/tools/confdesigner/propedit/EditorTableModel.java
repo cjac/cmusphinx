@@ -33,7 +33,7 @@ public class EditorTableModel extends AbstractTableModel {
             return "test";
 
         if (columnIndex == 0) {
-            return property.getDisplayName();
+            return property.toString();
         } else {
             return property.getValue();
         }

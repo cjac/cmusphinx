@@ -20,14 +20,13 @@ public class TableDoubleProperty extends TableProperty {
     private double[] range;
 
 
-    public TableDoubleProperty(PropertySheet currentPS, String propName, S4Double s4Double) {
+    public TableDoubleProperty(PropertySheet currentPS, String propName) {
+        super(propName);
         this.currentPS = currentPS;
         this.propName = propName;
         this.s4Double = s4Double;
 
         this.range = s4Double.range();
-
-        setDisplayName(propName);
 
         if (currentPS.getRaw(propName) != null) {
             setValue(currentPS.getDouble(propName));
@@ -47,6 +46,11 @@ public class TableDoubleProperty extends TableProperty {
         Double newValue = (Double) value;
         // range checking is automatically done by the attached cell editor
         currentPS.setDouble(propName, newValue);
+    }
+
+
+    public Object getValue() {
+        return null;
     }
 
 

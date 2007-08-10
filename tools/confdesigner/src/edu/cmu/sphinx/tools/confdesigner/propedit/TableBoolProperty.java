@@ -3,6 +3,7 @@ package edu.cmu.sphinx.tools.confdesigner.propedit;
 import edu.cmu.sphinx.util.props.PropertySheet;
 import edu.cmu.sphinx.util.props.S4Boolean;
 
+import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
@@ -14,26 +15,48 @@ import javax.swing.table.TableCellRenderer;
  */
 public class TableBoolProperty extends TableProperty {
 
-    private PropertySheet currentPS;
-    private String propName;
+    private PropertySheet propSheet;
     private S4Boolean s4Boolean;
+    private String NOT_DEFINED = "Not defined";
+    private ComboTableCellRenderer renderer = new ComboTableCellRenderer();
+    private JComboBox comboBox = new JComboBox(new Object[]{NOT_DEFINED, Boolean.TRUE, Boolean.FALSE});
 
 
-    public TableBoolProperty(PropertySheet currentPS, String propName, S4Boolean s4Boolean) {
-        super();
-        this.currentPS = currentPS;
-        this.propName = propName;
-        this.s4Boolean = s4Boolean;
+    public TableBoolProperty(PropertySheet currentPS, String propName) {
+        super(propName);
+        this.propSheet = currentPS;
+        this.s4Boolean = (S4Boolean) currentPS.getProperty(propName, S4Boolean.class).getAnnotation();
+
+
+        Boolean defValue = propSheet.getBoolean(propName);
+        if (defValue == null)
+            comboBox.getModel().setSelectedItem(NOT_DEFINED);
+        else
+            comboBox.getModel().setSelectedItem(defValue);
+
+        comboBox.setRenderer(renderer);
     }
 
 
     public void setValue(Object value) {
-        assert value instanceof Double;
+//        assert value instanceof String;
 
-        Double newValue = (Double) value;
-//        setValue();
+        Boolean boolValue = null;
+//        if(!value.equals(NOT_DEFINED))
+//            boolValue = Boolean.getBoolean((String) value);
+
+        // don't change anything if nothing has changed
+        Object oldValue = propSheet.getRaw(getPropName());
+        if ((boolValue == null && oldValue == null) || boolValue.equals(oldValue))
+            return;
+
         // range checking is automatically done by the attached cell editor
-        currentPS.setDouble(propName, newValue);
+        propSheet.setBoolean(getPropName(), boolValue);
+    }
+
+
+    public Object getValue() {
+        return comboBox.getSelectedItem();
     }
 
 
@@ -43,11 +66,11 @@ public class TableBoolProperty extends TableProperty {
 
 
     public TableCellRenderer getValueRenderer() {
-        return new DefaultTableCellRenderer();
+        return renderer;
     }
 
 
     public TableCellEditor getValueEditor() {
-        return new IntegerEditor(0, 1);
+        return new DefaultCellEditor(comboBox);
     }
 }
