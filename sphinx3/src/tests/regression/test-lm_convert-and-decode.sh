@@ -9,9 +9,9 @@ echo "YOU SHOULD SEE THE RECOGNITION RESULT 'P I T T S B U R G H'"
 tmpdmp="test-lm_convert-and-decode.DMP"
 
 run_program sphinx3_lm_convert \
--input $an4lm/an4.ug.lm \
--output $tmpdmp \
--outputfmt DMP \
+-i $an4lm/an4.ug.lm \
+-o $tmpdmp \
+-ofmt DMP \
 > /dev/null 2>&1
 
 margs="-mdef $hub4am/hub4opensrc.6000.mdef \
@@ -59,9 +59,9 @@ echo "YOU SHOULD SEE THE RECOGNITION RESULT 'P I T T S B U R G H'"
 tmpdmp="test-lm_convert-and-decode.DMP32"
 
 run_program sphinx3_lm_convert \
--input $an4lm/an4.ug.lm \
--output $tmpdmp \
--outputfmt DMP32 \
+-i $an4lm/an4.ug.lm \
+-o $tmpdmp \
+-ofmt DMP32 \
 > /dev/null 2>&1
 
 lmargs="-lm $tmpdmp"
@@ -92,9 +92,9 @@ else
 fi
 
 run_program sphinx3_lm_convert \
--input $an4lm/an4.ug.lm \
--inputfmt TXT32 \
--output $tmpdmp \
+-i $an4lm/an4.ug.lm \
+-ifmt TXT32 \
+-o $tmpdmp \
 > /dev/null 2>&1
 
 lmargs="-lm $tmpdmp"
