@@ -1,20 +1,17 @@
 package edu.cmu.sphinx.tools.executor;
 
-import edu.cmu.sphinx.util.props.ConfigurationManager;
+import edu.cmu.sphinx.util.props.ConfigurationManagerUtils;
 import edu.cmu.sphinx.util.props.PropertyException;
 import edu.cmu.sphinx.util.props.PropertySheet;
-import edu.cmu.sphinx.util.props.ConfigurationManagerUtils;
 
-import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 /**
  * DOCUMENT ME!
-*
-* @author Holger Brandl
-*/
+ *
+ * @author Holger Brandl
+ */
 public class ExecutableExecutor implements ActionListener {
 
     private final PropertySheet executablePS;
@@ -36,8 +33,6 @@ public class ExecutableExecutor implements ActionListener {
                 super.run();
                 try {
                     ((Executable) executablePS.getOwner()).doExecute();
-                } catch (InstantiationException e1) {
-                    e1.printStackTrace();
                 } catch (PropertyException e1) {
                     e1.printStackTrace();
                 }
