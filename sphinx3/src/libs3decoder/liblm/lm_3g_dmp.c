@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -235,11 +236,20 @@ void
 lm3g_dump_write_fmtdesc(FILE * fp)
 {
     int32 i, k;
+    long pos;
+
     /* Write file format description into header */
     for (i = 0; fmtdesc[i] != NULL; i++) {
         k = strlen(fmtdesc[i]) + 1;
         fwrite_int32(fp, k);
         fwrite(fmtdesc[i], sizeof(char), k, fp);
+    }
+    /* Pad it out in order to achieve 32-bit alignment */
+    pos = ftell(fp);
+    k = pos & 3;
+    if (k) {
+        fwrite_int32(fp, 4-k);
+        fwrite("!!!!", 1, 4-k, fp);
     }
     fwrite_int32(fp, 0);
 }
