@@ -152,12 +152,6 @@ my @unknown;
 foreach (sort keys %unigram) {
     my $orig = $_;
 
-    # Try to find this in the input dictionary
-    if (exists $indict{$_}) {
-	$unigram{$orig} = $indict{$_};
-	next;
-    }
-
     # Sometimes these are in the input, sometimes not
     next if /^<.*>$/; # Skip <UNK>, <s>, etc
     next if /^\+\+.*\+\+$/; # Skip filler words
@@ -166,7 +160,15 @@ foreach (sort keys %unigram) {
     next if /^\[.*\]$/;
 
     # Remove class tags
-    s/:.*//;
+    s/^([^:]+):.*/$1/;
+
+    s/^[[:punct:]]+//; # Remove leading punctuation
+
+    # Try to find this in the input dictionary
+    if (exists $indict{$_}) {
+	$unigram{$orig} = $indict{$_};
+	next;
+    }
 
     # Deal with acronyms
     if (/^((?:[A-Z](?:_|$)){2,})(.*)$/) {
@@ -182,6 +184,8 @@ foreach (sort keys %unigram) {
     }
     # Replace all remaining underscores with spaces
     tr/_-/ /;
+    s/ $//;
+    s/^ //;
 
     # Try to find the resulting parts in the input dictionary and
     # concatenate them if found
@@ -202,6 +206,7 @@ foreach (sort keys %unigram) {
     # Some parts left, so they weren't found
     if (@parts) {
 	# Not found (compound as a whole)
+	s/\"/\\"/g; # Escape quotes!
 	push @unknown, [$orig => $_];
 	print uc("$_\n") foreach split;
     }
@@ -265,7 +270,9 @@ while (<$fh>) {
 
     # Get original orthography
     my $orig = $unknown[$i++][0];
-    $unigram{$orig} = $_;
+    unless ($_ eq 'NIL') {
+	$unigram{$orig} = $_;
+    }
 }
 
 # Write out the merged dictionary
