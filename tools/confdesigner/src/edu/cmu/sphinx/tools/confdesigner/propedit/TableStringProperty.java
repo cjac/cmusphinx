@@ -20,12 +20,10 @@ public class TableStringProperty extends TableProperty {
 
 
     public TableStringProperty(JTable myTable, PropertySheet currentPS, String propName) {
-        super(propName, myTable);
+        super(propName, myTable, currentPS);
         this.currentPS = currentPS;
         this.propName = propName;
         this.s4String = s4String;
-
-        setDisplayName(propName);
 
         if (currentPS.getRaw(propName) != null) {
             setValue(currentPS.getDouble(propName));

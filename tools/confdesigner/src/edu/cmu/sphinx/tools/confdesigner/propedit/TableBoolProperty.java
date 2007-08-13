@@ -1,31 +1,25 @@
 package edu.cmu.sphinx.tools.confdesigner.propedit;
 
 import edu.cmu.sphinx.util.props.PropertySheet;
-import edu.cmu.sphinx.util.props.S4Boolean;
 
 import javax.swing.*;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
-/**
- * DOCUMENT ME!
- *
- * @author Holger Brandl
- */
+/** @author Holger Brandl */
 public class TableBoolProperty extends TableProperty {
 
-    private PropertySheet propSheet;
-    private S4Boolean s4Boolean;
+//    private S4Boolean s4Boolean;
+
     private String NOT_DEFINED = "Not defined";
     private ComboTableCellRenderer renderer = new ComboTableCellRenderer();
     private JComboBox comboBox = new JComboBox(new Object[]{NOT_DEFINED, Boolean.TRUE, Boolean.FALSE});
 
 
     public TableBoolProperty(JTable myTable, PropertySheet currentPS, String propName) {
-        super(propName, myTable);
-        this.propSheet = currentPS;
-        this.s4Boolean = (S4Boolean) currentPS.getProperty(propName, S4Boolean.class).getAnnotation();
+        super(propName, myTable, currentPS);
 
+//        this.s4Boolean = (S4Boolean) currentPS.getProperty(propName, S4Boolean.class).getAnnotation();
 
         Boolean defValue = propSheet.getBoolean(propName);
         if (defValue == null)

@@ -22,7 +22,7 @@ public class TableDoubleProperty extends TableProperty {
 
 
     public TableDoubleProperty(JTable myTable, PropertySheet currentPS, String propName) {
-        super(propName, myTable);
+        super(propName, myTable, currentPS);
         this.currentPS = currentPS;
         this.propName = propName;
         this.s4Double = s4Double;
