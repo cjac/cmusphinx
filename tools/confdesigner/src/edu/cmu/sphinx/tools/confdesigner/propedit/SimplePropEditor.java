@@ -1,6 +1,7 @@
 package edu.cmu.sphinx.tools.confdesigner.propedit;
 
 import edu.cmu.sphinx.util.LogMath;
+import edu.cmu.sphinx.util.props.ConfigurationChangeListener;
 import edu.cmu.sphinx.util.props.ConfigurationManager;
 import edu.cmu.sphinx.util.props.PropertySheet;
 
@@ -77,6 +78,27 @@ public class SimplePropEditor extends JPanel {
 
 
         ConfigurationManager cm = new ConfigurationManager();
+        cm.addConfigurationChangeListener(new ConfigurationChangeListener() {
+
+            public void configurationChanged(String configurableName, String propertyName, ConfigurationManager cm) {
+                System.out.println("configuration changed: " + configurableName + " propName=" + propertyName + " value=" + cm.getPropertySheet(configurableName).getRaw(propertyName));
+            }
+
+
+            public void componentAdded(ConfigurationManager cm, PropertySheet ps) {
+                System.out.println("component added");
+            }
+
+
+            public void componentRemoved(ConfigurationManager cm, PropertySheet ps) {
+                System.out.println("component removed");
+            }
+
+
+            public void componentRenamed(ConfigurationManager cm, PropertySheet ps, String oldName) {
+                System.out.println("component compoenent removed");
+            }
+        });
         String instName = "myLogMath";
         cm.addConfigurable(LogMath.class, instName);
         PropertySheet ps = cm.getPropertySheet(instName);
@@ -89,46 +111,4 @@ public class SimplePropEditor extends JPanel {
         frame.setBounds(300, 400, 200, 400);
         frame.setVisible(true);
     }
-
-
 }
-
-//class PropertyCellRenderer extends DefaultListCellRenderer {
-//
-//        /** Creates a new instance of LocaleRenderer */
-//        public PropertyCellRenderer() {
-//        }
-//
-//
-//        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-//            super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-//
-//            setText(value.toString());
-//
-//            Color strColor = getColor(list, index);
-//            setForeground(strColor);
-////                setBackground(color);
-//
-//            return this;
-//        }
-//
-//
-//        private Color getColor(JList list, int index) {
-////            ListModel listModel = list.getModel();
-////
-////            if ((index + 1) >= listModel.getSize())
-////                return Color.BLACK;
-////
-////            if (listModel.getElementAt(index + 1) instanceof VadSegment && listModel.getElementAt(index) instanceof VadSegment) {
-////                return Color.GREEN;
-////            }
-////
-////            if (listModel.getElementAt(index + 1) instanceof SegmentHypothesis && listModel.getElementAt(index) instanceof SegmentHypothesis) {
-////                return Color.RED;
-////            }
-////
-//            return Color.BLACK;
-//        }
-//    }
-//
-//
