@@ -7,6 +7,7 @@ import edu.cmu.sphinx.util.props.test.DummyComp;
 
 import javax.swing.*;
 import java.awt.*;
+import java.lang.reflect.Proxy;
 
 /**
  * DOCUMENT ME!
@@ -114,5 +115,33 @@ public class SimplePropEditor extends JPanel {
 
         frame.setBounds(300, 400, 200, 400);
         frame.setVisible(true);
+    }
+
+
+    public void addProperties(PropertySheet ps) {
+        for (String propName : ps.getRegisteredProperties()) {
+            Proxy wrapper = null;
+
+            PropertySheet.PropertyType propType = ps.getType(propName);
+            switch (propType) {
+
+
+                case BOOL:
+                    addProperty(new TableBoolProperty(getTable(), ps, propName));
+                    break;
+                case DOUBLE:
+                    addProperty(new TableDoubleProperty(getTable(), ps, propName));
+                    break;
+                case INT:
+                    addProperty(new TableIntegerProperty(getTable(), ps, propName));
+                    break;
+                case STRING:
+                    addProperty(new TableStringProperty(getTable(), ps, propName));
+                    break;
+            }
+
+//            p.addPropertyChangeListener(pChangeListener);
+//            addProperty(p);
+        }
     }
 }

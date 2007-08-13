@@ -156,7 +156,7 @@ public class PropertyEditorPanel extends PropertySheetPanel implements ObjectSce
     }
 
 
-    private PropertyChangeListener createPropSheetListener() {
+    protected PropertyChangeListener createPropSheetListener() {
         return new PropertyChangeListener() {
 
             public void propertyChange(PropertyChangeEvent evt) {

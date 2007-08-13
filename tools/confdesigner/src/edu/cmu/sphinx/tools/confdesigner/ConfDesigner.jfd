@@ -253,7 +253,7 @@
             </void> 
             <void method="add"> 
              <object class="com.jformdesigner.model.FormComponent"> 
-              <string>edu.cmu.sphinx.tools.confdesigner.PropertyEditorPanel</string> 
+              <string>edu.cmu.sphinx.tools.confdesigner.PropertyEditorPanelNT</string> 
               <void method="setProperty"> 
                <string>minimumSize</string> 
                <object class="com.jformdesigner.model.FormObject" field="NULL_VALUE"/> 
