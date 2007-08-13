@@ -246,10 +246,6 @@ utt_decode(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
     if (ur->regmatname != NULL)
         kb_setmllr(ur->regmatname, ur->cb2mllrname, kb);
 
-    /* These are necessary! */
-    s->uttid = kb->uttid;
-    s->uttfile = kb->uttfile;
-
     utt_begin(kb);
     utt_decode_block(kb->feat, total_frame, &num_decode_frame, kb);
     utt_end(kb);
@@ -279,6 +275,9 @@ utt_decode_block(float ***block_feat,   /* Incoming block of featurevecs */
     srch_t *s;
     s = (srch_t *) kb->srch;
 
+    /* These are necessary! */
+    s->uttid = kb->uttid;
+    s->uttfile = kb->uttfile;
     if (srch_utt_decode_blk(s, block_feat, no_frm, curfrm) == SRCH_FAILURE) {
         E_ERROR("srch_utt_decode_blk failed. \n");
     }
