@@ -108,6 +108,8 @@ public class SimplePropEditor extends JPanel {
         editor.addProperty(new TableBoolProperty(editor.getTable(), ps, DummyComp.PROP_USE_FOOBAR));
         editor.addProperty(new TableStringProperty(editor.getTable(), ps, DummyComp.PROP_BEST_PIZZA));
         editor.addProperty(new TableStringProperty(editor.getTable(), ps, DummyComp.PROP_BEST_ASR));
+        editor.addProperty(new TableDoubleProperty(editor.getTable(), ps, DummyComp.PROP_ALPHA));
+        editor.addProperty(new TableIntegerProperty(editor.getTable(), ps, DummyComp.PROP_BEAM_WIDTH));
         frame.getContentPane().add(editor);
 
         frame.setBounds(300, 400, 200, 400);

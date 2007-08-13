@@ -1,7 +1,7 @@
 package edu.cmu.sphinx.tools.confdesigner.propedit;
 
 import edu.cmu.sphinx.util.props.PropertySheet;
-import edu.cmu.sphinx.util.props.S4Double;
+import edu.cmu.sphinx.util.props.S4Integer;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -13,75 +13,67 @@ import javax.swing.table.TableCellRenderer;
  *
  * @author Holger Brandl
  */
-public class TableDoubleProperty extends TableProperty {
+public class TableIntegerProperty extends TableProperty {
 
 
     private String NOT_DEFINED = "Not defined";
     private DefaultTableCellRenderer renderer = new DefaultTableCellRenderer();
 
-    private S4Double s4Double;
-    private DoubleEditor doubleEditor;
+    private S4Integer s4Integer;
+    private IntegerEditor doubleEditor;
 
 
-    public TableDoubleProperty(JTable myTable, PropertySheet currentPS, String propName) {
+    public TableIntegerProperty(JTable myTable, PropertySheet currentPS, String propName) {
         super(propName, myTable, currentPS);
 
-        this.s4Double = (S4Double) currentPS.getProperty(propName, S4Double.class).getAnnotation();
-        doubleEditor = new DoubleEditor(s4Double.range()[0], s4Double.range()[1]);
-    }
+        this.s4Integer = (S4Integer) currentPS.getProperty(propName, S4Integer.class).getAnnotation();
+        doubleEditor = new IntegerEditor(s4Integer.range()[0], s4Integer.range()[1]);
 
-//    public TableBoolProperty(JTable myTable, PropertySheet currentPS, String propName) {
-//        super(propName, myTable, currentPS);
-//
-//        this.s4Boolean = (S4Boolean) currentPS.getProperty(propName, S4Boolean.class).getAnnotation();
-//
-//        Boolean defValue = propSheet.getBoolean(propName);
-//        if (defValue == null)
-//            comboBox.getModel().setSelectedItem(NOT_DEFINED);
+//        Object rawValue = propSheet.getRaw(propName);
+//        if(rawValue != null)
+//        doubleEditor.ftf.setValue(rawValue);
 //        else
-//            comboBox.getModel().setSelectedItem(defValue);
-//
-//        comboBox.setRenderer(renderer);
-//    }
+//        doubleEditor.ftf.setValue(null);
+    }
 
 
     public boolean isDefault() {
         if (propSheet.getRaw(getPropName()) == null)
             return false;
         else
-            return s4Double.defaultValue() == (Double) getValue();
+            return s4Integer.defaultValue() == (Integer) getValue();
     }
 
 
     public void restoreDefault() {
-        if (s4Double.defaultValue() == S4Double.NOT_DEFINED)
+        if (s4Integer.defaultValue() == S4Integer.NOT_DEFINED)
             setValue(null);
         else
-            setValue(s4Double.defaultValue());
+            setValue(s4Integer.defaultValue());
     }
 
 
     public void setValue(Object value) {
 //        assert value instanceof String;
 
-        Double doubleValue = null;
+        Integer doubleValue = null;
         if (value == null) {
             setUndefinedButMandatory(true);
 
         } else {
             setUndefinedButMandatory(false);
-            doubleValue = (Double) value;
+            doubleValue = (Integer) value;
         }
 
         myTable.repaint();
 
         // don't change anything if nothing has changed
-        Object oldValue = propSheet.getDouble(getPropName());
+        Object oldValue = propSheet.getInt(getPropName());
         if ((doubleValue == null && oldValue == null) || (doubleValue != null && doubleValue.equals(oldValue)))
             return;
 
         // range checking is automatically done by the attached cell editor
-        propSheet.setDouble(getPropName(), (Double) getValue());
+        propSheet.setInt(getPropName(), (Integer) getValue());
     }
 
 
