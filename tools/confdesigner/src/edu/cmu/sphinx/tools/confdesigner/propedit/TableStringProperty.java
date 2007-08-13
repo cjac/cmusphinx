@@ -58,11 +58,26 @@ public class TableStringProperty extends TableProperty {
     }
 
 
+    public boolean isDefault() {
+        String curValue = (String) getValue();
+
+        if ((curValue.equals(NOT_DEFINED) && s4String.defaultValue().equals(S4String.NOT_DEFINED)))
+            return true;
+
+        return curValue.equals(s4String.defaultValue());
+    }
+
+
+    public void restoreDefault() {
+        setValue(s4String.defaultValue());
+    }
+
+
     public void setValue(Object value) {
         myTable.repaint();
 
         // don't change anything if nothing has changed
-        Object oldValue = propSheet.getRaw(getPropName());
+        Object oldValue = propSheet.getString(getPropName());
         if ((value == null && oldValue == null) || (value != null && value.equals(oldValue)))
             return;
 
@@ -71,7 +86,7 @@ public class TableStringProperty extends TableProperty {
             String comboValue = (String) comboBox.getModel().getSelectedItem();
 
             if (comboValue.equals(NOT_DEFINED)) {
-                propSheet.setString(getPropName(), S4String.NOT_DEFINED);
+                propSheet.setString(getPropName(), null);
                 setUndefinedButMandatory(s4String.mandatory());
             } else {
                 propSheet.setString(getPropName(), comboValue);

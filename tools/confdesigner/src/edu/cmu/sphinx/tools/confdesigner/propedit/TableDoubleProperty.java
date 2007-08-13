@@ -41,6 +41,15 @@ public class TableDoubleProperty extends TableProperty {
     }
 
 
+    public boolean isDefault() {
+        return false;
+    }
+
+
+    public void restoreDefault() {
+    }
+
+
     public void setValue(Object value) {
         assert value instanceof Double;
 

@@ -10,6 +10,7 @@ import javax.swing.table.TableCellRenderer;
 /** @author Holger Brandl */
 public class TableBoolProperty extends TableProperty {
 
+
     private S4Boolean s4Boolean;
 
     private String NOT_DEFINED = "Not defined";
@@ -32,6 +33,24 @@ public class TableBoolProperty extends TableProperty {
     }
 
 
+    public boolean isDefault() {
+        Object comboValue = comboBox.getModel().getSelectedItem();
+
+        if (s4Boolean.isNotDefined() && !comboValue.equals(NOT_DEFINED))
+            return false;
+        else
+            return comboValue.equals(s4Boolean.defaultValue());
+    }
+
+
+    public void restoreDefault() {
+        if (s4Boolean.isNotDefined())
+            setValue(null);
+        else
+            setValue(s4Boolean.defaultValue());
+    }
+
+
     public void setValue(Object value) {
 //        assert value instanceof String;
 
@@ -47,7 +66,7 @@ public class TableBoolProperty extends TableProperty {
         myTable.repaint();
 
         // don't change anything if nothing has changed
-        Object oldValue = propSheet.getRaw(getPropName());
+        Object oldValue = propSheet.getBoolean(getPropName());
         if ((boolValue == null && oldValue == null) || (boolValue != null && boolValue.equals(oldValue)))
             return;
 
