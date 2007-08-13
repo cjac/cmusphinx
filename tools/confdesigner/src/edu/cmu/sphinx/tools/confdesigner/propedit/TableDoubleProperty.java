@@ -28,6 +28,12 @@ public class TableDoubleProperty extends TableProperty {
 
         this.s4Double = (S4Double) currentPS.getProperty(propName, S4Double.class).getAnnotation();
         doubleEditor = new DoubleEditor(s4Double.range()[0], s4Double.range()[1]);
+
+        Object rawValue = propSheet.getDouble(propName);
+        if (rawValue != null)
+            doubleEditor.ftf.setValue(rawValue);
+
+        doubleEditor.ftf.invalidate();
     }
 
 //    public TableBoolProperty(JTable myTable, PropertySheet currentPS, String propName) {

@@ -29,9 +29,11 @@ public class TableIntegerProperty extends TableProperty {
         this.s4Integer = (S4Integer) currentPS.getProperty(propName, S4Integer.class).getAnnotation();
         doubleEditor = new IntegerEditor(s4Integer.range()[0], s4Integer.range()[1]);
 
-//        Object rawValue = propSheet.getRaw(propName);
-//        if(rawValue != null)
-//        doubleEditor.ftf.setValue(rawValue);
+        Object rawValue = propSheet.getInt(propName);
+        if (rawValue != null)
+            doubleEditor.ftf.setValue(rawValue);
+
+        doubleEditor.ftf.invalidate();
 //        else
 //        doubleEditor.ftf.setValue(null);
     }
