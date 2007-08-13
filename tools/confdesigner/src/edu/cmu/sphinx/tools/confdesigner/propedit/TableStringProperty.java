@@ -19,8 +19,8 @@ public class TableStringProperty extends TableProperty {
     private S4String s4String;
 
 
-    public TableStringProperty(PropertySheet currentPS, String propName) {
-        super(propName);
+    public TableStringProperty(JTable myTable, PropertySheet currentPS, String propName) {
+        super(propName, myTable);
         this.currentPS = currentPS;
         this.propName = propName;
         this.s4String = s4String;
@@ -51,11 +51,6 @@ public class TableStringProperty extends TableProperty {
 
 
     public Object getValue() {
-        return null;
-    }
-
-
-    public TableCellRenderer getNameRenderer() {
         return null;
     }
 

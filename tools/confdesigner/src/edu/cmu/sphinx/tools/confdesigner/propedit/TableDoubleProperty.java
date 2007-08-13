@@ -3,6 +3,7 @@ package edu.cmu.sphinx.tools.confdesigner.propedit;
 import edu.cmu.sphinx.util.props.PropertySheet;
 import edu.cmu.sphinx.util.props.S4Double;
 
+import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
@@ -20,8 +21,8 @@ public class TableDoubleProperty extends TableProperty {
     private double[] range;
 
 
-    public TableDoubleProperty(PropertySheet currentPS, String propName) {
-        super(propName);
+    public TableDoubleProperty(JTable myTable, PropertySheet currentPS, String propName) {
+        super(propName, myTable);
         this.currentPS = currentPS;
         this.propName = propName;
         this.s4Double = s4Double;
@@ -51,11 +52,6 @@ public class TableDoubleProperty extends TableProperty {
 
     public Object getValue() {
         return null;
-    }
-
-
-    public TableCellRenderer getNameRenderer() {
-        return new DefaultTableCellRenderer();
     }
 
 

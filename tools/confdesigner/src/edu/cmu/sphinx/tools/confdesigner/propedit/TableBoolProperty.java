@@ -4,7 +4,6 @@ import edu.cmu.sphinx.util.props.PropertySheet;
 import edu.cmu.sphinx.util.props.S4Boolean;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
@@ -22,8 +21,8 @@ public class TableBoolProperty extends TableProperty {
     private JComboBox comboBox = new JComboBox(new Object[]{NOT_DEFINED, Boolean.TRUE, Boolean.FALSE});
 
 
-    public TableBoolProperty(PropertySheet currentPS, String propName) {
-        super(propName);
+    public TableBoolProperty(JTable myTable, PropertySheet currentPS, String propName) {
+        super(propName, myTable);
         this.propSheet = currentPS;
         this.s4Boolean = (S4Boolean) currentPS.getProperty(propName, S4Boolean.class).getAnnotation();
 
@@ -42,12 +41,19 @@ public class TableBoolProperty extends TableProperty {
 //        assert value instanceof String;
 
         Boolean boolValue = null;
-//        if(!value.equals(NOT_DEFINED))
-//            boolValue = Boolean.getBoolean((String) value);
+        if (value.equals(NOT_DEFINED)) {
+            setUndefinedButMandatory(true);
+
+        } else {
+            setUndefinedButMandatory(false);
+            boolValue = (Boolean) value;
+        }
+
+        myTable.repaint();
 
         // don't change anything if nothing has changed
         Object oldValue = propSheet.getRaw(getPropName());
-        if ((boolValue == null && oldValue == null) || boolValue.equals(oldValue))
+        if ((boolValue == null && oldValue == null) || (boolValue != null && boolValue.equals(oldValue)))
             return;
 
         // range checking is automatically done by the attached cell editor
@@ -57,11 +63,6 @@ public class TableBoolProperty extends TableProperty {
 
     public Object getValue() {
         return comboBox.getSelectedItem();
-    }
-
-
-    public TableCellRenderer getNameRenderer() {
-        return new DefaultTableCellRenderer();
     }
 
 

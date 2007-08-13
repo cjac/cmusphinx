@@ -25,7 +25,7 @@ class CellSpecificRenderTable extends JTable {
 
         if (row >= 0 && column >= 0) {
             if (column == 0) {
-                return tableProperty.getNameRenderer();
+                return tableProperty.getPropNameRenderer();
             } else {
                 return tableProperty.getValueRenderer();
             }

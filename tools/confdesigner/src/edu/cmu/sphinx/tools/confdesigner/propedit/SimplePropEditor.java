@@ -83,7 +83,7 @@ public class SimplePropEditor extends JPanel {
 
         SimplePropEditor editor = new SimplePropEditor();
 //        editor.addProperty(new TableDoubleProperty(ps, instName, (S4Double) ps.getProperty(LogMath.PROP_LOG_BASE, S4Double.class).getAnnotation()));
-        editor.addProperty(new TableBoolProperty(ps, LogMath.PROP_USE_ADD_TABLE));
+        editor.addProperty(new TableBoolProperty(editor.getTable(), ps, LogMath.PROP_USE_ADD_TABLE));
         frame.getContentPane().add(editor);
 
         frame.setBounds(300, 400, 200, 400);
