@@ -1,9 +1,9 @@
 package edu.cmu.sphinx.tools.confdesigner.propedit;
 
-import edu.cmu.sphinx.util.LogMath;
 import edu.cmu.sphinx.util.props.ConfigurationChangeListener;
 import edu.cmu.sphinx.util.props.ConfigurationManager;
 import edu.cmu.sphinx.util.props.PropertySheet;
+import edu.cmu.sphinx.util.props.test.DummyComp;
 
 import javax.swing.*;
 import java.awt.*;
@@ -100,12 +100,14 @@ public class SimplePropEditor extends JPanel {
             }
         });
         String instName = "myLogMath";
-        cm.addConfigurable(LogMath.class, instName);
+        cm.addConfigurable(DummyComp.class, instName);
         PropertySheet ps = cm.getPropertySheet(instName);
 
         SimplePropEditor editor = new SimplePropEditor();
 //        editor.addProperty(new TableDoubleProperty(ps, instName, (S4Double) ps.getProperty(LogMath.PROP_LOG_BASE, S4Double.class).getAnnotation()));
-        editor.addProperty(new TableBoolProperty(editor.getTable(), ps, LogMath.PROP_USE_ADD_TABLE));
+        editor.addProperty(new TableBoolProperty(editor.getTable(), ps, DummyComp.PROP_USE_FOOBAR));
+        editor.addProperty(new TableStringProperty(editor.getTable(), ps, DummyComp.PROP_BEST_PIZZA));
+        editor.addProperty(new TableStringProperty(editor.getTable(), ps, DummyComp.PROP_BEST_ASR));
         frame.getContentPane().add(editor);
 
         frame.setBounds(300, 400, 200, 400);

@@ -4,6 +4,7 @@ import edu.cmu.sphinx.util.props.PropertySheet;
 import edu.cmu.sphinx.util.props.S4String;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
@@ -14,16 +15,19 @@ import javax.swing.table.TableCellRenderer;
  */
 public class TableStringProperty extends TableProperty {
 
-    private PropertySheet currentPS;
-    private String propName;
     private S4String s4String;
+
+    private String NOT_DEFINED = "Not defined";
+    private JComboBox comboBox;
+
+    private boolean isRanged;
+    private TableCellRenderer renderer;
 
 
     public TableStringProperty(JTable myTable, PropertySheet currentPS, String propName) {
         super(propName, myTable, currentPS);
-        this.currentPS = currentPS;
-        this.propName = propName;
-        this.s4String = s4String;
+
+        this.s4String = (S4String) currentPS.getProperty(propName, S4String.class).getAnnotation();
 
         if (currentPS.getRaw(propName) != null) {
             setValue(currentPS.getDouble(propName));
@@ -31,11 +35,22 @@ public class TableStringProperty extends TableProperty {
             String defValue = s4String.defaultValue();
             String[] range = s4String.range();
             if (range.length != 0) {
-                JComboBox box = new JComboBox(range);
-                setValue(box);
+                isRanged = true;
+
+                String[] comboRange = new String[range.length + 1];
+                comboRange[0] = NOT_DEFINED;
+                System.arraycopy(range, 0, comboRange, 1, range.length);
+
+                comboBox = new JComboBox(comboRange);
+                setValue(comboBox);
+
+                renderer = new ComboTableCellRenderer();
+                comboBox.setRenderer((ListCellRenderer) renderer);
             } else {
                 if (defValue.equals(S4String.NOT_DEFINED))
                     setValue(defValue);
+
+                renderer = new DefaultTableCellRenderer();
             }
 
             // set color to gray to indicate the defaultness
@@ -44,21 +59,49 @@ public class TableStringProperty extends TableProperty {
 
 
     public void setValue(Object value) {
+        myTable.repaint();
 
+        // don't change anything if nothing has changed
+        Object oldValue = propSheet.getRaw(getPropName());
+        if ((value == null && oldValue == null) || (value != null && value.equals(oldValue)))
+            return;
+
+        // range checking is automatically done by the attached cell editor
+        if (comboBox != null) {
+            String comboValue = (String) comboBox.getModel().getSelectedItem();
+
+            if (comboValue.equals(NOT_DEFINED)) {
+                propSheet.setString(getPropName(), S4String.NOT_DEFINED);
+                setUndefinedButMandatory(s4String.mandatory());
+            } else {
+                propSheet.setString(getPropName(), comboValue);
+                setUndefinedButMandatory(false && s4String.mandatory());
+            }
+        } else {
+            propSheet.setString(getPropName(), (String) value);
+            setUndefinedButMandatory((value == null || ((String) value).trim().length() == 0) && s4String.mandatory());
+        }
     }
 
 
     public Object getValue() {
-        return null;
+        if (comboBox != null)
+            return comboBox.getSelectedItem();
+        else
+            return propSheet.getString(getPropName());
     }
 
 
     public TableCellRenderer getValueRenderer() {
-        return null;
+        return renderer;
     }
 
 
     public TableCellEditor getValueEditor() {
-        return null;
+        if (isRanged) {
+            return new DefaultCellEditor(comboBox);
+        } else {
+            return new DefaultCellEditor(new JTextField());
+        }
     }
 }

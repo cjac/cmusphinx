@@ -33,6 +33,10 @@ public abstract class TableProperty {
 
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 Component renderer = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+//                if(isDefault()){
+//                    renderer.setForeground(Color.GRAY);
+
+//                }if (isUndefinedButMandatory)
                 if (isUndefinedButMandatory)
                     renderer.setForeground(Color.RED);
                 else
@@ -43,6 +47,8 @@ public abstract class TableProperty {
             }
         };
     }
+
+//    public abstract boolean isDefault();
 
 
     public abstract void setValue(Object value);

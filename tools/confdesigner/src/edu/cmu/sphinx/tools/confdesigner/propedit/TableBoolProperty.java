@@ -1,6 +1,7 @@
 package edu.cmu.sphinx.tools.confdesigner.propedit;
 
 import edu.cmu.sphinx.util.props.PropertySheet;
+import edu.cmu.sphinx.util.props.S4Boolean;
 
 import javax.swing.*;
 import javax.swing.table.TableCellEditor;
@@ -9,7 +10,7 @@ import javax.swing.table.TableCellRenderer;
 /** @author Holger Brandl */
 public class TableBoolProperty extends TableProperty {
 
-//    private S4Boolean s4Boolean;
+    private S4Boolean s4Boolean;
 
     private String NOT_DEFINED = "Not defined";
     private ComboTableCellRenderer renderer = new ComboTableCellRenderer();
@@ -19,7 +20,7 @@ public class TableBoolProperty extends TableProperty {
     public TableBoolProperty(JTable myTable, PropertySheet currentPS, String propName) {
         super(propName, myTable, currentPS);
 
-//        this.s4Boolean = (S4Boolean) currentPS.getProperty(propName, S4Boolean.class).getAnnotation();
+        this.s4Boolean = (S4Boolean) currentPS.getProperty(propName, S4Boolean.class).getAnnotation();
 
         Boolean defValue = propSheet.getBoolean(propName);
         if (defValue == null)
