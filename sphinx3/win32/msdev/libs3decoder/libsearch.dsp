@@ -89,6 +89,10 @@ SOURCE=..\..\..\src\libs3decoder\libsearch\ascr.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\src\libs3decoder\libsearch\astar.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\src\libs3decoder\libsearch\blkarray_list.c
 # End Source File
 # Begin Source File
@@ -174,10 +178,6 @@ SOURCE=..\..\..\src\libs3decoder\libsearch\srch_output.c
 # Begin Source File
 
 SOURCE=..\..\..\src\libs3decoder\libsearch\srch_time_switch_tree.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\src\libs3decoder\libsearch\srch_word_switch_tree.c
 # End Source File
 # Begin Source File
 

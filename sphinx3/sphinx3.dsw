@@ -3,7 +3,7 @@ Microsoft Developer Studio Workspace File, Format Version 6.00
 
 ###############################################################################
 
-Project: "sphinx3_ep"=.\win32\msdev\programs\ep\sphinx3_ep.dsp - Package Owner=<4>
+Project: "gausubvq"=".\win32\msdev\programs\gausubvq\gausubvq.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -39,7 +39,103 @@ Package=<4>
 
 ###############################################################################
 
-Project: "sphinx3_align"=.\win32\msdev\programs\align\sphinx3_align.dsp - Package Owner=<4>
+Project: "libAPI"=".\win32\msdev\libs3decoder\libAPI.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "libam"=".\win32\msdev\libs3decoder\libam.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "libcommon"=".\win32\msdev\libs3decoder\libcommon.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "libconfidence"=".\win32\msdev\libs3decoder\libconfidence.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "libdict"=".\win32\msdev\libs3decoder\libdict.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "libep"=".\win32\msdev\libs3decoder\libep.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "liblm"=".\win32\msdev\libs3decoder\liblm.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "libsearch"=".\win32\msdev\libs3decoder\libsearch.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "lm_convert"=".\win32\msdev\programs\lm_convert\lm_convert.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -75,7 +171,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "sphinx3_allphone"=.\win32\msdev\programs\allphone\sphinx3_allphone.dsp - Package Owner=<4>
+Project: "sphinx3_align"=".\win32\msdev\programs\align\sphinx3_align.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -111,7 +207,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "sphinx3_astar"=.\win32\msdev\programs\astar\sphinx3_astar.dsp - Package Owner=<4>
+Project: "sphinx3_astar"=".\win32\msdev\programs\astar\sphinx3_astar.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -147,7 +243,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "sphinx3_conf"=.\win32\msdev\programs\conf\sphinx3_conf.dsp - Package Owner=<4>
+Project: "sphinx3_conf"=".\win32\msdev\programs\conf\sphinx3_conf.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -183,7 +279,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "sphinx3_continuous"=.\win32\msdev\programs\sphinx3_continuous\sphinx3_continuous.dsp - Package Owner=<4>
+Project: "sphinx3_continuous"=".\win32\msdev\programs\sphinx3_continuous\sphinx3_continuous.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -219,7 +315,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "sphinx3_dag"=.\win32\msdev\programs\dag\sphinx3_dag.dsp - Package Owner=<4>
+Project: "sphinx3_dag"=".\win32\msdev\programs\dag\sphinx3_dag.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -255,7 +351,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "sphinx3_decode"=.\win32\msdev\programs\decode\sphinx3_decode.dsp - Package Owner=<4>
+Project: "sphinx3_decode"=".\win32\msdev\programs\decode\sphinx3_decode.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -291,7 +387,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "sphinx3_decode_anytopo"=.\win32\msdev\programs\decode_anytopo\sphinx3_decode_anytopo.dsp - Package Owner=<4>
+Project: "sphinx3_dp"=".\win32\msdev\programs\dp\sphinx3_dp.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -327,7 +423,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "sphinx3_dp"=.\win32\msdev\programs\dp\sphinx3_dp.dsp - Package Owner=<4>
+Project: "sphinx3_ep"=".\win32\msdev\programs\ep\sphinx3_ep.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -363,7 +459,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "gausubvq"=.\win32\msdev\programs\gausubvq\gausubvq.dsp - Package Owner=<4>
+Project: "sphinx3_livedecode"=".\win32\msdev\programs\livedecode\sphinx3_livedecode.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -399,175 +495,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "libAPI"=.\win32\msdev\libs3decoder\libAPI.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
-Project: "libam"=.\win32\msdev\libs3decoder\libam.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
-Project: "libcommon"=.\win32\msdev\libs3decoder\libcommon.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
-Project: "libconfidence"=.\win32\msdev\libs3decoder\libconfidence.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
-Project: "libdict"=.\win32\msdev\libs3decoder\libdict.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
-Project: "libep"=.\win32\msdev\libs3decoder\libep.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
-Project: "liblm"=.\win32\msdev\libs3decoder\liblm.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
-Project: "libsearch"=.\win32\msdev\libs3decoder\libsearch.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
-Project: "sphinx3_livepretend"=.\win32\msdev\programs\livepretend\sphinx3_livepretend.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name libAPI
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libam
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libcommon
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libconfidence
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libdict
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libep
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name liblm
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libsearch
-    End Project Dependency
-}}}
-
-###############################################################################
-
-Project: "sphinx3_livedecode"=.\win32\msdev\programs\livedecode\sphinx3_livedecode.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name libAPI
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libam
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libcommon
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libconfidence
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libdict
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libep
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name liblm
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libsearch
-    End Project Dependency
-}}}
-
-###############################################################################
-
-Project: "lm_convert"=.\win32\msdev\programs\lm_convert\lm_convert.dsp - Package Owner=<4>
+Project: "sphinx3_livepretend"=".\win32\msdev\programs\livepretend\sphinx3_livepretend.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
