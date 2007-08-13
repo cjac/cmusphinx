@@ -245,6 +245,9 @@ utt_decode(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
         srch_set_lm(s, ur->lmname);
     if (ur->regmatname != NULL)
         kb_setmllr(ur->regmatname, ur->cb2mllrname, kb);
+    /* These are necessary! */
+    s->uttid = kb->uttid;
+    s->uttfile = kb->uttfile;
 
     utt_begin(kb);
     utt_decode_block(kb->feat, total_frame, &num_decode_frame, kb);
