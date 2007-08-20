@@ -1,5 +1,4 @@
 call .\sphinx3-test.align.bat
-call .\sphinx3-test.allphone.bat
 call .\sphinx3-test.astar.bat
 call .\sphinx3-test.bat
 call .\sphinx3-test.dag.bat
