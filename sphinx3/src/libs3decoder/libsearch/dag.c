@@ -784,14 +784,11 @@ dag_write_htk(dag_t *dag,
               dict_t * dict)
 {
     int32 i, n_nodes, n_links;
-    dagnode_t *d, *initial, *final;
+    dagnode_t *d;
     daglink_t *l;
     FILE *fp;
     float fps;
     int32 ispipe;
-
-    initial = dag->root;
-    final = dag->end;
 
     E_INFO("Writing lattice file in HTK format: %s\n", filename);
     if ((fp = fopen_comp(filename, "w", &ispipe)) == NULL) {
@@ -816,37 +813,44 @@ dag_write_htk(dag_t *dag,
     n_nodes = n_links = 0;
     for (d = dag->list; d; d = d->alloc_next) {
         ++n_nodes;
-        for (l = d->succlist; l; l = l->next) {
+        for (l = d->predlist; l; l = l->next) {
             ++n_links;
         }
     }
-    fprintf(fp, "N=%d\tL=%d\n", n_nodes, n_links);
+    fprintf(fp, "N=%d\tL=%d\n", n_nodes + 1, n_links + 1);
 
     if (cmd_ln_exists("-frate"))
         fps = (float)cmd_ln_int32("-frate");
     else
         fps = 100.0;
-    for (i = 0, d = dag->list; d; d = d->alloc_next, i++) {
-        int32 nalt;
-        s3wid_t b, a;
-
+    /* Extra node at the very end of the sentence. */
+    fprintf(fp, "I=%-5d t=%-10.2f\n", 0, (float)dag->nfrm / fps);
+    for (i = 1, d = dag->list; d; d = d->alloc_next, i++) {
         d->seqid = i;
-        /* Find the pronunciation alternate index. */
-        nalt = 1;
-        a = b = dict_basewid(dict, d->wid);
-        while (dict_nextalt(dict, a) != BAD_S3WID) {
-            a = dict_nextalt(dict, a);
-            ++nalt;
-        }
-        fprintf(fp, "I=%-5d t=%-10.2f W=%-20s v=%d\n", i,
-                (float)d->sf / fps, dict_wordstr(dict, b), nalt);
+        fprintf(fp, "I=%-5d t=%-10.2f\n", i, (float)d->sf / fps);
     }
 
-    for (i = 0, d = dag->list; d; d = d->alloc_next) {
-        for (l = d->succlist; l; l = l->next) {
-            fprintf(fp, "J=%-10d S=%-5d E=%-5d a=%-10.2f l=%-10.2f\n",
-                    i, d->seqid, l->node->seqid,
-                    logs3_to_log(l->ascr),
+    /* Add a </s> link to the end of the sentence. */
+    fprintf(fp, "J=%-10d S=%-5d E=%-5d W=%-20s a=%-10.2f v=%-5d l=%-10.2f\n",
+            0, dag->end->seqid, 0,
+            dict_wordstr(dict, dag->end->wid),
+            0.0, 1, 0.0);
+    for (i = 1, d = dag->list; d; d = d->alloc_next) {
+        for (l = d->predlist; l; l = l->next) {
+            int32 nalt;
+            s3wid_t b, a;
+
+            /* Find the pronunciation alternate index. */
+            nalt = 1;
+            a = b = dict_basewid(dict, l->node->wid);
+            while (dict_nextalt(dict, a) != BAD_S3WID) {
+                a = dict_nextalt(dict, a);
+                ++nalt;
+            }
+
+            fprintf(fp, "J=%-10d S=%-5d E=%-5d W=%-20s a=%-10.2f v=%-5d l=%-10.2f\n",
+                    i, l->node->seqid, d->seqid,
+                    dict_wordstr(dict, b), logs3_to_log(l->ascr), nalt,
                     logs3_to_log(lm ? lm_rawscore(lm, l->lscr) : l->lscr));
             ++i;
         }
