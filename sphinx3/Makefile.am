@@ -12,7 +12,6 @@ EXTRA_DIST = autogen.sh \
 	win32/batch/sphinx3-simple.bat \
 	win32/batch/sphinx3-test.align.bat \
 	win32/batch/sphinx3-test.all.bat \
-	win32/batch/sphinx3-test.allphone.bat \
 	win32/batch/sphinx3-test.astar.bat \
 	win32/batch/sphinx3-test.bat \
 	win32/batch/sphinx3-test.dag.bat \
