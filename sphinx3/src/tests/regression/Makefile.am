@@ -52,7 +52,7 @@ CLEANFILES = chan3.mfc \
 	test-*.tar \
 	test-*.hypseg \
 	test-*.confhypseg \
-	tmp.out \
+	tmp.* \
 	pittsburgh.* \
 	tmp \
 	test-align-mllr.log \
