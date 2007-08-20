@@ -140,14 +140,16 @@ matchseg_write(FILE * fp, glist_t hyp, char *uttid, char *hdr,
     for (gn = hyp; gn; gn = gnode_next(gn)) {
             h = (srch_hyp_t *) gnode_ptr(gn);
 
-            hypscale = 0;
-            if (unnorm)
+            if (h->sf != h->ef) {   /* FSG outputs zero-width hyps */
+                hypscale = 0;
+                if (unnorm)
 		    hypscale += compute_scale(h->sf, h->ef, ascale);
 
 
-            fprintf(fp, " %d %d %d %s", h->sf, h->ascr + hypscale,
-                    lm ? lm_rawscore(lm, h->lscr) : h->lscr,
-		    dict_wordstr(dict, h->id));
+                fprintf(fp, " %d %d %d %s", h->sf, h->ascr + hypscale,
+                        lm ? lm_rawscore(lm, h->lscr) : h->lscr,
+                        dict_wordstr(dict, h->id));
+            }
     }
     fprintf(fp, " %d\n", num_frm);
 
