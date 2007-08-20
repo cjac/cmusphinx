@@ -1173,8 +1173,9 @@ mgau_eval(mgau_model_t * g, int32 m, int32 * active, float32 * x, int32 fr,
                              update_best_id);
     }
 
-    if (score == S3_LOGPROB_ZERO) {
+    if (score <= S3_LOGPROB_ZERO) {
         /*      E_INFO("Warning!! Score is S3_LOGPROB_ZERO\n"); */
+        score = S3_LOGPROB_ZERO;
     }
     return score;
 }
