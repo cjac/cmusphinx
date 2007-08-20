@@ -363,7 +363,7 @@ fsg_history_utt_start(fsg_history_t * h)
 {
     int32 s, lc, ns, np;
 
-    assert(blkarray_list_n_valid(h->entries) == 0);
+    blkarray_list_reset(h->entries);
     assert(h->frame_entries);
 
     ns = word_fsg_n_state(h->fsg);

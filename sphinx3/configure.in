@@ -165,6 +165,7 @@ model/lm/an4/args.an4
 model/lm/an4/args.an4.test
 model/lm/an4/args.an4.test.cls
 model/lm/an4/args.an4.test.mllr
+model/lm/an4/args.an4.test.fsg
 model/lm/an4/an4.ug.cls.lmctl
 include/Makefile
 doc/Makefile])

@@ -1125,8 +1125,6 @@ fsg_search_utt_end(fsg_search_t * search)
         E_WARN("Option -hypsegfp is not implemented in FSG mode yet.\n");
 
     n_hist = fsg_history_n_entries(search->history);
-    fsg_history_reset(search->history);
-
     fsg_lextree_utt_end(search->lextree);
 
     /* Deactivate all nodes in the current and next-frame active lists */
@@ -1148,8 +1146,7 @@ fsg_search_utt_end(fsg_search_t * search)
     glist_free(search->pnode_active_next);
     search->pnode_active_next = NULL;
 
-    /* Do NOT reset search->frame, or search->hyp */
-
+    /* Do NOT reset search->frame, or search->hyp, or the lattice!#@$!@ */
     search->state = FSG_SEARCH_IDLE;
 
     E_INFO("Utt %s: %d frames, %d HMMs evaluated, %d history entries\n\n",

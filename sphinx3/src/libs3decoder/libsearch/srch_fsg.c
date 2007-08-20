@@ -1,3 +1,4 @@
+/* -*- c-basic-offset:4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -282,7 +283,7 @@ srch_FSG_gen_hyp(void *srch           /**< a pointer of srch_t */
 {
     srch_t *s;
     fsg_search_t *fsgsrch;
-    srch_hyp_t *tmph;
+    srch_hyp_t *h;
     glist_t ghyp, rhyp;
 
     s = (srch_t *) srch;
@@ -291,7 +292,13 @@ srch_FSG_gen_hyp(void *srch           /**< a pointer of srch_t */
     fsg_search_history_backtrace(fsgsrch, TRUE);
 
     ghyp = NULL;
-    for (tmph = fsgsrch->hyp; tmph; tmph = tmph->next) {
+    for (h = fsgsrch->hyp; h; h = h->next) {
+	srch_hyp_t *tmph;
+	/* We have to copy the nodes here since fsgsrch retains
+	 * ownership of the hyp... */
+	tmph = ckd_calloc(1, sizeof(*tmph));
+	memcpy(tmph, h, sizeof(*tmph));
+	tmph->next = NULL;
         ghyp = glist_add_ptr(ghyp, (void *) tmph);
     }
 
