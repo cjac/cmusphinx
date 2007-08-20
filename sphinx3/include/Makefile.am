@@ -33,8 +33,6 @@ pkginclude_HEADERS =				\
 	kb.h					\
 	kdtree.h				\
 	lextree.h				\
-	live_decode_API.h			\
-	live_decode_args.h			\
 	lmclass.h				\
 	lm.h					\
 	logs3.h					\
