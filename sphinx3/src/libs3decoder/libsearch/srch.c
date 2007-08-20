@@ -563,8 +563,29 @@ srch_utt_end(srch_t * s)
 
     /* Write lattices */
     if (s->dag && cmd_ln_str("-outlatdir")) {
-	if ((s->funcs->dag_dump(s, s->dag)) != SRCH_SUCCESS) {
-	    E_ERROR("Failed to write DAG file.\n");
+	/* HTK lattices are generic */
+	if (0 == strcmp(cmd_ln_str("-outlatfmt"), "htk")) {
+	    char str[2048];
+	    ctl_outfile(str, cmd_ln_str("-outlatdir"), cmd_ln_str("-latext"),
+			(s->uttfile ? s->uttfile : s->uttid), s->uttid);
+	    E_INFO("Writing lattice file in HTK format: %s\n", str);
+	    dag_write_htk(s->dag, str, s->uttid, kbcore_lm(s->kbc), kbcore_dict(s->kbc));
+	}
+	/* S3 lattices might have a custom implementation */
+	else {
+	    if (s->funcs->dag_dump) {
+		if ((s->funcs->dag_dump(s, s->dag)) != SRCH_SUCCESS) {
+		    E_ERROR("Failed to write DAG file.\n");
+		}
+	    }
+	    /* But probably not. */
+	    else {
+		char str[2048];
+		ctl_outfile(str, cmd_ln_str("-outlatdir"), cmd_ln_str("-latext"),
+			    (s->uttfile ? s->uttfile : s->uttid), s->uttid);
+		E_INFO("Writing lattice file: %s\n", str);
+		dag_write(s->dag, str, kbcore_lm(s->kbc), kbcore_dict(s->kbc));
+	    }
 	}
     }
 

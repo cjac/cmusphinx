@@ -1989,7 +1989,10 @@ latticehist_dag_write(latticehist_t * lathist,
         return -1;
     }
 
-    dag_write_header(fp, dag->nfrm);
+    dag_write_header(fp);
+
+    fprintf(fp, "Frames %d\n", dag->nfrm);
+    fprintf(fp, "#\n");
 
     for (i = 0, d = dag->list; d; d = d->alloc_next, i++);
     fprintf(fp,

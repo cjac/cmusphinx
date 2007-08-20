@@ -1327,25 +1327,6 @@ srch_TST_bestpath_impl(void *srch,          /**< A void pointer to a search stru
 
 }
 
-int32
-srch_TST_dag_dump(void *srch, dag_t *dag)
-{
-    char str[2048];
-    srch_t *s;
-    srch_TST_graph_t *tstg;
-
-    s = (srch_t *) srch;
-    tstg = (srch_TST_graph_t *) s->grh->graph_struct;
-
-    ctl_outfile(str, cmd_ln_str("-outlatdir"), cmd_ln_str("-latext"),
-                (s->uttfile ? s->uttfile : s->uttid), s->uttid);
-    E_INFO("Writing lattice file: %s\n", str);
-
-    dag_write(dag, str, kbcore_lm(s->kbc), kbcore_dict(s->kbc));
-
-    return SRCH_SUCCESS;
-}
-
 glist_t
 srch_TST_nbest_impl(void *srch,          /**< A void pointer to a search structure */
                     dag_t * dag)
@@ -1429,7 +1410,7 @@ srch_funcs_t srch_TST_funcs = {
 	/* gen_dag */			srch_TST_gen_dag,
 	/* dump_vithist */		srch_TST_dump_vithist,
 	/* bestpath_impl */		srch_TST_bestpath_impl,
-	/* dag_dump */			srch_TST_dag_dump,
+	/* dag_dump */			NULL,
 	/* nbest_impl */		srch_TST_nbest_impl,
 	NULL
 };

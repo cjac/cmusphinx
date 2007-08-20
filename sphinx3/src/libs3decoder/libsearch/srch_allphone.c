@@ -1105,79 +1105,6 @@ srch_allphone_gen_dag(void *srch,         /**< a pointer of srch_t */
     return dag;
 }
 
-static int32
-allphone_dag_write(allphone_t *allp,
-		   const char *filename,
-		   dag_t * dag,
-		   lm_t * lm,
-		   dict_t * dict)
-{
-
-    /* WARNING!!!! DO NOT INSERT a # in the format arbitrarily because the dag_reader is not very robust */
-    int32 i;
-    dagnode_t *d, *initial, *final;
-    daglink_t *l;
-    FILE *fp;
-    int32 ispipe;
-
-    initial = dag->root;
-    final = dag->end;
-
-    E_INFO("Writing lattice file in Sphinx III format: %s\n", filename);
-    if ((fp = fopen_comp(filename, "w", &ispipe)) == NULL) {
-        E_ERROR("fopen_comp (%s,w) failed\n", filename);
-        return -1;
-    }
-
-    dag_write_header(fp, allp->curfrm);
-
-    for (i = 0, d = dag->list; d; d = d->alloc_next, i++);
-    fprintf(fp,
-            "Nodes %d (NODEID WORD STARTFRAME FIRST-ENDFRAME LAST-ENDFRAME)\n",
-            i);
-    for (i = 0, d = dag->list; d; d = d->alloc_next, i++) {
-        d->seqid = i;
-        fprintf(fp, "%d %s %d %d %d\n", i, dict_wordstr(dict, d->wid),
-                d->sf, d->fef, d->lef);
-    }
-
-
-    fprintf(fp, "#\n");
-
-    fprintf(fp, "Initial %d\nFinal %d\n", initial->seqid, final->seqid);
-
-    /* Best score (i.e., regardless of Right Context) for word segments in word lattice */
-    fprintf(fp, "BestSegAscr 0 (NODEID ENDFRAME ASCORE)\n");
-    fprintf(fp, "#\n");
-
-    fprintf(fp, "Edges (FROM-NODEID TO-NODEID ASCORE)\n");
-    for (d = dag->list; d; d = d->alloc_next) {
-        for (l = d->succlist; l; l = l->next)
-            fprintf(fp, "%d %d %d\n", d->seqid, l->node->seqid,
-                    l->ascr);
-    }
-    fprintf(fp, "End\n");
-
-    fclose_comp(fp, ispipe);
-
-    return 0;
-}
-
-static int32
-srch_allphone_dag_dump(void *srch, dag_t *dag)
-{
-    srch_t *s = srch;
-    allphone_t *allp = s->grh->graph_struct;
-    char str[2048];
-
-    ctl_outfile(str, cmd_ln_str("-outlatdir"), cmd_ln_str("-latext"),
-                (s->uttfile ? s->uttfile : s->uttid), s->uttid);
-    E_INFO("Writing lattice file: %s\n", str);
-
-    allphone_dag_write(allp, str, dag, kbcore_lm(s->kbc), kbcore_dict(s->kbc));
-    return SRCH_SUCCESS;
-}
-
 glist_t
 srch_allphone_bestpath_impl(void *srch,          /**< A void pointer to a search structure */
 			    dag_t * dag)
@@ -1307,7 +1234,7 @@ srch_funcs_t srch_allphone_funcs = {
 	/* gen_dag */			srch_allphone_gen_dag,
 	/* dump_vithist */		NULL,
 	/* bestpath_impl */		srch_allphone_bestpath_impl,
-	/* dag_dump */			srch_allphone_dag_dump,
+	/* dag_dump */			NULL,
         /* nbest_impl */                srch_allphone_nbest_impl,
 	NULL
 };

@@ -525,14 +525,14 @@ us a better architecture.
       ARG_STRING, \
       NULL, \
       "Directory in which to dump word lattices" }, \
-    { "-outlatoldfmt", \
-      ARG_BOOLEAN, \
-      "yes", \
-      "Whether to dump lattices in old format when Sphinx file format is used. " }, \
+    { "-outlatfmt", \
+      ARG_STRING, \
+      "s3", \
+      "Format in which to dump word lattices (either 's3' or 'htk')" }, \
     { "-latext", \
       ARG_STRING, \
       "lat.gz", \
-      "Filename extension for lattice files (gzip compressed, by default)" }, 
+      "Filename extension for lattice files (gzip compressed, by default - remove .gz for uncompressed)" }, 
 
 
 
