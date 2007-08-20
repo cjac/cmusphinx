@@ -6,7 +6,7 @@ tmpout="test-decode-mode1368.out"
 echo "DECODE MODE 1368 (DO NOTHING MODE) TEST"
 echo "This matches the current decoding routine call sequence with the default behaviour"
 
-margs="-mdef $hub4am/hub4opensrc.6000.mdef \
+margs="-mdef $hub4am/mdef \
 -fdict $an4lm/filler.dict \
 -dict $an4lm/an4.dict \
 -mean $hub4am/means \

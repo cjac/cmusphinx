@@ -8,7 +8,7 @@ echo "ALIGN+MLLR TEST simple"
 
 run_program sphinx3_align \
 -logbase 1.0003 \
--mdef $hub4am/hub4opensrc.6000.mdef \
+-mdef $hub4am/mdef \
 -mean $hub4am/means \
 -var $hub4am/variances \
 -mixw $hub4am/mixture_weights \

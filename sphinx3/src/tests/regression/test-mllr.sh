@@ -7,7 +7,7 @@ echo "DECODE+MLLR TEST"
 echo "YOU SHOULD SEE THE RECOGNITION RESULT 'P I T T S B U R G H'"
 
 run_program sphinx3_decode \
--mdef $hub4am/hub4opensrc.6000.mdef \
+-mdef $hub4am/mdef \
 -fdict $an4lm/filler.dict \
 -dict $an4lm/an4.dict \
 -mean $hub4am/means \

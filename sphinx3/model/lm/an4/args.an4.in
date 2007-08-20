@@ -1,4 +1,4 @@
--mdef	@prefix@/share/sphinx3/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4opensrc.6000.mdef
+-mdef	@prefix@/share/sphinx3/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mdef
 -fdict	@prefix@/share/sphinx3/model/lm/an4/filler.dict
 -dict	@prefix@/share/sphinx3/model/lm/an4/an4.dict
 -mean	@prefix@/share/sphinx3/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/means

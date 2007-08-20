@@ -6,7 +6,7 @@ tmpout="test-decode-lts.out"
 echo "DECODE LTS TEST"
 echo "YOU SHOULD SEE THE RECOGNITION RESULT 'P I T T S B U R G H'"
 
-margs="-mdef $hub4am/hub4opensrc.6000.mdef \
+margs="-mdef $hub4am/mdef \
 -fdict $an4lm/filler.dict \
 -dict $an4lm/an4.dict \
 -mean $hub4am/means \

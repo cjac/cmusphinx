@@ -7,7 +7,7 @@ tmpconfmatchseg="test-decode-2ndstage.confmatchseg"
 echo "DECODE 2ND STAGE TEST"
 echo "YOU SHOULD SEE THE RECOGNITION RESULT 'P I T T S B U R G H'"
 
-margs="-mdef $hub4am/hub4opensrc.6000.mdef \
+margs="-mdef $hub4am/mdef \
 -fdict $an4lm/filler.dict \
 -dict $an4lm/an4.dict \
 -mean $hub4am/means \
@@ -45,7 +45,7 @@ run_program sphinx3_decode $margs $lmargs > $tmpout 2>&1
 
 #Next try to read the lattices with dag and see whether dag could read it. 
 
-margs="-mdef $hub4am/hub4opensrc.6000.mdef \
+margs="-mdef $hub4am/mdef \
 -fdict $an4lm/filler.dict \
 -dict $an4lm/an4.dict \
 -lw 13.0 \
@@ -68,7 +68,7 @@ fi
 
 #Next try to read the lattices with astar and see whether astar could read it. 
 
-margs="-mdef $hub4am/hub4opensrc.6000.mdef \
+margs="-mdef $hub4am/mdef \
 -fdict $an4lm/filler.dict \
 -dict $an4lm/an4.dict \
 -wip 0.2 \

@@ -1,4 +1,4 @@
--mdef	./model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4opensrc.6000.mdef
+-mdef	./model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mdef
 -fdict	./model/lm/an4/filler.dict
 -dict	./model/lm/an4/an4.dict
 -mean	./model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/means

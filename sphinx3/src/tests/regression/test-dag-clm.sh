@@ -4,7 +4,7 @@
 echo "DAG CLASS-BASED LM TEST"
 tmpout="test-dag-clm.out"
 
-margs="-mdef $hub4am/hub4opensrc.6000.mdef \
+margs="-mdef $hub4am/mdef \
 -fdict $an4lm/filler.dict \
 -dict $an4lm/an4.dict \
 -lw 13.0 \

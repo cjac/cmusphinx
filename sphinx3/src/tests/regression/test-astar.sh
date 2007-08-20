@@ -4,7 +4,7 @@
 echo "ASTAR TEST"
 tmpout="test-astar.out"
 
-margs="-mdef $hub4am/hub4opensrc.6000.mdef \
+margs="-mdef $hub4am/mdef \
 -fdict $an4lm/filler.dict \
 -dict $an4lm/an4.dict \
 -wip 0.2 \
