@@ -17,6 +17,7 @@ TESTS = \
 	test-dp.sh \
 	test-align.sh \
 	test-align-mllr.sh \
+	test-lattice-htk.sh \
 	test-livepretend.sh \
 	test-livepretend-clm.sh \
 	test-livepretend-mllr.sh \
