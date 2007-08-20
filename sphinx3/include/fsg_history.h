@@ -171,6 +171,7 @@ typedef struct fsg_history_s {
  */
 fsg_history_t *fsg_history_init (word_fsg_t *fsg,int32 n_ciphone);
 
+void fsg_history_free (fsg_history_t *);
 
 void fsg_history_utt_start (fsg_history_t *);
 

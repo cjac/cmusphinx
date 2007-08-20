@@ -85,12 +85,15 @@ match_write(FILE * fp, glist_t hyp, char *uttid, dict_t * dict, char *hdr)
 /*     for (gn = hyp; gn && (gnode_next(gn)); gn = gnode_next(gn)) { */
     for (gn = hyp; gn; gn = gnode_next(gn)) {
         h = (srch_hyp_t *) gnode_ptr(gn);
-        if ((!dict_filler_word(dict, h->id))
-            && (h->id != dict_finishwid(dict))
-            && (h->id != dict_startwid(dict)))
-            fprintf(fp, "%s ",
-                    dict_wordstr(dict, dict_basewid(dict, h->id)));
-        counter++;
+
+        if (h->sf != h->ef) {   /* FSG outputs zero-width hyps */
+            if ((!dict_filler_word(dict, h->id))
+                && (h->id != dict_finishwid(dict))
+                && (h->id != dict_startwid(dict)))
+                fprintf(fp, "%s ",
+                        dict_wordstr(dict, dict_basewid(dict, h->id)));
+            counter++;
+        }
     }
     if (counter == 0)
         fprintf(fp, " ");
@@ -118,12 +121,13 @@ matchseg_write(FILE * fp, glist_t hyp, char *uttid, char *hdr,
     for (gn = hyp; gn; gn = gnode_next(gn)) {
         h = (srch_hyp_t *) gnode_ptr(gn);
 
-        ascr += h->ascr;
-	lscr += lm ? lm_rawscore(lm, h->lscr) : h->lscr;
+        if (h->sf != h->ef) {   /* FSG outputs zero-width hyps */
+            ascr += h->ascr;
+            lscr += lm ? lm_rawscore(lm, h->lscr) : h->lscr;
 
-        if (unnorm)
-            global_hypscale += compute_scale(h->sf, h->ef, ascale);
-
+            if (unnorm)
+                global_hypscale += compute_scale(h->sf, h->ef, ascale);
+        }
     }
 
     for (i = 0; i < num_frm; i++)
@@ -180,6 +184,9 @@ match_detailed(FILE * fp, glist_t hyp, char *uttid, char *LBL, char *lbl,
 
             scl = 0;
 
+            if (h->id < 0 || (h->sf == h->ef))
+                continue;
+
             scl += compute_scale(h->sf, h->ef, senscale);
 
             if (senscale) {
@@ -221,7 +228,9 @@ log_hypstr(FILE * fp, srch_hyp_t * hypptr, char *uttid, int32 exact,
         fprintf(fp, "(null)");
 
     for (h = hypptr; h; h = h->next) {
-        if (h->sf != h->ef) {   /* Take care of abnormality caused by various different reasons */
+        if (h->sf != h->ef) {   /* Take care of abnormality caused by
+                                 * FSG search or various different
+                                 * reasons */
             w = h->id;
             if (!exact) {
                 w = dict_basewid(dict, w);

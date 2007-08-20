@@ -85,6 +85,14 @@ fsg_history_init(word_fsg_t * fsg, int32 n_ciphone)
     return h;
 }
 
+void
+fsg_history_free(fsg_history_t *h)
+{
+	blkarray_list_free(h->entries);
+	ckd_free_2d((void **)h->frame_entries);
+	ckd_free(h);
+}
+
 
 void
 fsg_history_set_fsg(fsg_history_t * h, word_fsg_t * fsg)

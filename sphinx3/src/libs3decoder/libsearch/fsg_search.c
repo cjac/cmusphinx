@@ -196,6 +196,8 @@
 #define __FSG_DBG__		0
 #define __FSG_DBG_CHAN__	0
 
+static void fsg_search_hyp_free(fsg_search_t * search);
+
 
 fsg_search_t *
 fsg_search_init(word_fsg_t * fsg, void *srch)
@@ -407,7 +409,18 @@ fsg_search_set_current_fsg(fsg_search_t * search, char *name)
 void
 fsg_search_free(fsg_search_t * search)
 {
+    gnode_t *gn;
+
+    fsg_search_hyp_free(search);
     hmm_context_free(search->hmmctx);
+    fsg_lextree_free(search->lextree);
+    fsg_history_free(search->history);
+    for (gn = search->fsglist; gn; gn = gnode_next(gn)) {
+	    word_fsg_t *fsg = gnode_ptr(gn);
+	    word_fsg_free(fsg);
+    }
+    glist_free(search->fsglist);
+    ckd_free(search);
 }
 
 
@@ -1099,30 +1112,6 @@ fsg_search_utt_end(fsg_search_t * search)
             fclose(latfp);
         }
     }
-
-    /*
-     * Backtrace through Viterbi history to get the best recognition.
-     * First check if the final state has been reached; otherwise just use
-     * the best scoring state.
-     */
-    fsg_search_history_backtrace(search, TRUE);
-
-    /*  fsg_search_hyp_filter(search); */
-
-    if (search->isBacktrace)
-        fsg_search_hyp_dump(search, stdout);
-
-    printf("\nFSGSRCH: ");
-    log_hypstr(stdout, search->hyp, search->uttid, 0,
-               search->ascr + search->lscr, search->dict);
-    fflush(stdout);
-
-    if (search->matchfp)
-        log_hypstr(search->matchfp, search->hyp, search->uttid, 0,
-                   search->ascr + search->lscr, search->dict);
-
-    if (search->matchsegfp)
-        E_WARN("Option -hypsegfp is not implemented in FSG mode yet.\n");
 
     n_hist = fsg_history_n_entries(search->history);
     fsg_lextree_utt_end(search->lextree);

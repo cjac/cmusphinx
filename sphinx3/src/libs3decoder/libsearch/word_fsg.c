@@ -160,6 +160,7 @@
 
 #define WORD_FSG_MAX_WORDPTR	128
 #define WORD_FSG_WORD_LENGTH    256
+#define WORD_FSG_MAX_LINE       1024
 
 #define WORD_FSG_BEGIN_DECL		"FSG_BEGIN"
 #define WORD_FST_BEGIN_DECL		"FST_BEGIN"
@@ -183,32 +184,6 @@
 #define EXP(x)      (exp ((double) (x) ))
 #endif
 
-
-
-static int32
-nextline_str2words(FILE * fp, int32 * lineno,
-                   char **wordptr, int32 max_ptr)
-{
-    char line[16384];
-    int32 n;
-
-    for (;;) {
-        if (fgets(line, sizeof(line), fp) == NULL)
-            return -1;
-
-        (*lineno)++;
-
-        if (line[0] != WORD_FSG_COMMENT_CHAR) { /* Skip comment lines */
-            if ((n = str2words(line, wordptr, max_ptr)) < 0)
-                E_FATAL("Line[%d] too long\n", *lineno);
-
-            if (n > 0)          /* Skip blank lines */
-                break;
-        }
-    }
-
-    return n;
-}
 
 
 /*
@@ -720,6 +695,32 @@ s2_fsg_free(s2_fsg_t * fsg)
 }
 
 
+static int32
+nextline_str2words(FILE * fp, int32 * lineno,
+		   char *line, int32 max_line,
+                   char **wordptr, int32 max_ptr)
+{
+    int32 n;
+
+    for (;;) {
+        if (fgets(line, max_line, fp) == NULL)
+            return -1;
+
+        (*lineno)++;
+
+        if (line[0] != WORD_FSG_COMMENT_CHAR) { /* Skip comment lines */
+            if ((n = str2words(line, wordptr, max_ptr)) < 0)
+                E_FATAL("Line[%d] too long\n", *lineno);
+
+            if (n > 0)          /* Skip blank lines */
+                break;
+        }
+    }
+
+    return n;
+}
+
+
 word_fsg_t *
 word_fsg_read(FILE * fp,
               boolean use_altpron, boolean use_filler,
@@ -729,6 +730,7 @@ word_fsg_read(FILE * fp,
     s2_fsg_trans_t *trans;
     word_fsg_t *cfsg;           /* "Compiled" FSG structure */
     char *wordptr[WORD_FSG_MAX_WORDPTR];        /* ptrs to words in an input line */
+    char line[WORD_FSG_MAX_LINE];
     int32 lineno;
     int32 n, i, j;
     float32 p;
@@ -737,7 +739,8 @@ word_fsg_read(FILE * fp,
 
     /* Scan upto FSG_BEGIN header */
     for (;;) {
-        n = nextline_str2words(fp, &lineno, wordptr, WORD_FSG_MAX_WORDPTR);
+        n = nextline_str2words(fp, &lineno, line, WORD_FSG_MAX_LINE,
+			       wordptr, WORD_FSG_MAX_WORDPTR);
         if (n < 0) {
             E_ERROR("%s declaration missing\n", WORD_FSG_BEGIN_DECL);
             return NULL;
@@ -761,7 +764,8 @@ word_fsg_read(FILE * fp,
 
 
     /* Read #states */
-    n = nextline_str2words(fp, &lineno, wordptr, WORD_FSG_MAX_WORDPTR);
+    n = nextline_str2words(fp, &lineno, line, WORD_FSG_MAX_LINE,
+			   wordptr, WORD_FSG_MAX_WORDPTR);
     if ((n != 2)
         || ((strcmp(wordptr[0], WORD_FSG_N_DECL) != 0)
             && (strcmp(wordptr[0], WORD_FSG_NUM_STATES_DECL) != 0))
@@ -775,7 +779,8 @@ word_fsg_read(FILE * fp,
     }
 
     /* Read start state */
-    n = nextline_str2words(fp, &lineno, wordptr, WORD_FSG_MAX_WORDPTR);
+    n = nextline_str2words(fp, &lineno, line, WORD_FSG_MAX_LINE,
+			   wordptr, WORD_FSG_MAX_WORDPTR);
     if ((n != 2)
         || ((strcmp(wordptr[0], WORD_FSG_S_DECL) != 0)
             && (strcmp(wordptr[0], WORD_FSG_START_STATE_DECL) != 0))
@@ -789,7 +794,8 @@ word_fsg_read(FILE * fp,
     }
 
     /* Read final state */
-    n = nextline_str2words(fp, &lineno, wordptr, WORD_FSG_MAX_WORDPTR);
+    n = nextline_str2words(fp, &lineno, line, WORD_FSG_MAX_LINE,
+			   wordptr, WORD_FSG_MAX_WORDPTR);
     if ((n != 2)
         || ((strcmp(wordptr[0], WORD_FSG_F_DECL) != 0)
             && (strcmp(wordptr[0], WORD_FSG_FINAL_STATE_DECL) != 0))
@@ -805,7 +811,8 @@ word_fsg_read(FILE * fp,
 
     /* Read transitions */
     for (;;) {
-        n = nextline_str2words(fp, &lineno, wordptr, WORD_FSG_MAX_WORDPTR);
+        n = nextline_str2words(fp, &lineno, line, WORD_FSG_MAX_LINE,
+			   wordptr, WORD_FSG_MAX_WORDPTR);
         if (n <= 0) {
             E_ERROR("Line[%d]: transition or FSG_END statement expected\n",
                     lineno);
@@ -926,6 +933,7 @@ word_fsg_free(word_fsg_t * fsg)
         }
     }
 
+    ctxt_table_free(fsg->ctxt);
     ckd_free_2d((void **) fsg->trans);
     ckd_free_2d((void **) fsg->null_trans);
     ckd_free((void *) fsg->name);

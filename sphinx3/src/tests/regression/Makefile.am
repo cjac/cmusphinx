@@ -20,6 +20,7 @@ TESTS = \
 	test-livepretend.sh \
 	test-livepretend-clm.sh \
 	test-livepretend-mllr.sh \
+	test-livepretend-fsg.sh \
 	test-lm_convert.sh \
 	test-astar.sh \
 	test-astar-clm.sh \

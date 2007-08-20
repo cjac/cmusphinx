@@ -29,7 +29,7 @@ fsgargs=" \
 "
 
 run_program sphinx3_decode $margs $fsgargs > $tmpout 2>&1
-compare_table "DECODE FSG ARBITRARY LENGTH DIGIT STRING test" $tmpmatch $hmmdir/tidigits/tidigits.length.arb.result 10
+compare_table "DECODE FSG ARBITRARY LENGTH DIGIT STRING test" $tmpmatch $hmmdir/tidigits/tidigits.length.arb.result
 
 fsgargs=" \
 -fsg $hmmdir/tidigits/test.iso.digits.fsg \
@@ -37,7 +37,7 @@ fsgargs=" \
 "
 
 run_program sphinx3_decode $margs $fsgargs > $tmpout 2>&1
-compare_table "DECODE FSG LENGTH 1 DIGIT (ISOLATED DIGIT) STRING test" $tmpmatch $hmmdir/tidigits/tidigits.length.1.result 0 0
+compare_table "DECODE FSG LENGTH 1 DIGIT (ISOLATED DIGIT) STRING test" $tmpmatch $hmmdir/tidigits/tidigits.length.1.result
 
 
 fsgargs=" \
@@ -46,4 +46,4 @@ fsgargs=" \
 "
 
 run_program sphinx3_decode $margs $fsgargs > $tmpout 2>&1
-compare_table "DECODE FSG LENGTH 2 DIGIT STRING test" $tmpmatch $hmmdir/tidigits/tidigits.length.2.result 0 0,1
+compare_table "DECODE FSG LENGTH 2 DIGIT STRING test" $tmpmatch $hmmdir/tidigits/tidigits.length.2.result

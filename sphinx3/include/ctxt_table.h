@@ -363,6 +363,7 @@ typedef struct {
                          Second dimension: the phone position. 
                       */
     int32 n_backoff_ci; /**< # of backoff CI phone */
+    int32 n_ci, n_word;
 } ctxt_table_t ;
 
 /**
@@ -377,8 +378,7 @@ ctxt_table_t *ctxt_table_init(dict_t *dict,  /**< A dictionary*/
  * Uninitialize a context table
  */
 
-void ctxt_table_free(ctxt_table_t *ct /**< Context Table */
-    );
+void ctxt_table_free(ctxt_table_t *ct); /**< Context Table */
 
 /**
  * Get the array of right context senone sequence ID for the last phone. 

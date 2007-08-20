@@ -197,6 +197,11 @@ typedef struct fsg_search_s {
 fsg_search_t *fsg_search_init (word_fsg_t *,void *srch_struct);
 
 
+/**
+ * Release all memory associated with the search module.
+ **/
+void fsg_search_free(fsg_search_t *s);
+
 /*
  * Lookup the FSG associated with the given name and return it, or NULL if
  * no match found.

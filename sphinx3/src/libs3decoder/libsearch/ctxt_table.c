@@ -386,6 +386,9 @@ ctxt_table_init(dict_t * dict, mdef_t * mdef)
     ctxt_table_t *ct;
     ct = (ctxt_table_t *) ckd_calloc(1, sizeof(ctxt_table_t));
 
+    ct->n_ci = mdef->n_ciphone;
+    ct->n_word = dict->n_word;
+
     build_wwssid(ct, dict, mdef);
     build_xwdssid_map(ct, dict, mdef);
 
@@ -393,20 +396,38 @@ ctxt_table_init(dict_t * dict, mdef_t * mdef)
 }
 
 void
+xwdssid_free(xwdssid_t **xs, int32 n_ci)
+{
+    s3cipid_t b, c;
+
+    if (xs == NULL)
+        return;
+    for (b = 0; b < n_ci; ++b) {
+        if (xs[b] == NULL)
+            continue;
+        for (c = 0; c < n_ci; ++c) {
+            ckd_free(xs[b][c].cimap);
+            ckd_free(xs[b][c].ssid);
+        }
+        ckd_free(xs[b]);
+    }
+    ckd_free(xs);
+}
+
+void
 ctxt_table_free(ctxt_table_t * ct)
 {
-    if (ct->lcssid)
-        ckd_free(ct->lcssid);
+    xwdssid_free(ct->lcssid, ct->n_ci);
+    xwdssid_free(ct->rcssid, ct->n_ci);
+    xwdssid_free(ct->lrcssid, ct->n_ci);
 
-    if (ct->rcssid)
-        ckd_free(ct->rcssid);
-
-    if (ct->lrcssid)
-        ckd_free(ct->lrcssid);
-
-    if (ct->wwssid)
+    if (ct->wwssid) {
+        s3wid_t w;
+        for (w = 0; w < ct->n_word; ++w)
+            ckd_free(ct->wwssid[w]);
         ckd_free(ct->wwssid);
-
+    }
+    ckd_free(ct);
 }
 
 s3cipid_t *

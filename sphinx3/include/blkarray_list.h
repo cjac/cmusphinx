@@ -130,5 +130,11 @@ int32 blkarray_list_append (blkarray_list_t *, void *data);
  */
 void blkarray_list_reset (blkarray_list_t *);
 
+/**
+ * Completely free the list and all entries in it.
+ **/
+void blkarray_list_free(blkarray_list_t *bl);
+
+
 
 #endif
