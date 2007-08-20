@@ -1125,12 +1125,14 @@ vithist_dag_build(vithist_t * vh, glist_t hyp, dict_t * dict, int32 endid)
          * a start time of 0.  And shift the start time of words starting at frame 0 up by 1.
          * MAJOR HACK!!
          */
-        if (ve->sf <= 0) {
-            assert(ve->sf >= -1);
-            assert((ve->ef == -1) || (ve->ef > 1));
-
+        if (ve->sf == -1) {
+            assert(ve->ef == -1);
+            sf = ef = 0;
+        }
+        else if (ve->sf == 0) {
+            assert(ve->ef > 0);
             sf = ve->sf + 1;
-            ef = (ve->ef < 0) ? 0 : ve->ef;
+            ef = ve->ef;
         }
         else {
             sf = ve->sf;
