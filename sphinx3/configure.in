@@ -7,6 +7,17 @@ AM_INIT_AUTOMAKE(sphinx3,0.7)
 CFLAGS=${CFLAGS:--g -O2 -Wall -ansi}
 #CFLAGS=${CFLAGS:--g -O2 -Wall  -DDMALLOC}
 
+dnl
+dnl Set proper compiler flags and such for some platforms
+dnl
+case $host in
+     *apple*)
+        LIBS="$LIBS -framework CoreAudio -framework AudioToolbox"
+        ;;
+     *)
+     ;;
+esac     
+
 AC_ISC_POSIX
 AC_PROG_CC
 AM_PROG_CC_STDC
