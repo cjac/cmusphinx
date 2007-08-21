@@ -1,5 +1,15 @@
 2007-08-20  David Huggins-Daines (dhuggins@cs.cmu.edu)
+	Sphinx 3.7.0 Final
+	^^^^^^^^^^^^^^^^^^
+	(Corresponds to Sourceforge SVN rev 7169.)
+
 	This version requires sphinxbase 0.3.
+
+	This version has been tested on the following platforms:
+		* i686-linux (RedHat 9, Fedora Core 5, Ubuntu Feisty)
+		* x86_64-linux (Fedora Core 3, Fedora Core 5, Ubuntu Feisty)
+		* sparc-solaris (Solaris 9)
+		* powerpc-darwin (Mac OS X 10.3)
 
 	The testing framework has been improved to use the built-in
 	facilities provided by automake.  Failed tests will be
@@ -11,10 +21,18 @@
 	longer supported.  Also, a dictionary file is now required,
 	though it need not contain anything.
 
+	The sphinx3_allphone and sphinx3_decode_anytopo programs have
+	been removed as they are no longer needed.  For the former,
+	use 'sphinx3_decode -mode allphone', for the latter, use
+	'sphinx3_decode_anytopo -mode fwdflat'.
+
 	A simple Python interface for live and batch
 	decoding is included in the python/ directory.  It is not
 	compiled by default.  To install it, install sphinx3, then run
 	'python setup.py install'.
+
+	pkg-config files are now installed to make it easier to use
+	Sphinx3 from other applications.
 
 	Word lattices can now be output in HTK format (-outlatfmt htk).
 
@@ -30,7 +48,12 @@
 	Bestpath and N-best decode now work in all operation modes
 	except FSG.
 
-	Many bugs and memory leaks have been fixed.
+	The operation modes use text strings instead of numbers.
+
+	The flat decoder (-mode fwdflat) now gives equivalent error
+	rates to Sphinx 3.0.
+
+	Many other bugs and memory leaks have been fixed.
 
 2006-08-06  Arthur Chan (archan@cs.cmu.edu) at Carnegie Mellon University
 	Sphinx 3.7.0 Release Candidate I
