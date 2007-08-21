@@ -33,7 +33,7 @@ sphinx3_parse_argfile(PyObject *self, PyObject *args)
 
 	if (!PyArg_ParseTuple(args, "s", &filename))
 		return NULL;
-	if (cmd_ln_parse_file(S3_DECODE_ARG_DEFS, (char *)filename) == -1) {
+	if (cmd_ln_parse_file(S3_DECODE_ARG_DEFS, (char *)filename, FALSE) == -1) {
 		/* Raise an IOError, the file did not exist (probably). */
 		PyErr_SetString(PyExc_IOError, "Argument file could not be read");
 		return NULL;
@@ -102,7 +102,7 @@ sphinx3_parse_argdict(PyObject *self, PyObject *args)
 	}
 
 	argc = argc * 2 + 1;
-	if (cmd_ln_parse(S3_DECODE_ARG_DEFS, argc, argv) == -1) {
+	if (cmd_ln_parse(S3_DECODE_ARG_DEFS, argc, argv, FALSE) == -1) {
 		/* This actually won't ever happen */
 		PyErr_SetString(PyExc_ValueError, "Arguments are invalid");
 		return NULL;
@@ -155,7 +155,7 @@ sphinx3_parse_argv(PyObject *self, PyObject *args)
 		Py_DECREF(str);
 	}
 
-	if (cmd_ln_parse(S3_DECODE_ARG_DEFS, argc, argv) == -1) {
+	if (cmd_ln_parse(S3_DECODE_ARG_DEFS, argc, argv, FALSE) == -1) {
 		/* This actually won't ever happen */
 		PyErr_SetString(PyExc_ValueError, "Arguments are invalid");
 		return NULL;
