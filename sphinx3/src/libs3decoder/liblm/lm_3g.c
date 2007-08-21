@@ -824,7 +824,7 @@ lm_read_txt(const char *filename,        /**< Input: The file name*/
     int32 idfmt = 0;
     int32 _errmsg;
 
-    E_INFO("Reading LM file %s (name \"%s\")\n", filename);
+    E_INFO("Reading LM file %s\n", filename);
 
     fp = fopen_comp(filename, "r", &usingPipe);
     if (fp == NULL) {
