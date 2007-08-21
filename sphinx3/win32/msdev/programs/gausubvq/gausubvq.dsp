@@ -87,7 +87,7 @@ LINK32=xilink6.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=..\..\..\..\src\programs\gausubvq.c
+SOURCE=..\..\..\..\src\programs\main_gausubvq.c
 # End Source File
 # End Group
 # Begin Group "Header Files"
