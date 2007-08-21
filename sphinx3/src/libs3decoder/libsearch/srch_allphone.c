@@ -757,8 +757,6 @@ srch_allphone_begin(void *srch)
     s = (srch_t *) srch;
     allp = (allphone_t *) s->grh->graph_struct;
 
-    stat_clear_utt(s->stat);
-
     /* Reset all HMMs. */
     for (ci = 0; ci < allp->mdef->n_ciphone; ci++) {
         for (p = allp->ci_phmm[(unsigned) ci]; p; p = p->next) {

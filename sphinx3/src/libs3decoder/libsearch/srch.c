@@ -465,9 +465,9 @@ srch_utt_begin(srch_t * srch)
     if (srch->dag)
 	dag_destroy(srch->dag);
     srch->dag = NULL;
+    stat_clear_utt(srch->stat);
 
     srch->funcs->utt_begin(srch);
-
 
     return SRCH_SUCCESS;
 }

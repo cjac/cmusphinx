@@ -350,8 +350,6 @@ srch_WST_begin(void *srch)
     kbc = s->kbc;
     g = kbc->mgau;
 
-    stat_clear_utt(s->stat);
-
     histprune_update_histbinsize(wstg->histprune,
                                  wstg->histprune->hmm_hist_binsize,
                                  (wstg->curroottree->n_node +

@@ -323,7 +323,6 @@ srch_FLAT_FWD_begin(void *srch)
 
     assert(fwg);
 
-    stat_clear_utt(s->stat);
     ptmr_reset(&(fwg->tm_hmmeval));
     ptmr_reset(&(fwg->tm_hmmtrans));
     ptmr_reset(&(fwg->tm_wdtrans));

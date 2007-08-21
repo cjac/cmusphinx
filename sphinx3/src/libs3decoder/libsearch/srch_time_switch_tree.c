@@ -362,7 +362,6 @@ srch_TST_begin(void *srch)
 
     /* Clean up any previous viterbi history */
     vithist_utt_reset(tstg->vithist);
-    stat_clear_utt(s->stat);
     histprune_zero_histbin(tstg->histprune);
 
     /* Insert initial <s> into vithist structure */
