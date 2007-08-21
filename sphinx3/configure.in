@@ -7,6 +7,8 @@ AM_INIT_AUTOMAKE(sphinx3,0.7)
 CFLAGS=${CFLAGS:--g -O2 -Wall -ansi}
 #CFLAGS=${CFLAGS:--g -O2 -Wall  -DDMALLOC}
 
+AC_CANONICAL_HOST
+
 dnl
 dnl Set proper compiler flags and such for some platforms
 dnl
@@ -45,8 +47,6 @@ lmdata=`echo $lmdata`
 
 docdata=`ls -1 $srcdir/doc | egrep -v '(Makefile|CVS)'`
 docdata=`echo $docdata`
-
-AC_CANONICAL_HOST
 
 dnl
 dnl Get SphinxBase source from command line if given
