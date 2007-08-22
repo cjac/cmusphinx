@@ -51,8 +51,21 @@ if test "x$HAVE_PKGCONFIG" = "xno"; then
 fi
 
 PKG_CHECK_MODULES(SphinxBase, [sphinxbase])
-PKG_CHECK_MODULES(PocketSphinx, [pocketsphinx])
-PKG_CHECK_MODULES(Sphinx3, [sphinx3])
+PKG_CHECK_MODULES(PocketSphinx, [pocketsphinx],,[
+AC_MSG_WARN([PocketSphinx not found, will not build PocketSphinx plugin])])
+PKG_CHECK_MODULES(Sphinx3, [sphinx3],,[
+AC_MSG_WARN([Sphinx3 not found, will not build Sphinx3 plugin])])
+
+if test "x$PocketSphinx_PKG_ERRORS" != "x" -a "x$Sphinx3_PKG_ERRORS" != "x"; then
+   AC_MSG_FAILURE(dnl
+[Neither PocketSphinx nor Sphinx3 were found on your system. 
+Make sure that you have installed them and that the
+PKG_CONFIG_PATH environment variable is set correctly, if
+they were installed in a non-standard prefix.])
+fi
+
+AM_CONDITIONAL(BUILD_POCKETSPHINX, test "x$PocketSphinx_CFLAGS" != "x")
+AM_CONDITIONAL(BUILD_SPHINX3, test "x$Sphinx3_CFLAGS" != "x")
 
 dnl get prefix where pocketsphinx was installed
 POCKETSPHINX_PREFIX=`pkg-config --variable=prefix pocketsphinx`

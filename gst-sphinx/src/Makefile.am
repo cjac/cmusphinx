@@ -1,4 +1,12 @@
-plugin_LTLIBRARIES = libgstpocketsphinx.la libgstsphinx3.la
+my_plugins = 
+if BUILD_POCKETSPHINX
+my_plugins += libgstpocketsphinx.la
+endif
+if BUILD_SPHINX3
+my_plugins += libgstsphinx3.la
+endif
+
+plugin_LTLIBRARIES = $(my_plugins)
 
 libgstpocketsphinx_la_SOURCES = gstpocketsphinx.c
 libgstpocketsphinx_la_CFLAGS = $(GST_CFLAGS) $(PocketSphinx_CFLAGS) $(SphinxBase_CFLAGS) \
