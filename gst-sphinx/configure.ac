@@ -50,12 +50,20 @@ if test "x$HAVE_PKGCONFIG" = "xno"; then
   AC_MSG_ERROR(you need to have pkgconfig installed !)
 fi
 
-PKG_CHECK_MODULES(PocketSphinx, [pocketsphinx])
 PKG_CHECK_MODULES(SphinxBase, [sphinxbase])
+PKG_CHECK_MODULES(PocketSphinx, [pocketsphinx])
+PKG_CHECK_MODULES(Sphinx3, [sphinx3])
+
+dnl get prefix where pocketsphinx was installed
+POCKETSPHINX_PREFIX=`pkg-config --variable=prefix pocketsphinx`
+AC_SUBST(POCKETSPHINX_PREFIX)
+
+dnl get prefix where sphinx3 was installed
+SPHINX3_PREFIX=`pkg-config --variable=prefix sphinx3`
+AC_SUBST(SPHINX3_PREFIX)
 
 dnl Now we're ready to ask for gstreamer libs and cflags
 dnl And we can also ask for the right version of gstreamer
-
 
 PKG_CHECK_MODULES(GST, \
   gstreamer-$GST_MAJORMINOR >= $GST_REQUIRED,
@@ -131,10 +139,6 @@ AC_SUBST(plugindir)
 dnl set proper LDFLAGS for plugins
 GST_PLUGIN_LDFLAGS='-module -avoid-version -export-symbols-regex [_]*\(gst_\|Gst\|GST_\).*'
 AC_SUBST(GST_PLUGIN_LDFLAGS)
-
-dnl get prefix where pocketsphinx was installed
-POCKETSPHINX_PREFIX=`pkg-config --variable=prefix pocketsphinx`
-AC_SUBST(POCKETSPHINX_PREFIX)
 
 AC_OUTPUT(Makefile m4/Makefile src/Makefile)
 
