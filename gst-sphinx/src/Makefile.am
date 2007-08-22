@@ -18,7 +18,8 @@ libgstpocketsphinx_la_SOURCES = gstpocketsphinx.c
 
 # flags used to compile this plugin
 # add other _CFLAGS and _LIBS as needed
-libgstpocketsphinx_la_CFLAGS = $(GST_CFLAGS) $(PocketSphinx_CFLAGS) $(SphinxBase_CFLAGS)
+libgstpocketsphinx_la_CFLAGS = $(GST_CFLAGS) $(PocketSphinx_CFLAGS) $(SphinxBase_CFLAGS) \
+	-DPOCKETSPHINX_PREFIX=\"$(POCKETSPHINX_PREFIX)\"
 libgstpocketsphinx_la_LIBADD = $(GST_LIBS) $(PocketSphinx_LIBS) $(SphinxBase_LIBS) \
 	  -lgstaudio-$(GST_MAJORMINOR)
 libgstpocketsphinx_la_LDFLAGS = $(GST_PLUGIN_LDFLAGS)
