@@ -156,6 +156,8 @@ static char *default_argv[] = {
     "-hmm", POCKETSPHINX_PREFIX "/share/pocketsphinx/model/hmm/wsj1",
     "-lm", POCKETSPHINX_PREFIX "/share/pocketsphinx/model/lm/swb/swb.lm.DMP",
     "-dict", POCKETSPHINX_PREFIX "/share/pocketsphinx/model/lm/swb/swb.dic",
+    "-samprate", "8000",
+    "-nfft", "256",
     "-fwdflat", "no"
 };
 static const int default_argc = sizeof(default_argv)/sizeof(default_argv[0]);
@@ -169,7 +171,7 @@ static GstStaticPadTemplate sink_factory =
                                              "depth = (int) 16, "
                                              "endianness = (int) BYTE_ORDER, "
                                              "channels = (int) 1, "
-                                             "rate = (int) 16000")
+                                             "rate = (int) 8000")
         );
 	
 static void gst_pocketsphinx_set_property (GObject * object, guint prop_id,
@@ -252,19 +254,19 @@ gst_pocketsphinx_class_init (GstPocketSphinxClass * klass)
         (gobject_class, PROP_HMM_DIR,
          g_param_spec_string ("hmm_dir", "HMM Directory",
                               "Directory containing acoustic model parameters",
-                              "/usr/local/share/pocketsphinx/model/hmm/wsj1",
+                              POCKETSPHINX_PREFIX "/share/pocketsphinx/model/hmm/wsj1",
                               G_PARAM_READWRITE));
     g_object_class_install_property
         (gobject_class, PROP_LM_FILE,
          g_param_spec_string ("lm_file", "LM File",
                               "Language model file",
-                              "/usr/local/share/pocketsphinx/model/lm/swb/swb.lm.DMP",
+                              POCKETSPHINX_PREFIX "/share/pocketsphinx/model/lm/swb/swb.lm.DMP",
                               G_PARAM_READWRITE));
     g_object_class_install_property
         (gobject_class, PROP_DICT_FILE,
          g_param_spec_string ("dict_file", "Dictionary File",
                               "Dictionary File",
-                              "/usr/local/share/pocketsphinx/model/lm/swb/swb.dic",
+                              POCKETSPHINX_PREFIX "/share/pocketsphinx/model/lm/swb/swb.dic",
                               G_PARAM_READWRITE));
 
     gst_pocketsphinx_signals[SIGNAL_INITIALIZATION] =
