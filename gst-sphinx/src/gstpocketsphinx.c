@@ -147,7 +147,11 @@ enum
     PROP_0,
     PROP_HMM_DIR,
     PROP_LM_FILE,
-    PROP_DICT_FILE
+    PROP_DICT_FILE,
+    PROP_FSG_FILE,
+    PROP_S2_FSG,
+    PROP_FWDFLAT,
+    PROP_BESTPATH
 };
 
 /* Default command line. (will go away soon and be constructed using properties) */
@@ -158,7 +162,8 @@ static char *default_argv[] = {
     "-dict", POCKETSPHINX_PREFIX "/share/pocketsphinx/model/lm/swb/swb.dic",
     "-samprate", "8000",
     "-nfft", "256",
-    "-fwdflat", "no"
+    "-fwdflat", "no",
+    "-bestpath", "no"
 };
 static const int default_argc = sizeof(default_argv)/sizeof(default_argv[0]);
 
@@ -252,22 +257,47 @@ gst_pocketsphinx_class_init (GstPocketSphinxClass * klass)
      * properties here somehow eventually. */
     g_object_class_install_property
         (gobject_class, PROP_HMM_DIR,
-         g_param_spec_string ("hmm_dir", "HMM Directory",
+         g_param_spec_string ("hmm", "HMM Directory",
                               "Directory containing acoustic model parameters",
                               POCKETSPHINX_PREFIX "/share/pocketsphinx/model/hmm/wsj1",
                               G_PARAM_READWRITE));
     g_object_class_install_property
         (gobject_class, PROP_LM_FILE,
-         g_param_spec_string ("lm_file", "LM File",
+         g_param_spec_string ("lm", "LM File",
                               "Language model file",
                               POCKETSPHINX_PREFIX "/share/pocketsphinx/model/lm/swb/swb.lm.DMP",
                               G_PARAM_READWRITE));
     g_object_class_install_property
+        (gobject_class, PROP_FSG_FILE,
+         g_param_spec_string ("fsg", "FSG File",
+                              "Finite state grammar file",
+                              NULL,
+                              G_PARAM_READWRITE));
+    g_object_class_install_property
+        (gobject_class, PROP_S2_FSG,
+         g_param_spec_pointer ("s2_fsg", "FSG Pointer",
+                              "Finite state grammar pointer (s2_fsg_t *)",
+                              G_PARAM_WRITABLE));
+    g_object_class_install_property
         (gobject_class, PROP_DICT_FILE,
-         g_param_spec_string ("dict_file", "Dictionary File",
+         g_param_spec_string ("dict", "Dictionary File",
                               "Dictionary File",
                               POCKETSPHINX_PREFIX "/share/pocketsphinx/model/lm/swb/swb.dic",
                               G_PARAM_READWRITE));
+
+    g_object_class_install_property
+        (gobject_class, PROP_FWDFLAT,
+         g_param_spec_boolean ("fwdflat", "Flat Lexicon Search",
+                              "Enable Flat Lexicon Search",
+                               FALSE,
+                               G_PARAM_READWRITE));
+    g_object_class_install_property
+        (gobject_class, PROP_BESTPATH,
+         g_param_spec_boolean ("bestpath", "Graph Search",
+                              "Enable Graph Search",
+                               FALSE,
+                               G_PARAM_READWRITE));
+
 
     gst_pocketsphinx_signals[SIGNAL_INITIALIZATION] =
         g_signal_new ("initialization", G_TYPE_FROM_CLASS (klass), G_SIGNAL_RUN_LAST,
@@ -327,10 +357,57 @@ gst_pocketsphinx_set_string (GstPocketSphinx *sink,
     gchar *str;
 
     val = cmd_ln_access(key);
-    val->ptr = g_strdup(g_value_get_string(value));
+    if (value != NULL)
+        val->ptr = g_strdup(g_value_get_string(value));
+    else
+        val->ptr = NULL;
     if ((str = g_hash_table_lookup(sink->arghash, key)))
         g_free(str);
     g_hash_table_insert(sink->arghash, (gpointer)key, val->ptr);
+}
+
+static void
+gst_pocketsphinx_set_boolean (GstPocketSphinx *sink,
+                             const gchar *key, const GValue *value)
+{
+    /* NOTE: This is an undocumented feature of SphinxBase's cmd_ln.h.
+     * However it will be officially supported in future releases. */
+    anytype_t *val;
+    val = cmd_ln_access(key);
+    val->i_32 = g_value_get_boolean(value);
+}
+
+static void
+gst_pocketsphinx_set_int32 (GstPocketSphinx *sink,
+                            const gchar *key, const GValue *value)
+{
+    /* NOTE: This is an undocumented feature of SphinxBase's cmd_ln.h.
+     * However it will be officially supported in future releases. */
+    anytype_t *val;
+    val = cmd_ln_access(key);
+    val->i_32 = g_value_get_int(value);
+}
+
+static void
+gst_pocketsphinx_set_float (GstPocketSphinx *sink,
+                             const gchar *key, const GValue *value)
+{
+    /* NOTE: This is an undocumented feature of SphinxBase's cmd_ln.h.
+     * However it will be officially supported in future releases. */
+    anytype_t *val;
+    val = cmd_ln_access(key);
+    val->fl_32 = g_value_get_float(value);
+}
+
+static void
+gst_pocketsphinx_set_double (GstPocketSphinx *sink,
+                             const gchar *key, const GValue *value)
+{
+    /* NOTE: This is an undocumented feature of SphinxBase's cmd_ln.h.
+     * However it will be officially supported in future releases. */
+    anytype_t *val;
+    val = cmd_ln_access(key);
+    val->fl_64 = g_value_get_double(value);
 }
 
 static void
@@ -344,10 +421,37 @@ gst_pocketsphinx_set_property (GObject * object, guint prop_id,
         gst_pocketsphinx_set_string(sink, "-hmm", value);
         break;
     case PROP_LM_FILE:
+        /* FSG and LM are mutually exclusive */
+        gst_pocketsphinx_set_string(sink, "-fsg", NULL);
         gst_pocketsphinx_set_string(sink, "-lm", value);
         break;
     case PROP_DICT_FILE:
         gst_pocketsphinx_set_string(sink, "-dict", value);
+        break;
+    case PROP_FSG_FILE:
+        /* FSG and LM are mutually exclusive */
+        gst_pocketsphinx_set_string(sink, "-lm", NULL);
+        gst_pocketsphinx_set_string(sink, "-fsg", value);
+        break;
+    case PROP_S2_FSG:
+    {
+        s2_fsg_t *fsg = g_value_get_pointer(value);
+
+        uttproc_del_fsg(fsg->name);
+        uttproc_load_fsg(g_value_get_pointer(value),
+                         cmd_ln_boolean("-fsgusealtpron"),
+                         cmd_ln_boolean("-fsgusefiller"),
+                         cmd_ln_float32("-silpen"),
+                         cmd_ln_float32("-fillpen"),
+                         cmd_ln_float32("-lw"));
+        uttproc_set_fsg(fsg->name);
+        break;
+    }
+    case PROP_FWDFLAT:
+        gst_pocketsphinx_set_boolean(sink, "-fwdflat", value);
+        break;
+    case PROP_BESTPATH:
+        gst_pocketsphinx_set_boolean(sink, "-bestpath", value);
         break;
     default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -368,6 +472,15 @@ gst_pocketsphinx_get_property (GObject * object, guint prop_id,
         break;
     case PROP_DICT_FILE:
         g_value_set_string(value, cmd_ln_str("-dict"));
+        break;
+    case PROP_FSG_FILE:
+        g_value_set_string(value, cmd_ln_str("-fsg"));
+        break;
+    case PROP_FWDFLAT:
+        g_value_set_boolean(value, cmd_ln_boolean("-fwdflat"));
+        break;
+    case PROP_BESTPATH:
+        g_value_set_boolean(value, cmd_ln_boolean("-bestpath"));
         break;
     default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);

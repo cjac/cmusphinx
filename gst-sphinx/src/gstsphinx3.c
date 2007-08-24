@@ -255,19 +255,19 @@ gst_sphinx3_class_init (GstSphinx3Class * klass)
      * properties here somehow eventually. */
     g_object_class_install_property
         (gobject_class, PROP_HMM_DIR,
-         g_param_spec_string ("hmm_dir", "HMM Directory",
+         g_param_spec_string ("hmm", "HMM Directory",
                               "Directory containing acoustic model parameters",
                               SPHINX3_PREFIX "/share/sphinx3/model/hmm/wsj1",
                               G_PARAM_READWRITE));
     g_object_class_install_property
         (gobject_class, PROP_LM_FILE,
-         g_param_spec_string ("lm_file", "LM File",
+         g_param_spec_string ("lm", "LM File",
                               "Language model file",
                               SPHINX3_PREFIX "/share/sphinx3/model/lm/swb/swb.lm.DMP",
                               G_PARAM_READWRITE));
     g_object_class_install_property
         (gobject_class, PROP_DICT_FILE,
-         g_param_spec_string ("dict_file", "Dictionary File",
+         g_param_spec_string ("dict", "Dictionary File",
                               "Dictionary File",
                               SPHINX3_PREFIX "/share/sphinx3/model/lm/swb/swb.dic",
                               G_PARAM_READWRITE));
