@@ -1,0 +1,17 @@
+#JSGF;
+
+grammar edu.cmu.test;
+
+public <utterance> = <greeting> | <farewell> | <request>;
+
+<greeting> = hello | hi;
+
+<farewell> = /2/ goodbye | /1/ bye;
+
+<request> = i <want> to <do> <something>;
+
+<want> = would like | want | need;
+
+<do> = order | get | eat;
+
+<something> = pizza | breakfast;
