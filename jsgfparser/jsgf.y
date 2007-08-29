@@ -36,6 +36,7 @@
  */
 %{
 #include <stdio.h>
+#include <string.h>
 
 #include <hash_table.h>
 #include <ckd_alloc.h>
@@ -223,6 +224,14 @@ expand_rhs(jsgf_t *grammar, jsgf_rule_t *rule, jsgf_rhs_t *rhs)
             jsgf_rule_t *subrule;
             void *val;
 
+	    if (0 == strcmp(atom->name, "<NULL>")) {
+                /* Do nothing */
+                continue;
+	    }
+            else if (0 == strcmp(atom->name, "<VOID>")) {
+                /* Make this entire RHS unspeakable */
+                return -1;
+            }
             if (hash_table_lookup(grammar->rules, atom->name, &val) == -1) {
                 E_ERROR("Undefined rule in RHS: %s\n", atom->name);
                 return -1;
@@ -235,6 +244,7 @@ expand_rhs(jsgf_t *grammar, jsgf_rule_t *rule, jsgf_rhs_t *rhs)
                     return -1;
                 }
                 /* Add a link back to the beginning of this rule instance */
+                E_INFO("Right recursion %s %d => %d\n", atom->name, lastnode, rule->entry);
                 add_link(grammar, atom, lastnode, rule->entry);
             }
             else {
@@ -266,9 +276,6 @@ expand_rule(jsgf_t *grammar, jsgf_rule_t *rule)
     jsgf_rhs_t *rhs;
     float norm;
 
-    rule->entry = grammar->nstate++;
-    rule->exit = grammar->nstate++;
-
     /* Normalize incoming weights */
     norm = 0;
     for (rhs = rule->rhs; rhs; rhs = rhs->alt) {
@@ -277,22 +284,24 @@ expand_rule(jsgf_t *grammar, jsgf_rule_t *rule)
             norm += atom->weight;
         }
     }
+
+    rule->entry = grammar->nstate++;
+    rule->exit = grammar->nstate++;
     if (norm == 0) norm = 1;
     for (rhs = rule->rhs; rhs; rhs = rhs->alt) {
+        int lastnode;
+
         if (rhs->atoms) {
             jsgf_atom_t *atom = gnode_ptr(rhs->atoms);
 	    atom->weight /= norm;
         }
-    }
-
-    for (rhs = rule->rhs; rhs; rhs = rhs->alt) {
-        int lastnode;
-
         lastnode = expand_rhs(grammar, rule, rhs);
         if (lastnode == -1) {
             return -1;
         }
-        add_link(grammar, NULL, lastnode, rule->exit);
+        else {
+            add_link(grammar, NULL, lastnode, rule->exit);
+        }
     }
     return rule->exit;
 }

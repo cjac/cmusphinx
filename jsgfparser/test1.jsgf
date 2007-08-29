@@ -4,9 +4,9 @@ grammar edu.cmu.test;
 
 public <utterance> = <greeting> | <farewell> | <request>;
 
-<greeting> = HELLO | HI;
+<greeting> = HELLO | HI THERE;
 
-<farewell> = /2/ GOODBYE | /1/ BYE;
+<farewell> = /5/ GOOD BYE | /1/ BYE;
 
 <request> = I <want> TO <do> <something>;
 
