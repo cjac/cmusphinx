@@ -194,8 +194,36 @@ rule_atom: TOKEN { $$ = jsgf_atom_new($1, 1.0); }
 	| RULENAME { $$ = jsgf_atom_new($1, 1.0); }
 	| rule_group { $$ = jsgf_atom_new($1->name, 1.0); }
 	| rule_optional { $$ = jsgf_atom_new($1->name, 1.0); }
-/*	| rule_atom '*'
-	| rule_atom '+' */
+	| rule_atom '*' {
+	  jsgf_rule_t *rule;
+	  jsgf_atom_t *atom;
+	  jsgf_rhs_t *rhs;
+
+	  rhs = ckd_calloc(1, sizeof(*rhs));
+	  rhs->atoms = glist_add_ptr(NULL, jsgf_atom_new("<NULL>", 1.0));
+	  rule = define_rule(NULL, rhs, 0);
+	  atom = jsgf_atom_new(rule->name, 1.0);
+	  rhs = ckd_calloc(1, sizeof(*rhs));
+	  rhs->atoms = glist_add_ptr(NULL, atom);
+	  rhs->atoms = glist_add_ptr(rhs->atoms, $1);
+	  rule->rhs->alt = rhs;
+	  $$ = atom;
+}
+	| rule_atom '+' {
+	  jsgf_rule_t *rule;
+	  jsgf_atom_t *atom;
+	  jsgf_rhs_t *rhs;
+
+	  rhs = ckd_calloc(1, sizeof(*rhs));
+	  rhs->atoms = glist_add_ptr(NULL, $1);
+	  rule = define_rule(NULL, rhs, 0);
+	  atom = jsgf_atom_new(rule->name, 1.0);
+	  rhs = ckd_calloc(1, sizeof(*rhs));
+	  rhs->atoms = glist_add_ptr(NULL, atom);
+	  rhs->atoms = glist_add_ptr(rhs->atoms, $1);
+	  rule->rhs->alt = rhs;
+	  $$ = atom;
+}
 	;
 
 %%

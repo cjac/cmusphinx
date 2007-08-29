@@ -1,0 +1,7 @@
+#JSGF;
+
+grammar test9;
+
+public <greeting> = <hello>;
+
+<hello> = HELLO | HELLO <hello>;
