@@ -2,7 +2,7 @@
 
 grammar edu.cmu.test;
 
-<script> = <utterance>*;
+public <script> = <utterance>*;
 
 <utterance> = <greeting> | <farewell>;
 
