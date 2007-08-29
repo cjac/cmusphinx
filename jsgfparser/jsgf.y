@@ -58,6 +58,8 @@ define_rule(char *name, jsgf_rhs_t *rhs, int public)
 	global_symtab = hash_table_new(42, 0);
     }
 
+    rhs->atoms = glist_reverse(rhs->atoms);
+
     rule = ckd_calloc(1, sizeof(*rule));
     rule->name = name;
     rule->rhs = rhs;
@@ -214,7 +216,7 @@ expand_rhs(jsgf_t *grammar, jsgf_rule_t *rule, jsgf_rhs_t *rhs)
     /* Last node expanded in this sequence. */
     lastnode = rule->entry;
 
-    /* Iterate over atoms in rhs */
+    /* Iterate over atoms in rhs and generate links/nodes */
     for (gn = rhs->atoms; gn; gn = gnode_next(gn)) {
         jsgf_atom_t *atom = gnode_ptr(gn);
         if (jsgf_atom_is_rule(atom)) {
@@ -262,9 +264,27 @@ static int
 expand_rule(jsgf_t *grammar, jsgf_rule_t *rule)
 {
     jsgf_rhs_t *rhs;
+    float norm;
 
     rule->entry = grammar->nstate++;
     rule->exit = grammar->nstate++;
+
+    /* Normalize incoming weights */
+    norm = 0;
+    for (rhs = rule->rhs; rhs; rhs = rhs->alt) {
+        if (rhs->atoms) {
+            jsgf_atom_t *atom = gnode_ptr(rhs->atoms);
+            norm += atom->weight;
+        }
+    }
+    if (norm == 0) norm = 1;
+    for (rhs = rule->rhs; rhs; rhs = rhs->alt) {
+        if (rhs->atoms) {
+            jsgf_atom_t *atom = gnode_ptr(rhs->atoms);
+	    atom->weight /= norm;
+        }
+    }
+
     for (rhs = rule->rhs; rhs; rhs = rhs->alt) {
         int lastnode;
 
