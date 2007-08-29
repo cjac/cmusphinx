@@ -929,14 +929,13 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
             if (args[i].equals("-f")) {
                 assert args.length > i : "-f requires a file-argument";
                 preLoadFile = new File(args[i + 1]);
-                assert preLoadFile.isFile() && args[i + 1].contains(SessionManager.FORMAT_SUFFIX) : args[i + 1] + " is not a valid file";
+                break;
             }
-
         }
 
         ConfDesigner gui = new ConfDesigner();
 
-        if (preLoadFile != null) {
+        if (preLoadFile != null && preLoadFile.isFile()) {
             if (preLoadFile.getName().endsWith(SessionManager.FORMAT_SUFFIX))
                 gui.getSesMan().loadScene(preLoadFile);
             else {
