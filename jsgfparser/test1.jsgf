@@ -4,14 +4,14 @@ grammar edu.cmu.test;
 
 public <utterance> = <greeting> | <farewell> | <request>;
 
-<greeting> = hello | hi;
+<greeting> = HELLO | HI;
 
-<farewell> = /2/ goodbye | /1/ bye;
+<farewell> = /2/ GOODBYE | /1/ BYE;
 
-<request> = i <want> to <do> <something>;
+<request> = I <want> TO <do> <something>;
 
-<want> = would like | want | need;
+<want> = WOULD LIKE | WANT | NEED;
 
-<do> = order | get | eat;
+<do> = ORDER | GET | EAT;
 
-<something> = pizza | breakfast;
+<something> = PIZZA | BREAKFAST;
