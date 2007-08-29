@@ -1,1 +1,0 @@
-SUBDIRS = turtle swb tidigits
