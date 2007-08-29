@@ -60,6 +60,10 @@ define_rule(char *name, jsgf_rhs_t *rhs, int public)
     }
 
     rhs->atoms = glist_reverse(rhs->atoms);
+    if (name == NULL) {
+        name = ckd_calloc(16, 1);
+        sprintf(name, "<g%05d>", hash_table_inuse(global_symtab));
+    }
 
     rule = ckd_calloc(1, sizeof(*rule));
     rule->name = name;
@@ -71,7 +75,7 @@ define_rule(char *name, jsgf_rhs_t *rhs, int public)
            rule->name);
     val = hash_table_enter(global_symtab, name, rule);
     if (val != (void *)rule) {
-	E_WARN("Multiply defined symbol: %s\n", name);
+        E_WARN("Multiply defined symbol: %s\n", name);
     }
     return rule;
 }
@@ -118,6 +122,7 @@ jsgf_grammar_new(char *version, char *charset, char *locale)
 %type  <rhs>     rule_expansion alternate_list
 %type  <grammar> jsgf_header header grammar
 %type  <name>    grammar_header
+%type  <rule>    rule_group rule_optional
 %%
 
 grammar: header { $$ = $1; global_grammar = $$; }
@@ -174,19 +179,22 @@ rule_item: rule_atom
 	| WEIGHT rule_atom { $$ = $2; $$->weight = $1; }
 	;
 
-/*
-rule_group: '(' alternate_list ')'
+rule_group: '(' alternate_list ')' { $$ = define_rule(NULL, $2, 0); }
 	;
 
-rule_optional: '[' alternate_list ']'
+rule_optional: '[' alternate_list ']' {
+	       jsgf_rhs_t *rhs = ckd_calloc(1, sizeof(*rhs));
+	       jsgf_atom_t *atom = jsgf_atom_new("<NULL>", 1.0);
+	       rhs->alt = $2;
+	       rhs->atoms = glist_add_ptr(NULL, atom);
+	       $$ = define_rule(NULL, rhs, 0); }
 	;
-*/
 
-rule_atom: TOKEN  { $$ = jsgf_atom_new($1, 1.0); }
-	| RULENAME  { $$ = jsgf_atom_new($1, 1.0); }
-/*	| rule_group
-	| rule_optional
-	| rule_atom '*'
+rule_atom: TOKEN { $$ = jsgf_atom_new($1, 1.0); }
+	| RULENAME { $$ = jsgf_atom_new($1, 1.0); }
+	| rule_group { $$ = jsgf_atom_new($1->name, 1.0); }
+	| rule_optional { $$ = jsgf_atom_new($1->name, 1.0); }
+/*	| rule_atom '*'
 	| rule_atom '+' */
 	;
 
