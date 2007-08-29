@@ -47,6 +47,7 @@
 
 #include <hash_table.h>
 #include <glist.h>
+#include <stdio.h>
 
 typedef struct jsgf_s jsgf_t;
 typedef struct jsgf_rule_s jsgf_rule_t;
@@ -94,5 +95,11 @@ struct jsgf_link_s {
 };
 
 #define jsgf_atom_is_rule(atom) ((atom)->name[0] == '<')
+
+jsgf_t *jsgf_grammar_new(char *version, char *charset, char *locale);
+void jsgf_add_link(jsgf_t *grammar, jsgf_atom_t *atom, int from, int to);
+int jsgf_write_fsg(jsgf_t *grammar, jsgf_rule_t *rule, FILE *outfh);
+jsgf_atom_t *jsgf_atom_new(char *name, float weight);
+
 
 #endif /* __JSGF_H__ */
