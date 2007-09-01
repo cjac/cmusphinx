@@ -1,5 +1,5 @@
 #JSGF;
 
-grammar test10;
+grammar test8;
 
 public <greeting> = HELLO+;

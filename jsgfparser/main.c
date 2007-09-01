@@ -1,4 +1,4 @@
-/* -*- mode: text -*- */
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 2007 Carnegie Mellon University.  All rights
  * reserved.
@@ -34,43 +34,48 @@
  * ====================================================================
  *
  */
-%{
+
+#include <hash_table.h>
+#include <err.h>
+
+#include <string.h>
 
 #include "jsgf.h"
-#include "jsgf.tab.h"
 
-%}
+static int
+write_fsgs(jsgf_t *grammar)
+{
+    glist_t rules;
+    int32 nrules;
+    gnode_t *gn;
 
-%option 8bit reentrant bison-bridge noyywrap
-%option outfile="jsgf.lex.c" header-file="jsgf.lex.h"
-%s COMMENT
+    /* Generate an FSG for each "public" rule in the grammar. */
+    rules = hash_table_tolist(grammar->rules, &nrules);
+    for (gn = rules; gn; gn = gnode_next(gn)) {
+        hash_entry_t *he = gnode_ptr(gn);
+        jsgf_rule_t *rule = hash_entry_val(he);
 
-ws       [ \t\n]
-rulename \<[^<>]+\>
-tag      \{(\\.|[^\}]+)*\}
-weight   \/[0-9]*(\.[0-9]+)?\/
-token    [^ \t\n;=|*+<>()\[\]{}*/]+
-qstring  \"(\\.|[^"]+)*\"
+        if (rule->public) {
+            E_INFO("Top-level rule: %s\n", rule->name);
+            jsgf_write_fsg(grammar, rule, stdout);
+        }
+    }
+    glist_free(rules);
 
-%%
+    return 0;
+}
 
-{ws} ;                     /* ignore whitespace */
-<INITIAL>\/\/.*\n ;        /* single-line comments */
-<INITIAL>\/\* { BEGIN(COMMENT); } /* C-style comments */
-<COMMENT>\*\/ { BEGIN(INITIAL); }
-<COMMENT>. ;               /* Ignore stuff in comment mode */
+int
+main(int argc, char *argv[])
+{
+    int yyrv;
+    jsgf_t *jsgf;
 
-<INITIAL>#JSGF return HEADER;
-<INITIAL>grammar return GRAMMAR;
-<INITIAL>import return IMPORT;
-<INITIAL>public return PUBLIC;
+    jsgf = jsgf_parse_file(argc > 1 ? argv[1] : NULL, NULL);
+    if (jsgf == NULL) {
+        return 1;
+    }
+    write_fsgs(jsgf);
 
-<INITIAL>{rulename} { yylval->name = strdup(yytext); return RULENAME; }
-<INITIAL>{tag}      { yylval->name = strdup(yytext); return TAG; }
-<INITIAL>{token}    { yylval->name = strdup(yytext); return TOKEN; }
-<INITIAL>{qstring}  { yylval->name = strdup(yytext); return TOKEN; }
-<INITIAL>{weight}   { yylval->weight = atof(yytext+1); return WEIGHT; }
-
-<INITIAL>. return yytext[0];        /* Single-character tokens */
-
-%%
+    return yyrv;
+}

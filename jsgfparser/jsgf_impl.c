@@ -36,10 +36,14 @@
  */
 
 #include <ckd_alloc.h>
-#include <string.h>
+#include <hash_table.h>
 #include <err.h>
 
+#include <string.h>
+
 #include "jsgf.h"
+#include "jsgf.tab.h"
+#include "jsgf.lex.h"
 
 /**
  * \file jsgf.c
@@ -60,16 +64,69 @@ jsgf_atom_new(char *name, float weight)
 }
 
 jsgf_t *
-jsgf_grammar_new(char *version, char *charset, char *locale)
+jsgf_grammar_new(jsgf_t *parent)
 {
     jsgf_t *grammar;
 
     grammar = ckd_calloc(1, sizeof(*grammar));
-    grammar->version = version;
-    grammar->charset = charset;
-    grammar->locale = locale;
+    /* If this is an imported/subgrammar, then we will share a global
+     * namespace with the parent grammar. */
+    if (parent) {
+        grammar->rules = parent->rules;
+        grammar->imports = parent->imports;
+    }
+    else {
+        grammar->rules = hash_table_new(64, 0);
+        grammar->imports = hash_table_new(16, 0);
+    }
 
     return grammar;
+}
+
+void
+jsgf_grammar_free(jsgf_t *jsgf)
+{
+    glist_t rules;
+    int32 nrules;
+
+    rules = hash_table_tolist(jsgf->rules, &nrules);
+    /* FIXME: free rules and symbols and stuff */
+    hash_table_free(jsgf->rules);
+    ckd_free(jsgf);
+}
+
+jsgf_atom_t *
+jsgf_kleene_new(jsgf_t *jsgf, jsgf_atom_t *atom, int plus)
+{
+    jsgf_rule_t *rule;
+    jsgf_atom_t *rule_atom;
+    jsgf_rhs_t *rhs;
+
+    /* Generate an "internal" rule of the form (<NULL> | <name> <g0006>) */
+    /* Or if plus is true, (<name> | <name> <g0006>) */
+    rhs = ckd_calloc(1, sizeof(*rhs));
+    if (plus)
+        rhs->atoms = glist_add_ptr(NULL, atom);
+    else
+        rhs->atoms = glist_add_ptr(NULL, jsgf_atom_new("<NULL>", 1.0));
+    rule = jsgf_define_rule(jsgf, NULL, rhs, 0);
+    rule_atom = jsgf_atom_new(rule->name, 1.0);
+    rhs = ckd_calloc(1, sizeof(*rhs));
+    rhs->atoms = glist_add_ptr(NULL, rule_atom);
+    rhs->atoms = glist_add_ptr(rhs->atoms, atom);
+    rule->rhs->alt = rhs;
+
+    return rule_atom;
+}
+
+jsgf_rule_t *
+jsgf_optional_new(jsgf_t *jsgf, jsgf_rhs_t *exp)
+{
+    jsgf_rhs_t *rhs = ckd_calloc(1, sizeof(*rhs));
+    jsgf_atom_t *atom = jsgf_atom_new("<NULL>", 1.0);
+    rhs->alt = exp;
+    rhs->atoms = glist_add_ptr(NULL, atom);
+    return jsgf_define_rule(jsgf, NULL, rhs, 0);
 }
 
 void
@@ -236,3 +293,144 @@ jsgf_write_fsg(jsgf_t *grammar, jsgf_rule_t *rule, FILE *outfh)
 
     return 0;
 }
+
+jsgf_rule_t *
+jsgf_define_rule(jsgf_t *jsgf, char *name, jsgf_rhs_t *rhs, int public)
+{
+    jsgf_rule_t *rule;
+    void *val;
+
+    if (name == NULL) {
+        name = ckd_calloc(16, 1);
+        sprintf(name, "<g%05d>", hash_table_inuse(jsgf->rules));
+    }
+
+    rule = ckd_calloc(1, sizeof(*rule));
+    rule->name = name;
+    rule->rhs = rhs;
+    rule->public = public;
+
+    E_INFO("Defined rule: %s%s\n",
+           rule->public ? "PUBLIC " : "",
+           rule->name);
+    val = hash_table_enter(jsgf->rules, name, rule);
+    if (val != (void *)rule) {
+        E_WARN("Multiply defined symbol: %s\n", name);
+    }
+    return rule;
+}
+
+jsgf_rule_t *
+jsgf_import_rule(jsgf_t *jsgf, char *name)
+{
+    char *c, *path;
+    size_t l;
+    void *val;
+    jsgf_t *imp;
+
+    /* Trim the leading and trailing <> */
+    l = strlen(name);
+    path = ckd_calloc(1, l - 2 + 6); /* room for a trailing .gram */
+    /* Split off the first part of the name */
+    if ((c = strrchr(path, '.'))) {
+        *c = '\0';
+    }
+    /* Construct a filename. */
+    /* FIXME: This needs to be made relative to the directory of the
+     * input file and also the classpath or some other environment
+     * variable */
+    for (c = path; *c; ++c)
+        if (*c == '.') *c = '/';
+    E_INFO("Importing %s from %s\n", name, path);
+
+    /* FIXME: Also, we need to make sure that path is fully qualified
+     * here, by adding any prefixes from jsgf->name to it. */
+    /* See if we have parsed it already */
+    if (hash_table_lookup(jsgf->imports, path, &val) == 0) {
+        imp = val;
+    }
+    else {
+        /* If not, parse it. */
+        strcat(path, ".gram");
+        imp = jsgf_parse_file(path, jsgf);
+    }
+    ckd_free(path);
+    if (imp != NULL) {
+        glist_t rules;
+        gnode_t *gn;
+        int32 nrules;
+
+        /* Look for public rules matching rulename. */
+        rules = hash_table_tolist(imp->rules, &nrules);
+        for (gn = rules; gn; gn = gnode_next(gn)) {
+            hash_entry_t *he = gnode_ptr(gn);
+            jsgf_rule_t *rule = hash_entry_val(he);
+
+            if (rule->public
+                && 0 == strcmp(name, rule->name)) {
+                void *val;
+                char *basename;
+
+                /* Split off the path (basename) */
+                if ((c = strrchr(name, '.'))) {
+                    basename = ckd_salloc(c);
+                    basename[0] = '<';
+                }
+                else {
+                    basename = ckd_salloc(name);
+                }
+                val = hash_table_enter(jsgf->rules, basename, rule);
+                if (val != (void *)rule) {
+                    E_WARN("Multiply defined symbol: %s.%s\n",
+                           jsgf->name, basename);
+                }
+                ckd_free(basename);
+                return rule;
+            }
+        }
+    }
+
+    ckd_free(rulename);
+    return NULL;
+}
+
+jsgf_t *
+jsgf_parse_file(const char *filename, jsgf_t *parent)
+{
+    yyscan_t yyscanner;
+    jsgf_t *jsgf;
+    int yyrv;
+    FILE *in = NULL;
+
+    yylex_init(&yyscanner);
+    if (filename == NULL) {
+        yyset_in(stdin, yyscanner);
+    }
+    else {
+        in = fopen(filename, "r");
+        if (in == NULL) {
+            fprintf(stderr, "Failed to open %s for parsing: %s\n",
+                    filename, strerror(errno));
+            return NULL;
+        }
+        yyset_in(in, yyscanner);
+    }
+
+    jsgf = jsgf_grammar_new(parent);
+    yyrv = yyparse(yyscanner, jsgf);
+    if (yyrv != 0) {
+        fprintf(stderr, "JSGF parse of %s failed\n",
+                filename ? filename : "(stdin)");
+        jsgf_grammar_free(jsgf);
+        yylex_destroy(yyscanner);
+        return NULL;
+    }
+    /* Record this parser in the import list to avoid loops */
+    hash_table_enter(jsgf->imports, jsgf->name, jsgf);
+    if (in)
+        fclose(in);
+    yylex_destroy(yyscanner);
+
+    return jsgf;
+}
+

@@ -56,50 +56,57 @@ typedef struct jsgf_atom_s jsgf_atom_t;
 typedef struct jsgf_link_s jsgf_link_t;
 
 struct jsgf_s {
-	char *version;  /**< JSGF version (from header) */
-	char *charset;  /**< JSGF charset (default UTF-8) */
-	char *locale;   /**< JSGF locale (default C) */
-	char *name;     /**< Grammar name */
+    char *version;  /**< JSGF version (from header) */
+    char *charset;  /**< JSGF charset (default UTF-8) */
+    char *locale;   /**< JSGF locale (default C) */
+    char *name;     /**< Grammar name */
 
-	hash_table_t *rules; /**< Defined or imported rules in this grammar. */
+    hash_table_t *rules;   /**< Defined or imported rules in this grammar. */
+    hash_table_t *imports; /**< Pointers to imported grammars. */
 
-	/* Scratch variables for FSG conversion. */
-	int nstate;
-	glist_t links;
+    /* Scratch variables for FSG conversion. */
+    int nstate;
+    glist_t links;
 };
 
 struct jsgf_rule_s {
-	char *name;      /**< Rule name (NULL for an alternation/grouping) */
-	int public;      /**< Is this rule marked 'public'? */
-	jsgf_rhs_t *rhs; /**< Expansion */
+    char *name;      /**< Rule name (NULL for an alternation/grouping) */
+    int public;      /**< Is this rule marked 'public'? */
+    jsgf_rhs_t *rhs; /**< Expansion */
 
-	int entry;       /**< Entry state for current instance of this rule. */
-	int exit;        /**< Exit state for current instance of this rule. */
+    int entry;       /**< Entry state for current instance of this rule. */
+    int exit;        /**< Exit state for current instance of this rule. */
 };
 
 struct jsgf_rhs_s {
-	glist_t atoms;   /**< Sequence of items */
-	jsgf_rhs_t *alt; /**< Linked list of alternates */
+    glist_t atoms;   /**< Sequence of items */
+    jsgf_rhs_t *alt; /**< Linked list of alternates */
 };
 
 struct jsgf_atom_s {
-	char *name;        /**< Rule or token name */
-	glist_t tags;      /**< Tags, if any (glist_t of char *) */
-	float weight;      /**< Weight (default 1) */
+    char *name;        /**< Rule or token name */
+    glist_t tags;      /**< Tags, if any (glist_t of char *) */
+    float weight;      /**< Weight (default 1) */
 };
 
 struct jsgf_link_s {
-	jsgf_atom_t *atom; /**< Name, tags, weight */
-	int from;          /**< From state */
-	int to;            /**< To state */
+    jsgf_atom_t *atom; /**< Name, tags, weight */
+    int from;          /**< From state */
+    int to;            /**< To state */
 };
 
 #define jsgf_atom_is_rule(atom) ((atom)->name[0] == '<')
 
-jsgf_t *jsgf_grammar_new(char *version, char *charset, char *locale);
+jsgf_t *jsgf_grammar_new(jsgf_t *parent);
+jsgf_t *jsgf_parse_file(const char *filename, jsgf_t *parent);
+void jsgf_grammar_free(jsgf_t *jsgf);
 void jsgf_add_link(jsgf_t *grammar, jsgf_atom_t *atom, int from, int to);
 int jsgf_write_fsg(jsgf_t *grammar, jsgf_rule_t *rule, FILE *outfh);
 jsgf_atom_t *jsgf_atom_new(char *name, float weight);
+jsgf_atom_t *jsgf_kleene_new(jsgf_t *jsgf, jsgf_atom_t *atom, int plus);
+jsgf_rule_t *jsgf_optional_new(jsgf_t *jsgf, jsgf_rhs_t *exp);
+jsgf_rule_t *jsgf_define_rule(jsgf_t *jsgf, char *name, jsgf_rhs_t *rhs, int public);
+jsgf_rule_t *jsgf_import_rule(jsgf_t *jsgf, char *name);
 
 
 #endif /* __JSGF_H__ */
