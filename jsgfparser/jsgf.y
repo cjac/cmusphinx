@@ -74,10 +74,10 @@ void yyerror(yyscan_t lex, jsgf_t *jsgf, const char *s);
 
 grammar: header
 	| header rule_list
+	| header import_header rule_list
 	;
 
 header: jsgf_header grammar_header { jsgf->name = $2; }
-	| jsgf_header grammar_header import_header { jsgf->name = $2; }
 	;
 
 jsgf_header: HEADER ';'

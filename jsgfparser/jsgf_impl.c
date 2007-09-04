@@ -141,6 +141,22 @@ jsgf_add_link(jsgf_t *grammar, jsgf_atom_t *atom, int from, int to)
     grammar->links = glist_add_ptr(grammar->links, link);
 }
 
+static char *
+jsgf_fullname(jsgf_t *jsgf, const char *name)
+{
+    char *fullname;
+
+    /* Check if it is already qualified */
+    if (strchr(name + 1, '.'))
+        return ckd_salloc(name);
+
+    /* Skip leading < in name */
+    fullname = ckd_malloc(strlen(jsgf->name) + strlen(name) + 4);
+    sprintf(fullname, "<%s.%s", jsgf->name, name + 1);
+    return fullname;
+}
+
+
 static int expand_rule(jsgf_t *grammar, jsgf_rule_t *rule);
 static int
 expand_rhs(jsgf_t *grammar, jsgf_rule_t *rule, jsgf_rhs_t *rhs)
@@ -156,6 +172,7 @@ expand_rhs(jsgf_t *grammar, jsgf_rule_t *rule, jsgf_rhs_t *rhs)
         jsgf_atom_t *atom = gnode_ptr(gn);
         if (jsgf_atom_is_rule(atom)) {
             jsgf_rule_t *subrule;
+            char *fullname;
             void *val;
 
             /* Special case for <NULL> and <VOID> pseudo-rules */
@@ -172,15 +189,19 @@ expand_rhs(jsgf_t *grammar, jsgf_rule_t *rule, jsgf_rhs_t *rhs)
                 return -1;
             }
 
-            if (hash_table_lookup(grammar->rules, atom->name, &val) == -1) {
-                E_ERROR("Undefined rule in RHS: %s\n", atom->name);
+            fullname = jsgf_fullname(grammar, atom->name);
+            if (hash_table_lookup(grammar->rules, fullname, &val) == -1) {
+                E_ERROR("Undefined rule in RHS: %s\n", fullname);
+                ckd_free(fullname);
                 return -1;
             }
+            ckd_free(fullname);
             subrule = val;
             /* Allow right-recursion only. */
             if (subrule == rule) {
                 if (gnode_next(gn) != NULL) {
-                    E_ERROR("Only right-recursion is permitted (in %s)\n", rule->name);
+                    E_ERROR("Only right-recursion is permitted (in %s.%s)\n",
+                            grammar->name, rule->name);
                     return -1;
                 }
                 /* Add a link back to the beginning of this rule instance */
@@ -301,8 +322,16 @@ jsgf_define_rule(jsgf_t *jsgf, char *name, jsgf_rhs_t *rhs, int public)
     void *val;
 
     if (name == NULL) {
-        name = ckd_calloc(16, 1);
-        sprintf(name, "<g%05d>", hash_table_inuse(jsgf->rules));
+        name = ckd_calloc(strlen(jsgf->name) + 16, 1);
+        sprintf(name, "<%s.g%05d>", jsgf->name, hash_table_inuse(jsgf->rules));
+    }
+    else {
+        char *newname;
+
+        newname = jsgf_fullname(jsgf, name);
+        /* We are supposed to retain ownership of name, so free the original one */
+        ckd_free(name);
+        name = newname;
     }
 
     rule = ckd_calloc(1, sizeof(*rule));
@@ -330,7 +359,8 @@ jsgf_import_rule(jsgf_t *jsgf, char *name)
 
     /* Trim the leading and trailing <> */
     l = strlen(name);
-    path = ckd_calloc(1, l - 2 + 6); /* room for a trailing .gram */
+    path = ckd_malloc(l - 2 + 6); /* room for a trailing .gram */
+    strcpy(path, name + 1);
     /* Split off the first part of the name */
     if ((c = strrchr(path, '.'))) {
         *c = '\0';
@@ -341,20 +371,25 @@ jsgf_import_rule(jsgf_t *jsgf, char *name)
      * variable */
     for (c = path; *c; ++c)
         if (*c == '.') *c = '/';
-    E_INFO("Importing %s from %s\n", name, path);
+    strcat(path, ".gram");
+    E_INFO("Importing %s from %s to %s\n", name, path, jsgf->name);
 
     /* FIXME: Also, we need to make sure that path is fully qualified
      * here, by adding any prefixes from jsgf->name to it. */
     /* See if we have parsed it already */
     if (hash_table_lookup(jsgf->imports, path, &val) == 0) {
+        E_INFO("Already imported %s\n", path);
         imp = val;
+        ckd_free(path);
     }
     else {
         /* If not, parse it. */
-        strcat(path, ".gram");
         imp = jsgf_parse_file(path, jsgf);
+        val = hash_table_enter(jsgf->imports, path, imp);
+        if (val != (void *)imp) {
+            E_WARN("Multiply imported file: %s\n", path);
+        }
     }
-    ckd_free(path);
     if (imp != NULL) {
         glist_t rules;
         gnode_t *gn;
@@ -369,22 +404,20 @@ jsgf_import_rule(jsgf_t *jsgf, char *name)
             if (rule->public
                 && 0 == strcmp(name, rule->name)) {
                 void *val;
-                char *basename;
+                char *newname;
 
-                /* Split off the path (basename) */
+                /* Link this rule into the current namespace. */
                 if ((c = strrchr(name, '.'))) {
-                    basename = ckd_salloc(c);
-                    basename[0] = '<';
+                    newname = jsgf_fullname(jsgf, c);
                 }
                 else {
-                    basename = ckd_salloc(name);
+                    newname = jsgf_fullname(jsgf, c);
                 }
-                val = hash_table_enter(jsgf->rules, basename, rule);
+                E_INFO("Imported %s\n", newname);
+                val = hash_table_enter(jsgf->rules, newname, rule);
                 if (val != (void *)rule) {
-                    E_WARN("Multiply defined symbol: %s.%s\n",
-                           jsgf->name, basename);
+                    E_WARN("Multiply defined symbol: %s\n", newname);
                 }
-                ckd_free(basename);
                 return rule;
             }
         }
@@ -425,7 +458,7 @@ jsgf_parse_file(const char *filename, jsgf_t *parent)
         return NULL;
     }
     /* Record this parser in the import list to avoid loops */
-    hash_table_enter(jsgf->imports, jsgf->name, jsgf);
+    hash_table_enter(jsgf->imports, ckd_salloc(jsgf->name), jsgf);
     if (in)
         fclose(in);
     yylex_destroy(yyscanner);

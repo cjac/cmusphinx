@@ -43,21 +43,21 @@
 #include "jsgf.h"
 
 static int
-write_fsgs(jsgf_t *grammar)
+write_fsg(jsgf_t *grammar, const char *name)
 {
     glist_t rules;
     int32 nrules;
     gnode_t *gn;
 
-    /* Generate an FSG for each "public" rule in the grammar. */
     rules = hash_table_tolist(grammar->rules, &nrules);
     for (gn = rules; gn; gn = gnode_next(gn)) {
         hash_entry_t *he = gnode_ptr(gn);
         jsgf_rule_t *rule = hash_entry_val(he);
 
-        if (rule->public) {
-            E_INFO("Top-level rule: %s\n", rule->name);
+        if (name == NULL
+            || 0 == strncmp(rule->name + 1, name, strlen(rule->name) - 2)) {
             jsgf_write_fsg(grammar, rule, stdout);
+            break;
         }
     }
     glist_free(rules);
@@ -75,7 +75,7 @@ main(int argc, char *argv[])
     if (jsgf == NULL) {
         return 1;
     }
-    write_fsgs(jsgf);
+    write_fsg(jsgf, argc > 2 ? argv[2] : NULL);
 
     return yyrv;
 }
