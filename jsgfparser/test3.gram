@@ -2,4 +2,6 @@
 
 grammar test3;
 
-public <list> = HELLO | HELLO <list>;
+public <list> = HELLO | <foo>;
+
+<foo> = HELLO <list>;

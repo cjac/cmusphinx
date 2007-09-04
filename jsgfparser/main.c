@@ -54,8 +54,8 @@ write_fsg(jsgf_t *grammar, const char *name)
         hash_entry_t *he = gnode_ptr(gn);
         jsgf_rule_t *rule = hash_entry_val(he);
 
-        if (name == NULL
-            || 0 == strncmp(rule->name + 1, name, strlen(rule->name) - 2)) {
+        if ((name == NULL && rule->public)
+            || (name && 0 == strncmp(rule->name + 1, name, strlen(rule->name) - 2))) {
             jsgf_write_fsg(grammar, rule, stdout);
             break;
         }
