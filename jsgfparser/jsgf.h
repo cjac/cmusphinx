@@ -65,8 +65,9 @@ struct jsgf_s {
     hash_table_t *imports; /**< Pointers to imported grammars. */
 
     /* Scratch variables for FSG conversion. */
-    int nstate;
-    glist_t links;
+    int nstate;            /**< Number of generated states. */
+    glist_t links;	   /**< Generated FSG links. */
+    glist_t rulestack;     /**< Stack of currently expanded rules. */
 };
 
 struct jsgf_rule_s {

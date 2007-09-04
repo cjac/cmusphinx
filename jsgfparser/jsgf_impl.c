@@ -197,19 +197,19 @@ expand_rhs(jsgf_t *grammar, jsgf_rule_t *rule, jsgf_rhs_t *rhs)
             }
             ckd_free(fullname);
             subrule = val;
-            /* Allow right-recursion only. */
-            if (subrule == rule) {
+            /* Look for this in the stack of expanded rules */
+            if (glist_chkdup_ptr(grammar->rulestack, subrule)) {
+                /* Allow right-recursion only. */
                 if (gnode_next(gn) != NULL) {
                     E_ERROR("Only right-recursion is permitted (in %s.%s)\n",
                             grammar->name, rule->name);
                     return -1;
                 }
                 /* Add a link back to the beginning of this rule instance */
-                E_INFO("Right recursion %s %d => %d\n", atom->name, lastnode, rule->entry);
-                jsgf_add_link(grammar, atom, lastnode, rule->entry);
+                E_INFO("Right recursion %s %d => %d\n", atom->name, lastnode, subrule->entry);
+                jsgf_add_link(grammar, atom, lastnode, subrule->entry);
             }
             else {
-                /* FIXME: Mutually recursive rules will break this massively. */
                 /* Expand the subrule */
                 if (expand_rule(grammar, subrule) == -1)
                     return -1;
@@ -236,6 +236,9 @@ expand_rule(jsgf_t *grammar, jsgf_rule_t *rule)
 {
     jsgf_rhs_t *rhs;
     float norm;
+
+    /* Push this rule onto the stack */
+    grammar->rulestack = glist_add_ptr(grammar->rulestack, rule);
 
     /* Normalize weights for all alternatives exiting rule->entry */
     norm = 0;
@@ -264,6 +267,9 @@ expand_rule(jsgf_t *grammar, jsgf_rule_t *rule)
             jsgf_add_link(grammar, NULL, lastnode, rule->exit);
         }
     }
+
+    /* Pop this rule from the rule stack */
+    grammar->rulestack = gnode_free(grammar->rulestack, NULL);
     return rule->exit;
 }
 
