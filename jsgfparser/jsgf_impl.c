@@ -106,7 +106,7 @@ jsgf_kleene_new(jsgf_t *jsgf, jsgf_atom_t *atom, int plus)
     /* Or if plus is true, (<name> | <name> <g0006>) */
     rhs = ckd_calloc(1, sizeof(*rhs));
     if (plus)
-        rhs->atoms = glist_add_ptr(NULL, atom);
+        rhs->atoms = glist_add_ptr(NULL, jsgf_atom_new(ckd_salloc(atom->name), 1.0));
     else
         rhs->atoms = glist_add_ptr(NULL, jsgf_atom_new("<NULL>", 1.0));
     rule = jsgf_define_rule(jsgf, NULL, rhs, 0);
@@ -390,7 +390,6 @@ jsgf_import_rule(jsgf_t *jsgf, char *name)
         }
     }
 
-    ckd_free(rulename);
     return NULL;
 }
 
