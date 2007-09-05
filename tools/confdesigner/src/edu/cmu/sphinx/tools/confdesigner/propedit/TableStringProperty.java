@@ -30,7 +30,8 @@ public class TableStringProperty extends TableProperty {
         this.s4String = (S4String) currentPS.getProperty(propName, S4String.class).getAnnotation();
 
         if (currentPS.getRaw(propName) != null) {
-            setValue(currentPS.getDouble(propName));
+            setValue(currentPS.getString(propName));
+            renderer = new DefaultTableCellRenderer();
         } else {
             String defValue = s4String.defaultValue();
             String[] range = s4String.range();
@@ -48,7 +49,7 @@ public class TableStringProperty extends TableProperty {
                 comboBox.setRenderer((ListCellRenderer) renderer);
             } else {
                 if (defValue.equals(S4String.NOT_DEFINED))
-                    setValue(defValue);
+                    setValue(NOT_DEFINED);
 
                 renderer = new DefaultTableCellRenderer();
             }
