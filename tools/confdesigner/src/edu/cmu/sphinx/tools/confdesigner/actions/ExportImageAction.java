@@ -6,6 +6,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
 import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.event.ActionEvent;
@@ -22,11 +23,13 @@ public class ExportImageAction extends AbstractAction {
 
     private SessionManager sesMan;
     private boolean doExportViewOnly;
+    private Frame parent;
 
 
-    public ExportImageAction(SessionManager sesMan, boolean doExportViewOnly) {
+    public ExportImageAction(SessionManager sesMan, boolean doExportViewOnly, Frame parent) {
         this.sesMan = sesMan;
         this.doExportViewOnly = doExportViewOnly;
+        this.parent = parent;
 
         if (doExportViewOnly) {
             putValue(NAME, "Export View Image");
@@ -39,6 +42,27 @@ public class ExportImageAction extends AbstractAction {
     public void actionPerformed(ActionEvent e) {
         ConfigScene scene = sesMan.getActiveScene().getScene();
 
+        JFileChooser jfc = new JFileChooser(new File("."));
+        jfc.setMultiSelectionEnabled(false);
+        jfc.setFileFilter(new FileFilter() {
+
+            public boolean accept(File f) {
+                return f.getName().endsWith(".png") || f.isDirectory();
+            }
+
+
+            public String getDescription() {
+                return "Image Files (*.png)";
+            }
+        });
+
+        int status = jfc.showSaveDialog(parent);
+        if (status != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+
+        File exportFile = jfc.getSelectedFile();
+
         if (doExportViewOnly) {
             throw new NotImplementedException();
         } else {
@@ -50,7 +74,8 @@ public class ExportImageAction extends AbstractAction {
             SwingUtilities.paintComponent(bufIm.createGraphics(), scene.getView(), jsp, 0, 0, (int) bounds.getWidth(), (int) bounds.getHeight());
             scene.validate();
 
-            writeImage(bufIm, "test.png");
+
+            writeImage(bufIm, exportFile.getAbsolutePath());
         }
     }
 

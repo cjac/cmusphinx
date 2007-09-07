@@ -225,7 +225,7 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
         });
 
 
-        expSceneImgItem.setAction(new ExportImageAction(sesMan, false));
+        expSceneImgItem.setAction(new ExportImageAction(sesMan, false, this));
         fitViewItem.setAction(new FitViewAction(sesMan));
         helpItem.setAction(new UrlAction("Help", "http://en.wikipedia.org/wiki/ConfDesigner", this));
 
