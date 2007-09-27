@@ -5,6 +5,7 @@ import com.l2fprod.common.propertysheet.PropertySheetPanel;
 import edu.cmu.sphinx.tools.confdesigner.propedit.SimplePropEditor;
 import edu.cmu.sphinx.util.props.ConfigurationManager;
 import edu.cmu.sphinx.util.props.PropertySheet;
+import edu.cmu.sphinx.util.props.GlobalProperties;
 import org.netbeans.api.visual.model.ObjectSceneEvent;
 import org.netbeans.api.visual.model.ObjectState;
 
@@ -129,7 +130,7 @@ public class PropertyEditorPanelNT extends PropertyEditorPanel {
                 }
             };
 
-            Map<String, String> properties = cm.getGlobalProperties();
+            GlobalProperties properties = cm.getGlobalProperties();
             for (String globPropName : properties.keySet()) {
                 DefaultProperty p = new DefaultProperty();
                 p.setType(String.class);

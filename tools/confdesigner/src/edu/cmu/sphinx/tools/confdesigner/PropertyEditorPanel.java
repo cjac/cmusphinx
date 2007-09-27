@@ -263,7 +263,7 @@ public class PropertyEditorPanel extends PropertySheetPanel implements ObjectSce
             }
         };
 
-        Map<String, String> properties = cm.getGlobalProperties();
+        GlobalProperties properties = cm.getGlobalProperties();
         for (String globPropName : properties.keySet()) {
             DefaultProperty p = new DefaultProperty();
             p.setType(String.class);
