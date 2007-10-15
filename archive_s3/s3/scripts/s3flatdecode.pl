@@ -86,7 +86,7 @@ $processname = "decode";
 
 $log_dir = "$DEC_CFG_LOG_DIR/$processname";
 mkdir ($log_dir,0777) unless -d $log_dir;
-$result_dir = "$DEC_CFG_BASE_DIR/result";
+$result_dir = "$DEC_CFG_RESULT_DIR";
 mkdir ($result_dir,0777) unless -d $result_dir;
 
 $logfile = "$log_dir/${DEC_CFG_EXPTNAME}-${part}-${npart}.log";

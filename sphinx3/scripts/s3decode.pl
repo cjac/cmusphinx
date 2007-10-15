@@ -118,6 +118,6 @@ my $rv = RunTool('sphinx3_decode', $logfile, $ctlcount,
 		 @ST::DEC_CFG_EXTRA_ARGS);
 
 if ($rv) {
-  LogError("Failed to start decoder");
+  LogError("Failed to start ${ST::DEC_CFG_BIN_DIR}/sphinx3_decode");
 }
 exit ($rv);
