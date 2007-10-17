@@ -603,13 +603,12 @@ static void gst_pocketsphinx_process_chunk (GstPocketSphinx *sphinxsink)
         if (sphinxsink->ad.listening == 0) {
             uttproc_begin_utt (NULL);
             sphinxsink->ad.listening = 1;
+            g_signal_emit (sphinxsink,
+                           gst_pocketsphinx_signals[SIGNAL_LISTENING], 0, NULL);
         }
 	
         uttproc_rawdata (adbuf, k, 1);
         sphinxsink->last_ts = sphinxsink->cont->read_ts;
-
-        g_signal_emit (sphinxsink,
-                       gst_pocketsphinx_signals[SIGNAL_LISTENING], 0, NULL);
     }
 }
 

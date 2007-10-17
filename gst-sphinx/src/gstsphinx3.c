@@ -497,6 +497,9 @@ static void gst_sphinx3_process_chunk (GstSphinx3 *sphinxsink)
         if (sphinxsink->ad.listening == 0) {
             s3_decode_begin_utt (&sphinxsink->decoder, NULL);
             sphinxsink->ad.listening = 1;
+            g_signal_emit (sphinxsink,
+                           gst_sphinx3_signals[SIGNAL_LISTENING], 0, NULL);
+
         }
 	
         if (fe_process_utt (sphinxsink->fe, adbuf, k, &mfcc, &nfr) < 0) {
@@ -507,9 +510,6 @@ static void gst_sphinx3_process_chunk (GstSphinx3 *sphinxsink)
             fe_free_2d(mfcc);
         }
         sphinxsink->last_ts = sphinxsink->cont->read_ts;
-
-        g_signal_emit (sphinxsink,
-                       gst_sphinx3_signals[SIGNAL_LISTENING], 0, NULL);
     }
 }
 
