@@ -669,7 +669,7 @@ href="http://cmusphinx.org/download/nightly/pocketsphinx.nightly.tar.gz">pockets
 and <a
 href="http://cmusphinx.org/download/nightly/sphinxbase.nightly.tar.gz">sphinxbase</a>
 tarballs by clicking on the link and choosing "Save" when the
-dialog window appears. Save it to the same <code>tutorial</code>
+dialog window appears. Save them to the same <code>tutorial</code>
 directory. Extract the contents as follows.
 <ul>
 <li>
@@ -703,6 +703,7 @@ directory with the following contents</p>
 <h4>Compilation</h4>
 <p>In Linux/Unix:</p>
 <pre>
+# Compile sphinxbase
 cd sphinxbase
 # If you used svn, you will need to run autogen.sh, commented out
 # here. If you downloaded the tarball, you do not need to run it.
@@ -710,6 +711,8 @@ cd sphinxbase
 # ./autogen.sh
 ./configure --enable-fixed --disable-shared
 make
+
+# Compile pocketsphinx
 cd pocketsphinx
 # If you used svn, you will need to run autogen.sh, commented out
 # here. If you downloaded the tarball, you do not need to run it.
@@ -719,7 +722,7 @@ cd pocketsphinx
 make
 make install
 </pre>
-<p>In Windows:
+<p>In Windows, if you download SphinxBase from the release system, please rename it (e.g. from 'sphinxbase-0.1') to 'sphinxbase' and then:
 </p>
 <ol>
 <li>Double click the file
@@ -775,23 +778,27 @@ href="http://subversion.tigris.org/">SVN Home</a>.</p>
 <ul>
 <li><a name="sphinx3svn">Using svn
 <pre>
+svn co https://cmusphinx.svn.sourceforge.net:/svnroot/cmusphinx/trunk/sphinxbase
 svn co https://cmusphinx.svn.sourceforge.net:/svnroot/cmusphinx/trunk/sphinx3
 </pre>
 </li>
 <li><a name="sphinx3tarball">Using the tarball, download the <a
 href="http://cmusphinx.org/download/nightly/sphinx3.nightly.tar.gz">sphinx3
-tarball</a> by clicking on the link and choosing "Save" when the
-dialog window appears. Save it to the same <code>tutorial</code>
+tarball</a>
+and <a
+href="http://cmusphinx.org/download/nightly/sphinxbase.nightly.tar.gz">sphinxbase</a> by clicking on the link and choosing "Save" when the
+dialog window appears. Save them to the same <code>tutorial</code>
 directory. Extract the contents as follows.
 <ul>
 <li>
 In Windows, using the Windows Explorer, go to the
-<code>tutorial</code> directory, right-click the sphinx3 tarball, and
+<code>tutorial</code> directory, right-click the sphinxbase and sphinx3 tarballs, and
 choose "Extract to here" in the WinZip menu.
 </li>
 <li>
 In Linux/Unix:
 <pre>
+gunzip -c sphinxbase.nightly.tar.gz | tar xf -
 gunzip -c sphinx3.nightly.tar.gz | tar xf -
 </pre>
 </li>
@@ -807,25 +814,44 @@ href="http://cmusphinx.org/">cmusphinx.org</a> page, under the header
 <p>By the time you finish this, you will have a <code>tutorial</code>
 directory with the following contents</p>
 <pre>
-<ul><li>tutorial<ul><li>an4</li><li>an4_sphere.tar.gz</li><li>SphinxTrain</li><li>SphinxTrain.nightly.tar.gz</li><li>sphinx3</li><li>sphinx3.nightly.tar.gz</li></ul></li></ul></pre>
+<ul><li>tutorial<ul><li>an4</li><li>an4_sphere.tar.gz</li><li>SphinxTrain</li><li>SphinxTrain.nightly.tar.gz</li><li>sphinx3</li><li>sphinx3.nightly.tar.gz</li><li>sphinxbase</li><li>sphinxbase.nightly.tar.gz</li></ul></li></ul></pre>
 <p>Or</p>
 <pre>
-<ul><li>tutorial<ul><li>rm1</li><li>rm1_cepstra.tar.gz</li><li>SphinxTrain</li><li>SphinxTrain.nightly.tar.gz</li><li>sphinx3</li><li>sphinx3.nightly.tar.gz</li></ul></li></ul></pre>
+<ul><li>tutorial<ul><li>rm1</li><li>rm1_cepstra.tar.gz</li><li>SphinxTrain</li><li>SphinxTrain.nightly.tar.gz</li><li>sphinx3</li><li>sphinx3.nightly.tar.gz</li><li>sphinxbase</li><li>sphinxbase.nightly.tar.gz</li></ul></li></ul></pre>
 <h4>Compilation</h4>
 <p>In Linux/Unix:</p>
 <pre>
+# Compile sphinxbase
+cd sphinxbase
+# If you used svn, you will need to run autogen.sh, commented out
+# here. If you downloaded the tarball, you do not need to run it.
+#
+# ./autogen.sh
+./configure
+make
+
+# Compile SPHINX-3
 cd sphinx3
 # If you used svn, you will need to run autogen.sh, commented out
 # here. If you downloaded the tarball, you do not need to run it.
 #
 # ./autogen.sh
-configure --prefix=`pwd`/build
+configure --prefix=`pwd`/build --with-sphinxbase=`pwd`/../sphinxbase
 make
 make install
 </pre>
-<p>In Windows:
+<p>In Windows, if you download SphinxBase from the release system, please rename it (e.g. from 'sphinxbase-0.1') to 'sphinxbase' and then:
 </p>
 <ol>
+<li>Double click the file
+<code>tutorial/sphinxbase/sphinxbase.dsw</code>. This will open MS
+Visual C++, if you have it installed. If you do not, please contact <a
+href="http://www.microsoft.com">Microsoft</a>.
+</li>
+<li>In the Menu <code>Build</code> choose <code>Batch Build</code>,
+and select all items. Click on <code>Rebuild All</code> This will
+build all libraries in the SphinxBase package.
+</li>
 <li>Double click the file
 <code>tutorial/sphinx3/programs.dsw</code>. This will open MS
 Visual C++, if you have it installed. If you do not, please contact <a
