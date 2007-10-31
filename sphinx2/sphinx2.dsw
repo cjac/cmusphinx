@@ -144,6 +144,48 @@ Package=<4>
 
 ###############################################################################
 
+Project: "lm_fsg_test"=.\win32\msdev\SphinxExamples\lm_fsg_test\lm_fsg_test.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libsphinx2
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libsphinx2ad
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libsphinx2fe
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "lm_fsg_test2"=.\win32\msdev\SphinxExamples\lm_fsg_test2\lm_fsg_test2.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libsphinx2
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libsphinx2ad
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libsphinx2fe
+    End Project Dependency
+}}}
+
+###############################################################################
+
 Project: "raw2cep"=.\win32\msdev\SphinxExamples\raw2cep\raw2cep.dsp - Package Owner=<4>
 
 Package=<5>
