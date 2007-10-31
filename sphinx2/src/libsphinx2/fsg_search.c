@@ -310,9 +310,8 @@ boolean fsg_search_del_fsg (fsg_search_t *search, word_fsg_t *fsg)
       /* Found the FSG to be deleted; remove it from fsglist */
       if (prev == NULL)
 	search->fsglist = next;
+
       gnode_free(gn, prev);
-      
-      myfree((char *)gn, sizeof(gnode_t));
       
       /* If this was the currently active FSG, also delete other stuff */
       if (search->fsg == fsg) {
