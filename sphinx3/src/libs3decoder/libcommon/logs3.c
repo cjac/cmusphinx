@@ -104,25 +104,11 @@
 #include "s3types.h"
 
 static logmath_t *lmath;
-static float64 B, logB, invlogB, log10B, invlog10B, F;
 
 int32
 logs3_init(float64 base, int32 bReport, int32 bLogTable)
 {
-    if (bLogTable) {
-	int logshift = 0;
-	/* This is really hacky but can stay until this module goes
-	 * away completely. */
-	if (cmd_ln_exists("-logshift"))
-	    logshift = cmd_ln_int32("-logshift");
-	lmath = logmath_init(base, logshift);
-    }
-    B = base;
-    F = 1.0/B;
-    logB = log(B);
-    invlogB = 1.0/logB;
-    log10B = logB / log(10.0);
-    invlog10B = 1.0/log10B;
+    lmath = logmath_init(base, 0, bLogTable);
     if (bReport)
 	logs3_report();
     return LOGS3_SUCCESS;
@@ -131,27 +117,13 @@ logs3_init(float64 base, int32 bReport, int32 bLogTable)
 int32
 logs3_add(int32 logp, int32 logq)
 {
-    if (lmath)
-	return logmath_add(lmath, logp, logq);
-    else {
-	int32 d, r;
-	if (logp > logq) {
-	    d = logp - logq;
-	    r = logp;
-	}
-	else {
-	    d = logq - logp;
-	    r = logq;
-	}
-	r += (int32) (0.5 + log(1.0 + pow(F, d)) * invlogB);
-	return r;
-    }
+    return logmath_add(lmath, logp, logq);
 }
 
 float64
 logs3_base(void)
 {
-    return B;
+    return logmath_get_base(lmath);
 }
 
 int32
@@ -161,48 +133,48 @@ logs3(float64 p)
         E_WARN("logs3 argument: %e; using S3_LOGPROB_ZERO\n", p);
         return S3_LOGPROB_ZERO;
     }
-    return ((int32) (log(p) * invlogB));
+    return logmath_log(lmath, p);
 }
 
 
 int32
 log_to_logs3(float64 logp)
 {
-    return ((int32) (logp * invlogB));
+    return logmath_ln_to_log(lmath, logp);
 }
 
 
 float64
 log_to_logs3_factor(void)
 {
-    return invlogB;
+    return 1.0/log(logmath_get_base(lmath));
 }
 
 
 float64
 logs3_to_log(int32 logs3p)
 {
-    return ((float64) logs3p * logB);
+    return logmath_log_to_ln(lmath, logs3p);
 }
 
 
 float64
 logs3_to_log10(int32 logs3p)
 {
-    return ((float64) logs3p * log10B);
+    return logmath_log_to_log10(lmath, logs3p);
 }
 
 float64
 logs3_to_p(int32 logs3p)
 {
-    return (pow(B, logs3p));
+    return logmath_exp(lmath, logs3p);
 }
 
 
 int32
 log10_to_logs3(float64 log10p)
 {
-    return ((int32) (log10p * invlog10B));
+    return logmath_log10_to_log(lmath, log10p);
 }
 
 void

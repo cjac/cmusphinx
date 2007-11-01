@@ -238,10 +238,6 @@ us a better architecture.
       ARG_FLOAT32, \
       "1.0003", \
       "Base in which all log-likelihoods calculated" }, \
-    { "-logshift",                                                                  \
-      ARG_INT32,                                                              \
-      "0",                                                                     \
-      "Compession factor for log-add table (# of LSB to drop)" },	        \
     { "-log3table", \
       ARG_BOOLEAN, \
       "yes", \
