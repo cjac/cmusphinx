@@ -25,14 +25,14 @@ main (int32 argc, char *argv[])
   new_argv = (char **)calloc(argc, sizeof(char *));
   ctlfile[0] = '\0';
   for (n = 0; n < argc; n++) {
-    if (strcmpi (argv[n], "-ctlfn") == 0) {
+    if (strcasecmp (argv[n], "-ctlfn") == 0) {
       /* Keep the control file name */
       strcpy(ctlfile, argv[n + 1]);
       /* Don't add the ctlfn argument to the new arg list, so that fbs_init
        * doesn't take over full control. */
     } else {
       new_argv[new_argc++] = argv[n]; 
-      if(strcmpi (argv[n], "-datadir") == 0) {
+      if(strcasecmp (argv[n], "-datadir") == 0) {
 	strcpy(datadir, argv[n + 1]);
       }
     }

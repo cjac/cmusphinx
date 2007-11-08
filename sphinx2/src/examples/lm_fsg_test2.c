@@ -18,7 +18,7 @@ main (int32 argc, char *argv[])
   int32 n;
 
   for (n = 1; n < argc; n++) {
-    if(strcmpi (argv[n], "-datadir") == 0) {
+    if(strcasecmp (argv[n], "-datadir") == 0) {
       strcpy(datadir, argv[++n]);
       break;
     }
