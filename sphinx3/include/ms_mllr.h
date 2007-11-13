@@ -121,7 +121,7 @@ int32 ms_mllr_norm_mgau (float32 ***mean,	/**<< In/Out: Set of vectors to be tra
 			 float32 ***B,	/**< In: "vector" portion of regression matrix */
 			 int32 *streamlen,	/**< In: Dimension of each feature stream */
 			 int32 n_stream,	/**< In: #Feature streams */
-			 int32 class	/**< In: number of classes */
+			 int32 _class	/**< In: number of classes */
     );
 
 #if 0

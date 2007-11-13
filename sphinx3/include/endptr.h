@@ -140,7 +140,7 @@ void endpointer_free(endpointer_t *ENDPTR /**< An end pointer structure */
 void endpointer_update_stat (endpointer_t *ENDPTR, /**< An end pointer structure */
 			     fe_t *FE,  /**< A FE structure */
 			     class_t *CLASSW,  /**< A CLASSW structure */
-			     int class /**< The class*/
+			     int _class /**< The class*/
     );
 
 /** Convert frames 2 seconds for beginning frame.*/
