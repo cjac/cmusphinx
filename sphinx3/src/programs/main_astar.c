@@ -229,6 +229,7 @@
 #include <dag.h>
 #include <cmdln_macro.h>
 #include "corpus.h"
+#include "astar.h"
 
 static mdef_t *mdef;            /* Model definition */
 
