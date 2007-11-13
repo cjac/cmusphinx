@@ -112,6 +112,7 @@ typedef HANDLE mythread_t;
 typedef struct {
     pthread_cond_t cond;
     pthread_mutex_t mtx;
+    int fired;
 } condition_t;
 typedef pthread_t mythread_t;
 #define cond_wait(c) {				\
@@ -136,17 +137,21 @@ cond_wait_timed(condition_t * c, int ticks)
     }
     rv = pthread_cond_timedwait(&c->cond, &c->mtx, &timeout);
     pthread_mutex_unlock(&c->mtx);
+    if (c->fired)
+        return 0;
     return rv;
 }
 
 #define cond_signal(c) {			\
 	pthread_mutex_lock(&(c).mtx);		\
+	(c).fired = 1;				\
 	pthread_cond_signal(&(c).cond);		\
 	pthread_mutex_unlock(&(c).mtx);		\
 }
 #define create_cond(cc) {			\
 	pthread_cond_init(&(cc)->cond, NULL);	\
 	pthread_mutex_init(&(cc)->mtx, NULL);	\
+	(cc)->fired = 0;			\
 }
 #define create_thread(tt, proc) pthread_create(tt, NULL, proc, NULL)
 #define join_thread(t) pthread_join(t, NULL)
@@ -164,7 +169,7 @@ process_thread(void *aParam)
 {
     ad_rec_t *in_ad = 0;
     int16 samples[BUFSIZE];
-    int32 num_samples;
+    uint32 num_samples;
     float32 **frames;
     int32 num_frames;
 
