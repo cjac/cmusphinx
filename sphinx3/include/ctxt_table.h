@@ -84,6 +84,15 @@
 #include <mdef.h>
 #include <dict.h>
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+/* Fool Emacs. */
+}
+#endif
+
 /**
  * Triphone information in the flat lexicon search in Sphinx 3.0
  * for all word hmm modelling broken up into 4 cases:
@@ -430,5 +439,10 @@ int32 ct_get_rc_nssid (ctxt_table_t *ct,  /**< A context table */
                        s3wid_t w,          /**< Word for query. */
                        dict_t *dict        /**< A dictionary */
     );
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif /*_CTX_TAB_*/

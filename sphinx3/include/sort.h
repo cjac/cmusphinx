@@ -68,6 +68,15 @@
 #include "prim_type.h"
 #include <stdlib.h>
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+/* Fool Emacs. */
+}
+#endif
+
 typedef struct {
     int32 key;
     float32 val;
@@ -84,5 +93,10 @@ void free_sort_array(sort_array_t *s);
 void print_sort_array(sort_array_t *s);
 void reverse_sort_array(sort_array_t *s);
 void insertion_sort(sort_array_t *s); /* Sorting an array to a descending order*/
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif

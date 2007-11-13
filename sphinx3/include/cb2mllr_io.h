@@ -44,6 +44,15 @@
 
 #include "s3types.h"
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+/* Fool Emacs. */
+}
+#endif
+
 /**
    Read codeword to MLLR class mapping file
 */
@@ -53,6 +62,11 @@ cb2mllr_read(const char *fn, /**< MLLR class mapping file.*/
 	     int32 *out_n_cb,      /**< Number of codebook */
 	     int32 *out_n_mllr     /**< Number of MLLR class */
     );
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif /* S3CB2MLLR_IO_H */ 
 

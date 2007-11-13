@@ -65,6 +65,15 @@
 #include "stdlib.h"
 #include <s3types.h> 
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+/* Fool Emacs. */
+}
+#endif
+
 #define IND_ISO88591  0
 #define ISO88591  "iso8859-1"
 #define IND_GB2312HEX 1
@@ -99,4 +108,10 @@ void hextocode(char* src /**< In/Out: Input and output string where
     );
 
 int ishex(char* str);
+
+#ifdef __cplusplus
+}
+#endif
+
+
 #endif

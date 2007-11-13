@@ -57,6 +57,16 @@
 
 #ifndef WORD_UGPROB
 #define WORD_UGPROB
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+/* Fool Emacs. */
+}
+#endif
+
 /**
  * \struct word_ugprob_t
  *
@@ -77,6 +87,10 @@ word_ugprob_t**  init_word_ugprob(mdef_t *_mdef,
 				  lm_t *_lm, 
 				  dict_t *_dict
     );
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif /*WORD_UGPROB*/

@@ -94,6 +94,14 @@
 #include "hmm.h"
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+/* Fool Emacs. */
+}
+#endif
+
 /** 
  *  \file whmm.h
  *  \brief Word hmm instance that is used by sphinx 3.0 decode_anytopo search. 
@@ -142,5 +150,10 @@ void dump_whmm (s3wid_t w,  /**< a word id */
 		dict_t *dict,  /**< The dictionary */
 		mdef_t *mdef   /**< A model definition */
     );
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif /* _S3_WHMM_H_ */

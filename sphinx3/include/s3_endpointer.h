@@ -4,6 +4,15 @@
 #ifndef __SPHINX3_ENDPOINTER_H
 #define __SPHINX3_ENDPOINTER_H
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+/* Fool Emacs. */
+}
+#endif
+
 typedef struct {
     float32 **frames;
     int *classes;
@@ -57,5 +66,10 @@ int s3_endpointer_read_utt(s3_endpointer_t *_ep,
 			   int _n_frames);
 int s3_endpointer_next_utt(s3_endpointer_t *_ep);
 int s3_endpointer_frame_count(s3_endpointer_t *_ep);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif

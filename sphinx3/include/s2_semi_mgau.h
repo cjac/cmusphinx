@@ -48,6 +48,15 @@
 #include "fast_algo_struct.h"
 #include "kdtree.h"
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+/* Fool Emacs. */
+}
+#endif
+
 #define S2_NUM_ALPHABET	256
 #define S2_NUM_FEATURES	4
 #define S2_MAX_TOPN	6	/* max number of TopN codewords */
@@ -109,6 +118,10 @@ int32 s2_semi_mgau_frame_eval(s2_semi_mgau_t *s,
 
 int32 s2_semi_mgau_load_kdtree(s2_semi_mgau_t *s, const char *kdtree_path,
 			       uint32 maxdepth, int32 maxbbi);
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif /*  __S2_SEMI_MGAU_H__ */

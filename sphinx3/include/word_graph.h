@@ -66,6 +66,15 @@
 #include <dict.h>
 #include <s3types.h>
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+/* Fool Emacs. */
+}
+#endif
+
 /*
  *  word_graph_t is a linked-based word graph.  That is the word-ID
  *  lies on the arc of the graph.  (As opposed to dag_t which
@@ -163,6 +172,11 @@ void word_graph_dump(char *dir, /**< Directory name*/
 */
 void wordgraph_free(word_graph_t *wg /**< Word graph */
     );
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif  /*_WORD_GRAPH_H_*/
 

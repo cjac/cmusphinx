@@ -106,6 +106,14 @@
 #include <ascr.h>
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+/* Fool Emacs. */
+}
+#endif
+
 /* Lists of senones sharing each mixture Gaussian codebook */
 /* \struct mgau2sen_t
    \brief a mapping from gaussian to senone
@@ -167,6 +175,10 @@ int32 model_set_mllr(ms_mgau_model_t* msg, /**< The model-stream Gaussian distri
 		     feat_t* fcb,            /**< FCB object */
 		     mdef_t *mdef            /**< A model definition */
     );
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif /* _LIBFBS_MS_CONT_MGAU_H_*/

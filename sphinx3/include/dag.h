@@ -119,6 +119,15 @@
 #include "fillpen.h"
 #include "logs3.h"
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+/* Fool Emacs. */
+}
+#endif
+
 #define SPHINX_LATTICE_FORMAT 0
 #define IBM_LATTICE_FORMAT 1 
 
@@ -421,5 +430,10 @@ dag_t* dag_load (
     dict_t *dict,       /**< Dictionary */
     fillpen_t *fpen    /**< Filler penalty structure */
     );
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif

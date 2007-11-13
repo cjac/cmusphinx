@@ -70,6 +70,15 @@
    \brief (s3.0 specific ) Miscellaneus operation used by differerent sphinx 3.0 family of tools.
  */
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+/* Fool Emacs. */
+}
+#endif
+
 /** Return value: control file; E_FATAL if cannot open */
 FILE *ctlfile_open (char *file /**< The input file name*/
 		    );
@@ -106,6 +115,10 @@ int32 argfile_load (char *file, /**< The file name for input argument */
 int32 nbestfile_load(char *dir, char *uttid, srch_hyp_t *** hyplist_out);
 
 void nbestlist_free(srch_hyp_t ** hyplist, int32 nhyp);
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif

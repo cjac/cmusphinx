@@ -132,6 +132,15 @@
 #include <ascr.h>
 #include <srch_output.h>
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+/* Fool Emacs. */
+}
+#endif
+
 typedef struct fsg_search_s {
     glist_t fsglist;		/* List of all FSGs loaded */
   
@@ -296,5 +305,10 @@ int32 fsg_search_set_final_state (fsg_search_t *, int32 state);
 
 
 void fsg_search_sen_active (fsg_search_t *search);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif

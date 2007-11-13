@@ -98,6 +98,15 @@
    
 */
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+/* Fool Emacs. */
+}
+#endif
+
 typedef struct {
     int32 n_static_lextree;	/**< Number of static lexical tree for word switching  */
 
@@ -180,4 +189,7 @@ int srch_WST_dump_vithist(void* srch_struct /**< A void pointer to a search stru
 int srch_WST_bestpath_impl(void * srch_struct /**< A void pointer to a search structure */
     );
 
+#ifdef __cplusplus
+}
+#endif
 

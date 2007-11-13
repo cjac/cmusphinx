@@ -72,6 +72,14 @@
 #include <s3types.h>
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+/* Fool Emacs. */
+}
+#endif
+
 /*
  * For maintaining a (conceptual) "list" of pointers to arbitrary data.
  * The application is responsible for knowing the true data type.
@@ -135,6 +143,9 @@ void blkarray_list_reset (blkarray_list_t *);
  **/
 void blkarray_list_free(blkarray_list_t *bl);
 
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif

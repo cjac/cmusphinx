@@ -218,6 +218,15 @@
 #ifndef _SRCH_H_
 #define _SRCH_H_
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+/* Fool Emacs. */
+}
+#endif
+
 #define SRCH_SUCCESS 0
 #define SRCH_FAILURE 1
 
@@ -916,5 +925,10 @@ int32 srch_delete_lamdafn(void);
 int32 srch_add_words_to_dict(void);
 
 #endif /* End not implemented */
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif /*_SRCH_H_ */

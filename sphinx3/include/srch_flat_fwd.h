@@ -83,6 +83,15 @@
 #ifndef SRCH_FLT_FWD
 #define SRCH_FLT_FWD
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+/* Fool Emacs. */
+}
+#endif
+
 extern struct srch_funcs_s srch_FLAT_FWD_funcs;
 
 /**
@@ -274,4 +283,10 @@ void flat_fwd_dag_add_fudge_edges(srch_FLAT_FWD_graph_t * fwg,
                                   int32 fudge,
                                   int32 min_ef_range,
                                   void *hist, dict_t * dict);
+
+#ifdef __cplusplus
+}
+#endif
+
+
 #endif /* SRCH_FLT_FWD*/

@@ -80,6 +80,15 @@
 
 */
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+/* Fool Emacs. */
+}
+#endif
+
 extern struct srch_funcs_s srch_debug_funcs;
 
 int srch_debug_init(kb_t *kb,void* srch);
@@ -123,3 +132,8 @@ glist_t srch_debug_bestpath_impl(void * srch_struct, /**< A void pointer to a se
     );
 
 int32 srch_debug_dag_dump(void *srch_struct, dag_t *dag);
+
+#ifdef __cplusplus
+}
+#endif
+

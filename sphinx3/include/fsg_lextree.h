@@ -98,6 +98,14 @@
 #include "hmm.h"
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+/* Fool Emacs. */
+}
+#endif
+
 typedef struct fsg_lextree_s {
     word_fsg_t *fsg;	/* The fsg for which this lextree is built */
     fsg_pnode_t **root;	/* root[s] = lextree representing all transitions
@@ -133,6 +141,10 @@ void fsg_lextree_dump (fsg_lextree_t *, FILE *);
 
 void fsg_lextree_utt_start (fsg_lextree_t *);
 void fsg_lextree_utt_end (fsg_lextree_t *);
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif

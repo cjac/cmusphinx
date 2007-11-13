@@ -117,6 +117,13 @@
 #include "ctxt_table.h"
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+/* Fool Emacs. */
+}
+#endif
 
 /*
  * **HACK-ALERT**!!  Compile-time constant determining the size of the
@@ -277,6 +284,10 @@ void fsg_pnode_add_all_ctxt(fsg_pnode_ctxt_t *ctxt);
  * Return 0 if result is all 0, non-zero otherwise.
  */
 uint32 fsg_pnode_ctxt_sub (fsg_pnode_ctxt_t *src, fsg_pnode_ctxt_t *sub);
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif

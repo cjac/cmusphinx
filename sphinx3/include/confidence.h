@@ -75,6 +75,14 @@
 #define MIN_LOG	-690810000
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+/* Fool Emacs. */
+}
+#endif
+
 /**
    \struct structure specific for node of DAG for confidence
    annotation.
@@ -177,6 +185,11 @@ int compute_lmtype(seg_hyp_line_t *seg_hyp_line,  /**< A seg_hyp line*/
     );
 
 int compute_combined_lmtype(seg_hyp_line_t *seg_hyp_line);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif /* __CONFIDENCE_H__ */
 

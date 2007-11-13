@@ -147,6 +147,15 @@
 #include <fbs.h>
 #endif
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+/* Fool Emacs. */
+}
+#endif
+
 /*
  * A single transition in the FSG.
  */
@@ -328,6 +337,10 @@ void word_fsg_free(word_fsg_t *);
  */
 int32 word_fsg_set_start_state (word_fsg_t *fsg, int32 new_start_state);
 int32 word_fsg_set_final_state (word_fsg_t *fsg, int32 new_final_state);
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif

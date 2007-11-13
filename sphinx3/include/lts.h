@@ -59,6 +59,16 @@
 #define _CST_LTS_H__
 
 #include <s3types.h>
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+/* Fool Emacs. */
+}
+#endif
+
 typedef unsigned short cst_lts_addr;
 typedef int cst_lts_phone;
 typedef unsigned char  cst_lts_feat;
@@ -118,6 +128,11 @@ void lex_print(lex_entry_t *ent /**< A lexical entry */
     );
 
 extern const cst_lts_rules cmu6_lts_rules;
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif
 

@@ -43,6 +43,15 @@
 #include "s3types.h"
 #include "kb.h"
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+/* Fool Emacs. */
+}
+#endif
+
 /**
    \file srch_do_nothing.h
    \brief implementation of search that does nothing.
@@ -59,4 +68,7 @@ int srch_do_nothing_begin(void* srch);
 int srch_do_nothing_end(void* srch);
 int srch_do_nothing_decode(void *srch);
 
+#ifdef __cplusplus
+}
+#endif
 

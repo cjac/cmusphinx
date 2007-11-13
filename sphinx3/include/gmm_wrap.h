@@ -74,6 +74,15 @@
 #include <s3types.h>
 #include "approx_cont_mgau.h"
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+/* Fool Emacs. */
+}
+#endif
+
 int32 approx_ci_gmm_compute(void *srch,  /**< a pointer to a srch_t */
 			    float32 *feat,  /**< feature vector */
 			    int32 cache_idx, /**< cache index */
@@ -155,4 +164,8 @@ int32 s3_cd_gmm_compute_sen(
     float32 **feat,  /**< feature vector #stream x #coeff*/
     int32 wav_idx    /**< frame index */
     );
+
+#ifdef __cplusplus
+}
+#endif
 

@@ -50,6 +50,15 @@
 #include "s3types.h"
 #include "vector.h"
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+/* Fool Emacs. */
+}
+#endif
+
 typedef struct kd_tree_node_s kd_tree_node_t;
 struct kd_tree_node_s {
     uint8 *bbi; /* BBI list of intersecting Gaussians */
@@ -69,5 +78,10 @@ int32 read_kd_trees(const char *infile, kd_tree_t ***out_trees, uint32 *out_n_tr
 void free_kd_tree(kd_tree_t *tree);
 /* FIXME: Should be mfcc_t */
 kd_tree_node_t *eval_kd_tree(kd_tree_t *tree, float32 *feat, uint32 maxdepth);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif /* __KDTREE_H__ */

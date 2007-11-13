@@ -59,6 +59,15 @@
 #ifndef _SRCH_OUTPUT_H_
 #define _SRCH_OUTPUT_H_
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+/* Fool Emacs. */
+}
+#endif
+
 #define HYPSEG_SUCCESS 1
 #define HYPSEG_FAILURE 0
 #define WORST_CONFIDENCE_SCORE ((int)0xE0000000)
@@ -167,6 +176,9 @@ void log_hypseg (char *uttid,   /**< Input; uttid */
 		 int32 unnorm   /**< Whether unscaled the score back */
     );
 
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif /** _SRCH_OUTPUT_H_*/

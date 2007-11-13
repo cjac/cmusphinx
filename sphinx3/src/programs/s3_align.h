@@ -110,6 +110,15 @@
  */
 #include <s3types.h>
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+/* Fool Emacs. */
+}
+#endif
+
 /** State level segmentation/alignment; one entry per frame */
 typedef struct align_stseg_s {
     s3pid_t pid;                /**< Phone id */
@@ -177,6 +186,10 @@ int32 align_end_utt(align_stseg_t ** stseg,     /**< Out: list of state segmenta
                     align_phseg_t ** phseg,     /**< Out: list of phone segmentation */
                     align_wdseg_t ** wdseg      /**< Out: list of word segmentation */
     );
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif

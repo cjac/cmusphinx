@@ -98,6 +98,15 @@
 #include <fsg_psubtree.h>
 #include <word_fsg.h>
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+/* Fool Emacs. */
+}
+#endif
+
 /*
  * The Viterbi history structure.  This is a tree, with the root at the
  * FSG start state, at frame 0, with a null predecessor.
@@ -256,5 +265,9 @@ void fsg_history_free (fsg_history_t *h);
 int32 fsg_history_entry_hyp_extract (fsg_history_t *h, int32 index,
 				     srch_hyp_t *hyp,dict_t *dict);
 
-				     
+#ifdef __cplusplus
+}
+#endif
+
+
 #endif

@@ -48,6 +48,15 @@
 #include "lm.h"
 #include "fillpen.h"
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if 0
+/* Fool Emacs. */
+}
+#endif
+
 /**
  * State object for A* search (for obtaining N-best lists)
  **/
@@ -80,5 +89,10 @@ glist_t astar_next_hyp(astar_t *astar);
  */
 void nbest_search(dag_t *dag, char *filename, char *uttid, float64 lwf,
                   dict_t *dict, lm_t *lm, fillpen_t *fpen);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif /* __ASTAR_H__ */
