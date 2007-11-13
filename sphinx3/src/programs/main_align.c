@@ -299,7 +299,8 @@ static arg_t defn[] = {
      ARG_INT32,
      "1",
      "Whether to insert optional silences and fillers between words."},
-    fast_GMM_computation_command_line_macro(){NULL, ARG_INT32, NULL, NULL}
+    fast_GMM_computation_command_line_macro()
+    {NULL, ARG_INT32, NULL, NULL}
 };
 
 
