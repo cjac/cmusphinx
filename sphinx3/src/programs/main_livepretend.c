@@ -167,10 +167,10 @@ main(int _argc, char **_argv)
     if (cmd_ln_parse_file(S3_DECODE_ARG_DEFS, cfgfn, TRUE))
         E_FATAL("Bad configuration file %s.\n", cfgfn);
 
-    fe = fe_init_auto(); 
-
     if (s3_decode_init(&decoder) != S3_DECODE_SUCCESS)
         E_FATAL("Failed to initialize live-decoder.\n");
+
+    fe = fe_init_auto(); 
 
     st = decoder.kb.stat;
     ptmr_init(&(st->tm));
