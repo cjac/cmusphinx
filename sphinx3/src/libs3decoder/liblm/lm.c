@@ -578,6 +578,9 @@ lm_read_advance(const char *file, const char *lmname, float64 lw,
     int32 i, u;
     lm_t *lm;
     int32 err_no;
+    int lminmemory = 0;
+    if (cmd_ln_exists("-lminmemory"))
+        lminmemory = cmd_ln_int32("-lminmemory");
 
     if (!file)
         E_FATAL("No LM file\n");
@@ -597,28 +600,22 @@ lm_read_advance(const char *file, const char *lmname, float64 lw,
     /* First it will try to decide whether the file a .DMP file */
     /* ARCHAN: We should provide function pointer implementation at here. */
     if (fmt == NULL) {
-                   /**Automatically decide the LM format */
-        lm = lm_read_dump(file, (int32) cmd_ln_int32("-lminmemory"));
+        /**Automatically decide the LM format */
+        lm = lm_read_dump(file, lminmemory);
         if (lm == NULL) {
-            E_INFO
-                ("In lm_read, LM is not a DMP file. Trying to read it as a txt file\n");
-
-            /* HACK !!! */
-            if (cmd_ln_int32("-lminmemory") == 0) {
-                E_ERROR
-                    ("LM is not a dump file, so it is assumed to be a text file. However, disk-based LM is not working for -lminmemory=0 at this point (i.e. LM has to be loaded into the memory). \n");
-                return NULL;
+            E_INFO("In lm_read, LM is not a DMP file. Trying to read it as a txt file\n");
+            if (lminmemory == 0) {
+                E_WARN("On-disk LM not supported for text files, reading it into memory.\n");
+                lminmemory = 1;
             }
-            lm = lm_read_txt(file, cmd_ln_int32("-lminmemory"), &err_no, 0      /* Not forcing 32bit LM */
-                );
+            lm = lm_read_txt(file, lminmemory, &err_no, 0); /* Not forcing 32bit LM */
             if (lm == NULL) {
                 if (err_no == LM_OFFSET_TOO_LARGE) {
                     E_INFO
                         ("In lm read, LM is not a DMP, it is likely to be a ARPA format file. But the LM hits the limit of legacy 16 bit format. Force LM reading to 32bit now\n");
 
                     /* This only happens when both TXT & DMP format reading have problems */
-                    lm = lm_read_txt(file, cmd_ln_int32("-lminmemory"), &err_no, 1      /* Now force 32bit LM */
-                        );
+                    lm = lm_read_txt(file, lminmemory, &err_no, 1);      /* Now force 32bit LM */
                     if (lm == NULL) {
                         E_INFO
                             ("Panic: In lm_read, LM is not DMP format, it is likely to be ARPA format and hits legacy 16 bit format problem. But when forcing to 32bit LM, problem still couldn't be solved.\n");
@@ -633,16 +630,14 @@ lm_read_advance(const char *file, const char *lmname, float64 lw,
         }
     }
     else if (!strcmp(fmt, "TXT")) {
-        lm = lm_read_txt(file, cmd_ln_int32("-lminmemory"), &err_no, 0  /* Not forcing 32bit LM */
-            );
+        lm = lm_read_txt(file, lminmemory, &err_no, 0);  /* Not forcing 32bit LM */
         if (lm == NULL) {
             if (err_no == LM_OFFSET_TOO_LARGE) {
                 E_INFO
                     ("In lm read, LM is not a DMP, it is likely to be a ARPA format file. But the LM hits the limit of legacy 16 bit format. Force LM reading to 32bit now\n");
 
                 /* This only happens when both TXT & DMP format reading have problems */
-                lm = lm_read_txt(file, cmd_ln_int32("-lminmemory"), &err_no, 1  /* Now force 32bit LM */
-                    );
+                lm = lm_read_txt(file, lminmemory, &err_no, 1);  /* Now force 32bit LM */
                 if (lm == NULL) {
                     E_INFO
                         ("Panic: In lm_read, LM is not DMP format, it is likely to be ARPA format and hits legacy 16 bit format problem. But when forcing to 32bit LM, problem still couldn't be solved.\n");
@@ -657,7 +652,7 @@ lm_read_advance(const char *file, const char *lmname, float64 lw,
 
     }
     else if (!strcmp(fmt, "DMP")) {
-        lm = lm_read_dump(file, cmd_ln_int32("-lminmemory"));
+        lm = lm_read_dump(file, lminmemory);
         if (lm == NULL) {
             E_INFO
                 ("In lm_read, a DMP format reader is called, but lm cannot be read, Diagnosis: LM is corrupted or not enough memory.\n");
@@ -665,7 +660,7 @@ lm_read_advance(const char *file, const char *lmname, float64 lw,
         }
     }
     else if (!strcmp(fmt, "TXT32")) {
-        lm = lm_read_txt(file, cmd_ln_int32("-lminmemory"), &err_no, 1);
+        lm = lm_read_txt(file, lminmemory, &err_no, 1);
         if (lm == NULL) {
             E_INFO("In lm_read, failed to read lm in txt format. .\n");
             return NULL;
