@@ -321,12 +321,12 @@ void s3_decode_process(s3_decode_t *_decode,
 
     <PRE>
     s3_decode_t d;
-    char *str;
+    char *str, *uttid;
     hyp_t **segs;
 
     ...
 
-    s3_decode_hypothesis(&d, &str, &segs);
+    s3_decode_hypothesis(&d, &uttid, &str, &segs);
     printf("Decoded string: %s\n", str);
     for (; *segs; segs++) {
     printf("Word-segment id: %i\n", (*segs)->id);
