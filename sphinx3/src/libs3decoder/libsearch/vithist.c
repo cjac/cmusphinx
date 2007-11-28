@@ -1112,6 +1112,8 @@ vithist_dag_build_r(vithist_t * vh, glist_t hyp, dict_t * dict, int32 endid, cmd
     srch_hyp_t *h;
     dag_t *dag;
 
+    linklist_init();
+
     dag = ckd_calloc(1, sizeof(*dag));
     sfwid = (glist_t *) ckd_calloc(vh->n_frm + 1, sizeof(glist_t));
 

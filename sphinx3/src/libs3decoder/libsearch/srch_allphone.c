@@ -658,6 +658,8 @@ srch_allphone_init(kb_t *kb, void *srch)
     srch_t *s;
     s3cipid_t i;
 
+    linklist_init();
+
     kbc = kb->kbcore;
     s = (srch_t *) srch;
     allp = ckd_calloc(1, sizeof(*allp));

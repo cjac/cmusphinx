@@ -1132,6 +1132,8 @@ dag_load_r(char *file,          /**< Input: File to lod from */
     s3wid_t finishwid;
     int32 report;
 
+    linklist_init();
+
     report = 0;
     lathist = NULL;
     dag = ckd_calloc(1, sizeof(dag_t));
