@@ -14,5 +14,4 @@ libs3decoder_la_LIBADD = \
 	liblm/liblm.la \
 	libsearch/libsearch.la \
 	libAPI/libAPI.la \
-	libcfg/libcfg.la \
-	-lsphinxutil -lsphinxfe -lsphinxad -lsphinxfeat
+	libcfg/libcfg.la

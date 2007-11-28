@@ -5,6 +5,6 @@ INCLUDES = \
         -I$(top_builddir)/include
 
 LDADD = ${top_builddir}/src/libs3decoder/libs3decoder.la \
-        -lm -lsphinxutil -lsphinxfe -lsphinxfeat @ad_libs@
+        -lsphinxbase @ad_libs@ -lm
 
 TESTS = $(wildcard _*.test) 

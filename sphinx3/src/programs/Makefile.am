@@ -31,10 +31,10 @@ noinst_HEADERS = \
 	s3_align.h
 
 LDADD = $(top_builddir)/src/libs3decoder/libs3decoder.la \
-	-lsphinxutil -lsphinxfe -lsphinxfeat -lsphinxad -lm
+	-lsphinxbase -lsphinxad -lm
 
 sphinx3_livedecode_LDADD = $(top_builddir)/src/libs3decoder/libs3decoder.la \
-	-lsphinxutil -lsphinxfe -lsphinxfeat -lsphinxad -lm -lpthread  @ad_libs@ 
+	-lsphinxbase -lsphinxad -lm -lpthread  @ad_libs@ 
 
 INCLUDES = -I$(top_srcdir)/include \
         -I$(top_builddir)/include
