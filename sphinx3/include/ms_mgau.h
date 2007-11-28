@@ -104,7 +104,7 @@
 #include <feat.h>
 #include <mdef.h>
 #include <ascr.h>
-
+#include <cmd_ln.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -174,6 +174,14 @@ int32 model_set_mllr(ms_mgau_model_t* msg, /**< The model-stream Gaussian distri
 		     const char *cb2mllrfile, /**< The codebook to MLLR file name */
 		     feat_t* fcb,            /**< FCB object */
 		     mdef_t *mdef            /**< A model definition */
+    );
+
+int32 model_set_mllr_r(ms_mgau_model_t* msg, /**< The model-stream Gaussian distribution model */
+                       const char *mllrfile, /**< The MLLR file name */
+                       const char *cb2mllrfile, /**< The codebook to MLLR file name */
+                       feat_t* fcb,            /**< FCB object */
+                       mdef_t *mdef,            /**< A model definition */
+                       cmd_ln_t *config
     );
 
 #ifdef __cplusplus

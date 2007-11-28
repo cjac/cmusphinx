@@ -103,7 +103,7 @@ init_fwd_dbg(srch_FLAT_FWD_graph_t * fwg)
 
     assert(fd);
     /* Word to be traced in detail */
-    if ((tmpstr = cmd_ln_str("-tracewhmm")) != NULL) {
+    if ((tmpstr = cmd_ln_str_r(kbcore_config(fwg->kbcore), "-tracewhmm")) != NULL) {
         fd->trace_wid = dict_wordid(fwg->kbcore->dict, tmpstr);
         if (NOT_S3WID(fd->trace_wid))
             E_ERROR("%s not in dictionary; cannot be traced\n", tmpstr);
@@ -113,21 +113,21 @@ init_fwd_dbg(srch_FLAT_FWD_graph_t * fwg)
 
     /* Active words to be dumped for debugging after and before the given frame nos, if any */
     fd->word_dump_sf = (int32) 0x7ffffff0;
-    if (cmd_ln_int32("-worddumpsf"))
-        fd->word_dump_sf = cmd_ln_int32("-worddumpsf");
+    if (cmd_ln_int32_r(kbcore_config(fwg->kbcore), "-worddumpsf"))
+        fd->word_dump_sf = cmd_ln_int32_r(kbcore_config(fwg->kbcore), "-worddumpsf");
 
     fd->word_dump_ef = (int32) 0x7ffffff0;
-    if (cmd_ln_int32("-worddumpef"))
-        fd->word_dump_ef = cmd_ln_int32("-worddumpef");
+    if (cmd_ln_int32_r(kbcore_config(fwg->kbcore), "-worddumpef"))
+        fd->word_dump_ef = cmd_ln_int32_r(kbcore_config(fwg->kbcore), "-worddumpef");
 
     /* Active HMMs to be dumped for debugging after and before the given frame nos, if any */
     fd->hmm_dump_sf = (int32) 0x7ffffff0;
-    if (cmd_ln_int32("-hmmdumpsf"))
-        fd->hmm_dump_sf = cmd_ln_int32("-hmmdumpsf");
+    if (cmd_ln_int32_r(kbcore_config(fwg->kbcore), "-hmmdumpsf"))
+        fd->hmm_dump_sf = cmd_ln_int32_r(kbcore_config(fwg->kbcore), "-hmmdumpsf");
 
     fd->hmm_dump_ef = (int32) 0x7ffffff0;
-    if (cmd_ln_int32("-hmmdumpef"))
-        fd->hmm_dump_ef = cmd_ln_int32("-hmmdumpef");
+    if (cmd_ln_int32_r(kbcore_config(fwg->kbcore), "-hmmdumpef"))
+        fd->hmm_dump_ef = cmd_ln_int32_r(kbcore_config(fwg->kbcore), "-hmmdumpef");
 
     return fd;
 }
@@ -199,6 +199,9 @@ srch_FLAT_FWD_init(kb_t * kb,    /**< The KB */
 
     E_INFO("Initialization\n");
 
+    /** For convenience */
+    fwg->kbcore = s->kbc;
+
     /* Allocate whmm structure */
     fwg->hmmctx = hmm_context_init(mdef_n_emit_state(mdef),
 				   kbcore_tmat(kbc)->tp, NULL,
@@ -217,9 +220,9 @@ srch_FLAT_FWD_init(kb_t * kb,    /**< The KB */
     fwg->word_ugprob = init_word_ugprob(mdef, lm, dict);
 
     /* Input candidate-word lattices information to restrict search; if any */
-    fwg->word_cand_dir = cmd_ln_str("-inlatdir");
-    fwg->latfile_ext = cmd_ln_str("-latext");
-    fwg->word_cand_win = cmd_ln_int32("-inlatwin");
+    fwg->word_cand_dir = cmd_ln_str_r(kbcore_config(fwg->kbcore), "-inlatdir");
+    fwg->latfile_ext = cmd_ln_str_r(kbcore_config(fwg->kbcore), "-latext");
+    fwg->word_cand_win = cmd_ln_int32_r(kbcore_config(fwg->kbcore), "-inlatwin");
     if (fwg->word_cand_win < 0) {
         E_ERROR("Invalid -inlatwin argument: %d; set to 50\n",
                 fwg->word_cand_win);
@@ -248,11 +251,8 @@ srch_FLAT_FWD_init(kb_t * kb,    /**< The KB */
     fwg->ctxt = ctxt_table_init(kbcore_dict(kbc), kbcore_mdef(kbc));
 
     /* Viterbi history structure */
-    fwg->lathist = latticehist_init(cmd_ln_int32("-bptblsize"),
+    fwg->lathist = latticehist_init(cmd_ln_int32_r(kbcore_config(fwg->kbcore), "-bptblsize"),
 				   S3_MAX_FRAMES + 1);
-
-    /** For convenience */
-    fwg->kbcore = s->kbc;
 
     /* Glue the graph structure */
     s->grh->graph_struct = fwg;
@@ -470,7 +470,7 @@ srch_FLAT_FWD_srch_one_frame_lv2(void *srch)
 
     whmm_thresh = bestscr + s->beam->hmm;
     word_thresh = bestscr + s->beam->word;
-    phone_penalty = logs3(cmd_ln_float32("-phonepen"));
+    phone_penalty = logs3(cmd_ln_float32_r(kbcore_config(fwg->kbcore), "-phonepen"));
 
     assert(s->ascr->senscr);
     /*  E_INFO("fwg->n_frm %d\n",fwg->n_frm); */
@@ -629,7 +629,7 @@ srch_FLAT_FWD_dump_vithist(void *srch)
 
     assert(fwg->lathist);
 
-    sprintf(file, "%s/%s.bpt", cmd_ln_str("-bptbldir"), s->uttid);
+    sprintf(file, "%s/%s.bpt", cmd_ln_str_r(kbcore_config(fwg->kbcore), "-bptbldir"), s->uttid);
     if ((bptfp = fopen(file, "w")) == NULL) {
         E_ERROR("fopen(%s,w) failed; using stdout\n", file);
         bptfp = stdout;
@@ -681,13 +681,13 @@ srch_FLAT_FWD_bestpath_impl(void *srch,           /**< A void pointer to a searc
 
     assert(fwg->lathist);
 
-    bestpathlw = cmd_ln_float32("-bestpathlw");
-    lwf = bestpathlw ? (bestpathlw / cmd_ln_float32("-lw")) : 1.0;
+    bestpathlw = cmd_ln_float32_r(kbcore_config(fwg->kbcore), "-bestpathlw");
+    lwf = bestpathlw ? (bestpathlw / cmd_ln_float32_r(kbcore_config(fwg->kbcore), "-lw")) : 1.0;
 
     flat_fwd_dag_add_fudge_edges(fwg,
 				 dag,
-				 cmd_ln_int32("-dagfudge"),
-				 cmd_ln_int32("-min_endfr"),
+				 cmd_ln_int32_r(kbcore_config(fwg->kbcore), "-dagfudge"),
+				 cmd_ln_int32_r(kbcore_config(fwg->kbcore), "-min_endfr"),
 				 (void *) fwg->lathist, s->kbc->dict);
 
 
@@ -732,7 +732,7 @@ srch_FLAT_FWD_dag_dump(void *srch, dag_t *dag)
     fwg = (srch_FLAT_FWD_graph_t *) s->grh->graph_struct;
     assert(fwg->lathist);
 
-    ctl_outfile(str, cmd_ln_str("-outlatdir"), cmd_ln_str("-latext"),
+    ctl_outfile(str, cmd_ln_str_r(kbcore_config(fwg->kbcore), "-outlatdir"), cmd_ln_str_r(kbcore_config(fwg->kbcore), "-latext"),
                 (s->uttfile ? s->uttfile : s->uttid), s->uttid);
     E_INFO("Writing lattice file: %s\n", str);
     latticehist_dag_write(fwg->lathist,
@@ -758,18 +758,18 @@ srch_FLAT_FWD_nbest_impl(void *srch,           /**< A void pointer to a search s
     fwg = (srch_FLAT_FWD_graph_t *) s->grh->graph_struct;
     assert(fwg->lathist);
 
-    if (!(cmd_ln_exists("-nbestdir") && cmd_ln_str("-nbestdir")))
+    if (!(cmd_ln_exists_r(kbcore_config(fwg->kbcore), "-nbestdir") && cmd_ln_str_r(kbcore_config(fwg->kbcore), "-nbestdir")))
         return NULL;
-    ctl_outfile(str, cmd_ln_str("-nbestdir"), cmd_ln_str("-nbestext"),
+    ctl_outfile(str, cmd_ln_str_r(kbcore_config(fwg->kbcore), "-nbestdir"), cmd_ln_str_r(kbcore_config(fwg->kbcore), "-nbestext"),
                 (s->uttfile ? s->uttfile : s->uttid), s->uttid);
 
-    bestpathlw = cmd_ln_float32("-bestpathlw");
-    lwf = bestpathlw ? (bestpathlw / cmd_ln_float32("-lw")) : 1.0;
+    bestpathlw = cmd_ln_float32_r(kbcore_config(fwg->kbcore), "-bestpathlw");
+    lwf = bestpathlw ? (bestpathlw / cmd_ln_float32_r(kbcore_config(fwg->kbcore), "-lw")) : 1.0;
 
     flat_fwd_dag_add_fudge_edges(fwg,
 				 dag,
-				 cmd_ln_int32("-dagfudge"),
-				 cmd_ln_int32("-min_endfr"),
+				 cmd_ln_int32_r(kbcore_config(fwg->kbcore), "-dagfudge"),
+				 cmd_ln_int32_r(kbcore_config(fwg->kbcore), "-min_endfr"),
 				 (void *) fwg->lathist, s->kbc->dict);
 
     /* Bypass filler nodes */

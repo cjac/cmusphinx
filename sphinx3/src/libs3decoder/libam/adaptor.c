@@ -100,7 +100,14 @@ adapt_am_free(adapt_am_t * ad)
 
 void
 adapt_set_mllr(adapt_am_t * ad, mgau_model_t * g, const char *mllrfile,
-               const char *cb2mllrname, mdef_t * mdef)
+	       const char *cb2mllrname, mdef_t * mdef)
+{
+	adapt_set_mllr_r(ad, g, mllrfile, cb2mllrname, mdef, cmd_ln_get());
+}
+
+void
+adapt_set_mllr_r(adapt_am_t * ad, mgau_model_t * g, const char *mllrfile,
+		 const char *cb2mllrname, mdef_t * mdef, cmd_ln_t *config)
 {
     int32 *cb2mllr;
 
@@ -108,7 +115,7 @@ adapt_set_mllr(adapt_am_t * ad, mgau_model_t * g, const char *mllrfile,
     E_INFO("Reloading mean\n");
 
     /* Read in the mllr matrix */
-    mgau_mean_reload(g, cmd_ln_str("-mean"));
+    mgau_mean_reload(g, cmd_ln_str_r(config, "-mean"));
 
 #if MLLR_DEBUG
     /*This generates huge amount of information */

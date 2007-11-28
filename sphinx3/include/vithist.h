@@ -125,6 +125,7 @@
 #define _S3_VITHIST_H_
 
 #include <s3types.h>
+#include <cmd_ln.h>
 #include "kbcore.h"
 #include "search.h"
 #include "dict.h"
@@ -402,6 +403,12 @@ void vithist_dump (vithist_t *vh,     /**< In: a Viterbi history data structure 
 dag_t *vithist_dag_build(vithist_t * vh, glist_t hyp, dict_t * dict, int32 endid);
 
 /**
+ * Build a word graph (DAG) from Viterbi history (re-entrant version).
+ */
+dag_t *vithist_dag_build_r(vithist_t * vh, glist_t hyp, dict_t * dict,
+                           int32 endid, cmd_ln_t *config);
+
+/**
  * Write a word graph (DAG) built from Viterbi history (temporary function)
  */
 int32 vithist_dag_write(vithist_t *vithist,
@@ -640,6 +647,10 @@ srch_hyp_t *lattice_backtrace (latticehist_t *lathist, /**< A table of lattice e
 dag_t * latticehist_dag_build(latticehist_t * vh, glist_t hyp, dict_t * dict,
                               lm_t *lm, ctxt_table_t *ctxt, fillpen_t *fpen,
                               int32 endid);
+
+dag_t * latticehist_dag_build_r(latticehist_t * vh, glist_t hyp, dict_t * dict,
+                                lm_t *lm, ctxt_table_t *ctxt, fillpen_t *fpen,
+                                int32 endid, cmd_ln_t *config);
 
 /** 
  * Write a dag from latticehist_t

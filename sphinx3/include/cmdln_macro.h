@@ -189,10 +189,6 @@ us a better architecture.
       "(S3.0 GMM Computation only) No. of top scoring densities computed in each mixture gaussian codebook (semi-continuous models only)" }, \
 
 #define language_model_command_line_macro() \
-    { "-lminmemory", \
-      ARG_BOOLEAN, \
-      "no", \
-      "Load language model into memory (default: use disk cache for lm"}, \
     { "-lm", \
       ARG_STRING, \
       NULL, \

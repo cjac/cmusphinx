@@ -197,9 +197,14 @@ subvq_map_linearize(subvq_t * vq)
     }
 }
 
-
 subvq_t *
 subvq_init(char *file, float64 varfloor, int32 max_sv, mgau_model_t * g)
+{
+	return subvq_init_r(file, varfloor, max_sv, g, cmd_ln_get());
+}
+
+subvq_t *
+subvq_init_r(char *file, float64 varfloor, int32 max_sv, mgau_model_t * g, cmd_ln_t *config)
 {
     FILE *fp;
     char line[16384];
@@ -210,7 +215,7 @@ subvq_init(char *file, float64 varfloor, int32 max_sv, mgau_model_t * g)
 
     vq = (subvq_t *) ckd_calloc(1, sizeof(subvq_t));
 
-    vq->VQ_EVAL = cmd_ln_int32("-vqeval");      /*Arthur : It nows work for arbitrary size of sub-vector */
+    vq->VQ_EVAL = cmd_ln_int32_r(config, "-vqeval");      /*Arthur : It nows work for arbitrary size of sub-vector */
 
     fp = myfopen(file, "r");
 

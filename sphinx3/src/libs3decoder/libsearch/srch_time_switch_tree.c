@@ -168,16 +168,16 @@ srch_TST_init(kb_t * kb, void *srch)
     for (i = 0; i < kbc->lmset->n_lm; i++)
         unlinksilences(kbc->lmset->lmarray[i], kbc, kbc->dict);
 
-    if (cmd_ln_int32("-Nstalextree"))
+    if (cmd_ln_int32_r(kbcore_config(kbc), "-Nstalextree"))
         E_WARN("-Nstalextree is omitted in TST search.\n");
 
 
   /** STRUCTURE : allocation of the srch graphs */
     tstg = ckd_calloc(1, sizeof(srch_TST_graph_t));
 
-    tstg->epl = cmd_ln_int32("-epl");
-    tstg->n_lextree = cmd_ln_int32("-Nlextree");
-    tstg->isLMLA = cmd_ln_int32("-treeugprob");
+    tstg->epl = cmd_ln_int32_r(kbcore_config(kbc), "-epl");
+    tstg->n_lextree = cmd_ln_int32_r(kbcore_config(kbc), "-Nlextree");
+    tstg->isLMLA = cmd_ln_int32_r(kbcore_config(kbc), "-treeugprob");
 
     /* CHECK: make sure the number of lexical tree is at least one. */
 
@@ -263,34 +263,34 @@ srch_TST_init(kb_t * kb, void *srch)
         }
     }
 
-    if (cmd_ln_int32("-lextreedump")) {
+    if (cmd_ln_int32_r(kbcore_config(kbc), "-lextreedump")) {
         for (i = 0; i < kbc->lmset->n_lm; i++) {
             for (j = 0; j < n_ltree; j++) {
                 fprintf(stderr, "LM %d name %s UGTREE %d\n", i,
                         lmset_idx_to_name(kbc->lmset, i), j);
                 lextree_dump(tstg->ugtree[i * n_ltree + j], kbc->dict,
                              kbc->mdef, stderr,
-                             cmd_ln_int32("-lextreedump"));
+                             cmd_ln_int32_r(kbcore_config(kbc), "-lextreedump"));
             }
         }
         for (i = 0; i < n_ltree; i++) {
             fprintf(stderr, "FILLERTREE %d\n", i);
             lextree_dump(tstg->fillertree[i], kbc->dict, kbc->mdef, stderr,
-                         cmd_ln_int32("-lextreedump"));
+                         cmd_ln_int32_r(kbcore_config(kbc), "-lextreedump"));
         }
     }
 
-    tstg->histprune = histprune_init(cmd_ln_int32("-maxhmmpf"),
-                                     cmd_ln_int32("-maxhistpf"),
-                                     cmd_ln_int32("-maxwpf"),
-                                     cmd_ln_int32("-hmmhistbinsize"),
+    tstg->histprune = histprune_init(cmd_ln_int32_r(kbcore_config(kbc), "-maxhmmpf"),
+                                     cmd_ln_int32_r(kbcore_config(kbc), "-maxhistpf"),
+                                     cmd_ln_int32_r(kbcore_config(kbc), "-maxwpf"),
+                                     cmd_ln_int32_r(kbcore_config(kbc), "-hmmhistbinsize"),
                                      (tstg->curugtree[0]->n_node +
                                       tstg->fillertree[0]->n_node) *
                                      tstg->n_lextree);
 
     /* Viterbi history structure */
     tstg->vithist = vithist_init(kb->kbcore, kb->beam->word,
-                                 cmd_ln_int32("-bghist"), TRUE);
+                                 cmd_ln_int32_r(kbcore_config(kbc), "-bghist"), TRUE);
 
 
     /* Glue the graph structure */
@@ -1247,8 +1247,8 @@ srch_TST_dump_vithist(void *srch)
     tstg = (srch_TST_graph_t *) s->grh->graph_struct;
     assert(tstg->vithist);
 
-    file = ckd_calloc(strlen(cmd_ln_str("-bptbldir")) + strlen(s->uttid) + 5, 1);
-    sprintf(file, "%s/%s.bpt", cmd_ln_str("-bptbldir"), s->uttid);
+    file = ckd_calloc(strlen(cmd_ln_str_r(kbcore_config(s->kbc), "-bptbldir")) + strlen(s->uttid) + 5, 1);
+    sprintf(file, "%s/%s.bpt", cmd_ln_str_r(kbcore_config(s->kbc), "-bptbldir"), s->uttid);
 
     if ((bptfp = fopen(file, "w")) == NULL) {
         E_ERROR("fopen(%s,w) failed; using stdout\n", file);
@@ -1285,8 +1285,8 @@ srch_TST_bestpath_impl(void *srch,          /**< A void pointer to a search stru
     srch_hyp_t *tmph, *bph;
     srch_t *s = (srch_t *) srch;
 
-    bestpathlw = cmd_ln_float32("-bestpathlw");
-    lwf = bestpathlw ? (bestpathlw / cmd_ln_float32("-lw")) : 1.0;
+    bestpathlw = cmd_ln_float32_r(kbcore_config(s->kbc), "-bestpathlw");
+    lwf = bestpathlw ? (bestpathlw / cmd_ln_float32_r(kbcore_config(s->kbc), "-lw")) : 1.0;
 
     /* Bypass filler nodes */
     if (!dag->filler_removed) {
@@ -1335,13 +1335,13 @@ srch_TST_nbest_impl(void *srch,          /**< A void pointer to a search structu
     srch_t *s = (srch_t *) srch;
     char str[2000];
 
-    if (!(cmd_ln_exists("-nbestdir") && cmd_ln_str("-nbestdir")))
+    if (!(cmd_ln_exists_r(kbcore_config(s->kbc), "-nbestdir") && cmd_ln_str_r(kbcore_config(s->kbc), "-nbestdir")))
         return NULL;
-    ctl_outfile(str, cmd_ln_str("-nbestdir"), cmd_ln_str("-nbestext"),
+    ctl_outfile(str, cmd_ln_str_r(kbcore_config(s->kbc), "-nbestdir"), cmd_ln_str_r(kbcore_config(s->kbc), "-nbestext"),
                 (s->uttfile ? s->uttfile : s->uttid), s->uttid);
 
-    bestpathlw = cmd_ln_float32("-bestpathlw");
-    lwf = bestpathlw ? (bestpathlw / cmd_ln_float32("-lw")) : 1.0;
+    bestpathlw = cmd_ln_float32_r(kbcore_config(s->kbc), "-bestpathlw");
+    lwf = bestpathlw ? (bestpathlw / cmd_ln_float32_r(kbcore_config(s->kbc), "-lw")) : 1.0;
 
     /* FIXME: This is some bogus crap to do with the different
      * treatment of <s> and </s> in the flat vs. the tree decoder.  If

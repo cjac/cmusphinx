@@ -251,18 +251,19 @@ fsg_search_init(word_fsg_t * fsg, void *srch)
 
     search->state = FSG_SEARCH_IDLE;
 
+    search->config = kbcore_config(s->kbc);
     search->beam = s->beam->hmm;
     search->pbeam = s->beam->ptrans;
     search->wbeam = s->beam->word;
-    search->isUsealtpron = cmd_ln_int32("-fsgusealtpron");
-    search->isUseFiller = cmd_ln_int32("-fsgusefiller");
-    search->isBacktrace = cmd_ln_int32("-backtrace");
+    search->isUsealtpron = cmd_ln_int32_r(search->config, "-fsgusealtpron");
+    search->isUseFiller = cmd_ln_int32_r(search->config, "-fsgusefiller");
+    search->isBacktrace = cmd_ln_int32_r(search->config, "-backtrace");
     search->matchfp = s->matchfp;
     search->matchsegfp = s->matchsegfp;
     search->senscale = s->ascale;
 
     lw = s->kbc->fillpen->lw;
-    pip = (int32) (logs3(cmd_ln_float32("-phonepen")) * lw);
+    pip = (int32) (logs3(cmd_ln_float32_r(search->config, "-phonepen")) * lw);
     wip = s->kbc->fillpen->wip;
 
     E_INFO("FSG(beam: %d, pbeam: %d, wbeam: %d; wip: %d, pip: %d)\n",
@@ -1101,8 +1102,8 @@ fsg_search_utt_end(fsg_search_t * search)
 
     /* Write history table if needed */
 
-    if (cmd_ln_str("-bptbldir")) {
-        sprintf(file, "%s/%s.hist", cmd_ln_str("-bptbldir"),
+    if (cmd_ln_str_r(search->config, "-bptbldir")) {
+        sprintf(file, "%s/%s.hist", cmd_ln_str_r(search->config, "-bptbldir"),
                 search->uttid);
         if ((latfp = fopen(file, "w")) == NULL)
             E_ERROR("fopen(%s,w) failed\n", file);

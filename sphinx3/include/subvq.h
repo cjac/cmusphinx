@@ -91,6 +91,8 @@
 #ifndef _S3_SUBVQ_H_
 #define _S3_SUBVQ_H_
 
+#include <cmd_ln.h>
+
 #include "s3types.h"
 #include "cont_mgau.h"
 #include "vector.h"
@@ -170,6 +172,20 @@ subvq_t *subvq_init (char *file,	/**< In: Subvector model file */
 					   which this subvq model was
 					   built, for
 					   cross-validation; optional */
+    );	
+
+/**
+ * Re-entrant version of subvq_init().
+ */
+subvq_t *subvq_init_r(char *file,	/**< In: Subvector model file */
+                      float64 varfloor,	/**< In: Floor to be applied to variance values */
+                      int32 max_sv,	/**< In: Use the first so many subvectors instead of all;
+					   if <0, use all */
+                      mgau_model_t *g,    /**< In: Original model from
+					   which this subvq model was
+					   built, for
+					   cross-validation; optional */
+                      cmd_ln_t *config
     );	
 
 

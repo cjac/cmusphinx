@@ -685,7 +685,7 @@ srch_allphone_init(kb_t *kb, void *srch)
     }
     else {
 	E_WARN("-lm argument missing; doing unconstrained phone-loop decoding\n");
-	allp->inspen = logs3(cmd_ln_float32("-wip"));
+	allp->inspen = logs3(cmd_ln_float32_r(kbcore_config(kbc), "-wip"));
     }
 
     /* Make sure all phones are in the dictionary */
@@ -696,9 +696,9 @@ srch_allphone_init(kb_t *kb, void *srch)
 			  &i, 1);
     }
 
-    allp->beam = logs3(cmd_ln_float64("-beam"));
+    allp->beam = logs3(cmd_ln_float64_r(kbcore_config(kbc), "-beam"));
     E_INFO("logs3(beam)= %d\n", allp->beam);
-    allp->pbeam = logs3(cmd_ln_float64("-pbeam"));
+    allp->pbeam = logs3(cmd_ln_float64_r(kbcore_config(kbc), "-pbeam"));
     E_INFO("logs3(pbeam)= %d\n", allp->pbeam);
 
     allp->frm_hist =
@@ -813,8 +813,8 @@ srch_allphone_end(void *srch)
     s->exit_id = f;
 
     /* Log phoneme segmentation */
-    if (cmd_ln_exists("-phsegdir"))
-	write_phseg(s, cmd_ln_str("-phsegdir"), s->uttid, allp->phseg);
+    if (cmd_ln_exists_r(kbcore_config(s->kbc), "-phsegdir"))
+	write_phseg(s, cmd_ln_str_r(kbcore_config(s->kbc), "-phsegdir"), s->uttid, allp->phseg);
 
     /* Reset language model stuff */
     if (kbcore_lm(s->kbc)) {
@@ -951,7 +951,7 @@ srch_allphone_gen_dag(void *srch,         /**< a pointer of srch_t */
     sfwid = (glist_t *) ckd_calloc(allp->curfrm, sizeof(glist_t));
 
     /* Min. endframes value that a node must persist for it to be not ignored */
-    min_ef_range = cmd_ln_int32("-min_endfr");
+    min_ef_range = cmd_ln_int32_r(kbcore_config(s->kbc), "-min_endfr");
 
     /* Although the history table is organized by frame, it is
      * organized by end frame.  So we need to "turn it inside out" to
@@ -1088,13 +1088,13 @@ srch_allphone_gen_dag(void *srch,         /**< a pointer of srch_t */
     dag->fudged = 0;
     dag->nfrm = allp->curfrm;
 
-    dag->maxedge = cmd_ln_int32("-maxedge");
+    dag->maxedge = cmd_ln_int32_r(kbcore_config(s->kbc), "-maxedge");
     /*
      * Set limit on max LM ops allowed after which utterance is aborted.
      * Limit is lesser of absolute max and per frame max.
      */
-    dag->maxlmop = cmd_ln_int32("-maxlmop");
-    k = cmd_ln_int32("-maxlpf");
+    dag->maxlmop = cmd_ln_int32_r(kbcore_config(s->kbc), "-maxlmop");
+    k = cmd_ln_int32_r(kbcore_config(s->kbc), "-maxlpf");
     k *= dag->nfrm;
     if (dag->maxlmop > k)
         dag->maxlmop = k;
@@ -1113,8 +1113,8 @@ srch_allphone_bestpath_impl(void *srch,          /**< A void pointer to a search
     srch_hyp_t *tmph, *bph;
     srch_t *s = (srch_t *) srch;
 
-    bestpathlw = cmd_ln_float32("-bestpathlw");
-    lwf = bestpathlw ? (bestpathlw / cmd_ln_float32("-lw")) : 1.0;
+    bestpathlw = cmd_ln_float32_r(kbcore_config(s->kbc), "-bestpathlw");
+    lwf = bestpathlw ? (bestpathlw / cmd_ln_float32_r(kbcore_config(s->kbc), "-lw")) : 1.0;
 
     if (kbcore_lm(s->kbc) == NULL)
 	E_FATAL("Bestpath search requires a language model\n");
@@ -1148,13 +1148,15 @@ srch_allphone_nbest_impl(void *srch,          /**< A void pointer to a search st
     srch_t *s = (srch_t *) srch;
     char str[2000];
 
-    if (!(cmd_ln_exists("-nbestdir") && cmd_ln_str("-nbestdir")))
+    if (!(cmd_ln_exists_r(kbcore_config(s->kbc), "-nbestdir")
+	  && cmd_ln_str_r(kbcore_config(s->kbc), "-nbestdir")))
         return NULL;
-    ctl_outfile(str, cmd_ln_str("-nbestdir"), cmd_ln_str("-nbestext"),
+    ctl_outfile(str, cmd_ln_str_r(kbcore_config(s->kbc), "-nbestdir"),
+		cmd_ln_str_r(kbcore_config(s->kbc), "-nbestext"),
                 (s->uttfile ? s->uttfile : s->uttid), s->uttid);
 
-    bestpathlw = cmd_ln_float32("-bestpathlw");
-    lwf = bestpathlw ? (bestpathlw / cmd_ln_float32("-lw")) : 1.0;
+    bestpathlw = cmd_ln_float32_r(kbcore_config(s->kbc), "-bestpathlw");
+    lwf = bestpathlw ? (bestpathlw / cmd_ln_float32_r(kbcore_config(s->kbc), "-lw")) : 1.0;
 
     if (kbcore_lm(s->kbc) == NULL)
 	E_FATAL("N-best search requires a language model\n");

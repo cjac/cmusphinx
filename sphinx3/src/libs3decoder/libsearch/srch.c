@@ -374,6 +374,7 @@ srch_init(kb_t * kb, int32 op_mode)
     /* A switch here to decide all function pointers */
     if (op_mode == OPERATION_ALIGN) {
         E_ERROR("Alignment mode is not supported yet");
+	ckd_free(s);
 	return NULL;
     }
     else if (op_mode == OPERATION_ALLPHONE) {
@@ -390,6 +391,7 @@ srch_init(kb_t * kb, int32 op_mode)
     }
     else if (op_mode == OPERATION_WST_DECODE) {
         E_ERROR("Word Conditioned Tree Search is currently unmaintained.");
+	ckd_free(s);
 	return NULL;
     }
     else if (op_mode == OPERATION_DEBUG) {
@@ -404,18 +406,6 @@ srch_init(kb_t * kb, int32 op_mode)
 	return NULL;
     }
 
-    s->grh = (grp_str_t *) ckd_calloc(1, sizeof(grp_str_t));
-    s->cache_win = cmd_ln_int32("-pl_window");
-    s->cache_win_strt = 0;
-    s->senscale = 0;
-
-    s->ascale = (int32 *) ckd_calloc(DFLT_UTT_SIZE, sizeof(int32));
-    s->ascale_sz = DFLT_UTT_SIZE;
-    s->segsz = (int32 *) ckd_calloc(DFLT_NUM_SEGS, sizeof(int32));
-    s->segsz_sz = DFLT_NUM_SEGS;
-
-    srch_assert_funcptrs(s);
-
     /* Do general search initialization here. */
     s->stat = kb->stat;
     s->ascr = kb->ascr;
@@ -429,6 +419,18 @@ srch_init(kb_t * kb, int32 op_mode)
     s->matchfp = kb->matchfp;
     s->matchsegfp = kb->matchsegfp;
     s->hmmdumpfp = kb->hmmdumpfp;
+
+    s->grh = (grp_str_t *) ckd_calloc(1, sizeof(grp_str_t));
+    s->cache_win = cmd_ln_int32_r(kbcore_config(s->kbc), "-pl_window");
+    s->cache_win_strt = 0;
+    s->senscale = 0;
+
+    s->ascale = (int32 *) ckd_calloc(DFLT_UTT_SIZE, sizeof(int32));
+    s->ascale_sz = DFLT_UTT_SIZE;
+    s->segsz = (int32 *) ckd_calloc(DFLT_NUM_SEGS, sizeof(int32));
+    s->segsz_sz = DFLT_NUM_SEGS;
+
+    srch_assert_funcptrs(s);
 
     /* Do search-specific initialization here. */
     if (s->funcs->init(kb, s) == SRCH_FAILURE) {
@@ -491,7 +493,7 @@ srch_utt_end(srch_t * s)
 	return rv;
     }
 
-    if (s->funcs->dump_vithist && cmd_ln_str("-bptbldir")) {
+    if (s->funcs->dump_vithist && cmd_ln_str_r(kbcore_config(s->kbc), "-bptbldir")) {
 	if ((rv = s->funcs->dump_vithist(s)) != SRCH_SUCCESS) {
 	    E_ERROR("s->funcs->dump_vithist failed\n");
 	    return rv;
@@ -511,9 +513,9 @@ srch_utt_end(srch_t * s)
 
     /* Generate a DAG if needed */
     if (s->funcs->gen_dag &&
-	(cmd_ln_str("-outlatdir")
-	 || cmd_ln_str("-nbestdir")
-	 || cmd_ln_boolean("-bestpath"))) {
+	(cmd_ln_str_r(kbcore_config(s->kbc), "-outlatdir")
+	 || cmd_ln_str_r(kbcore_config(s->kbc), "-nbestdir")
+	 || cmd_ln_boolean_r(kbcore_config(s->kbc), "-bestpath"))) {
         ptmr_start(&(st->tm_srch));
 	if ((s->dag = s->funcs->gen_dag(s, hyp)) == NULL) {
 	    E_ERROR("Failed to generate DAG.\n");
@@ -522,36 +524,36 @@ srch_utt_end(srch_t * s)
     }
 
     /* Write backtrace info */
-    if (cmd_ln_boolean("-backtrace")) {
+    if (cmd_ln_boolean_r(kbcore_config(s->kbc), "-backtrace")) {
         fprintf(stderr, "\nBacktrace(%s)\n", s->uttid);
         match_detailed(stderr, hyp, s->uttid, "FV", "fv", s->ascale,
                        kbcore_dict(s->kbc));
     }
 
     /* Write hypothesis strings */
-    if (!(s->dag && cmd_ln_boolean("-bestpath"))) {
+    if (!(s->dag && cmd_ln_boolean_r(kbcore_config(s->kbc), "-bestpath"))) {
 	if (s->matchfp)
 	    match_write(s->matchfp, hyp, s->uttid, kbcore_dict(s->kbc), NULL);
 	if (s->matchsegfp)
 	    matchseg_write(s->matchsegfp, hyp, s->uttid, NULL,
 			   kbcore_lm(s->kbc),
 			   kbcore_dict(s->kbc), s->stat->nfr, s->ascale,
-			   cmd_ln_int32("-hypsegscore_unscale"));
+			   cmd_ln_int32_r(kbcore_config(s->kbc), "-hypsegscore_unscale"));
     }
     match_write(stderr, hyp, s->uttid, kbcore_dict(s->kbc), "\nFWDVIT: ");
     matchseg_write(stderr, hyp, s->uttid, "FWDXCT: ",
                    kbcore_lm(s->kbc),
                    kbcore_dict(s->kbc), s->stat->nfr, s->ascale,
-                   cmd_ln_int32("-hypsegscore_unscale"));
+                   cmd_ln_int32_r(kbcore_config(s->kbc), "-hypsegscore_unscale"));
     fprintf(stderr, "\n");
 
     /* Write best senone scores */
-    if (cmd_ln_str("-bestsenscrdir")) {
+    if (cmd_ln_str_r(kbcore_config(s->kbc), "-bestsenscrdir")) {
         int32 ispipe;
         char str[2048];
         FILE *bsfp;
         sprintf(str, "%s/%s.bsenscr",
-                cmd_ln_str("-bestsenscrdir"), s->uttid);
+                cmd_ln_str_r(kbcore_config(s->kbc), "-bestsenscrdir"), s->uttid);
         E_INFO("Dumping the Best senone scores.\n");
         if ((bsfp = fopen_comp(str, "w", &ispipe)) == NULL)
             E_ERROR("fopen_comp (%s,w) failed\n", str); 
@@ -562,11 +564,11 @@ srch_utt_end(srch_t * s)
     }
 
     /* Write lattices */
-    if (s->dag && cmd_ln_str("-outlatdir")) {
+    if (s->dag && cmd_ln_str_r(kbcore_config(s->kbc), "-outlatdir")) {
 	/* HTK lattices are generic */
-	if (0 == strcmp(cmd_ln_str("-outlatfmt"), "htk")) {
+	if (0 == strcmp(cmd_ln_str_r(kbcore_config(s->kbc), "-outlatfmt"), "htk")) {
 	    char str[2048];
-	    ctl_outfile(str, cmd_ln_str("-outlatdir"), cmd_ln_str("-latext"),
+	    ctl_outfile(str, cmd_ln_str_r(kbcore_config(s->kbc), "-outlatdir"), cmd_ln_str_r(kbcore_config(s->kbc), "-latext"),
 			(s->uttfile ? s->uttfile : s->uttid), s->uttid);
 	    E_INFO("Writing lattice file in HTK format: %s\n", str);
 	    dag_write_htk(s->dag, str, s->uttid, kbcore_lm(s->kbc), kbcore_dict(s->kbc));
@@ -581,7 +583,7 @@ srch_utt_end(srch_t * s)
 	    /* But probably not. */
 	    else {
 		char str[2048];
-		ctl_outfile(str, cmd_ln_str("-outlatdir"), cmd_ln_str("-latext"),
+		ctl_outfile(str, cmd_ln_str_r(kbcore_config(s->kbc), "-outlatdir"), cmd_ln_str_r(kbcore_config(s->kbc), "-latext"),
 			    (s->uttfile ? s->uttfile : s->uttid), s->uttid);
 		E_INFO("Writing lattice file: %s\n", str);
 		dag_write(s->dag, str, kbcore_lm(s->kbc), kbcore_dict(s->kbc));
@@ -590,12 +592,12 @@ srch_utt_end(srch_t * s)
     }
 
     /* Write N-best lists */
-    if (s->dag && s->funcs->nbest_impl && cmd_ln_str("-nbestdir")) {
+    if (s->dag && s->funcs->nbest_impl && cmd_ln_str_r(kbcore_config(s->kbc), "-nbestdir")) {
 	s->funcs->nbest_impl(s, s->dag);
     }
 
     /* Do second stage search */
-    if (s->dag && s->funcs->bestpath_impl &&  cmd_ln_boolean("-bestpath")) {
+    if (s->dag && s->funcs->bestpath_impl &&  cmd_ln_boolean_r(kbcore_config(s->kbc), "-bestpath")) {
 	glist_t rhyp;
 
         ptmr_start(&(st->tm_srch));
@@ -605,7 +607,7 @@ srch_utt_end(srch_t * s)
 	    E_ERROR("Bestpath search failed.\n");
 	}
 	else {
-	    if (cmd_ln_int32("-backtrace"))
+	    if (cmd_ln_int32_r(kbcore_config(s->kbc), "-backtrace"))
 		match_detailed(stdout, rhyp, s->uttid, "BP",
 			       "bp", s->ascale,
 			       kbcore_dict(s->kbc));
@@ -615,13 +617,13 @@ srch_utt_end(srch_t * s)
 		matchseg_write(s->matchsegfp, rhyp, s->uttid, NULL,
 			       kbcore_lm(s->kbc),
 			       kbcore_dict(s->kbc), s->stat->nfr, s->ascale,
-			       cmd_ln_int32("-hypsegscore_unscale"));
+			       cmd_ln_int32_r(kbcore_config(s->kbc), "-hypsegscore_unscale"));
 	    match_write(stderr, rhyp, s->uttid,
 			kbcore_dict(s->kbc), "BSTPTH: ");
 	    matchseg_write(stderr, rhyp, s->uttid, "BSTXCT: ",
 			   kbcore_lm(s->kbc), kbcore_dict(s->kbc),
 			   s->stat->nfr, s->ascale,
-			   cmd_ln_int32("-hypsegscore_unscale"));
+			   cmd_ln_int32_r(kbcore_config(s->kbc), "-hypsegscore_unscale"));
 	    for (gn = rhyp; gn; gn = gnode_next(gn)) {
 		ckd_free(gnode_ptr(gn));
 	    }

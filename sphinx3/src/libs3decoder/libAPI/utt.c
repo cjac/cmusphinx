@@ -125,7 +125,7 @@ utt_end(kb_t * kb)
 
 /* FIXME FIXME FIXME: This needs to go in SphinxBase!!! */
 static int16 *
-wavfile_read(char const *filename, int32 *nsamps)
+wavfile_read(char const *filename, int32 *nsamps, cmd_ln_t *config)
 {
     const char *adc_ext, *data_directory;
     FILE *uttfp;
@@ -133,10 +133,10 @@ wavfile_read(char const *filename, int32 *nsamps)
     int32 n, l, adc_hdr, adc_endian;
     int16 *data;
 
-    adc_ext = cmd_ln_str("-cepext");
-    adc_hdr = cmd_ln_int32("-adchdr");
-    adc_endian = strcmp(cmd_ln_str("-input_endian"), "big");
-    data_directory = cmd_ln_str("-cepdir");
+    adc_ext = cmd_ln_str_r(config, "-cepext");
+    adc_hdr = cmd_ln_int32_r(config, "-adchdr");
+    adc_endian = strcmp(cmd_ln_str_r(config, "-input_endian"), "big");
+    data_directory = cmd_ln_str_r(config, "-cepdir");
 
     /* Build input filename */
     n = strlen(adc_ext);
@@ -187,6 +187,7 @@ utt_decode(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
 {
     kb_t *kb;
     kbcore_t *kbcore;
+    cmd_ln_t *config;
     int32 num_decode_frame;
     int32 total_frame;
     stat_t *st;
@@ -197,16 +198,17 @@ utt_decode(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
 
     kb = (kb_t *) data;
     kbcore = kb->kbcore;
+    config = kbcore_config(kbcore);
     kb_set_uttid(uttid, ur->uttfile, kb);
     st = kb->stat;
 
     /* Convert input file to cepstra if waveform input is selected */
-    if (cmd_ln_boolean("-adcin")) {
+    if (cmd_ln_boolean_r(config, "-adcin")) {
         int16 *adcdata;
         int32 nsamps = 0;
 
         /* FIXME: We should have a proper interface for reading waveform files */
-        if ((adcdata = wavfile_read(ur->uttfile, &nsamps)) == NULL) {
+        if ((adcdata = wavfile_read(ur->uttfile, &nsamps, config)) == NULL) {
             E_FATAL("Cannot read file %s. Forced exit\n", ur->uttfile);
         }
         if (kb->mfcc) {
@@ -230,8 +232,8 @@ utt_decode(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
     else {
         /* Read mfc file and build feature vectors for entire utterance */
         if ((total_frame = feat_s2mfc2feat(kbcore_fcb(kbcore), ur->uttfile,
-                                           cmd_ln_str("-cepdir"),
-                                           cmd_ln_str("-cepext"), sf, ef,
+                                           cmd_ln_str_r(config, "-cepdir"),
+                                           cmd_ln_str_r(config, "-cepext"), sf, ef,
                                            kb->feat, S3_MAX_FRAMES)) < 0) {
             E_FATAL("Cannot read file %s. Forced exit\n", ur->uttfile);
         }

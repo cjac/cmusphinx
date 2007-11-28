@@ -97,7 +97,7 @@
 #include <mdef.h>
 #include <mllr.h>
 #include <cb2mllr_io.h>
-
+#include <cmd_ln.h>
 
 #define ADAPTATION_MLLR 0
 
@@ -142,6 +142,13 @@ void adapt_set_mllr(adapt_am_t *ad, /**< The adaptor object */
 		    const char *mllrfile,  /**< MLLR file name */
 		    const char* cbs2mllr,  /**< CB2MLLR */
 		    mdef_t *mdef /**< MDEF */
+    );
+void adapt_set_mllr_r(adapt_am_t *ad, /**< The adaptor object */
+                      mgau_model_t *g,  /**< Gaussian model object */
+                      const char *mllrfile,  /**< MLLR file name */
+                      const char* cbs2mllr,  /**< CB2MLLR */
+                      mdef_t *mdef, /**< MDEF */
+                      cmd_ln_t *config
     );
 #if 0
 { /* Stop indent from complaining */

@@ -87,10 +87,9 @@ srch_FSG_init(kb_t * kb,    /**< The KB */
               void *srch     /**< The pointer to a search structure */
     )
 {
-    srch_t *s;
+    srch_t *s = (srch_t *)srch;
     fsg_search_t *fsgsrch;
     word_fsg_t *wordfsg;
-    s = (srch_t *) srch;
 
     /* This is very strange */
     fsgsrch = fsg_search_init(NULL, s);
@@ -98,9 +97,10 @@ srch_FSG_init(kb_t * kb,    /**< The KB */
     s->grh->graph_struct = fsgsrch;
     s->grh->graph_type = GRAPH_STRUCT_GENGRAPH;
 
-    if ((wordfsg = srch_FSG_read_fsgfile(s, cmd_ln_str("-fsg"))) == NULL) {
+    if ((wordfsg = srch_FSG_read_fsgfile(s,
+                                         cmd_ln_str_r(kbcore_config(s->kbc), "-fsg"))) == NULL) {
         E_INFO("Could not read wordfsg with file name %s\n",
-               cmd_ln_str("-fsg"));
+               cmd_ln_str_r(kbcore_config(s->kbc), "-fsg"));
         return SRCH_FAILURE;
     }
 
@@ -119,12 +119,13 @@ srch_FSG_read_fsgfile(void *srch, const char *fsgfilename)
     word_fsg_t *fsg;
     srch_t *s;
     fsg_search_t *fsgsrch;
+
     s = (srch_t *) srch;
     fsgsrch = (fsg_search_t *) s->grh->graph_struct;
 
     fsg = word_fsg_readfile(fsgfilename,
-                            cmd_ln_int32("-fsgusealtpron"),
-                            cmd_ln_int32("-fsgusefiller"),
+                            cmd_ln_int32_r(kbcore_config(s->kbc), "-fsgusealtpron"),
+                            cmd_ln_int32_r(kbcore_config(s->kbc), "-fsgusefiller"),
 			    s->kbc);
 
     if (!fsg) {
@@ -265,7 +266,9 @@ srch_FSG_dump_vithist(void *srch)
     s = (srch_t *) srch;
     fsgsrch = (fsg_search_t *) s->grh->graph_struct;
 
-    sprintf(file, "%s/%s.hist", cmd_ln_str("-bptbldir"), fsgsrch->uttid);
+    sprintf(file, "%s/%s.hist",
+            cmd_ln_str_r(kbcore_config(s->kbc), "-bptbldir"),
+            fsgsrch->uttid);
     if ((latfp = fopen(file, "w")) == NULL)
         E_ERROR("fopen(%s,w) failed\n", file);
     else {

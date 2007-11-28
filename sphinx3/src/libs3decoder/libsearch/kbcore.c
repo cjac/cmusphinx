@@ -527,8 +527,8 @@ kbcore_init_r(cmd_ln_t *config)
         }
         if (subvqfile) {
             if ((kb->svq =
-                 subvq_init(subvqfile, cmd_ln_float32_r(config, "-varfloor"),
-			    -1, kb->mgau)) == NULL)
+                 subvq_init_r(subvqfile, cmd_ln_float32_r(config, "-varfloor"),
+			      -1, kb->mgau, config)) == NULL)
                 E_FATAL("subvq_init (%s, %e, -1) failed\n", subvqfile,
                         cmd_ln_float32_r(config, "-varfloor"));
         }

@@ -110,6 +110,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <cmd_ln.h>
+
 #include "s3types.h"
 #include "word_fsg.h"
 #include "fsg.h"
@@ -235,6 +237,17 @@ fsg_pnode_t *fsg_psubtree_init (hmm_context_t *ctx,
                                 word_fsg_t *fsg, /**< A word fsg */
 				int32 from_state, /**< from which state to initalize*/ 
 				fsg_pnode_t **alloc_head
+
+    );
+
+/**
+ * Re-entrant version of fsg_psubtree_init().
+ */
+fsg_pnode_t *fsg_psubtree_init_r (hmm_context_t *ctx,
+                                word_fsg_t *fsg, /**< A word fsg */
+				int32 from_state, /**< from which state to initalize*/ 
+				fsg_pnode_t **alloc_head,
+                                cmd_ln_t *config
 
     );
 

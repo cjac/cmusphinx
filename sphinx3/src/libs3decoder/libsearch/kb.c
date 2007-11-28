@@ -349,11 +349,11 @@ kb_setmllr(char *mllrname, char *cb2mllrname,
     if (strcmp(kb->adapt_am->prevmllrfn, mllrname) != 0) {      /* If there is a change of mllr file name */
 
         if (kbc->mgau)
-            adapt_set_mllr(kb->adapt_am, kbc->mgau, mllrname, cb2mllrname,
-                           kbc->mdef);
+            adapt_set_mllr_r(kb->adapt_am, kbc->mgau, mllrname, cb2mllrname,
+			     kbc->mdef, kbc->config);
         else if (kbc->ms_mgau)
-            model_set_mllr(kbc->ms_mgau, mllrname, cb2mllrname, kbc->fcb,
-                           kbc->mdef);
+            model_set_mllr_r(kbc->ms_mgau, mllrname, cb2mllrname, kbc->fcb,
+			     kbc->mdef, kbc->config);
         else
             E_FATAL("Panic, kb has not Gaussian\n");
 

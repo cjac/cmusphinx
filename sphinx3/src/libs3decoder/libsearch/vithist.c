@@ -1092,9 +1092,15 @@ vithist_backtrace(vithist_t * vh, int32 id, dict_t * dict)
     return hyp;
 }
 
-
 dag_t *
 vithist_dag_build(vithist_t * vh, glist_t hyp, dict_t * dict, int32 endid)
+{
+    return vithist_dag_build_r(vh, hyp, dict, endid, cmd_ln_get());
+}
+
+
+dag_t *
+vithist_dag_build_r(vithist_t * vh, glist_t hyp, dict_t * dict, int32 endid, cmd_ln_t *config)
 {
     glist_t *sfwid;             /* To maintain <start-frame, word-id> pair dagnodes */
     vithist_entry_t *ve, *ve2;
@@ -1110,7 +1116,7 @@ vithist_dag_build(vithist_t * vh, glist_t hyp, dict_t * dict, int32 endid)
     sfwid = (glist_t *) ckd_calloc(vh->n_frm + 1, sizeof(glist_t));
 
     /* Min. endframes value that a node must persist for it to be not ignored */
-    min_ef_range = cmd_ln_int32("-min_endfr");
+    min_ef_range = cmd_ln_int32_r(config, "-min_endfr");
 
     n_node = 0;
     sf = 0;
@@ -1284,13 +1290,13 @@ vithist_dag_build(vithist_t * vh, glist_t hyp, dict_t * dict, int32 endid)
     dag->fudged = 0;
     dag->nfrm = vh->n_frm;
 
-    dag->maxedge = cmd_ln_int32("-maxedge");
+    dag->maxedge = cmd_ln_int32_r(config, "-maxedge");
     /*
      * Set limit on max LM ops allowed after which utterance is aborted.
      * Limit is lesser of absolute max and per frame max.
      */
-    dag->maxlmop = cmd_ln_int32("-maxlmop");
-    k = cmd_ln_int32("-maxlpf");
+    dag->maxlmop = cmd_ln_int32_r(config, "-maxlmop");
+    k = cmd_ln_int32_r(config, "-maxlpf");
     k *= dag->nfrm;
     if (k > 0 && dag->maxlmop > k)
         dag->maxlmop = k;
@@ -1746,6 +1752,14 @@ lattice_backtrace(latticehist_t * lathist,
     }
 }
 
+dag_t *
+latticehist_dag_build(latticehist_t * vh, glist_t hyp, dict_t * dict,
+                      lm_t *lm, ctxt_table_t *ctxt, fillpen_t *fpen,
+                      int32 endid)
+{
+    return latticehist_dag_build_r(vh, hyp, dict, lm, ctxt, fpen, endid, cmd_ln_get());
+}
+
 /**
  * Build a DAG from the lattice: each unique <word-id,start-frame> is a node, i.e. with
  * a single start time but it can represent several end times.  Links are created
@@ -1759,9 +1773,9 @@ lattice_backtrace(latticehist_t * lathist,
  * absurdum.
  */
 dag_t *
-latticehist_dag_build(latticehist_t * vh, glist_t hyp, dict_t * dict,
-                      lm_t *lm, ctxt_table_t *ctxt, fillpen_t *fpen,
-                      int32 endid)
+latticehist_dag_build_r(latticehist_t * vh, glist_t hyp, dict_t * dict,
+                        lm_t *lm, ctxt_table_t *ctxt, fillpen_t *fpen,
+                        int32 endid, cmd_ln_t *config)
 {
     glist_t *sfwid;             /* To maintain <start-frame, word-id> pair dagnodes */
     lattice_t *ve, *ve2;
@@ -1777,7 +1791,7 @@ latticehist_dag_build(latticehist_t * vh, glist_t hyp, dict_t * dict,
     sfwid = (glist_t *) ckd_calloc(vh->n_frm, sizeof(glist_t));
 
     /* Min. endframes value that a node must persist for it to be not ignored */
-    min_ef_range = cmd_ln_int32("-min_endfr");
+    min_ef_range = cmd_ln_int32_r(config, "-min_endfr");
 
     n_node = 0;
     sf = 0;
@@ -1948,13 +1962,13 @@ latticehist_dag_build(latticehist_t * vh, glist_t hyp, dict_t * dict,
     dag->fudged = 0;
     dag->nfrm = vh->n_frm;
 
-    dag->maxedge = cmd_ln_int32("-maxedge");
+    dag->maxedge = cmd_ln_int32_r(config, "-maxedge");
     /*
      * Set limit on max LM ops allowed after which utterance is aborted.
      * Limit is lesser of absolute max and per frame max.
      */
-    dag->maxlmop = cmd_ln_int32("-maxlmop");
-    k = cmd_ln_int32("-maxlpf");
+    dag->maxlmop = cmd_ln_int32_r(config, "-maxlmop");
+    k = cmd_ln_int32_r(config, "-maxlpf");
     k *= dag->nfrm;
     if (k > 0 && dag->maxlmop > k)
         dag->maxlmop = k;

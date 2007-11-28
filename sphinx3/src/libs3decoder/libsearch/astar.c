@@ -481,7 +481,7 @@ astar_init(dag_t *dag, dict_t *dict, lm_t *lm, fillpen_t *fpen, float64 beam, fl
         astar->hash_list[i] = NULL;
 
     /* Set limit on max #ppaths allocated before aborting utterance */
-    astar->maxppath = cmd_ln_int32("-maxppath");
+    astar->maxppath = cmd_ln_int32_r(dag->config, "-maxppath");
     astar->n_ppath = 0;
 
     /* Insert start node into heap and into list of nodes-by-frame */
@@ -536,7 +536,7 @@ astar_next_ppath(astar_t *astar)
     fillpen_t *fpen = astar->fpen;
     float64 lwf = astar->lwf;
 
-    ppathdebug = cmd_ln_boolean("-ppathdebug");
+    ppathdebug = cmd_ln_boolean_r(astar->dag->config, "-ppathdebug");
     while (astar->heap_root) {
         /* Extract top node from heap */
         top = astar->heap_root->ppath;
@@ -659,7 +659,7 @@ nbest_search(dag_t *dag, char *filename, char *uttid, float64 lwf,
     int32 ispipe;
     astar_t *astar;
 
-    fbeam = cmd_ln_float64("-beam");
+    fbeam = cmd_ln_float64_r(dag->config, "-beam");
     astar = astar_init(dag, dict, lm, fpen, fbeam, lwf);
 
     /* Create Nbest file and write header comments */
@@ -670,14 +670,14 @@ nbest_search(dag_t *dag, char *filename, char *uttid, float64 lwf,
     E_INFO("Writing N-Best list to %s\n", filename);
     fprintf(fp, "# %s\n", uttid);
     fprintf(fp, "# frames %d\n", dag->nfrm);
-    fprintf(fp, "# logbase %e\n", cmd_ln_float32("-logbase"));
-    fprintf(fp, "# langwt %e\n", cmd_ln_float32("-lw") * lwf);
-    fprintf(fp, "# inspen %e\n", cmd_ln_float32("-wip"));
+    fprintf(fp, "# logbase %e\n", cmd_ln_float32_r(dag->config, "-logbase"));
+    fprintf(fp, "# langwt %e\n", cmd_ln_float32_r(dag->config, "-lw") * lwf);
+    fprintf(fp, "# inspen %e\n", cmd_ln_float32_r(dag->config, "-wip"));
     fprintf(fp, "# beam %e\n", fbeam);
 
     /* Astar-search */
     n_hyp = 0;
-    nbest_max = cmd_ln_int32("-nbest");
+    nbest_max = cmd_ln_int32_r(dag->config, "-nbest");
     besthyp = (int32) 0x80000000;
     worsthyp = (int32) 0x7fffffff;
 

@@ -190,6 +190,8 @@ typedef struct fsg_search_s {
 
     FILE* matchfp; 
     FILE* matchsegfp; 
+
+    cmd_ln_t *config;
 } fsg_search_t;
 
 

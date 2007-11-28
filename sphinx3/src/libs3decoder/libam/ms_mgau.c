@@ -70,18 +70,27 @@
 #include <ms_mgau.h>
 #include <ms_mllr.h>
 #include <cb2mllr_io.h>
+#include <cmd_ln.h>
 
 /* Wrong place to put it */
 int32
 model_set_mllr(ms_mgau_model_t * msg, const char *mllrfile,
-               const char *cb2mllrfile, feat_t * fcb, mdef_t * mdef)
+	       const char *cb2mllrfile, feat_t * fcb, mdef_t * mdef)
+{
+	return model_set_mllr_r(msg, mllrfile, cb2mllrfile, fcb, mdef, cmd_ln_get());
+}
+
+int32
+model_set_mllr_r(ms_mgau_model_t * msg, const char *mllrfile,
+		 const char *cb2mllrfile, feat_t * fcb, mdef_t * mdef,
+		 cmd_ln_t *config)
 {
     float32 ****A, ***B;
     int32 *cb2mllr;
     int32 gid, sid, nclass;
     uint8 *mgau_xform;
 
-    gauden_mean_reload(msg->g, cmd_ln_str("-mean"));
+    gauden_mean_reload(msg->g, cmd_ln_str_r(config, "-mean"));
 
     if (ms_mllr_read_regmat(mllrfile, &A, &B,
                             fcb->stream_len, feat_n_stream(fcb),

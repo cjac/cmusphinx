@@ -1030,11 +1030,17 @@ void lm_cache_stats_dump (lm_t *lmp /**< In: the LM */
  * ndict=0).  Format is set to NULL, so the program will determine
  * it automatically. 
  */
-
 lm_t * lm_read ( 
     const char *file,	/**< In: LM file being read */
     const char *lmname   /**<In: LM name*/
     );
+
+/** 
+ * A simple version of reading in a LM (re-entrant version)
+ */
+lm_t * lm_read_r(const char *file,
+                 const char *lmname, cmd_ln_t *config);
+
 /**
  * Read an LM file, it will automatically decide whether the file is
  * a DUMP file or a txt file. Then call lm_read_txt and lm_read_dump

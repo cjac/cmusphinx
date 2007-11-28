@@ -563,11 +563,17 @@ lm_add_word_to_ug(lm_t * lm,      /**<In/Out: a modified LM structure */
 lm_t *
 lm_read(const char *file, const char *lmname)
 {
+    return lm_read_r(file, lmname, cmd_ln_get());
+}
+
+lm_t *
+lm_read_r(const char *file, const char *lmname, cmd_ln_t *config)
+{
     return lm_read_advance(file,
                            lmname,
-                           cmd_ln_float32("-lw"),
-                           cmd_ln_float32("-wip"),
-                           cmd_ln_float32("-uw"), 0, NULL, 1);
+                           cmd_ln_float32_r(config, "-lw"),
+                           cmd_ln_float32_r(config, "-wip"),
+                           cmd_ln_float32_r(config, "-uw"), 0, NULL, 1);
 }
 
 lm_t *
@@ -579,8 +585,6 @@ lm_read_advance(const char *file, const char *lmname, float64 lw,
     lm_t *lm;
     int32 err_no;
     int lminmemory = 0;
-    if (cmd_ln_exists("-lminmemory"))
-        lminmemory = cmd_ln_int32("-lminmemory");
 
     if (!file)
         E_FATAL("No LM file\n");

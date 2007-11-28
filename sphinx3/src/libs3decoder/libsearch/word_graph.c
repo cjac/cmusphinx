@@ -113,7 +113,8 @@ new_word_graph_link(word_graph_t * wg,              /**< The word graph */
                     int32 ascr,                     /**< Acoustic score */
                     int32 lscr,                     /**< Language score */
                     int32 cscr,                      /**< Confidence score */
-                    int32 * senscale                  /**< Array of senscale*/
+                    int32 * senscale,                 /**< Array of senscale*/
+		    cmd_ln_t *config
     )
 {
     word_graph_link_t *wgl;
@@ -134,7 +135,7 @@ new_word_graph_link(word_graph_t * wg,              /**< The word graph */
 #endif
     assert(sf <= ef);
 
-    if (cmd_ln_int32("-hypsegscore_unscale"))
+    if (cmd_ln_int32_r(config, "-hypsegscore_unscale"))
         scl = compute_scale(sf, ef, senscale);
 
 #if 0
@@ -365,7 +366,7 @@ wg_from_dag(word_graph_t * wg, dag_t * dag, dagnode_t * d,
             /* FIX ME ! Currently, confidence score is hard-wired to 0.0 */
             new_word_graph_link(wg, dnode_stidx, nodeidx, d->sf, n->sf,
                                 d->wid, l->ascr, lm_rawscore(lm, l->lscr),
-                                0.0, senscale);
+                                0.0, senscale, dag->config);
         }
     }
 
@@ -378,12 +379,12 @@ wg_from_dag(word_graph_t * wg, dag_t * dag, dagnode_t * d,
         /* FIX ME ! Currently, confidence score is hard-wired to 0.0 */
         new_word_graph_link(wg, dnode_stidx, nodeidx, d->sf, d->lef,
                             d->wid, d->node_ascr, d->node_lscr, 0.0,
-                            senscale);
+                            senscale, dag->config);
 #if 0
         if (dict_filler_word(dict, d->wid)) {
             new_word_graph_link(wg, dnode_stidx, nodeidx, d->sf, d->lef,
-                                d->wid, 0.0, cmd_ln_float32("-fillprob"),
-                                0.0, senscale);
+                                d->wid, 0.0, cmd_ln_float32_r(dag->config, "-fillprob"),
+                                0.0, senscale, dag->config);
 
         }
         else {
@@ -396,7 +397,7 @@ wg_from_dag(word_graph_t * wg, dag_t * dag, dagnode_t * d,
                                                                       wid],
                                                                      d->
                                                                      wid)),
-                                0.0, senscale);
+                                0.0, senscale, dag->config);
         }
 #endif
     }

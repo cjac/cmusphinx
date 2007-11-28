@@ -113,6 +113,7 @@
 #define _LIBFBS_DAG_H_
 
 #include <s3types.h>
+#include <cmd_ln.h>
 #include "search.h"
 #include "dict.h"
 #include "lm.h"
@@ -227,6 +228,7 @@ typedef struct {
 
     void *hook;                   /**< A hook for general purpose */
 
+    cmd_ln_t *config;
 } dag_t;
 
 
@@ -239,6 +241,9 @@ void hyp_free (srch_hyp_t *list);
 
 /** Initialize a dag_t */
 void dag_init(dag_t* dagp);
+
+/** Initialize a dag_t (re-entrant version) */
+void dag_init_r(dag_t* dagp, cmd_ln_t *config);
 
 
 /** Link two DAG nodes with the given arguments
@@ -332,6 +337,8 @@ srch_hyp_t *dag_backtrace (srch_hyp_t **hyp, /**< A pointer of a pointer to the 
  */
 
 void dag_write_header (FILE *fp);
+
+void dag_write_header_r(FILE *fp, cmd_ln_t *config);
 
 /**
  * Write a DAG (without segment scores) in Sphinx3 format
