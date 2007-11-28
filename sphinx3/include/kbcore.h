@@ -104,6 +104,7 @@
 #define _S3_KBCORE_H_
 
 #include <s3types.h>
+#include <cmd_ln.h>
 #include "feat.h"
 #include "cont_mgau.h"
 #include "ms_mgau.h"
@@ -131,6 +132,7 @@ extern "C" {
  */
 
 typedef struct {
+    cmd_ln_t *config; /**< The command-line or configuration object */
     feat_t *fcb; /**< feature end structure */
     mdef_t *mdef; /**< Model definition  */
     dict_t *dict; /**< Dictionary structure */
@@ -175,6 +177,11 @@ void s3_am_init(kbcore_t *kbc);
  */
 kbcore_t *kbcore_init(void);
 
+/**
+ * Re-entrant version of kbcore_init()
+ */
+kbcore_t *kbcore_init_r(cmd_ln_t *config);
+
 /** free the kbcore */
 void kbcore_free (kbcore_t *kbcore  /**< The kbcore structure */
     );
@@ -191,6 +198,7 @@ void unlinksilences(lm_t* l,kbcore_t *kbc, dict_t *d);
 void linksilences(lm_t* l,kbcore_t *kbc, dict_t *d);
 
 /** Access macros; not meant for arbitrary use */
+#define kbcore_config(k)	((k)->config)
 #define kbcore_fcb(k)		((k)->fcb)
 #define kbcore_mdef(k)		((k)->mdef)
 #define kbcore_dict(k)		((k)->dict)

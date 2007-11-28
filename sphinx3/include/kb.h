@@ -117,6 +117,7 @@
 #define _S3_KB_H_
 
 #include <s3types.h>
+#include <cmd_ln.h>
 #include "kbcore.h"
 #include "lextree.h"
 #include "vithist.h"
@@ -199,21 +200,26 @@ typedef struct {
 void kb_init (kb_t *kb /**< In/Out: A empty kb_t */
     );
 
+/** Initialize the kb (re-entrant version) */
+void kb_init_r(kb_t *kb, /**< In/Out: A empty kb_t */
+               cmd_ln_t *config /**< In: The command-line object */
+    );
+
   
 /** Deallocate the kb structure */
-void kb_free (kb_t *kb /**< In/Out: A empty kb_t */
+void kb_free (kb_t *kb
     );	/* RAH 4.16.01 */
   
 /** Set MLLR */
 void kb_setmllr(char* mllrname, /**< In: The name of the mllr model */
 		char* cb2mllrname, /**< In: The filename of the MLLR class map */
-		kb_t *kb /**< In/Out: A empty kb_t */
+		kb_t *kb
     );    /* ARCHAN 20040724 */
 
 /** Set Utterance ID to uttid */
 void kb_set_uttid(char *uttid, /**< In: the new utt id */
                   char *uttfile, /**< In: the new utt filename */
-		  kb_t *kb    /**< In/Out: A empty kb_t */
+		  kb_t *kb
     );   /* ARCHAN 20041111 */
 
 

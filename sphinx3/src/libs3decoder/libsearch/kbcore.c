@@ -218,7 +218,7 @@ s3_am_init(kbcore_t * kbc)
     kbc->ms_mgau = NULL;
 
     mdeffn = meanfn = varfn = mixwfn = tmatfn = kdtreefn = NULL;
-    if ((hmmdir = cmd_ln_str("-hmm")) != NULL) {
+    if ((hmmdir = cmd_ln_str_r(kbcore_config(kbc), "-hmm")) != NULL) {
         FILE *tmp;
 
         mdeffn = string_join(hmmdir, "/mdef", NULL);
@@ -236,29 +236,29 @@ s3_am_init(kbcore_t * kbc)
         }
     }
     /* Allow overrides from the command line */
-    if (cmd_ln_str("-mdef")) {
+    if (cmd_ln_str_r(kbcore_config(kbc), "-mdef")) {
         ckd_free(mdeffn);
-        mdeffn = ckd_salloc(cmd_ln_str("-mdef"));
+        mdeffn = ckd_salloc(cmd_ln_str_r(kbcore_config(kbc), "-mdef"));
     }
-    if (cmd_ln_str("-mean")) {
+    if (cmd_ln_str_r(kbcore_config(kbc), "-mean")) {
         ckd_free(meanfn);
-        meanfn = ckd_salloc(cmd_ln_str("-mean"));
+        meanfn = ckd_salloc(cmd_ln_str_r(kbcore_config(kbc), "-mean"));
     }
-    if (cmd_ln_str("-var")) {
+    if (cmd_ln_str_r(kbcore_config(kbc), "-var")) {
         ckd_free(varfn);
-        varfn = ckd_salloc(cmd_ln_str("-var"));
+        varfn = ckd_salloc(cmd_ln_str_r(kbcore_config(kbc), "-var"));
     }
-    if (cmd_ln_str("-mixw")) {
+    if (cmd_ln_str_r(kbcore_config(kbc), "-mixw")) {
         ckd_free(mixwfn);
-        mixwfn = ckd_salloc(cmd_ln_str("-mixw"));
+        mixwfn = ckd_salloc(cmd_ln_str_r(kbcore_config(kbc), "-mixw"));
     }
-    if (cmd_ln_str("-tmat")) {
+    if (cmd_ln_str_r(kbcore_config(kbc), "-tmat")) {
         ckd_free(tmatfn);
-        tmatfn = ckd_salloc(cmd_ln_str("-tmat"));
+        tmatfn = ckd_salloc(cmd_ln_str_r(kbcore_config(kbc), "-tmat"));
     }
-    if (cmd_ln_str("-kdtree")) {
+    if (cmd_ln_str_r(kbcore_config(kbc), "-kdtree")) {
         ckd_free(kdtreefn);
-        kdtreefn = ckd_salloc(cmd_ln_str("-kdtree"));
+        kdtreefn = ckd_salloc(cmd_ln_str_r(kbcore_config(kbc), "-kdtree"));
     }
 
     E_INFO_NOFN("Reading HMM in Sphinx 3 Model format\n");
@@ -276,15 +276,15 @@ s3_am_init(kbcore_t * kbc)
         mdef_report(kbc->mdef);
     }
 
-    senmgau = cmd_ln_str("-senmgau");
+    senmgau = cmd_ln_str_r(kbcore_config(kbc), "-senmgau");
     if (strcmp(senmgau, ".cont.") == 0) {
         /* Single stream optmized GMM computation Initialization */
         E_INFO
             ("Using optimized GMM computation for Continuous HMM, -topn will be ignored\n");
         kbc->mgau = mgau_init(meanfn, varfn,
-			      cmd_ln_float32("-varfloor"),
+			      cmd_ln_float32_r(kbcore_config(kbc), "-varfloor"),
 			      mixwfn,
-			      cmd_ln_float32("-mixwfloor"),
+			      cmd_ln_float32_r(kbcore_config(kbc), "-mixwfloor"),
 			      TRUE,      /* Do precomputation */
 			      (char *)senmgau,
 			      MIX_INT_FLOAT_COMP);     /*Use hybrid integer and float routine */
@@ -301,10 +301,10 @@ s3_am_init(kbcore_t * kbc)
         /* SC_VQ initialization. */
         E_INFO("Using Sphinx2 multi-stream GMM computation\n");
         kbc->s2_mgau = s2_semi_mgau_init(meanfn,
-                                         varfn, cmd_ln_float32("-varfloor"),
+                                         varfn, cmd_ln_float32_r(kbcore_config(kbc), "-varfloor"),
                                          mixwfn,
-					 cmd_ln_float32("-mixwfloor"),
-					 cmd_ln_int32("-topn"));
+					 cmd_ln_float32_r(kbcore_config(kbc), "-mixwfloor"),
+					 cmd_ln_int32_r(kbcore_config(kbc), "-topn"));
         if (kbc->mdef && kbc->s2_mgau) {
             /* Verify senone parameters against model definition parameters */
             if (kbc->mdef->n_sen != kbc->s2_mgau->CdWdPDFMod)
@@ -316,10 +316,10 @@ s3_am_init(kbcore_t * kbc)
         if (kdtreefn) {
             if (s2_semi_mgau_load_kdtree(kbc->s2_mgau,
 					 kdtreefn,
-                                         cmd_ln_int32("-kdmaxdepth"),
-                                         cmd_ln_int32("-kdmaxbbi")) < 0) {
+                                         cmd_ln_int32_r(kbcore_config(kbc), "-kdmaxdepth"),
+                                         cmd_ln_int32_r(kbcore_config(kbc), "-kdmaxbbi")) < 0) {
                 E_FATAL("Failed to load kdtrees from %s\n",
-                        cmd_ln_str("-kdtree"));
+                        cmd_ln_str_r(kbcore_config(kbc), "-kdtree"));
             }
         }
     }
@@ -330,14 +330,14 @@ s3_am_init(kbcore_t * kbc)
         /* Multiple stream Gaussian mixture Initialization */
         E_INFO("Using multi-stream GMM computation\n");
         kbc->ms_mgau = ms_mgau_init(meanfn, varfn,
-				    cmd_ln_float32("-varfloor"),
+				    cmd_ln_float32_r(kbcore_config(kbc), "-varfloor"),
 				    mixwfn,
-				    cmd_ln_float32("-mixwfloor"),
+				    cmd_ln_float32_r(kbcore_config(kbc), "-mixwfloor"),
 				    TRUE,        /*Do precomputation */
                                     (char *)senmgau,
-				    cmd_ln_exists("-lambda")
-				    ? cmd_ln_str("-lambda") : NULL,
-                                    cmd_ln_int32("-topn"));
+				    cmd_ln_exists_r(kbcore_config(kbc), "-lambda")
+				    ? cmd_ln_str_r(kbcore_config(kbc), "-lambda") : NULL,
+                                    cmd_ln_int32_r(kbcore_config(kbc), "-topn"));
 
         sen = ms_mgau_senone(kbc->ms_mgau);
 
@@ -353,8 +353,8 @@ s3_am_init(kbcore_t * kbc)
 
 
     /* STRUCTURE: Initialize the transition matrices */
-    if ((kbc->tmat = tmat_init(tmatfn, cmd_ln_float32("-tmatfloor"), REPORT_KBCORE)) == NULL)
-        E_FATAL("tmat_init (%s, %e) failed\n", tmatfn, cmd_ln_float32("-tmatfloor"));
+    if ((kbc->tmat = tmat_init(tmatfn, cmd_ln_float32_r(kbcore_config(kbc), "-tmatfloor"), REPORT_KBCORE)) == NULL)
+        E_FATAL("tmat_init (%s, %e) failed\n", tmatfn, cmd_ln_float32_r(kbcore_config(kbc), "-tmatfloor"));
 
     if (REPORT_KBCORE) {
         tmat_report(kbc->tmat);
@@ -396,6 +396,12 @@ static const arg_t feat_defn[] = {
 kbcore_t *
 kbcore_init(void)
 {
+    return kbcore_init_r(cmd_ln_get());
+}
+
+kbcore_t *
+kbcore_init_r(cmd_ln_t *config)
+{
     kbcore_t *kb;
     int i;
     s3cipid_t sil;
@@ -404,6 +410,7 @@ kbcore_init(void)
     E_INFO("Begin Initialization of Core Models:\n");
 
     kb = (kbcore_t *) ckd_calloc(1, sizeof(kbcore_t));
+    kb->config = config;
     kb->fcb = NULL;
     kb->mdef = NULL;
     kb->dict = NULL;
@@ -416,33 +423,33 @@ kbcore_init(void)
 
     /* Look for a feat.params very early on, because it influences
      * everything below. */
-    if (cmd_ln_str("-hmm")) {
-	str = string_join(cmd_ln_str("-hmm"), "/feat.params", NULL);
-	if (cmd_ln_parse_file(feat_defn, str, FALSE) == 0) {
+    if (cmd_ln_str_r(config, "-hmm")) {
+	str = string_join(cmd_ln_str_r(config, "-hmm"), "/feat.params", NULL);
+	if (cmd_ln_parse_file_r(config, feat_defn, str, FALSE) == 0) {
 	    E_INFO("Parsed model-specific feature parameters from %s\n", str);
 	}
 	ckd_free(str);
     }
 
-    if (!logs3_init(cmd_ln_float32("-logbase"),
-		    REPORT_KBCORE, cmd_ln_int32("-log3table")))
+    if (!logs3_init(cmd_ln_float32_r(config, "-logbase"),
+		    REPORT_KBCORE, cmd_ln_int32_r(config, "-log3table")))
         E_FATAL("Error in logs3_init, exit\n");
 
     if (REPORT_KBCORE) {
         logs3_report();
     }
 
-    if (!(str = cmd_ln_str("-feat")))
+    if (!(str = cmd_ln_str_r(config, "-feat")))
         E_FATAL("Please specify the feature type using -feat\n");
     else {
         if ((kb->fcb =
-             feat_init(str, cmn_type_from_str(cmd_ln_str("-cmn")),
-		       cmd_ln_boolean("-varnorm"),
-		       agc_type_from_str(cmd_ln_str("-agc")),
-                       REPORT_KBCORE, cmd_ln_int32("-ceplen"))) == NULL)
+             feat_init(str, cmn_type_from_str(cmd_ln_str_r(config, "-cmn")),
+		       cmd_ln_boolean_r(config, "-varnorm"),
+		       agc_type_from_str(cmd_ln_str_r(config, "-agc")),
+                       REPORT_KBCORE, cmd_ln_int32_r(config, "-ceplen"))) == NULL)
             E_FATAL("feat_init(%s) failed\n", str);
 
-	str = cmd_ln_str("-senmgau");
+	str = cmd_ln_str_r(config, "-senmgau");
         E_INFO("%s\n", str);
         if (strcmp(str, ".cont.") == 0) {
             if (feat_n_stream(kb->fcb) != 1)
@@ -472,9 +479,9 @@ kbcore_init(void)
         feat_report(kb->fcb);
     }
 
-    if (cmd_ln_str("-lda")) {
-	if (feat_read_lda(kb->fcb, cmd_ln_str("-lda"),
-			  cmd_ln_int32("-ldadim")) < 0)
+    if (cmd_ln_str_r(config, "-lda")) {
+	if (feat_read_lda(kb->fcb, cmd_ln_str_r(config, "-lda"),
+			  cmd_ln_int32_r(config, "-ldadim")) < 0)
 	    E_FATAL("LDA initialization failed.\n");
     }
 
@@ -483,10 +490,10 @@ kbcore_init(void)
 
     assert(kb->mdef != NULL);
 
-    if ((str = cmd_ln_str("-dict"))) {
-	char *compsep = cmd_ln_exists("-compsep")
-	    ? cmd_ln_str("-compsep") : NULL;
-	char *fdictfile = cmd_ln_str("-fdict");
+    if ((str = cmd_ln_str_r(config, "-dict"))) {
+	char *compsep = cmd_ln_exists_r(config, "-compsep")
+	    ? cmd_ln_str_r(config, "-compsep") : NULL;
+	char *fdictfile = cmd_ln_str_r(config, "-fdict");
 
         if (!compsep)
             compsep = "";
@@ -497,7 +504,7 @@ kbcore_init(void)
         }
         if ((kb->dict =
              dict_init(kb->mdef, str, fdictfile, compsep[0],
-                       cmd_ln_int32("-lts_mismatch"),
+                       cmd_ln_int32_r(config, "-lts_mismatch"),
                        REPORT_KBCORE)) == NULL)
             E_FATAL("dict_init(%s,%s,%s) failed\n", str,
                     fdictfile ? fdictfile : "", compsep);
@@ -512,18 +519,18 @@ kbcore_init(void)
     }
 
     if (kb->mgau) {
-	char *subvqfile = cmd_ln_str("-subvq");
-	char *gsfile = cmd_ln_str("-gs");
+	char *subvqfile = cmd_ln_str_r(config, "-subvq");
+	char *gsfile = cmd_ln_str_r(config, "-gs");
         if (subvqfile && gsfile) {
             E_FATAL
                 ("Currently there is no combination scheme of gs and svq in Gaussian Selection\n");
         }
         if (subvqfile) {
             if ((kb->svq =
-                 subvq_init(subvqfile, cmd_ln_float32("-varfloor"),
+                 subvq_init(subvqfile, cmd_ln_float32_r(config, "-varfloor"),
 			    -1, kb->mgau)) == NULL)
                 E_FATAL("subvq_init (%s, %e, -1) failed\n", subvqfile,
-                        cmd_ln_float32("-varfloor"));
+                        cmd_ln_float32_r(config, "-varfloor"));
         }
 
         if (gsfile) {
@@ -542,15 +549,15 @@ kbcore_init(void)
 
     assert(kb->dict);
     
-    if (cmd_ln_str("-lm") || cmd_ln_str("-lmctlfn")) {
-        kb->lmset = lmset_init(cmd_ln_str("-lm"),
-			       cmd_ln_str("-lmctlfn"),
-			       cmd_ln_str("-ctl_lm"),        /* This two are ugly. */
-                               cmd_ln_str("-lmname"),
-                               cmd_ln_str("-lmdumpdir"),
-			       cmd_ln_float32("-lw"),
-			       cmd_ln_float32("-wip"),
-			       cmd_ln_float32("-uw"),
+    if (cmd_ln_str_r(config, "-lm") || cmd_ln_str_r(config, "-lmctlfn")) {
+        kb->lmset = lmset_init(cmd_ln_str_r(config, "-lm"),
+			       cmd_ln_str_r(config, "-lmctlfn"),
+			       cmd_ln_str_r(config, "-ctl_lm"),        /* This two are ugly. */
+                               cmd_ln_str_r(config, "-lmname"),
+                               cmd_ln_str_r(config, "-lmdumpdir"),
+			       cmd_ln_float32_r(config, "-lw"),
+			       cmd_ln_float32_r(config, "-wip"),
+			       cmd_ln_float32_r(config, "-uw"),
 			       kb->dict);
 
         /* CHECK: check whether LM has a start word and end word  */
@@ -561,20 +568,20 @@ kbcore_init(void)
 
     }
 
-    if (cmd_ln_str("-fillpen") || kb->dict) {
+    if (cmd_ln_str_r(config, "-fillpen") || kb->dict) {
         if (!kb->dict)          /* Sic */
             E_FATAL
                 ("No dictionary for associating filler penalty file(%s)\n",
-                 cmd_ln_str("-fillpen"));
+                 cmd_ln_str_r(config, "-fillpen"));
 
         if ((kb->fillpen =
              fillpen_init(kb->dict,
-			  cmd_ln_str("-fillpen"),
-			  cmd_ln_float32("-silprob"),
-			  cmd_ln_float32("-fillprob"),
-			  cmd_ln_float32("-lw"),
-                          cmd_ln_float32("-wip"))) == NULL)
-            E_FATAL("fillpen_init(%s) failed\n", cmd_ln_str("-fillpen"));
+			  cmd_ln_str_r(config, "-fillpen"),
+			  cmd_ln_float32_r(config, "-silprob"),
+			  cmd_ln_float32_r(config, "-fillprob"),
+			  cmd_ln_float32_r(config, "-lw"),
+                          cmd_ln_float32_r(config, "-wip"))) == NULL)
+            E_FATAL("fillpen_init(%s) failed\n", cmd_ln_str_r(config, "-fillpen"));
     }
 
     if (REPORT_KBCORE) {

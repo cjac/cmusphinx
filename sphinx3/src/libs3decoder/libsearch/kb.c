@@ -175,9 +175,14 @@ file_open(char *filepath)
     return fp;
 }
 
-/*ARCHAN, to allow backward compatibility -lm, -lmctlfn coexists. This makes the current implmentation more complicated than necessary. */
 void
-kb_init(kb_t * kb)
+kb_init(kb_t *kb)
+{
+    kb_init_r(kb, cmd_ln_get());
+}
+
+void
+kb_init_r(kb_t * kb, cmd_ln_t *config)
 {
     kbcore_t *kbcore;
     mdef_t *mdef;
@@ -188,7 +193,7 @@ kb_init(kb_t * kb)
 
     /* STRUCTURE: Initialize the kb structure to zero, just in case */
     memset(kb, 0, sizeof(*kb));
-    kb->kbcore = kbcore_init();
+    kb->kbcore = kbcore_init_r(config);
     if (kb->kbcore == NULL)
         E_FATAL("Initialization of kb failed\n");
 
@@ -199,12 +204,12 @@ kb_init(kb_t * kb)
     d2p = kbcore_dict2pid(kbcore);
 
     /* STRUCTURE INITIALIZATION: Initialize the beam data structure */
-    if (cmd_ln_exists("-ptranskip")) {
-	kb->beam = beam_init(cmd_ln_float64("-beam"),
-			     cmd_ln_float64("-pbeam"),
-			     cmd_ln_float64("-wbeam"),
-			     cmd_ln_float64("-wend_beam"),
-			     cmd_ln_int32("-ptranskip"), mdef_n_ciphone(mdef)
+    if (cmd_ln_exists_r(config, "-ptranskip")) {
+	kb->beam = beam_init(cmd_ln_float64_r(config, "-beam"),
+			     cmd_ln_float64_r(config, "-pbeam"),
+			     cmd_ln_float64_r(config, "-wbeam"),
+			     cmd_ln_float64_r(config, "-wend_beam"),
+			     cmd_ln_int32_r(config, "-ptranskip"), mdef_n_ciphone(mdef)
 	    );
 
 	/* REPORT : Report the parameters in the beam data structure */
@@ -214,16 +219,16 @@ kb_init(kb_t * kb)
 
 
     /* STRUCTURE INITIALIZATION: Initialize the fast GMM computation data structure */
-    if (cmd_ln_exists("-ci_pbeam")) {
-	kb->fastgmm = fast_gmm_init(cmd_ln_int32("-ds"),
-				    cmd_ln_int32("-cond_ds"),
-				    cmd_ln_int32("-dist_ds"),
-				    cmd_ln_int32("-gs4gs"),
-				    cmd_ln_int32("-svq4svq"),
-				    cmd_ln_float64("-subvqbeam"),
-				    cmd_ln_float64("-ci_pbeam"),
-				    cmd_ln_float64("-tighten_factor"),
-				    cmd_ln_int32("-maxcdsenpf"),
+    if (cmd_ln_exists_r(config, "-ci_pbeam")) {
+	kb->fastgmm = fast_gmm_init(cmd_ln_int32_r(config, "-ds"),
+				    cmd_ln_int32_r(config, "-cond_ds"),
+				    cmd_ln_int32_r(config, "-dist_ds"),
+				    cmd_ln_int32_r(config, "-gs4gs"),
+				    cmd_ln_int32_r(config, "-svq4svq"),
+				    cmd_ln_float64_r(config, "-subvqbeam"),
+				    cmd_ln_float64_r(config, "-ci_pbeam"),
+				    cmd_ln_float64_r(config, "-tighten_factor"),
+				    cmd_ln_int32_r(config, "-maxcdsenpf"),
 				    mdef->n_ci_sen);
 
 	/* REPORT : Report the parameters in the fast_gmm_t data struture */
@@ -232,9 +237,9 @@ kb_init(kb_t * kb)
     }
 
     /* STRUCTURE INITIALIZATION: Initialize the phoneme lookahead data structure */
-    if (cmd_ln_exists("-pl_beam")) {
-	kb->pl = pl_init(cmd_ln_int32("-pheurtype"),
-			 cmd_ln_int32("-pl_beam"), mdef_n_ciphone(mdef)
+    if (cmd_ln_exists_r(config, "-pl_beam")) {
+	kb->pl = pl_init(cmd_ln_int32_r(config, "-pheurtype"),
+			 cmd_ln_int32_r(config, "-pl_beam"), mdef_n_ciphone(mdef)
 	    );
 
 	/* REPORT : Report the parameters in the pl_t data struture */
@@ -246,8 +251,8 @@ kb_init(kb_t * kb)
     {
 	int32 pl_window = 1;
 
-	if (cmd_ln_exists("-pl_window"))
-	    pl_window = cmd_ln_int32("-pl_window");
+	if (cmd_ln_exists_r(config, "-pl_window"))
+	    pl_window = cmd_ln_int32_r(config, "-pl_window");
 
 	for (cisencnt = 0; cisencnt == mdef->cd2cisen[cisencnt]; cisencnt++);
 	kb->ascr = ascr_init(kbcore_n_mgau(kbcore),
@@ -261,7 +266,7 @@ kb_init(kb_t * kb)
     }
 
     /* Initialize the front end if -adcin is specified */
-    if (cmd_ln_exists("-adcin") && cmd_ln_boolean("-adcin")) {
+    if (cmd_ln_exists_r(config, "-adcin") && cmd_ln_boolean_r(config, "-adcin")) {
 	if ((kb->fe = fe_init_auto()) == NULL) {
 	    E_FATAL("fe_init_auto() failed\n");
 	}
@@ -277,32 +282,32 @@ kb_init(kb_t * kb)
     /* STRUCTURE INITIALIZATION : The adaptation routines of the search */
     kb->adapt_am = adapt_am_init();
 
-    if (cmd_ln_str("-mllr")) {
-        kb_setmllr(cmd_ln_str("-mllr"), cmd_ln_str("-cb2mllr"), kb);
+    if (cmd_ln_str_r(config, "-mllr")) {
+        kb_setmllr(cmd_ln_str_r(config, "-mllr"), cmd_ln_str_r(config, "-cb2mllr"), kb);
     }
 
     /* CHECK: make sure when (-cond_ds) is specified, a Gaussian map is also specified */
-    if (cmd_ln_int32("-cond_ds") > 0 && kb->kbcore->gs == NULL)
+    if (cmd_ln_int32_r(config, "-cond_ds") > 0 && kb->kbcore->gs == NULL)
         E_FATAL
             ("Conditional Down Sampling require the use of Gaussian Selection map\n");
 
     /* MEMORY ALLOCATION : Word best score and exit */
     /* Open hypseg file if specified */
     kb->matchsegfp = kb->matchfp = NULL;
-    kb->matchsegfp = file_open(cmd_ln_str("-hypseg"));
-    kb->matchfp = file_open(cmd_ln_str("-hyp"));
+    kb->matchsegfp = file_open(cmd_ln_str_r(config, "-hypseg"));
+    kb->matchfp = file_open(cmd_ln_str_r(config, "-hyp"));
 
-    if (cmd_ln_exists("-hmmdump"))
-	kb->hmmdumpfp = cmd_ln_int32("-hmmdump") ? stderr : NULL;
+    if (cmd_ln_exists_r(config, "-hmmdump"))
+	kb->hmmdumpfp = cmd_ln_int32_r(config, "-hmmdump") ? stderr : NULL;
 
     /* STRUCTURE INITIALIZATION : The search data structure, done only
        after kb is initialized kb is acted as a clipboard. */
-    if (cmd_ln_exists("-op_mode")) {
+    if (cmd_ln_exists_r(config, "-op_mode")) {
 	/* -op_mode, if set (i.e. not -1), takes precedence over -mode. */
-	if (cmd_ln_int32("-op_mode") != -1)
-	    kb->op_mode = cmd_ln_int32("-op_mode");
+	if (cmd_ln_int32_r(config, "-op_mode") != -1)
+	    kb->op_mode = cmd_ln_int32_r(config, "-op_mode");
 	else
-	    kb->op_mode = srch_mode_str_to_index(cmd_ln_str("-mode"));
+	    kb->op_mode = srch_mode_str_to_index(cmd_ln_str_r(config, "-mode"));
 	E_INFO("SEARCH MODE INDEX %d\n", kb->op_mode);
 	if ((kb->srch = (srch_t *) srch_init(kb, kb->op_mode)) == NULL) {
 	    E_FATAL("Search initialization failed. Forced exit\n");
