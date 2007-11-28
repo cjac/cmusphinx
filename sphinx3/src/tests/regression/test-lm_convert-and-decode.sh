@@ -79,7 +79,7 @@ fi
 echo "TXT LM  -> DECODE TEST"
 echo "YOU SHOULD SEE THE RECOGNITION RESULT 'P I T T S B U R G H'"
 
-lmargs="-lm $an4lm/an4.ug.lm -lminmemory 1"
+lmargs="-lm $an4lm/an4.ug.lm"
 
 run_program sphinx3_decode $margs $lmargs > $tmpout 2>&1
 grep "FWDVIT" $tmpout

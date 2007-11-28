@@ -383,6 +383,7 @@ New_kbcore()
 {
     kbcore_t *kbc;
     kbc = (kbcore_t *) ckd_calloc(1, sizeof(kbcore_t));
+    kbc->config = cmd_ln_get(); /* Default value */
     return kbc;
 }
 

@@ -1103,6 +1103,19 @@ dag_load(char *file,          /**< Input: File to lod from */
          fillpen_t * fpen          /**< Filler penalty structure */
     )
 {
+    return dag_load_r(file, maxedge, logbase, fudge, dict, fpen, cmd_ln_get());
+}
+
+dag_t *
+dag_load_r(char *file,          /**< Input: File to lod from */
+           int32 maxedge,        /**< Maximum # of edges */
+           float32 logbase,         /**< Logbase in float */
+           int32 fudge,           /**< The number of fudges added */
+           dict_t * dict,             /**< Dictionary */
+           fillpen_t * fpen,          /**< Filler penalty structure */
+           cmd_ln_t *config
+    )
+{
 
     FILE *fp;
     char line[16384], wd[1024];
@@ -1129,6 +1142,7 @@ dag_load(char *file,          /**< Input: File to lod from */
     dag->list = NULL;
     dag->nlink = 0;
     dag->nbypass = 0;
+    dag->config = config;
 
     tail = NULL;
     darray = NULL;

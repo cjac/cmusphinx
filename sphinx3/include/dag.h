@@ -438,6 +438,15 @@ dag_t* dag_load (
     fillpen_t *fpen    /**< Filler penalty structure */
     );
 
+dag_t * dag_load_r(char *file,          /**< Input: File to lod from */
+           int32 maxedge,        /**< Maximum # of edges */
+           float32 logbase,         /**< Logbase in float */
+           int32 fudge,           /**< The number of fudges added */
+           dict_t * dict,             /**< Dictionary */
+           fillpen_t * fpen,          /**< Filler penalty structure */
+           cmd_ln_t *config
+    );
+
 #ifdef __cplusplus
 }
 #endif
