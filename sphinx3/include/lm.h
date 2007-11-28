@@ -1097,6 +1097,22 @@ lm_t *lm_read_advance (const char *file,	/**< In: LM file being read */
 						 applied to the lm or not */
     );
 
+lm_t *lm_read_advance2(const char *file,	/**< In: LM file being read */
+		       const char *lmname,   /**<In: LM name*/
+		       float64 lw,	/**< In: Language weight */
+		       float64 wip,	/**< In: Word insertion penalty */
+		       float64 uw,	/**< In: Unigram weight (interpolation with uniform distr.) */
+		       int32 ndict,    /**< In: Number of dictionary entry.  We need that because
+					  class-based LM is addressed in dictionary word ID space. 
+				       */  
+		       char* fmt,       /**< In: file format of the LM, it is
+					   now either "TXT", "DMP" and NULL,
+					   if NULL, file format is
+					   automaticaly determined */
+		       int32 applyweight,      /**< In: whether lw,wip, uw should be 
+                                                  applied to the lm or not */
+                       int lminmemory /**< In: Whether LM is read into memory */
+    );
 /**
    Simple writing of an LM file, the input and output encoding will
    assume to be iso8859-1. Call lm_write. To convert encoding, please use

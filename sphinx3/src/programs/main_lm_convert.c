@@ -118,10 +118,6 @@ static arg_t arg[] = {
      ARG_STRING,
      ".",
      "Output Directory."},
-    {"-lminmemory",
-     ARG_INT32,
-     "1",
-     "Whether lm is memory-based(1) or disk-based (0)"},
     {NULL, ARG_INT32, NULL, NULL}
 };
 
@@ -164,10 +160,6 @@ main(int argc, char *argv[])
             ("Input and Output file formats and encodings are the same (%s, %s). Do nothing\n",
              inputfmt, inputenc);
 
-    if (!strcmp(inputfmt, "TXT") && !cmd_ln_int32("-lminmemory"))
-        E_FATAL
-            ("When plain-txt LM is used as an input, only in memory mode of LM reading can be used, please set -lminmemory to be 1");
-
     if (!encoding_resolve
         (cmd_ln_str("-ienc"), cmd_ln_str("-oenc")))
         E_FATAL
@@ -176,8 +168,8 @@ main(int argc, char *argv[])
 
     /* Read LM */
     if ((lm =
-         lm_read_advance(inputfn, "default", 1.0, 0.1, 1.0, 0, inputfmt,
-                         0)) == NULL)
+         lm_read_advance2(inputfn, "default", 1.0, 0.1, 1.0, 0, inputfmt,
+			  0, 1)) == NULL)
         E_FATAL("Fail to read inputfn %s in inputfmt %s\n", inputfn,
                 inputfmt);
 

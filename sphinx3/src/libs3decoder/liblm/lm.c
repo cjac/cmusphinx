@@ -581,10 +581,17 @@ lm_read_advance(const char *file, const char *lmname, float64 lw,
                 float64 wip, float64 uw, int32 ndict, char *fmt,
                 int32 applyWeight)
 {
+    return lm_read_advance2(file, lmname, lw, wip, uw, ndict, fmt, applyWeight, 0);
+}
+
+lm_t *
+lm_read_advance2(const char *file, const char *lmname, float64 lw,
+                 float64 wip, float64 uw, int32 ndict, char *fmt,
+                 int32 applyWeight, int lminmemory)
+{
     int32 i, u;
     lm_t *lm;
     int32 err_no;
-    int lminmemory = 0;
 
     if (!file)
         E_FATAL("No LM file\n");
