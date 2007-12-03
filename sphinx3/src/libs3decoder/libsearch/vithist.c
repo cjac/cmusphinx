@@ -1115,6 +1115,7 @@ vithist_dag_build_r(vithist_t * vh, glist_t hyp, dict_t * dict, int32 endid, cmd
     linklist_init();
 
     dag = ckd_calloc(1, sizeof(*dag));
+    dag->config = config;
     sfwid = (glist_t *) ckd_calloc(vh->n_frm + 1, sizeof(glist_t));
 
     /* Min. endframes value that a node must persist for it to be not ignored */
@@ -1790,6 +1791,7 @@ latticehist_dag_build_r(latticehist_t * vh, glist_t hyp, dict_t * dict,
     dag_t *dag;
 
     dag = ckd_calloc(1, sizeof(*dag));
+    dag->config = config;
     sfwid = (glist_t *) ckd_calloc(vh->n_frm, sizeof(glist_t));
 
     /* Min. endframes value that a node must persist for it to be not ignored */
