@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <posixwin32.h>
 #include "s2types.h"
 #include "err.h"
 #include "fbs.h"
