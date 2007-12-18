@@ -1,0 +1,30 @@
+sphinxbase (0.4-0svn1) unstable; urgency=low
+
+  * Snapshot version!
+
+ -- David Huggins-Daines <dhdfoo@gmail.com>  Mon, 22 Oct 2007 23:42:22 -0400
+
+sphinxbase (0.3-0svn4) unstable; urgency=low
+
+  * Merge changes from Ubuntu packaging.
+
+ -- David Huggins-Daines <dhuggins@cs.cmu.edu>  Wed, 19 Sep 2007 13:42:21 -0400
+
+sphinxbase (0.3-0svn3) unstable; urgency=low
+
+  * Add manual pages.
+
+ -- David Huggins-Daines <dhuggins@cs.cmu.edu>  Mon, 27 Aug 2007 14:52:56 -0400
+
+sphinxbase (0.3-2) unstable; urgency=low
+
+  * Change required debhelper version to 4, so maemo builds work
+
+ -- David Huggins-Daines <dhuggins@cs.cmu.edu>  Wed, 22 Aug 2007 19:01:51 -0400
+
+sphinxbase (0.3-1) unstable; urgency=low
+
+  * Initial Debian packaging.
+
+ -- David Huggins-Daines <dhuggins@cs.cmu.edu>  Wed, 22 Aug 2007 16:40:17 -0400
+

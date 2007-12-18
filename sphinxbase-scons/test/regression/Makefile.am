@@ -1,0 +1,30 @@
+EXTRA_DIST =					\
+	chan3.cepview				\
+	chan3-dither.cepview			\
+	chan3.logspec				\
+	chan3-logspec.cepview			\
+	chan3-smoothspec.cepview		\
+	chan3.mfc				\
+	chan3.raw				\
+	tutorial-check.sh			\
+        crontab					\
+	polite.gram				\
+	test.gram				\
+	test.command.fsg			\
+	test.kleene.fsg				\
+	test.nestedRightRecursion.fsg		\
+	test.nulltest.fsg			\
+	test.rightRecursion.fsg
+
+CLEANFILES = test*.err test*.out		\
+	test-sphinx_fe.mfc			\
+	test-sphinx_fe.cepview
+
+# Disable sphinx_fe tests for now if fixed-point due to imprecision
+if FIXED_POINT
+TESTS = $(srcdir)/test-cepview.sh
+else
+TESTS = $(wildcard $(srcdir)/test-*.sh)
+endif
+
+EXTRA_DIST += $(TESTS)
