@@ -164,7 +164,6 @@ typedef struct fsg_search_s {
     int32 bpidx_start;		/* First history entry index this frame */
   
     srch_hyp_t *hyp;		/* Search hypothesis */
-    srch_hyp_t *filt_hyp;         /* Filtered hypothesis */
     int32 ascr, lscr;		/* Total acoustic and lm score for utt */
   
     int32 n_hmm_eval;		/* Total HMMs evaluated this utt */

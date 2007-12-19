@@ -904,69 +904,6 @@ fsg_search_hyp_dump(fsg_search_t * search, FILE * fp)
                      search->senscale);
 }
 
-
-#if 0
-/* Fill in hyp_str in search.c; filtering out fillers and null trans */
-static void
-fsg_search_hyp_filter(fsg_search_t * search)
-{
-    srch_hyp_t *hyp, *filt_hyp, *head;
-    int32 i;
-    int32 startwid, finishwid;
-    int32 altpron;
-    dict_t *dict;
-
-
-    dict = search->dict;
-    filt_hyp = search->filt_hyp;
-    startwid = dict_basewid(dict, dict_startwid(dict));
-    finishwid = dict_basewid(dict, dict_finishwid(dict));
-    dict = search->dict;
-    altpron = search->isUsealtpron;
-
-    i = 0;
-    head = 0;
-    for (hyp = search->hyp; hyp; hyp = hyp->next) {
-        if ((hyp->id < 0) ||
-            (hyp->id == startwid) || (hyp->id >= finishwid))
-            continue;
-
-        /* Copy this hyp entry to filtered result */
-        filt_hyp = (srch_hyp_t *) ckd_calloc(1, sizeof(srch_hyp_t));
-
-        filt_hyp->word = hyp->word;
-        filt_hyp->id = hyp->id;
-        filt_hyp->type = hyp->type;
-        filt_hyp->sf = hyp->sf;
-        filt_hyp->ascr = hyp->ascr;
-        filt_hyp->lscr = hyp->lscr;
-        filt_hyp->pscr = hyp->pscr;
-        filt_hyp->cscr = hyp->cscr;
-        filt_hyp->fsg_state = hyp->fsg_state;
-        filt_hyp->next = head;
-        head = filt_hyp;
-        /*
-           filt_hyp[i] = *hyp;
-         */
-
-        /* Replace specific word pronunciation ID with base ID */
-        if (!altpron) {
-            filt_hyp->id = dict_basewid(dict, filt_hyp->id);
-        }
-
-        i++;
-        if ((i + 1) >= HYP_SZ)
-            E_FATAL
-                ("Hyp array overflow; increase HYP_SZ in fsg_search.h\n");
-    }
-
-    filt_hyp->id = -1;          /* Sentinel */
-    search->filt_hyp = filt_hyp;
-}
-
-#endif
-
-
 void
 fsg_search_history_backtrace(fsg_search_t * search,
                              boolean check_fsg_final_state)

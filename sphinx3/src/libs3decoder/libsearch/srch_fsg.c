@@ -292,11 +292,16 @@ srch_FSG_gen_hyp(void *srch           /**< a pointer of srch_t */
     s = (srch_t *) srch;
     fsgsrch = (fsg_search_t *) s->grh->graph_struct;
 
-    fsg_search_history_backtrace(fsgsrch, TRUE);
+    fsg_search_history_backtrace(fsgsrch, FALSE);
 
     ghyp = NULL;
     for (h = fsgsrch->hyp; h; h = h->next) {
 	srch_hyp_t *tmph;
+
+	/* Skip NULL states */	
+	if (h->id < 0)
+	    continue;
+	
 	/* We have to copy the nodes here since fsgsrch retains
 	 * ownership of the hyp... */
 	tmph = ckd_calloc(1, sizeof(*tmph));
