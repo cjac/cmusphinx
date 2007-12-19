@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Make the user id configurable by the use of an environmental
 # variable SF_USER. Set it to current user, if not defined.
