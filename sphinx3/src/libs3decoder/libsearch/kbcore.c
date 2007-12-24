@@ -209,7 +209,7 @@ linksilences(lm_t * l, kbcore_t * kbc, dict_t * d)
 void
 s3_am_init(kbcore_t * kbc)
 {
-    char *mdeffn, *meanfn, *varfn, *mixwfn, *tmatfn, *kdtreefn;
+    char *mdeffn, *meanfn, *varfn, *mixwfn, *tmatfn, *kdtreefn, *ldafn;
     const char *hmmdir, *senmgau;
 
     assert(kbc);
@@ -217,7 +217,7 @@ s3_am_init(kbcore_t * kbc)
     kbc->mgau = NULL;
     kbc->ms_mgau = NULL;
 
-    mdeffn = meanfn = varfn = mixwfn = tmatfn = kdtreefn = NULL;
+    mdeffn = meanfn = varfn = mixwfn = tmatfn = kdtreefn = ldafn = NULL;
     if ((hmmdir = cmd_ln_str_r(kbcore_config(kbc), "-hmm")) != NULL) {
         FILE *tmp;
 
@@ -230,6 +230,14 @@ s3_am_init(kbcore_t * kbc)
         if ((tmp = fopen(kdtreefn, "rb")) == NULL) {
             ckd_free(kdtreefn);
             kdtreefn = NULL;
+        }
+        else {
+            fclose(tmp);
+        }
+        ldafn = string_join(hmmdir, "/feature_transform", NULL);
+        if ((tmp = fopen(ldafn, "rb")) == NULL) {
+            ckd_free(ldafn);
+            ldafn = NULL;
         }
         else {
             fclose(tmp);
@@ -260,6 +268,17 @@ s3_am_init(kbcore_t * kbc)
         ckd_free(kdtreefn);
         kdtreefn = ckd_salloc(cmd_ln_str_r(kbcore_config(kbc), "-kdtree"));
     }
+    if (cmd_ln_str_r(kbcore_config(kbc), "-lda")) {
+	ckd_free(ldafn);
+        ldafn = ckd_salloc(cmd_ln_str_r(kbcore_config(kbc), "-lda"));
+    }
+
+    if (ldafn) {
+	E_INFO_NOFN("Reading Feature Space Transform from: %s\n", ldafn);
+	if (feat_read_lda(kbcore_fcb(kbc), ldafn,
+			  cmd_ln_int32_r(kbcore_config(kbc), "-ldadim")) < 0)
+	    E_FATAL("LDA initialization failed.\n");
+    }
 
     E_INFO_NOFN("Reading HMM in Sphinx 3 Model format\n");
     E_INFO_NOFN("Model Definition File: %s\n", mdeffn);
@@ -267,7 +286,6 @@ s3_am_init(kbcore_t * kbc)
     E_INFO_NOFN("Variance File: %s\n", varfn);
     E_INFO_NOFN("Mixture Weight File: %s\n", mixwfn);
     E_INFO_NOFN("Transition Matrices File: %s\n", tmatfn);
-
 
     if ((kbc->mdef = mdef_init(mdeffn, REPORT_KBCORE)) == NULL)
         E_FATAL("mdef_init(%s) failed\n", mdeffn);
@@ -376,6 +394,7 @@ s3_am_init(kbcore_t * kbc)
     ckd_free(mixwfn);
     ckd_free(tmatfn);
     ckd_free(kdtreefn);
+    ckd_free(ldafn);
 }
 
 kbcore_t *
@@ -478,12 +497,6 @@ kbcore_init_r(cmd_ln_t *config)
 
     if (REPORT_KBCORE) {
         feat_report(kb->fcb);
-    }
-
-    if (cmd_ln_str_r(config, "-lda")) {
-	if (feat_read_lda(kb->fcb, cmd_ln_str_r(config, "-lda"),
-			  cmd_ln_int32_r(config, "-ldadim")) < 0)
-	    E_FATAL("LDA initialization failed.\n");
     }
 
     /* Initialize sphinx 3 hmm */

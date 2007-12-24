@@ -387,11 +387,11 @@ us a better architecture.
     { "-lda", \
       ARG_STRING, \
       NULL, \
-      "File containing LDA transformation matrix to be applied to features" }, \
+      "File containing transformation matrix to be applied to features" }, \
     { "-ldadim", \
       ARG_INT32, \
-      "29", \
-      "Dimensionality of LDA output features" },
+      "0", \
+      "Dimensionality of output of feature transformation (0 to use entire matrix)" },
 
 
 #define speaker_adaptation_command_line_macro() \
