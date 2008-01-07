@@ -1,0 +1,81 @@
+Revision history for Perl extension Speech::Recognizer::SPX
+
+0.09 Mon Jan  7 15:20:52 EST 2008
+	- Switch to using PocketSphinx rather than Sphinx2.
+	- Update everything for that.
+	- Backward compatibility with Sphinx2 has been mostly removed.
+
+0.08 Fri Aug  5 16:35:37 EDT 2005
+	- Official release with N-best, segmentation.
+
+0.07_92 Mon Jul 18 10:30:18 EDT 2005
+	- Incorporate proper backwards-compatibility code.
+
+0.07_91 Tue Jul 12 12:31:51 EDT 2005
+     	- Fix compilation/test on platforms without audio
+	- Try to be backwards-compatible with Sphinx2 0.3 (untested)
+	- Add support for word segmentation in uttproc
+	- Add support for N-best lists, funded by SingleTouch
+          Interactive, Inc (http://www.singletouch.net/)
+
+0.07 Fri Jun  3 12:23:46 EDT 2005
+	- Long-overdue update
+	- Restores compatibility with Sphinx2 0.5
+	- Makes it possible to use a non-standard --sphinx-prefix
+	- New contact addresses, etc.
+
+0.06_02 Tue Mar 27 12:17:45 EST 2001
+	- First externally released version.
+	- No code changes from 0.06_01, just different copyright
+	  notices, with the addition of a README.
+
+0.06_01 Fri Feb  9 12:52:49 EST 2001 (UNRELEASED)
+	- Give a way to pass raw data into Audio::SPX::Continuous
+	  (hooray for undocumented features :P)
+
+0.06 Thu Jan 25 14:15:00 EST 2001 (UNRELEASED)
+	- Skipped a version, oh well.
+	- Add the sub-directories' test suites to MANIFEST (doh)
+	- Fix the calling conventions for uttproc_rawdata() and
+	  uttproc_result().
+	- Add a testsuite for Speech::Recognizer::SPX itself.
+	- Add demos of using Audio::SPX::Continuous with select().
+	- Add proper path searching for Sphinx2 libraries in
+	  Makefile.PL and use the exported $SPHINXDIR variable for
+	  defaults.
+	- Fix 'undefined value' warnings in Audio::SPX read functions.
+	- Allow the use of hash references for fbs_init().
+
+0.04_99 Wed Dec 13 17:02:59 EST 2000 (UNRELEASED)
+	- Split off feature extraction and audio modules, link with
+	  necessary libraries
+	- Changed name to Speech::Recognizer::SPX to comply with the
+	  Sphinx2 license and fit into the CPAN namespace better
+	- Add exporter functionality to Speech::Recognizer::SPX, and
+	  put together some nice tags of things to export.
+	- The only thing missing before this can be released is
+	  documentation and a test suite, I think.
+
+0.04 Mon Dec  4 17:34:34 EST 2000 (UNRELEASED)
+	- Add cepstral analysis (Sphinx2::FE) methods.
+	- Make Sphinx2::Audio::init and Sphinx2::Audio::Continuous::init
+	  class methods.
+	- Fix tty-continuous.
+
+0.03 Sun Dec 03 14:17:46 2000 (UNRELEASED)
+	- Add a server module and a demo of streaming audio to Sphinx
+	  over the network.  Remove the really broken and stupid
+	  pipe-demo.pl :)
+
+0.02_01  Fri Dec 01 11:29:46 2000 (UNRELEASED)
+	- Add copyright notices.
+
+0.02  Fri Dec 01 00:42:57 2000 (UNRELEASED)
+        - Fix the interface, removing evil autoload.
+	- Add the option to specify one's own ARGV to fbs_init()
+	- Add a hacked-up continuous-audio-from-random-file API.
+	- Add two demos.
+
+0.01  Wed Nov 29 12:25:19 2000 (UNRELEASED)
+	- original version; created by h2xs 1.19
+

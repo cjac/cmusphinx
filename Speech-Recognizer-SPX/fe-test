@@ -1,0 +1,90 @@
+#!/usr/bin/perl
+
+# fe-test: demo of cepstral feature extraction using PocketSphinx
+
+# Copyright (c) 2000 Cepstral LLC.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the same terms as Perl itself.
+#
+# Written by David Huggins-Daines <dhuggins@cs.cmu.edu>
+
+use strict;
+use Audio::MFCC;
+use Audio::SPX;
+use Time::HiRes qw(usleep);
+
+use vars qw($SPS);
+$SPS = 16000;
+
+use constant SNDCTL_DSP_SPEED => 0xc0045002;
+use constant SNDCTL_DSP_SETFMT => 0xc0045005;
+use constant SNDCTL_DSP_SYNC => 0x5001;
+use constant SNDCTL_DSP_RESET => 0x5000;
+use constant SNDCTL_DSP_NONBLOCK => 0x500e;
+use constant AFMT_S16_LE => 0x10;
+my $spd = pack "L", $SPS;
+my $fmt = pack "L", AFMT_S16_LE;
+open DSP, "</dev/dsp" or die "can't open DSP: $!";
+ioctl DSP, SNDCTL_DSP_SYNC, 0 or die $!;
+ioctl DSP, SNDCTL_DSP_RESET, 0 or die $!;
+ioctl DSP, SNDCTL_DSP_SPEED, $spd or die $!;
+ioctl DSP, SNDCTL_DSP_SETFMT, $fmt or die $!;
+
+my $fe = Audio::MFCC->init({ sampling_rate => $SPS,
+			     frame_rate => int($SPS / 100),
+			     pre_emphasis_alpha => 0.97 })
+    or die "Couldn't make fe";
+my $cad = Audio::SPX::Continuous->init_nbfh(\*DSP, $SPS)
+    or die "Couldn't make cont_ad";
+print "calibrating, please wait... ";
+$cad->calib
+    or die "Couldn't calibrate";
+
+# Sphinx2::Audio::Continuous requires non-blocking except for calibration
+my $nblk = pack "L", 1;
+ioctl DSP, SNDCTL_DSP_NONBLOCK, $nblk or die $!;
+print "ready.\n";
+
+my $rbuf = "";
+my $done = 0;
+$SIG{INT} = sub { $done = 1 };
+
+until ($done) {
+    my $s;
+    while (!$done &&
+	   defined($s = $cad->read($rbuf, 2048)) && $s == 0) {
+	usleep 50_000;
+    }
+    last unless defined $s;
+
+    my $ts = $cad->read_ts;
+    $fe->start_utt;
+
+    my @ceps = $fe->process_utt($rbuf, $s);
+    foreach (@ceps) {
+	print "@$_\n";
+    }
+
+    while (!$done
+	   && defined($s = $cad->read($rbuf, 2048))) {
+	if ($s == 0) {
+	    last if $cad->read_ts - $ts > $SPS;
+	    usleep(20_000);
+	} else {
+	    $ts = $cad->read_ts;
+	    my @ceps = $fe->process_utt($rbuf, $s);
+	    foreach (@ceps) {
+		my $cv = "@$_\n";
+		my $as = $s * 2;
+		my $cs = length $cv;
+		print "audio size was $as, cepstrum size is $cs\n";
+		print $cv;
+	    }
+	}
+    }
+    $cad->reset;
+    my $cvec = $fe->end_utt;
+    print "@$cvec\n" if $cvec;
+}
+

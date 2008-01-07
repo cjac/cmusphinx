@@ -1,0 +1,62 @@
+Speech::Recognizer::SPX - Perl bindings for PocketSphinx
+-----------------------------------------------------
+David Huggins-Daines <dhuggins@cs.cmu.edu>
+http://www.cs.cmu.edu/~dhuggins
+January 7, 2008
+
+Installation
+------------
+
+This module requires PocketSphinx 0.4.1 or later, available from
+http://www.sourceforge.net/projects/cmusphinx/.  To build and install
+PocketSphinx, download sphinxbase and pocketsphinx and untar the
+packages.  Now run:
+
+  cd sphinxbase-0.3
+  ./configure
+  make
+  # now become root, or some user with write access to /usr/local
+  make install
+  cd ../pocketsphinx-0.4.1
+  ./configure
+  make
+  # now become root, or some user with write access to /usr/local
+  make install
+
+On GNU/Linux systems, you may need to add /usr/local/lib to the end of
+your /etc/ld.so.conf file and re-run /sbin/ldconfig as root.
+
+Once you have installed PocketSphinx, you can build and install
+Speech::Recognizer::SPX.  To do this, change into the
+Speech-Recognizer-SPX directory, and run:
+
+  perl Makefile.PL
+  make
+  make test # this may fail if you have no working audio device
+  make install
+
+If any failures are reported by 'make test' that are not
+audio-related, please report them by e-mail to the address above.
+
+This module has only been tested on GNU/Linux.  It is likely to work
+on free 4.4BSD-derived operating systems as well, but I have not
+tested this.  Status on other Unix-like operating systems supported by
+PocketSphinx, or Microsoft Windows, is unknown.
+
+Demos and examples
+------------------
+
+Several example programs are included in this distribution:
+
+tty-continuous: Basically the same as the 'pocketsphinx_continuous' demo
+	included with the PocketSphinx distribution.
+
+turtle-demo: Basically the same as the 'pocketsphinx_demo' program included
+	with the Sphinx-II distribution.
+
+server-demo: Demo of using a separate process to do recognition.
+
+fe-test: Demo of the feature extraction model.
+
+select-cad: Demo of using select() on audio devices in conjunction
+	with Audio::SPX::Continuous.

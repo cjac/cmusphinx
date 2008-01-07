@@ -1,0 +1,93 @@
+#!/usr/bin/perl -w
+
+# select-cad: Demo of using Audio::SPX::Continuous with select()
+
+# Copyright (c) 2000 Cepstral LLC.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the same terms as Perl itself.
+#
+# Written by David Huggins-Daines <dhuggins@cs.cmu.edu>
+
+use strict;
+use Audio::SPX;
+use Fcntl;
+
+my $dspdev = shift || '/dev/dsp';
+my $sps = shift || 16000;
+my $timeout = shift || 150;
+
+use constant SNDCTL_DSP_SPEED => 0xc0045002;
+use constant SNDCTL_DSP_SETFMT => 0xc0045005;
+use constant SNDCTL_DSP_SYNC => 0x5001;
+use constant SNDCTL_DSP_RESET => 0x5000;
+use constant AFMT_S16_LE => 0x10;
+my $spd = pack "L", $sps;
+my $fmt = pack "L", AFMT_S16_LE;
+sysopen DSP, $dspdev, O_RDONLY | O_NONBLOCK
+    or die "can't open DSP: $!";
+ioctl DSP, SNDCTL_DSP_SYNC, 0 or die $!;
+ioctl DSP, SNDCTL_DSP_RESET, 0 or die $!;
+ioctl DSP, SNDCTL_DSP_SPEED, $spd or die $!;
+ioctl DSP, SNDCTL_DSP_SETFMT, $fmt or die $!;
+
+# This bogosity documented in linux/drivers/sound/CHANGELOG
+# Briefly, you cannot select(2) on an OSS audio device until you read
+# from it.  ALSA's OSS emulation does not emulate this feature.
+sysread(DSP, my($ass), 512);
+
+my $cad = Audio::SPX::Continuous->init_nbfh(*DSP, $sps)
+    or die "failed to create continuous audio filter: $!";
+
+my ($rout, $rin, $wout, $win, $eout, $ein) = ("") x 6; # Shut up -w
+my $dspfd = fileno DSP;
+vec($rin, $dspfd, 1) = 1;
+
+open AUDIO, ">audio.raw" or die $!;
+my ($done, $calibrated, $ts, $adbuf);
+$ts = 0; # Shut up -w
+$SIG{INT} = sub { $done = 1 };
+until ($done) {
+    select $rout = $rin, $wout = $win, $eout = $ein, undef
+	or die "select failed: $!";
+
+    if (vec($rout, $dspfd, 1) == 1) {
+	if ($calibrated) {
+	    my $b = $cad->read($adbuf, 2048);
+	    if ($b != 0) {
+		# Should we start listening
+		if ($ts == 0) {
+		    print "started listening at ", $cad->read_ts, "\n";
+		}
+		$ts = $cad->read_ts;
+		syswrite AUDIO, $adbuf;
+	    } else {
+		# Should we stop listening
+		if ($ts != 0) {
+		    my $end_ts = $cad->read_ts;
+		    if ($end_ts - $ts > ($timeout * $sps / 1000)) {
+			# $timeout milliseconds of silence
+			print "stopped listening at $end_ts, delta ", $end_ts - $ts, "\n";
+			$ts = 0
+		    }
+		}
+	    }
+	} else {
+	    # calibrate
+	    while (defined(my $b = sysread DSP, my($buf), 4096)) {
+		last if $b == 0;
+		$adbuf .= $buf;
+	    }
+	    # cont_ad doesn't cope well with tinygrams (USB audio
+	    # usually gives us 320 bytes at a time).  If we knew its
+	    # frame size we could be more exact here.
+	    if (length($adbuf) >= 512) {
+		if ($cad->calib_loop($adbuf) == 0) {
+		    print "calibration done\n";
+		    $calibrated = 1;
+		}
+		$adbuf = "";
+	    }
+	}
+    }
+}

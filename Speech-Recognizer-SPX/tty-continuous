@@ -1,0 +1,82 @@
+#!/usr/bin/perl -w
+
+# tty-continuous: Perl equivalent of the 'pocketsphinx_continuous'
+# program included with PocketSphinx
+
+# Copyright (c) 2000 Cepstral LLC.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the same terms as Perl itself.
+#
+# Written by David Huggins-Daines <dhuggins@cs.cmu.edu>
+
+use strict;
+use Speech::Recognizer::SPX qw(:fbs :uttproc);
+use Audio::SPX qw(DEFAULT_SAMPLES_PER_SEC);
+use Time::HiRes qw(usleep);
+
+use constant SAMPLE_RATE => 16000;
+
+use vars qw($Done);
+
+fbs_init();
+
+my $ad = Audio::SPX->open_sps(SAMPLE_RATE)
+    or die "ad_open_sps failed: $!";
+my $cad = Audio::SPX::Continuous->init($ad)
+    or die "Can't open audio device: $!";
+
+$ad->start_rec
+    or die "start recording failed: $!";
+$cad->calib
+    or die "calibration failed: $!";
+
+$|=1;
+my $adbuf;
+until ($Done) {
+    print "READY...\n";
+    my $s;
+    while (($s = $cad->read($adbuf, 4096)) == 0) {
+	usleep(200_000);
+    }
+    die "continuous audio read failed" if $s < 0;
+
+    uttproc_begin_utt();
+    uttproc_rawdata($adbuf, 0);
+
+    my $ts = $cad->read_ts;
+    print "Listening... ts=$ts\n";
+
+    while (1) {
+	if (($s = $cad->read($adbuf, 4096)) < 0) {
+	    die "continuous audio read failed";
+	}
+	if ($s == 0) {
+	    last if $cad->read_ts - $ts > DEFAULT_SAMPLES_PER_SEC;
+	} else {
+	    $ts = $cad->read_ts;
+	}
+	my $rem = uttproc_rawdata($adbuf, $s, 0);
+
+	unless ($rem or $s) {
+	    usleep(20_000);
+	}
+    }
+
+    $ad->stop_rec;
+    1 while defined $ad->read($adbuf, 4096);
+    $cad->reset;
+
+    print "Stopped listening, please wait...\n";
+    uttproc_end_utt();
+    die "uttproc_result failed" unless (my ($fr, $hyp) = uttproc_result(1));
+
+    last if $hyp =~ /quit/i;
+
+    $ad->start_rec
+	or die "couldn't start recording";
+}
+
+fbs_end();
+
+

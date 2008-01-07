@@ -1,0 +1,139 @@
+#!/usr/bin/perl
+
+# server-demo: demo of streaming audio to PocketSphinx over a socket.
+
+# Copyright (c) 2000 Cepstral LLC.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the same terms as Perl itself.
+#
+# Written by David Huggins-Daines <dhuggins@cs.cmu.edu>
+
+use strict;
+use Speech::Recognizer::SPX::Server;
+use IO::Socket;
+use Fcntl;
+use Errno;
+use Time::HiRes qw(usleep gettimeofday);
+use Getopt::Std;
+
+use vars qw($SPS);
+$SPS = 16000;
+
+$|=1;
+
+my %opt;
+getopts('d:h', \%opt);
+
+if ($opt{h}) {
+    print <<EOF;
+Usage: $0 [-d DEVICE]
+EOF
+    exit 0;
+}
+my $dspdev = $opt{d} || '/dev/dsp';
+
+my $parent_sock = new IO::Socket;
+my $child_sock = new IO::Socket;
+socketpair $parent_sock, $child_sock, AF_UNIX, SOCK_STREAM, PF_UNIX
+    or die "Can't create socket pair: $!";
+my $parent = $$;
+
+if (my $kid = fork) {
+    # Audio::SPX really sucks, so don't use it.  The following is
+    # totally Linux/FreeBSD specific (and probably won't work on
+    # big-endian platforms either) but this is just a hacky demo
+    # script anyway.  As long as you have a reasonable audio source
+    # you should do fine.
+    use constant SNDCTL_DSP_SPEED => 0xc0045002;
+    use constant SNDCTL_DSP_SETFMT => 0xc0045005;
+    use constant SNDCTL_DSP_SYNC => 0x5001;
+    use constant SNDCTL_DSP_RESET => 0x5000;
+    use constant AFMT_S16_LE => 0x10;
+    my $spd = pack "L", $SPS;
+    my $fmt = pack "L", AFMT_S16_LE;
+    open DSP, "<$dspdev" or die "can't open $dspdev: $!\n";
+    ioctl DSP, SNDCTL_DSP_SYNC, 0 or die $!;
+    ioctl DSP, SNDCTL_DSP_RESET, 0 or die $!;
+    ioctl DSP, SNDCTL_DSP_SPEED, $spd or die $!;
+    ioctl DSP, SNDCTL_DSP_SETFMT, $fmt or die $!;
+
+    my ($rout, $rin, $wout, $win, $eout, $ein) = ("") x 6; # Shut up -w
+    my $srvfd = fileno $parent_sock;
+    vec($rin, $srvfd, 1) = 1;
+    vec($win, $srvfd, 1) = 1;
+    vec($ein, $srvfd, 1) = 1;
+    my $done;
+    until ($done) {
+	select $rout = $rin, $wout = $win, $eout = $ein, undef;
+	if (vec $rout, $srvfd, 1) {
+	    my $msg = "";
+	    my $rbuf = "";
+	    while (defined(my $bytes = sysread $parent_sock, $rbuf, 4096)) {
+		$msg .= $rbuf;
+		last if ($bytes < 4096); # blocking read
+	    }
+	    foreach (split /\n/, $msg) {
+		if (/^READY (\d+)$/) {
+		    print "sphinx server ready at $1\n";
+		} elsif (/^DONE (\d+)$/) {
+		    print "sphinx server exited at $1\n";
+		    $done = 1;
+		} elsif (/^RECOG (\d+) (.*)$/) {
+		    print "recognized text is $2\n";
+		} elsif (/^LISTENING (\d+)$/) {
+		    print "started listening at $1\n";
+		} elsif (/^NOT_LISTENING (\d+)$/) {
+		    print "stopped listening at $1\n";
+		} else {
+		    print STDERR "unrecognized message $_\n";
+		}
+	    }
+	}
+	if (vec $wout, $srvfd, 1) {
+	    my $rbuf = "";
+	    # If we don't block on this we'll chew up all CPU time
+	    sysread DSP, $rbuf, 4096;
+	    # However we can't block on this or the data stream will
+	    # get corrupted...
+	    syswrite $parent_sock, $rbuf;
+	}
+	if (vec $eout, $srvfd, 1) {
+	    print "exception!\n";
+	    $done = 1;
+	}
+    }
+    exit 0;
+} else {
+    my $srvr =
+	Speech::Recognizer::SPX::Server->init({verbose => 4}, $child_sock, undef, 1) or die;
+    $srvr->calibrate or die $!;
+
+    syswrite $child_sock, "READY ". time . "\n";
+    $srvr->timeout(200);
+
+    sub listening {
+	my $ts = shift;
+	syswrite $child_sock, "LISTENING $ts\n";
+    }
+
+    sub not_listening {
+	my $ts = shift;
+	syswrite $child_sock, "NOT_LISTENING $ts\n";
+    }
+
+    open VOICE, ">voice.raw" or die $!;
+    while (defined(my $txt
+		   = $srvr->next_utterance(\&listening,
+					   \&not_listening,
+					   \*VOICE))) {
+	syswrite $child_sock, "RECOG " . time . " $txt\n";
+	last if $txt =~ /quit/i;
+    }
+    close VOICE;
+
+    $srvr->fini or die $!;
+
+    syswrite $child_sock, "DONE " . time . "\n";
+    exit 0;
+}

@@ -1,0 +1,10 @@
+float32			T_NV
+int32			T_IV
+int16 *			T_PV
+float **		T_PV
+char const *		T_PV
+ad_rec_t *		T_PTROBJ
+ad_play_t *		T_PTROBJ
+cont_ad_t *		T_PTROBJ
+fe_t *			T_PTROBJ
+SYSRET			T_SYSRET

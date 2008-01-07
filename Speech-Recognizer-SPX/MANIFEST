@@ -1,0 +1,24 @@
+Changes
+Makefile.PL
+MANIFEST
+README
+SPX.pm
+SPX.xs
+SPX/Server.pm
+FE/Makefile.PL
+FE/MFCC.pm
+FE/MFCC.xs
+FE/test.pl
+Audio/Makefile.PL
+Audio/SPX.xs
+Audio/SPX.pm
+Audio/test.pl
+typemap
+test.pl
+testwav.raw
+tty-continuous
+turtle-demo
+select-cad
+server-demo
+fe-test
+META.yml                                 Module meta-data (added by MakeMaker)
