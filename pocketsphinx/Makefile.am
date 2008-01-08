@@ -8,14 +8,20 @@ EXTRA_DIST = autogen.sh							\
 	pocketsphinx.pc.in						\
 	pocketsphinx.dsw						\
 	pocketsphinx.vcw						\
+	pocketsphinx.sln						\
 	win32/msdev/libpocketsphinx/libpocketsphinx.dsp			\
-	win32/msdev/pocketsphinx/pocketsphinx.dsp			\
-	win32/msdev/pocketsphinx_batch/pocketsphinx_batch.dsp		\
-	win32/msdev/pocketsphinx_continuous/pocketsphinx_continuous.dsp	\
-	win32/msdev/pocketsphinx_ptt/pocketsphinx_ptt.dsp		\
 	win32/msdev/libpocketsphinx/libpocketsphinx.vcp			\
+	win32/msdev/libpocketsphinx/libpocketsphinx.vcproj		\
+	win32/msdev/pocketsphinx/pocketsphinx.dsp			\
 	win32/msdev/pocketsphinx/pocketsphinx.vcp			\
+	win32/msdev/pocketsphinx/pocketsphinx.vcproj			\
+	win32/msdev/pocketsphinx_batch/pocketsphinx_batch.dsp		\
 	win32/msdev/pocketsphinx_batch/pocketsphinx_batch.vcp		\
+	win32/msdev/pocketsphinx_batch/pocketsphinx_batch.vcproj	\
+	win32/msdev/pocketsphinx_continuous/pocketsphinx_continuous.dsp	\
+	win32/msdev/pocketsphinx_continuous/pocketsphinx_continuous.vcproj\
+	win32/msdev/pocketsphinx_ptt/pocketsphinx_ptt.dsp		\
+	win32/msdev/pocketsphinx_ptt/pocketsphinx_ptt.vcproj		\
 	python/setup.py							\
 	python/_pocketsphinxmodule.c					\
 	python/_pocketsphinx_test.py
