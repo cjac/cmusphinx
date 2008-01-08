@@ -1,0 +1,47 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libpocketsphinx", "win32\msdev\libpocketsphinx\libpocketsphinx.vcproj", "{0AA7CB00-4484-4415-B2DC-071F50778DB9}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pocketsphinx_batch", "win32\msdev\pocketsphinx_batch\pocketsphinx_batch.vcproj", "{FDCF2B65-A060-4BC6-B3E2-A27B7C1A3177}"
+	ProjectSection(ProjectDependencies) = postProject
+		{0AA7CB00-4484-4415-B2DC-071F50778DB9} = {0AA7CB00-4484-4415-B2DC-071F50778DB9}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pocketsphinx_continuous", "win32\msdev\pocketsphinx_continuous\pocketsphinx_continuous.vcproj", "{9A3ED08E-B726-463D-9D64-DE7A6710D171}"
+	ProjectSection(ProjectDependencies) = postProject
+		{0AA7CB00-4484-4415-B2DC-071F50778DB9} = {0AA7CB00-4484-4415-B2DC-071F50778DB9}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pocketsphinx_ptt", "win32\msdev\pocketsphinx_ptt\pocketsphinx_ptt.vcproj", "{77C7514F-86CE-412A-991B-EC0DA98721C1}"
+	ProjectSection(ProjectDependencies) = postProject
+		{0AA7CB00-4484-4415-B2DC-071F50778DB9} = {0AA7CB00-4484-4415-B2DC-071F50778DB9}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0AA7CB00-4484-4415-B2DC-071F50778DB9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0AA7CB00-4484-4415-B2DC-071F50778DB9}.Debug|Win32.Build.0 = Debug|Win32
+		{0AA7CB00-4484-4415-B2DC-071F50778DB9}.Release|Win32.ActiveCfg = Release|Win32
+		{0AA7CB00-4484-4415-B2DC-071F50778DB9}.Release|Win32.Build.0 = Release|Win32
+		{FDCF2B65-A060-4BC6-B3E2-A27B7C1A3177}.Debug|Win32.ActiveCfg = Debug|Win32
+		{FDCF2B65-A060-4BC6-B3E2-A27B7C1A3177}.Debug|Win32.Build.0 = Debug|Win32
+		{FDCF2B65-A060-4BC6-B3E2-A27B7C1A3177}.Release|Win32.ActiveCfg = Release|Win32
+		{FDCF2B65-A060-4BC6-B3E2-A27B7C1A3177}.Release|Win32.Build.0 = Release|Win32
+		{9A3ED08E-B726-463D-9D64-DE7A6710D171}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9A3ED08E-B726-463D-9D64-DE7A6710D171}.Debug|Win32.Build.0 = Debug|Win32
+		{9A3ED08E-B726-463D-9D64-DE7A6710D171}.Release|Win32.ActiveCfg = Release|Win32
+		{9A3ED08E-B726-463D-9D64-DE7A6710D171}.Release|Win32.Build.0 = Release|Win32
+		{77C7514F-86CE-412A-991B-EC0DA98721C1}.Debug|Win32.ActiveCfg = Debug|Win32
+		{77C7514F-86CE-412A-991B-EC0DA98721C1}.Debug|Win32.Build.0 = Debug|Win32
+		{77C7514F-86CE-412A-991B-EC0DA98721C1}.Release|Win32.ActiveCfg = Release|Win32
+		{77C7514F-86CE-412A-991B-EC0DA98721C1}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
