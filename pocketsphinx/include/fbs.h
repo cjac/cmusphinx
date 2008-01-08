@@ -199,16 +199,8 @@ extern "C" {
 #include "cmd_ln.h"
 #include "fe.h"
 
-/* Win32/WinCE DLL gunk */
-#if (defined(_WIN32) || defined(_WIN32_WCE)) && !defined(LIBPOCKETSPHINX) && !defined(CYGWIN)
-#ifdef POCKETSPHINX_EXPORTS
-#define POCKETSPHINX_EXPORT __declspec(dllexport)
-#else
-#define POCKETSPHINX_EXPORT __declspec(dllimport)
-#endif
-#else /* !_WIN32 */
+/* Static libraries only in this version. */
 #define POCKETSPHINX_EXPORT
-#endif
 
 /*
  * The decoder is set up to process one finite-duration utterance at a time.  The
