@@ -1,0 +1,57 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libsphinxad", "WIN32\libsphinxad\libsphinxad.vcproj", "{28B74B30-6825-4105-9375-1A67881A7340}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libsphinxfe", "win32\libsphinxfe\libsphinxfe.vcproj", "{06251E9C-B689-4B1E-B6E1-1E0A4299351D}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libsphinxfeat", "WIN32\libsphinxfeat\libsphinxfeat.vcproj", "{59DBAAFD-BF6E-4875-A717-663298C02EDC}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libsphinxutil", "win32\libsphinxutil\libsphinxutil.vcproj", "{52090414-5073-4A74-8DA0-B7652EDD3F95}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sphinx_cepview", "WIN32\sphinx_cepview\sphinx_cepview.vcproj", "{BB077AD1-A8A7-4EFC-97EA-330E24B2DA93}"
+	ProjectSection(ProjectDependencies) = postProject
+		{52090414-5073-4A74-8DA0-B7652EDD3F95} = {52090414-5073-4A74-8DA0-B7652EDD3F95}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sphinx_fe", "WIN32\sphinx_fe\sphinx_fe.vcproj", "{15D778C8-6148-42F7-B585-2FF609A78D59}"
+	ProjectSection(ProjectDependencies) = postProject
+		{52090414-5073-4A74-8DA0-B7652EDD3F95} = {52090414-5073-4A74-8DA0-B7652EDD3F95}
+		{06251E9C-B689-4B1E-B6E1-1E0A4299351D} = {06251E9C-B689-4B1E-B6E1-1E0A4299351D}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{28B74B30-6825-4105-9375-1A67881A7340}.Debug|Win32.ActiveCfg = Debug|Win32
+		{28B74B30-6825-4105-9375-1A67881A7340}.Debug|Win32.Build.0 = Debug|Win32
+		{28B74B30-6825-4105-9375-1A67881A7340}.Release|Win32.ActiveCfg = Release|Win32
+		{28B74B30-6825-4105-9375-1A67881A7340}.Release|Win32.Build.0 = Release|Win32
+		{06251E9C-B689-4B1E-B6E1-1E0A4299351D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{06251E9C-B689-4B1E-B6E1-1E0A4299351D}.Debug|Win32.Build.0 = Debug|Win32
+		{06251E9C-B689-4B1E-B6E1-1E0A4299351D}.Release|Win32.ActiveCfg = Release|Win32
+		{06251E9C-B689-4B1E-B6E1-1E0A4299351D}.Release|Win32.Build.0 = Release|Win32
+		{59DBAAFD-BF6E-4875-A717-663298C02EDC}.Debug|Win32.ActiveCfg = Debug|Win32
+		{59DBAAFD-BF6E-4875-A717-663298C02EDC}.Debug|Win32.Build.0 = Debug|Win32
+		{59DBAAFD-BF6E-4875-A717-663298C02EDC}.Release|Win32.ActiveCfg = Release|Win32
+		{59DBAAFD-BF6E-4875-A717-663298C02EDC}.Release|Win32.Build.0 = Release|Win32
+		{52090414-5073-4A74-8DA0-B7652EDD3F95}.Debug|Win32.ActiveCfg = Debug|Win32
+		{52090414-5073-4A74-8DA0-B7652EDD3F95}.Debug|Win32.Build.0 = Debug|Win32
+		{52090414-5073-4A74-8DA0-B7652EDD3F95}.Release|Win32.ActiveCfg = Release|Win32
+		{52090414-5073-4A74-8DA0-B7652EDD3F95}.Release|Win32.Build.0 = Release|Win32
+		{BB077AD1-A8A7-4EFC-97EA-330E24B2DA93}.Debug|Win32.ActiveCfg = Debug|Win32
+		{BB077AD1-A8A7-4EFC-97EA-330E24B2DA93}.Debug|Win32.Build.0 = Debug|Win32
+		{BB077AD1-A8A7-4EFC-97EA-330E24B2DA93}.Release|Win32.ActiveCfg = Release|Win32
+		{BB077AD1-A8A7-4EFC-97EA-330E24B2DA93}.Release|Win32.Build.0 = Release|Win32
+		{15D778C8-6148-42F7-B585-2FF609A78D59}.Debug|Win32.ActiveCfg = Debug|Win32
+		{15D778C8-6148-42F7-B585-2FF609A78D59}.Debug|Win32.Build.0 = Debug|Win32
+		{15D778C8-6148-42F7-B585-2FF609A78D59}.Release|Win32.ActiveCfg = Release|Win32
+		{15D778C8-6148-42F7-B585-2FF609A78D59}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
