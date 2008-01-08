@@ -88,5 +88,6 @@ void add_to_idngram_hashtable( struct idngram_hash_table *table,
 
 int idngram_hash( char *key, int M );
 
+void new_idngram_hashtable( struct idngram_hash_table *table, int M );
 
 #endif

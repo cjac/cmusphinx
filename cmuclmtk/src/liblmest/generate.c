@@ -46,9 +46,12 @@
  */
 
 #include <stdlib.h>
+#include <time.h>
 #include "toolkit.h"
 #include "../libs/sih.h"
 #include "ngram.h"
+#include "idngram2lm.h"
+#include "../win32/compat.h"
 
 #define BEGIN_OF_SENTENCE_STRING "<s>"
 

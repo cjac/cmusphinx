@@ -671,7 +671,7 @@ void load_arpa_lm(arpa_lm_t *arpa_lm,
 
 	show_dot(j);
       
-	arpa_lm->probs[arpa_lm->n-1][j] = atof(temp_word[0]);
+	arpa_lm->probs[arpa_lm->n-1][j] = (float) atof(temp_word[0]);
 	sih_lookup(arpa_lm->vocab_ht,temp_word[arpa_lm->n],&temp_id);
       
 	arpa_lm->word_id[arpa_lm->n-1][j] = temp_id;
@@ -814,7 +814,7 @@ void robust_load_arpa_lm(arpa_lm_t *arpa_lm,
       quit(-1,"Error reading arpa language model file. Unexpected end of file.\n");
 
     if (header!=NULL && strncmp("\\data\\",in_line,6)) {
-      line_length=strlen(in_line);
+      line_length=(int)strlen(in_line);
       if (header_length+line_length<max_header_length-1) {
 	strcpy (header+header_length,in_line);
 	header_length+=line_length;
@@ -1060,7 +1060,7 @@ void robust_load_arpa_lm(arpa_lm_t *arpa_lm,
       
       show_dot(j);
       
-      arpa_lm->probs[arpa_lm->n-1][j] = atof(temp_word[0]);
+      arpa_lm->probs[arpa_lm->n-1][j] = (float)atof(temp_word[0]);
       sih_lookup(arpa_lm->vocab_ht,temp_word[arpa_lm->n],&temp_id);
       
       arpa_lm->word_id[arpa_lm->n-1][j] = temp_id;

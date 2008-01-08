@@ -58,6 +58,7 @@
  *
  */
 
+#include "libs/pc_general.h"
 #include "disc_meth_linear.h"
 
 void dump_disc_meth_linear_info(ng_t* ng)

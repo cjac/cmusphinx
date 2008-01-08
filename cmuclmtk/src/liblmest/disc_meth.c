@@ -110,6 +110,7 @@ disc_meth_t* disc_meth_init(int32 disc_meth)
     dm->update_freq_of_freq=disc_meth_good_turing_update_freq_of_freq;
     dm->reduce_ug_freq_of_freq=disc_meth_good_turing_reduce_ug_freq_of_freq;
     dm->compute_discount_aux=disc_meth_good_turing_compute_disc_aux;
+    return dm;
 
   }else if(disc_meth==ABSOLUTE){
 
@@ -119,6 +120,7 @@ disc_meth_t* disc_meth_init(int32 disc_meth)
     dm->update_freq_of_freq=disc_meth_absolute_update_freq_of_freq;
     dm->reduce_ug_freq_of_freq=disc_meth_absolute_reduce_ug_freq_of_freq;
     dm->compute_discount_aux=disc_meth_absolute_compute_disc_aux;
+    return dm;
 
   }else if(disc_meth==LINEAR){
 
@@ -128,6 +130,7 @@ disc_meth_t* disc_meth_init(int32 disc_meth)
     dm->update_freq_of_freq=disc_meth_linear_update_freq_of_freq;
     dm->reduce_ug_freq_of_freq=disc_meth_linear_reduce_ug_freq_of_freq;
     dm->compute_discount_aux=disc_meth_linear_compute_disc_aux;
+    return dm;
 
   }else if(disc_meth==WITTEN_BELL){
 
@@ -137,5 +140,8 @@ disc_meth_t* disc_meth_init(int32 disc_meth)
     dm->update_freq_of_freq=disc_meth_witten_bell_update_freq_of_freq;
     dm->reduce_ug_freq_of_freq=disc_meth_witten_bell_reduce_ug_freq_of_freq;
     dm->compute_discount_aux=disc_meth_witten_bell_compute_disc_aux;
+    return dm;
   }
+
+  return NULL;
 }

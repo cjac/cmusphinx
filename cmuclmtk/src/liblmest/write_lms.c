@@ -45,6 +45,7 @@
 #include "libs/general.h"
 #include "ngram.h"
 #include "disc_meth.h"
+#include "stats.h"
 #include <assert.h>
 
 
@@ -186,7 +187,6 @@ void write_arpa_lm(ng_t *ng,int verbosity) {
   int *current_pos;
   int *end_pos;
   ngram_sz_t i;
-  ngram_sz_t j;
   double log_10_of_e = 1.0 / log(10.0);
 
   /* HEADER */
@@ -205,7 +205,6 @@ void write_arpa_lm(ng_t *ng,int verbosity) {
     
     double log10_uniprob;
     double log10_alpha;
-    double tmp_double;
     double alpha;
     
     log10_uniprob = ng->uni_log_probs[i]*log_10_of_e;
@@ -443,7 +442,6 @@ void write_bin_lm(ng_t *ng,int verbosity) {
   int l_chunk;
   int from_rec;
   int i;
-  int j;
 
   pc_message(verbosity,1,"Binary %d-gram language model will be written to %s\n",ng->n,ng->bin_filename);
   

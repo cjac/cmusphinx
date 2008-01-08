@@ -41,6 +41,7 @@
 #include <string.h>
 #include "general.h"
 #include "sih.h"
+#include "ac_parsetext.h"
 
 void read_wlist_into_siht(char *wlist_filename, int verbosity,  
 			  sih_t *p_word_id_ht,  /** Pointer of the word ID hash table */

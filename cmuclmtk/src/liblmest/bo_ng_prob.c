@@ -78,8 +78,6 @@ void bo_ng_prob(int context_length,
   int contcount;
   int *ng_index;
 
-  int i;
-  
   int temp_case;
 
   double alpha;

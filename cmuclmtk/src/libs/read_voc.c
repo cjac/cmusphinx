@@ -44,7 +44,7 @@
 
 
 #include <stdio.h>
-#include <strings.h>
+#include <string.h>
 #include "general.h"
 #include "sih.h"
 
@@ -65,7 +65,7 @@ void read_voc(char *filename,
   char *pperiod;
   vocab_sz_t   vocab_size;
 
-  pperiod = rindex(filename,'.');
+  pperiod = strrchr(filename,'.');
   if (pperiod==NULL) pperiod = filename-1;
   if (strcmp(pperiod+1,"vocab_ht")==0) { 	     /* file == hash_table */
      FILE *fp=rr_iopen(filename);

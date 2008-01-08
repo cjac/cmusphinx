@@ -46,7 +46,7 @@
 
 void *rr_fwrite(char *ptr, int elsize, size_t n_elem, FILE *fp, char *header)
 {
-  int n_written, i;
+  size_t n_written, i;
 
   assert(ptr);
   if (n_elem > 0) {

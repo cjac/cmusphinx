@@ -64,6 +64,7 @@
 #include "../liblmest/disc_meth.h"
 #include "../libs/sih.h"
 #include "../libs/general.h"
+#include "../libs/ac_parsetext.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -252,12 +253,12 @@ ng_t * init_ng(
   return ng;
 }
 	
-int init_ng_table_size(ng_t *ng, 
-		       flag mem_alloc_method, 
-		       flag is_ascii,
-		       int verbosity,
-		       int buffer_size
-		       )
+void init_ng_table_size(ng_t *ng, 
+		        flag mem_alloc_method, 
+		        flag is_ascii,
+		        int verbosity,
+		        int buffer_size
+		        )
 {
   int middle_size;
   int end_size;
@@ -509,7 +510,7 @@ void read_vocab(ng_t* ng, int verbosity)
 
 }
 
-int main (int argc, char **argv) {
+int main(int argc, char **argv) {
 
   int i,j;
   ng_t* ng;
@@ -518,8 +519,6 @@ int main (int argc, char **argv) {
 			   allocate for count tables */
   int buffer_size;
   flag is_ascii;
-  flag ascii_flag;
-  flag bin_flag;
   ngram current_ngram;
   ngram previous_ngram;
   count_t *ng_count; /* Array indicating the number of occurrances of 

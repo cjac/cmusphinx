@@ -247,7 +247,7 @@ wordid_t index2(struct idngram_hash_table *vocab,
   struct idngram_node *chain_pos;
 
   chain = idngram_hash( word, vocab->size );
-  if ( chain < 0 || chain >= vocab->size ) {
+  if ( chain >= vocab->size ) {
     fprintf( stderr, "WARNING : invalid hash address\n" );
     fprintf( stderr, "%s ignored\n", word );
     return(0);

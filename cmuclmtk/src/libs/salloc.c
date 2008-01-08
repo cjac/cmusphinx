@@ -36,7 +36,7 @@
 
 /* Roni Rosenfeld, 12/92  */
 
-#include <strings.h>
+#include <string.h>
 #include "general.h"
 
 char *salloc(char *str)

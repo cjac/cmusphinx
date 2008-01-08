@@ -166,7 +166,7 @@ void sih_add(sih_t *ht, char *string, vocab_sz_t intval)
      free (old_slots);
   }
 
-  key=sih_key(string,strlen(string));
+  key=sih_key(string,(unsigned int)strlen(string));
   /*  SIH_KEY(string,key);*/
 
   for (; ; key++) {
@@ -199,7 +199,7 @@ char sih_lookup(sih_t *ht, char *string, vocab_sz_t *p_intval)
 
   if (*string == 0) quit(-1,"%s ERROR: cannot hash the null string\n",rname);
 
-  key=sih_key(string,strlen(string));
+  key=(unsigned int)sih_key(string,(unsigned int)strlen(string));
 
   /*  SIH_KEY(string,key);*/
 
@@ -250,7 +250,7 @@ void *sih_val_write_to_file(sih_t *ht, FILE *fp, char *filename, int verbosity)
   for (islot=0; islot<ht->nslots; islot++) {
     rr_fwrite((char*)&(ht->slots[islot].intval),sizeof(vocab_sz_t),1,fp,"ht->slots[islot].intval");
     if (ht->slots[islot].string) {
-       total_string_space += strlen(ht->slots[islot].string)+1;
+       total_string_space += (int)strlen(ht->slots[islot].string)+1;
        nstrings++;
     }
     else total_string_space++;

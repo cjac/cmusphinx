@@ -39,8 +39,9 @@
 
 
 #include <stdio.h>
-#include <strings.h>
+#include <string.h>
 #include "general.h"
+#include "ac_parsetext.h"
 
 /* allocate an lagre enough array and read in a list of words (first word on each line)
    Leave entry no. 0 empty.

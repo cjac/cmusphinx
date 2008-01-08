@@ -37,7 +37,7 @@
 #include "ac_lmfunc_impl.h"
 #include "ac_hash.h"
 #include "ac_parsetext.h"
-#include "./liblmest/idngram2lm.h"
+#include "../liblmest/idngram2lm.h"
 
 /* Start Implementation of text2wfreq */
 
@@ -327,7 +327,6 @@ int  read_txt2ngram_buffer(FILE* infp,
 
 #if 1
   int tmpval;
-  int k;
 #endif
 
   temp_ngram  = (wordid_t *) rr_malloc(sizeof(wordid_t)*n);

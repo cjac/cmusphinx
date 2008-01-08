@@ -46,7 +46,7 @@ void parse_comline(char *input_line,
 		   int *num_of_args,
 		   char **args) {
 
-  int next_space;
+  size_t next_space;
   char next_word[200];
 
   *num_of_args = 0;

@@ -37,6 +37,7 @@
 
 #include "evallm.h"
 #include "idngram2lm.h"
+#include "bo_ng_prob.h"
 #include <stdlib.h>
 #include <math.h>
 
@@ -58,8 +59,6 @@ void arpa_bo_ng_prob(int context_length,
   int ng_middle;
   int *ng_index;
 
-  int i;
-  
   int temp_case;
 
   double alpha;

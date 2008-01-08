@@ -58,7 +58,10 @@
  *
  */
 
+#include "../libs/pc_general.h"
 #include "disc_meth_good_turing.h"
+#include "idngram2lm.h"
+
 void dump_disc_meth_good_turing_info(ng_t* ng)
 {
 

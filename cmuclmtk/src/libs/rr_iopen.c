@@ -53,8 +53,9 @@
 /* Edited by Philip Clarkson, March 1997 to prevent compilation warnings */
 
 #include <stdio.h>
+#include <string.h>
 #include "general.h"
-#include "strings.h"
+#include "../win32/compat.h"
 char  RRi_is_Z[100];
 
 FILE *rr_iopen(char *path)
@@ -62,7 +63,7 @@ FILE *rr_iopen(char *path)
   static char rname[]="rr_iopen";
   FILE *fp;
   char pipe[256], is_Z;
-  int  lpath;
+  size_t lpath;
 
   if (strcmp(path,"-")==0) return(stdin);
 

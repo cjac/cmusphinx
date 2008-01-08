@@ -50,7 +50,7 @@
 void *rr_fread(char *ptr, int elsize, size_t n_elem, FILE *fp,
 	       char *header, int not_more)
 {
-  int n_read, i;
+  size_t n_read, i;
   char dummychar;
 
   if (n_elem > 0) {

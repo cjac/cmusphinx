@@ -53,8 +53,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
-#include <sys/utsname.h>
-#include <unistd.h>
+//#include <unistd.h>
 #include "../liblmest/toolkit.h"
 #include "../libs/general.h"
 #include "../libs/pc_general.h"
@@ -85,12 +84,9 @@ void help_message()
 
 int main(int argc, char *argv[]) {
 
-  int i,j;
-
   char *vocab_filename;
   FILE *tempfile;
   char tempfiles_directory[1000];
-  FILE *vocab_file;
   int verbosity;
 
   int buffer_size;
@@ -98,13 +94,8 @@ int main(int argc, char *argv[]) {
   int fof_size;
 
   wordid_t *buffer;
-  char temp_word[MAX_WORD_LENGTH];
-  char temp_word2[MAX_WORD_LENGTH];
   char *temp_file_root;
   char *temp_file_ext;
-  char *host_name;
-  int proc_id;
-  struct utsname uname_info;
 
   flag write_ascii;
   flag help_flag ;
@@ -158,14 +149,7 @@ int main(int argc, char *argv[]) {
       temp_file_ext = salloc("");
   }
 
-  uname(&uname_info);
-  host_name = salloc(uname_info.nodename);
-
-  /* Will this work in windows? */
-  proc_id = getpid();
-
-  sprintf(temp_word,"%s%s.%d.",TEMP_FILE_ROOT,host_name,proc_id);
-  temp_file_root = salloc(temp_word);
+  temp_file_root = tempnam(".", TEMP_FILE_ROOT);
 
   pc_report_unk_args(&argc,argv,verbosity);
   

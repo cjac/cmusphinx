@@ -54,7 +54,7 @@ void* NewArray(size_t dim1,size_t dim2,size_t len)
   CHARPTR* p;
   char*	q;
   long a,size;
-  int i;
+  size_t i;
 
   
   size=(long)len*(long)dim1*(long)dim2+(long)dim1*(long)sizeof(char*);

@@ -364,6 +364,9 @@ void ng_allocate_vocab_ht(ng_t *ng, /**< ng_t  with binary format stuffs */
 			  flag is_arpa
 			  );
 
+flag ngram_chk_contains_unks(ngram *gm, int N);
+void ngram_copy(ngram *tgt, ngram *src,int N);
+
 /**
    return back-off weight for an N-gram
  */

@@ -44,3 +44,5 @@ void display_fof_array(ngram_sz_t *num_kgrams,
 		       FILE* fp,
 		       int n
 		       );
+
+void display_vocabtype(int vocab_type, double oov_fraction, FILE *fp);

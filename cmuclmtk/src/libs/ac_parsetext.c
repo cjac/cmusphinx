@@ -52,6 +52,7 @@
  *
  */
 
+#include <string.h>
 #include "ac_parsetext.h"
 
 void warn_on_wrong_vocab_comments(char *sent_str){

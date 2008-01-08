@@ -24,6 +24,8 @@ results obtained from use of this software.
 #include <string.h>
 #include <assert.h>
 
+#include "../win32/compat.h"
+
 #define CMU_SLM_VERSION  "CMU-Cambridge SLM Toolkit, Version 3 alpha"
 
 /* the following should be made machine-dependent */

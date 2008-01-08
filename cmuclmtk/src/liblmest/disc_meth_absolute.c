@@ -58,7 +58,9 @@
  *
  */
 
+#include "libs/pc_general.h"
 #include "disc_meth_absolute.h"
+#include "idngram2lm.h"
 
 void dump_disc_meth_absolute_info(ng_t* ng)
 {

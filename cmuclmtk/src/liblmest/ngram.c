@@ -228,7 +228,7 @@ double ng_double_alpha(ng_t *ng, int N, int i)
 void ng_short_alpha(ng_t *ng, double alpha, int N, int i)
 {
   if (ng->four_byte_alphas) 
-    ng->bo_weight4[N][i] = alpha;
+    ng->bo_weight4[N][i] = (four_byte_t)alpha;
   else {
     ng->bo_weight[N][i] = short_alpha(alpha,
 				      ng->alpha_array,

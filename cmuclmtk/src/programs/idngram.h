@@ -42,6 +42,7 @@ int n; /* Declare it globally, so doesn't need to be passed
 		     as a parameter to compare_ngrams. which might
 		     cause qsort to choke */
 #include "../liblmest/ngram.h"
+#include "../liblmest/stats.h"
 
 void merge_tempfiles (int start_file, 
 		      int end_file, 
@@ -67,7 +68,7 @@ void merge_tempfiles (int start_file,
   flag *finished;
   flag all_finished;
   int temp_count;
-  int i,j,t;
+  int i,j;
   flag first_ngram;
   fof_t **fof_array;
   ngram_sz_t *num_kgrams;

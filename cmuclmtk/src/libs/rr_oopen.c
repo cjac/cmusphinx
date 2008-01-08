@@ -52,8 +52,9 @@
 
 
 #include <stdio.h>
+#include <string.h>
 #include "general.h"
-#include "strings.h"
+
 char  RRo_is_Z[100];
 
 FILE *rr_oopen(char *path)
@@ -61,7 +62,7 @@ FILE *rr_oopen(char *path)
   static char rname[]="rr_oopen";
   FILE *fp;
   char pipe[256], is_Z;
-  int  lpath;
+  size_t lpath;
 
   if (strcmp(path,"-")==0) return(stdout);
 
