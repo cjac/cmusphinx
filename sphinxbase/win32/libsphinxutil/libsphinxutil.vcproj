@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="libsphinxutil"
 	ProjectGUID="{52090414-5073-4A74-8DA0-B7652EDD3F95}"
+	RootNamespace="libsphinxutil"
 	>
 	<Platforms>
 		<Platform
@@ -15,8 +16,8 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\../../lib/Release"
-			IntermediateDirectory=".\Release"
+			OutputDirectory=".\../../lib/$(ConfigurationName)"
+			IntermediateDirectory=".\$(ConfigurationName)"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -90,8 +91,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\../../lib/Debug"
-			IntermediateDirectory=".\Debug"
+			OutputDirectory=".\../../lib/$(ConfigurationName)"
+			IntermediateDirectory=".\$(ConfigurationName)"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
