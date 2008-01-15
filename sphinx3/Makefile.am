@@ -4,45 +4,45 @@ SUBDIRS = src \
 	model \
 	include
 
-EXTRA_DIST = autogen.sh \
-	sphinx3.pc.in \
-	sphinx3.dsw \
-	src/programs/main_livedecode.c \
-	win32/batch/an4.ctl \
-	win32/batch/sphinx3-simple.bat \
-	win32/batch/sphinx3-test.align.bat \
-	win32/batch/sphinx3-test.all.bat \
-	win32/batch/sphinx3-test.astar.bat \
-	win32/batch/sphinx3-test.bat \
-	win32/batch/sphinx3-test.dag.bat \
-	win32/batch/sphinx3-test.decode.bat \
-	win32/batch/sphinx3-test.ep.bat \
-	win32/batch/sphinx3-test.gausubvq.bat \
-	win32/batch/sphinx3-test.livepretend.bat \
-	win32/batch/sphinx3-test.simple.bat \
-	win32/mrcp.nsi \
-	win32/msdev/libs3decoder/libam.dsp \
-	win32/msdev/libs3decoder/libAPI.dsp \
-	win32/msdev/libs3decoder/libcommon.dsp \
-	win32/msdev/libs3decoder/libconfidence.dsp \
-	win32/msdev/libs3decoder/libdict.dsp \
-	win32/msdev/libs3decoder/libep.dsp \
-	win32/msdev/libs3decoder/liblm.dsp \
-	win32/msdev/libs3decoder/libsearch.dsp \
-	win32/msdev/programs/align/sphinx3_align.dsp \
-	win32/msdev/programs/astar/sphinx3_astar.dsp \
-	win32/msdev/programs/conf/sphinx3_conf.dsp \
-	win32/msdev/programs/dag/sphinx3_dag.dsp \
-	win32/msdev/programs/decode/sphinx3_decode.dsp \
-	win32/msdev/programs/dp/sphinx3_dp.dsp \
-	win32/msdev/programs/ep/sphinx3_ep.dsp \
-	win32/msdev/programs/gausubvq/gausubvq.dsp \
-	win32/msdev/programs/livedecode/sphinx3_livedecode.dsp \
-	win32/msdev/programs/livepretend/sphinx3_livepretend.dsp \
-	win32/msdev/programs/lm_convert/lm_convert.dsp \
-	win32/msdev/programs/sphinx3_continuous/sphinx3_continuous.dsp \
-	python/setup.py \
-	python/_sphinx3module.c \
+EXTRA_DIST = autogen.sh								\
+	sphinx3.pc.in								\
+	sphinx3.dsw								\
+	src/programs/main_livedecode.c						\
+	win32/batch/an4.ctl							\
+	win32/batch/sphinx3-test.decode.bat					\
+	win32/batch/sphinx3-test.ep.bat						\
+	win32/batch/sphinx3-test.simple.bat					\
+	win32/batch/sphinx3-test.all.bat					\
+	win32/batch/sphinx3-test.gausubvq.bat					\
+	win32/batch/sphinx3-test.align.bat					\
+	win32/batch/sphinx3-test.astar.bat					\
+	win32/batch/sphinx3-simple.bat						\
+	win32/batch/sphinx3-test.dag.bat					\
+	win32/batch/sphinx3-test.bat						\
+	win32/batch/sphinx3-test.livepretend.bat				\
+	win32/msdev/libs3decoder/libcommon.vcproj				\
+	win32/msdev/libs3decoder/liblm.vcproj					\
+	win32/msdev/libs3decoder/libAPI.vcproj					\
+	win32/msdev/libs3decoder/libam.vcproj					\
+	win32/msdev/libs3decoder/libconfidence.vcproj				\
+	win32/msdev/libs3decoder/libdict.vcproj					\
+	win32/msdev/libs3decoder/libep.vcproj					\
+	win32/msdev/libs3decoder/libsearch.vcproj				\
+	win32/msdev/programs/livepretend/sphinx3_livepretend.vcproj		\
+	win32/msdev/programs/decode/sphinx3_decode.vcproj			\
+	win32/msdev/programs/dp/sphinx3_dp.vcproj				\
+	win32/msdev/programs/livedecode/sphinx3_livedecode.vcproj		\
+	win32/msdev/programs/ep/sphinx3_ep.vcproj				\
+	win32/msdev/programs/conf/sphinx3_conf.vcproj				\
+	win32/msdev/programs/lm_convert/lm_convert.vcproj			\
+	win32/msdev/programs/align/sphinx3_align.vcproj				\
+	win32/msdev/programs/astar/sphinx3_astar.vcproj				\
+	win32/msdev/programs/dag/sphinx3_dag.vcproj				\
+	win32/msdev/programs/gausubvq/gausubvq.vcproj				\
+	win32/msdev/programs/sphinx3_continuous/sphinx3_continuous.vcproj	\
+	win32/mrcp.nsi								\
+	python/setup.py								\
+	python/_sphinx3module.c							\
 	python/_sphinx3_test.py
 
 pkgconfigdir = $(libdir)/pkgconfig
