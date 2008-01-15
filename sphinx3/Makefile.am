@@ -6,7 +6,6 @@ SUBDIRS = src \
 
 EXTRA_DIST = autogen.sh								\
 	sphinx3.pc.in								\
-	sphinx3.dsw								\
 	src/programs/main_livedecode.c						\
 	win32/batch/an4.ctl							\
 	win32/batch/sphinx3-test.decode.bat					\
