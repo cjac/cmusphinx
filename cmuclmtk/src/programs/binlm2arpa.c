@@ -66,7 +66,7 @@ int main (int argc,char **argv) {
 
   char *bin_path;
   int verbosity;
-  ng_t ng;
+  ng_t ng = {0};
 
   if (pc_flagarg(&argc,argv,"-help") || argc == 1) {
     help_message();
