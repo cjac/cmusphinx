@@ -149,7 +149,8 @@ int main(int argc, char *argv[]) {
       temp_file_ext = salloc("");
   }
 
-  temp_file_root = tempnam(".", TEMP_FILE_ROOT);
+  temp_file_root = tempnam(tempfiles_directory, TEMP_FILE_ROOT);
+  fprintf(stderr, "temp_file_root: '%s', tempfiles_directory: '%s'\n", temp_file_root, tempfiles_directory);
 
   pc_report_unk_args(&argc,argv,verbosity);
   
@@ -194,7 +195,6 @@ int main(int argc, char *argv[]) {
 					       buffer,
 					       buffer_size, 
 					       n,
-					       tempfiles_directory,
 					       temp_file_root,
 					       temp_file_ext,
 					       tempfile
@@ -209,7 +209,6 @@ int main(int argc, char *argv[]) {
 		  temp_file_root,
 		  temp_file_ext,
 		  max_files,
-		  tempfiles_directory,
 		  stdout,
 		  write_ascii,
 		  fof_size); 

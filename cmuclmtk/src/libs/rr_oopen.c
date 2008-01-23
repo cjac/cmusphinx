@@ -85,7 +85,7 @@ FILE *rr_oopen(char *path)
       is_Z = 1;
     }
     else {
-      fp = rr_fopen(path,"w");
+      fp = rr_fopen(path,"wb");
       is_Z = 0;
     }
   }

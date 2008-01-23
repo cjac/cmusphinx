@@ -49,7 +49,6 @@ void merge_tempfiles (int start_file,
 		      char *temp_file_root,
 		      char *temp_file_ext,
 		      int max_files,
-		      char *tempfiles_directory, 
 		      FILE *outfile,
 		      flag write_ascii,
 		      int fof_size) {
@@ -102,21 +101,21 @@ void merge_tempfiles (int start_file,
     fof_array[i] = (fof_t *) rr_calloc(fof_size+1,sizeof(fof_t));
 
   if (end_file-start_file+1 > max_files) {
-    sprintf(temp_string,"%s%s%hu%s",tempfiles_directory,temp_file_root,
+    sprintf(temp_string,"%s%hu%s",temp_file_root,
 	    end_file+1,temp_file_ext);
     new_temp_filename = salloc(temp_string);
     new_temp_file = rr_oopen(new_temp_filename);
     merge_tempfiles(start_file,start_file+max_files-1,
 		    temp_file_root,temp_file_ext,max_files,
-		    tempfiles_directory,new_temp_file,write_ascii,0);
+		    new_temp_file,write_ascii,0);
     merge_tempfiles(start_file+max_files,end_file+1,
 		    temp_file_root,temp_file_ext,max_files,
-		    tempfiles_directory,outfile,write_ascii,0);
+		    outfile,write_ascii,0);
   }else {
 
     /* Open all the temp files for reading */
     for (i=0;i<=end_file-start_file;i++) {
-      sprintf(temp_string,"%s%s%hu%s",tempfiles_directory,temp_file_root,
+      sprintf(temp_string,"%s%hu%s",temp_file_root,
 	      i+start_file,temp_file_ext);
       temp_filename[i] = salloc(temp_string);
       temp_file[i] = rr_iopen(temp_filename[i]);

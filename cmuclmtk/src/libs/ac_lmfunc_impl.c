@@ -310,7 +310,6 @@ int  read_txt2ngram_buffer(FILE* infp,
 			   wordid_t *buffer,
 			   int buffer_size,
 			   unsigned int n,
-			   char* tempfiles_directory,
 			   char* temp_file_root,
 			   char* temp_file_ext,
 			   FILE* temp_file
@@ -320,7 +319,7 @@ int  read_txt2ngram_buffer(FILE* infp,
   char temp_word[MAX_WORD_LENGTH];
   int position_in_buffer;
   int number_of_tempfiles;
-  int i,j;
+  unsigned int i,j;
   wordid_t *placeholder;
   wordid_t *temp_ngram;
   int temp_count;
@@ -337,12 +336,15 @@ int  read_txt2ngram_buffer(FILE* infp,
   position_in_buffer = 0;
   number_of_tempfiles = 0;
 
+  //tk: looks like things may croak if the corpus has less than n words
+  //not that such a corpus would be useful anyway
   for (i=0;i<=n-1;i++) {
     get_word(infp,temp_word);
-    /*    fprintf(stderr,"%s \n",temp_word);
-	  fprintf(stderr,"%d \n",index2(vocabulary,temp_word));*/
-    fflush(stderr);
-
+    /*
+        fprintf(stderr,"%s \n",temp_word);
+	fprintf(stderr,"%d \n",index2(vocabulary,temp_word));
+        fflush(stderr);
+    */
     add_to_buffer(index2(vocabulary,temp_word),0,i,buffer);
   }
 
@@ -360,10 +362,11 @@ int  read_txt2ngram_buffer(FILE* infp,
 		      position_in_buffer,i-1,buffer);
       
       if (get_word(infp,temp_word) == 1) {
-	/*	fprintf(stderr,"%s \n",temp_word);
+      /*
+	fprintf(stderr,"%s \n",temp_word);
 	fprintf(stderr,"%d \n",index2(vocabulary,temp_word));
-	fflush(stderr);*/
-
+	fflush(stderr);
+      */
 	add_to_buffer(index2(vocabulary,temp_word),position_in_buffer,
 		      n-1,buffer);
       }
@@ -381,7 +384,7 @@ int  read_txt2ngram_buffer(FILE* infp,
     /* Output the buffer to temporary BINARY file */    
     number_of_tempfiles++;
 
-    sprintf(temp_word,"%s%s%hu%s",tempfiles_directory,temp_file_root,
+    sprintf(temp_word,"%s%hu%s",temp_file_root,
 	    number_of_tempfiles,temp_file_ext);
 
     pc_message(verbosity,2,"Writing sorted n-grams to temporary file %s\n",

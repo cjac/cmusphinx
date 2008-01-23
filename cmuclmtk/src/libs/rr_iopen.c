@@ -100,7 +100,7 @@ FILE *rr_iopen(char *path)
      goto Z;
   }
   else {
-     fp = rr_fopen(path,"r");
+     fp = rr_fopen(path,"rb");
      is_Z = 0;
      goto record;
   }

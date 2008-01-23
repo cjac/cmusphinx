@@ -59,7 +59,6 @@ int  read_txt2ngram_buffer(FILE* infp,
 			   wordid_t *buffer,
 			   int buffer_size,
 			   unsigned int n,
-			   char* tempfiles_directory,
 			   char* temp_file_root,
 			   char* temp_file_ext,
 			   FILE* temp_file
