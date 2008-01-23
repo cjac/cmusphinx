@@ -43,7 +43,7 @@ RR_OBJS         = libs/parse_line.o libs/quit.o \
                   libs/rr_filesize.o libs/rr_fopen.o libs/rr_fread.o \
                   libs/rr_fseek.o libs/rr_fwrite.o libs/rr_iopen.o \
                   libs/rr_malloc.o libs/rr_oopen.o libs/salloc.o \
-                  libs/sih.o
+                  libs/sih.o libs/win32compat.o
 
 IDNGRAM2LM_OBJS = liblmest/bo_ng_prob.o liblmest/calc_mem_req.o liblmest/compute_back_off.o \
                   liblmest/compute_discount.o liblmest/compute_unigram.o liblmest/get_ngram.o \
@@ -94,45 +94,45 @@ clean:
 spotless: clean
 	$(RM) $(EXECS) $(LIB) *~
 
-evallm: 
-	$(CC) $(CFLAGS) -o evallm programs/evallm.c $(LIB) $(LDFLAGS) $(LIBS)
+evallm: programs/evallm.c
+	$(CC) $(CFLAGS) -o $@ $< $(LIB) $(LDFLAGS) $(LIBS)
 
-text2wngram: 
-	$(CC) $(CFLAGS) -o text2wngram programs/text2wngram.c $(LIB) $(LDFLAGS) $(LIBS)
+text2wngram: programs/text2wngram.c
+	$(CC) $(CFLAGS) -o $@ $< $(LIB) $(LDFLAGS) $(LIBS)
 
-text2idngram:
-	$(CC) $(CFLAGS) -o text2idngram programs/text2idngram.c $(LIB) $(LDFLAGS) $(LIBS)
+text2idngram: programs/text2idngram.c
+	$(CC) $(CFLAGS) -o $@ $< $(LIB) $(LDFLAGS) $(LIBS)
 
-binlm2arpa:
-	$(CC) $(CFLAGS) -o binlm2arpa programs/binlm2arpa.c $(LIB) $(LDFLAGS) $(LIBS)
+binlm2arpa: programs/binlm2arpa.c
+	$(CC) $(CFLAGS) -o $@ $< $(LIB) $(LDFLAGS) $(LIBS)
 
 #Until we merge arpa_lm_t and ng_t, we shouldn't have this application. 
 #arpa2binlm:
 #	$(CC) $(CFLAGS) -o arpa2binlm programs/arpa2binlm.c $(LIB) $(LDFLAGS) $(LIBS)
 
-ngram2mgram: 
-	$(CC) $(CFLAGS) -o ngram2mgram programs/ngram2mgram.c $(LIB) $(LDFLAGS) $(LIBS)
+ngram2mgram: programs/ngram2mgram.c
+	$(CC) $(CFLAGS) -o $@ $< $(LIB) $(LDFLAGS) $(LIBS)
 
-idngram2stats:
-	$(CC) $(CFLAGS) -o idngram2stats programs/idngram2stats.c $(LIB) $(LDFLAGS) $(LIBS)
+idngram2stats: programs/idngram2stats.c
+	$(CC) $(CFLAGS) -o $@ $< $(LIB) $(LDFLAGS) $(LIBS)
 
-wfreq2vocab:
-	$(CC) $(CFLAGS) -o wfreq2vocab programs/wfreq2vocab.c $(LIB) $(LDFLAGS) $(LIBS)
+wfreq2vocab: programs/wfreq2vocab.c
+	$(CC) $(CFLAGS) -o $@ $< $(LIB) $(LDFLAGS) $(LIBS)
 
-text2wfreq:
-	$(CC) $(CFLAGS) -o text2wfreq programs/text2wfreq.c $(LIB) $(LDFLAGS) $(LIBS)
+text2wfreq: programs/text2wfreq.c
+	$(CC) $(CFLAGS) -o $@ $< $(LIB) $(LDFLAGS) $(LIBS)
 
-wngram2idngram:
-	$(CC) $(CFLAGS) -o wngram2idngram programs/wngram2idngram.c $(LIB) $(LDFLAGS) $(LIBS)
+wngram2idngram: programs/wngram2idngram.c
+	$(CC) $(CFLAGS) -o $@ $< $(LIB) $(LDFLAGS) $(LIBS)
 
-mergeidngram:
-	$(CC) $(CFLAGS) -o mergeidngram programs/mergeidngram.c $(LIB) $(LDFLAGS) $(LIBS)
+mergeidngram: programs/mergeidngram.c
+	$(CC) $(CFLAGS) -o $@ $< $(LIB) $(LDFLAGS) $(LIBS)
 
-idngram2lm: 
-	$(CC) $(CFLAGS) -o idngram2lm programs/idngram2lm.c $(LIB) $(LDFLAGS) $(LIBS)
+idngram2lm: programs/idngram2lm.c
+	$(CC) $(CFLAGS) -o $@ $< $(LIB) $(LDFLAGS) $(LIBS)
 
-interpolate:
-	$(CC) $(CFLAGS) -o interpolate programs/interpolate.c $(LIB) $(LDFLAGS) $(LIBS)
+interpolate: programs/interpolate.c
+	$(CC) $(CFLAGS) -o $@ $< $(LIB) $(LDFLAGS) $(LIBS)
 
-lm_combine:
-	$(CC) $(CFLAGS) -o lm_combine programs/lm_combine.c $(LIB) $(LDFLAGS) $(LIBS)	
+lm_combine: programs/lm_combine.c
+	$(CC) $(CFLAGS) -o $@ $< $(LIB) $(LDFLAGS) $(LIBS)	

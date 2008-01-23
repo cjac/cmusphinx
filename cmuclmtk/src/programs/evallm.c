@@ -54,6 +54,7 @@
 #include "../libs/general.h"
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 void help_message(){
    fprintf(stderr,"evallm : Evaluate a language model.\n");
@@ -240,7 +241,11 @@ int main (int argc, char **argv) {
 
   while (!feof(stdin) && !told_to_quit) {
     printf("evallm : \n");
-    gets(input_string);
+    fgets(input_string, sizeof(input_string), stdin);
+    if(strlen(input_string) < sizeof(input_string)-1)
+      input_string[strlen(input_string)-1] = '\0'; //chop new-line
+    else 
+      quit(1, "evallm input exceeds size of input buffer");
 
     if (!feof(stdin)) {
       parse_comline(input_string,&num_of_args,args);

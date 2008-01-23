@@ -54,6 +54,7 @@
 #include "../libs/pc_general.h"
 #include "../programs/idngram.h"
 #include "../libs/ac_hash.h"
+#include "../libs/win32compat.h"
 
 typedef struct {
   wordid_t *word;
@@ -187,15 +188,9 @@ int main(int argc, char *argv[]) {
 
   sprintf(temp_word,"%s%s.%d.",TEMP_FILE_ROOT,host_name,proc_id);
 
-  temp_file_root = salloc(temp_word);
-
+  temp_file_root = catfile(2, tempfiles_directory, temp_word);
 
   pc_report_unk_args(&argc,argv,verbosity);
-  
-  /* If the last charactor in the directory name isn't a / then add one. */
-  
-  if (tempfiles_directory[strlen(tempfiles_directory)-1] != '/') 
-    strcat(tempfiles_directory,"/");
   
   pc_message(verbosity,2,"Vocab           : %s\n",vocab_filename);
   pc_message(verbosity,2,"Buffer size     : %d\n",buffer_size);
@@ -257,7 +252,7 @@ int main(int argc, char *argv[]) {
 
   /* Open the "non-OOV" tempfile */
 
-  sprintf(temp_word,"%s%s1%s",tempfiles_directory,temp_file_root,temp_file_ext);
+  sprintf(temp_word,"%s1%s",temp_file_root,temp_file_ext);
   
   non_unk_fp = rr_fopen(temp_word,"w");
 
@@ -309,7 +304,7 @@ int main(int argc, char *argv[]) {
 
 	  number_of_tempfiles++;
 	  
-	  sprintf(temp_word,"%s%s%hu%s",tempfiles_directory,temp_file_root,
+	  sprintf(temp_word,"%s%hu%s",temp_file_root,
 		  number_of_tempfiles,temp_file_ext);
 	  
 	  pc_message(verbosity,2,
@@ -387,7 +382,7 @@ int main(int argc, char *argv[]) {
     
     number_of_tempfiles++;
   
-    sprintf(temp_word,"%s%s%hu%s",tempfiles_directory,temp_file_root,
+    sprintf(temp_word,"%s%hu%s",temp_file_root,
 	    number_of_tempfiles,temp_file_ext);
     
     pc_message(verbosity,2,"Writing sorted buffer to temporary file %s\n", temp_word);
@@ -441,7 +436,6 @@ int main(int argc, char *argv[]) {
 		    temp_file_root,
 		    temp_file_ext,
 		    max_files,
-		    tempfiles_directory,
 		    stdout,
 		    write_ascii,
 		    fof_size); 
@@ -455,7 +449,6 @@ int main(int argc, char *argv[]) {
 		    temp_file_root,
 		    temp_file_ext,
 		    max_files,
-		    tempfiles_directory,
 		    stdout,
 		    write_ascii,
 		    fof_size); 
