@@ -36,7 +36,8 @@
  */
 
 #include "s3_endpointer.h"
-#include "main_ep.h"
+#include "classify.h"
+#include "endptr.h"
 #include "logs3.h"
 #include "fe.h"
 #include "cmdln_macro.h"

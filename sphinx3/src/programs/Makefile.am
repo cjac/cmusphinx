@@ -27,7 +27,6 @@ sphinx3_lm_convert_SOURCES = main_lm_convert.c
 sphinx3_cfg2fsg_SOURCES = main_cfg2fsg.c
 
 noinst_HEADERS = \
-        main_ep.h \
 	s3_align.h
 
 LDADD = $(top_builddir)/src/libs3decoder/libs3decoder.la \
