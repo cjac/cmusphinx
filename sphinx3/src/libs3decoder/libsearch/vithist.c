@@ -1317,6 +1317,8 @@ vithist_free(vithist_t * v)
 {
 
     if (v) {
+        vithist_utt_reset(v);
+
         if (v->entry) {
             ckd_free((void *) v->entry);
         }

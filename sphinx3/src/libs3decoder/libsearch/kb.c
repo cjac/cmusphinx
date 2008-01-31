@@ -413,6 +413,11 @@ kb_free(kb_t * kb)
     }
 
 
+    if (kb->uttid) {
+        ckd_free(kb->uttid);
+    }
+
+
 #if 0                           /* valgrind reports this one. */
     if (kb->matchsegfp)
         fclose(kb->matchsegfp);

@@ -192,8 +192,15 @@ process_thread(void *aParam)
 
 	    fe_process_utt(fe, samples, num_samples, &frames, &num_frames);
 	    if (frames != NULL) {
+	        char *hypstr;
 		s3_decode_process(&decoder, frames, num_frames);
 		ckd_free_2d((void **)frames);
+		if (s3_decode_hypothesis(&decoder, NULL, &hypstr, NULL)) {
+		    printf("Cannot retrieve hypothesis.\n");
+		}
+		else {
+		    printf("Partial hypothesis:\n%s\n", hypstr);
+		}
 	    }
         }
     }
@@ -280,6 +287,8 @@ main(int argc, char **argv)
     }
 
     s3_decode_close(&decoder);
+    fe_close(fe);
+    cmd_ln_free();
 
     fclose(dump);
 

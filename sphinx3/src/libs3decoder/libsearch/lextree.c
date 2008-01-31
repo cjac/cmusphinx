@@ -872,6 +872,10 @@ lextree_free(lextree_t * lextree)
         E_ERROR("#Nodes allocated(%d) != #nodes freed(%d)\n",
                 lextree->n_node, k);
 
+    hmm_context_free(lextree->ctx);
+
+    hmm_context_free(lextree->comctx);
+
     ckd_free(lextree);
 }
 

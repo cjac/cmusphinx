@@ -194,6 +194,7 @@ main(int _argc, char **_argv)
 
     s3_decode_close(&decoder);
     fe_close(fe);
+    cmd_ln_free();
 
     return 0;
 }
