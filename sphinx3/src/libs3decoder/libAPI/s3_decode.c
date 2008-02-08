@@ -347,9 +347,9 @@ s3_decode_end_utt(s3_decode_t * _decode)
     }
 
     /* Call this with no frames, to update CMN and AGC statistics. */
-    num_features = feat_s2mfc2feat_block(kbcore_fcb(_decode->kbcore),
-					 NULL, 0, FALSE,
-					 TRUE, _decode->features);
+    num_features = feat_s2mfc2feat_live(kbcore_fcb(_decode->kbcore),
+					NULL, NULL, FALSE,
+					TRUE, _decode->features);
     if (num_features > 0)
         utt_decode_block(_decode->features,
                          num_features,
@@ -374,12 +374,12 @@ s3_decode_process(s3_decode_t * _decode,
     assert(_num_frames < S3_DECODE_MAX_PROCESS_FRAMES);
 
     if (_num_frames > 0) {
-        num_features = feat_s2mfc2feat_block(kbcore_fcb(_decode->kbcore),
-                                             _cep_frames,
-                                             _num_frames,
-                                             begin_utt,
-                                             FALSE,
-					     _decode->features);
+        num_features = feat_s2mfc2feat_live(kbcore_fcb(_decode->kbcore),
+					    _cep_frames,
+					    &_num_frames,
+					    begin_utt,
+					    FALSE,
+					    _decode->features);
         _decode->num_frames_entered += _num_frames;
     }
 

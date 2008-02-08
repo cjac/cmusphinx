@@ -348,9 +348,9 @@ sphinx3_decode_raw(PyObject *self, PyObject *args)
 	 * always process the whole thing if both beginutt and endutt
 	 * are TRUE. */
 	decoder.num_frames_entered
-		= feat_s2mfc2feat_block(kbcore_fcb(decoder.kbcore),
-					cep_block, nframes, TRUE, TRUE,
-					feat_block);
+		= feat_s2mfc2feat_live(kbcore_fcb(decoder.kbcore),
+				       cep_block, &nframes, TRUE, TRUE,
+				       feat_block);
 	ckd_free_2d((void **)cep_block);
 	if (nframes == 0) {
 		PyErr_SetString(PyExc_ValueError, "Utterance too short");

@@ -221,11 +221,11 @@ utt_decode(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
         if (total_frame > S3_MAX_FRAMES) {
             E_FATAL("Maximum number of frames (%d) exceeded\n", S3_MAX_FRAMES);
         }
-        if ((total_frame = feat_s2mfc2feat_block(kbcore_fcb(kbcore),
-                                                 kb->mfcc,
-                                                 total_frame,
-                                                 TRUE, TRUE,
-                                                 kb->feat)) < 0) {
+        if ((total_frame = feat_s2mfc2feat_live(kbcore_fcb(kbcore),
+						kb->mfcc,
+						&total_frame,
+						TRUE, TRUE,
+						kb->feat)) < 0) {
             E_FATAL("Feature computation failed\n");
         }
     }
