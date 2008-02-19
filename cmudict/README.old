@@ -1,0 +1,52 @@
+cmudict Notes
+-------------
+[20060203] (air)
+
+*** NOTE: Derivative dictionaries are made and kept in ../lexdata/
+
+
+This collection contains all major versions of the cmudict.
+
+cmudict.0.6d was the last publicly released version of the
+dictionary. It is used in the lmtool service.
+
+cmudict.0.7 was an extension of the 6d version and represented an
+additional year or so of development work, however it was never
+publicly released. At some point it removed from distribution by the
+maintainer. 
+
+cmudict.0.7a and cmudict.0.6e are modifed versions of the above
+dictionaries. The modifications are as follows:
+
+1) Entries appearing in both 0.6d and 0.7 that had different
+pronunciations were examined and the better version was inserted in
+both dictionaries. Notionally this meant taking a corrected entry from
+0.7 and putting it into 0.6d.
+
+2) 0.7 was examined for variant errors. Specifically words that had >6
+variants had improbably variants removed. (This should be redone
+with a lower threshold, say 3).
+
+3) Geminate consonants, typically appearing in compound words, were
+collapsed.
+
+4) Certain systematic pronunciation (actually LTS rule) errors were
+corrected. (Specifically McXxxx and O'Xxxxx forms.)
+
+5) Serendipitiously discovered errors (encountered in the course of the
+above clean-ups) were corrected. 
+
+6) Proper names in the top 10k found in the 1990 US Census and not
+appearing in these dictionaries were added.
+
+For modifications 2-6, all changes were propagated to 0.6d.
+
+[20070607] (air)
+added words from DeepSpeak and TIMIT sx
+
+[20070921] (air)
+switched the pronunciation order for AND to make reduced form first.
+
+[20071029] (air)
+removed some variants
+
