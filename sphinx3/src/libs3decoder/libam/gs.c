@@ -80,7 +80,7 @@ gs_fread_float32(gs_t * gs)
 }
 
 void
-gs_fread_bitvec_t(bitvec_t val, gs_t * gs)
+gs_fread_bitvec_t(bitvec_t * val, gs_t * gs)
 {
     if (fread(val, gs->n_mbyte, 1, gs->fp) != 1)
         E_FATAL("fread failed\n");
@@ -93,7 +93,7 @@ gs_display(char *file, gs_t * gs)
     int32 code_id;
     int32 m_id, s_id, c_id;
     float32 tmp;
-    bitvec_t bv;
+    bitvec_t *bv;
 
     E_INFO("Reading gaussian selector map: %s\n", file);
     gs = (gs_t *) ckd_calloc(1, sizeof(gs_t));
@@ -112,8 +112,7 @@ gs_display(char *file, gs_t * gs)
     E_INFO("The number of code word: %d\n", gs->n_code);
     gs->n_featlen = gs_fread_int32(gs);
     E_INFO("The feature length: %d\n", gs->n_featlen);
-
-    gs->n_mbyte = bitvec_uint32size(gs->n_density) * sizeof(uint32);
+    gs->n_mbyte = bitvec_size(gs->n_density) * sizeof(bitvec_t);
     E_INFO("The number of byte to read: %d\n", gs->n_mbyte);
 
     /* allocate the bit vector here */
@@ -157,7 +156,7 @@ gs_read(char *file)
 
     int32 code_id;
     int32 m_id, s_id, c_id;
-    bitvec_t bv;
+    bitvec_t *bv;
     gs_t *gs;
 
     E_INFO("Reading gaussian selector map: %s\n", file);
@@ -180,7 +179,7 @@ gs_read(char *file)
     gs->n_featlen = gs_fread_int32(gs);
     E_INFO("The feature length: %d\n", gs->n_featlen);
 
-    gs->n_mbyte = bitvec_uint32size(gs->n_density) * sizeof(uint32);
+    gs->n_mbyte = bitvec_size(gs->n_density) * sizeof(bitvec_t);
     E_INFO("The number of byte to read: %d\n", gs->n_mbyte);
 
     /* allocate the bit vector here */

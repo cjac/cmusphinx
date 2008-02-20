@@ -349,7 +349,7 @@ void lextree_ssid_active (lextree_t *lextree,	/**< In: lextree->active is scanne
  * For each active lextree node, mark the corresponding CI phone as active.
  */
 void lextree_ci_active (lextree_t *lextree,	/**< In: Lextree being traversed */
-			bitvec_t ci_active	/**< In/Out: Active/inactive flag for ciphones */
+			bitvec_t *ci_active	/**< In/Out: Active/inactive flag for ciphones */
     );
 
 /**

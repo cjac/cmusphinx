@@ -180,7 +180,7 @@ lextree_init(kbcore_t * kbc, lm_t * lm, char *lmname, int32 istreeUgProb,
 {
     s3cipid_t *lc;
     s3cipid_t ci;
-    bitvec_t lc_active;
+    bitvec_t *lc_active;
     s3wid_t w;
     int32 n, n_lc;
     int32 i, j;
@@ -366,7 +366,7 @@ lextree_build(kbcore_t * kbc, wordprob_t * wordprob, int32 n_word,
         n_st;
     lextree_node_t *ln = 0, **parent, **ssid2ln;
     gnode_t *gn = 0;
-    bitvec_t *ssid_lc;
+    bitvec_t **ssid_lc;
     int32 i, j, k, p;
 
     mdef = kbc->mdef;
@@ -394,7 +394,7 @@ lextree_build(kbcore_t * kbc, wordprob_t * wordprob, int32 n_word,
         (lextree_node_t **) ckd_calloc(n_sseq, sizeof(lextree_node_t *));
 
     /* ssid_lc[ssid] = bitvec indicating which lc's this (root) ssid is entered under */
-    ssid_lc = (bitvec_t *) ckd_calloc(n_sseq, sizeof(bitvec_t));
+    ssid_lc = (bitvec_t **) ckd_calloc(n_sseq, sizeof(bitvec_t *));
     for (i = 0; i < n_sseq; i++)
         ssid_lc[i] = bitvec_alloc(n_ci);
 
@@ -881,7 +881,7 @@ lextree_free(lextree_t * lextree)
 
 /* Not full triphone expansion aware */
 void
-lextree_ci_active(lextree_t * lextree, bitvec_t ci_active)
+lextree_ci_active(lextree_t * lextree, bitvec_t *ci_active)
 {
     lextree_node_t **list, *ln;
     int32 i;

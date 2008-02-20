@@ -385,7 +385,7 @@ vector_vqgen(float32 ** data, int32 rows, int32 cols, int32 vqrows,
 {
     int32 i, j, r, it;
     float64 sqerr, prev_sqerr = 0, t;
-    bitvec_t sel;
+    bitvec_t *sel;
     int32 *count;
     float32 *gmean;
     ptmr_t tm;
