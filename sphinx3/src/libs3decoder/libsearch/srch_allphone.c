@@ -43,12 +43,13 @@
  *   - Some form of Bakis topology (ie, no cycles, except for self-transitions).
  */
 
+#include <listelem_alloc.h>
+
 #include "srch.h"
 #include "astar.h"
 #include "srch_allphone.h"
 #include "hmm.h"
 #include "s3types.h"
-#include "linklist.h"
 #include "corpus.h"
 
 /**
@@ -109,7 +110,10 @@ typedef struct phseg_s {
 typedef struct allphone_s {
     hmm_context_t *ctx;      /**< HMM context */
     phmm_t **ci_phmm;        /**< PHMM lists (for each CI phone) */
+    listelem_alloc_t *phmm_alloc; /**< Allocator for phmm lists. */
+    listelem_alloc_t *plink_alloc; /**< Allocator for phmm links. */
     history_t **frm_hist;    /**< List of history nodes allocated in each frame */
+    listelem_alloc_t *history_alloc; /**< Allocator for history nodes. */
     s3lmwid32_t *ci2lmwid;   /**< Mapping from CI-phone-id to LM-word-id */
 
     mdef_t *mdef;	     /**< Model definition (linked from kbcore) */
@@ -211,7 +215,7 @@ phmm_link(allphone_t *allp)
                 for (p2 = ci_phmm[rclist[i]]; p2; p2 = p2->next) {
                     if (lrc_is_set(p2->lc, ci)) {
                         /* transition from p to p2 */
-                        l = (plink_t *) listelem_alloc(sizeof(*l));
+                        l = listelem_malloc(allp->plink_alloc);
                         l->phmm = p2;
                         l->next = p->succlist;
                         p->succlist = l;
@@ -256,7 +260,7 @@ phmm_build(allphone_t *allp)
     for (pid = 0; pid < mdef->n_phone; pid++) {
         if ((p = phmm_lookup(allp, pid)) == NULL) {
             /* No previous entry; create a new one */
-            p = (phmm_t *) listelem_alloc(sizeof(*p));
+            p = listelem_malloc(allp->phmm_alloc);
 	    hmm_init(allp->ctx, (hmm_t *)p, FALSE,
 		     mdef_pid2ssid(mdef, pid),
 		     mdef->phone[pid].tmat);
@@ -340,10 +344,10 @@ phmm_free(allphone_t *allp)
 	    next = p->next;
 	    for (l = p->succlist; l; l = lnext) {
 		lnext = l->next;
-		listelem_free(l, sizeof(*l));
+		listelem_free(allp->plink_alloc, l);
 	    }
 	    hmm_deinit((hmm_t *)p);
-	    listelem_free(p, sizeof(*p));
+	    listelem_free(allp->phmm_alloc, p);
 	}
     }
     ckd_free(allp->ci_phmm);
@@ -450,7 +454,7 @@ phmm_exit(allphone_t *allp, int32 best)
                     /* Create lattice entry if exiting */
                     if (hmm_out_score(p) >= allp->pbeam) { /* pbeam, not th
 							      because scores scaled */
-                        h = (history_t *) listelem_alloc(sizeof(*h));
+                        h = listelem_malloc(allp->history_alloc);
                         h->score = hmm_out_score(p);
                         /* FIXME: This isn't going to be the correct
                          * transition score, for reasons I don't
@@ -658,11 +662,12 @@ srch_allphone_init(kb_t *kb, void *srch)
     srch_t *s;
     s3cipid_t i;
 
-    linklist_init();
-
     kbc = kb->kbcore;
     s = (srch_t *) srch;
     allp = ckd_calloc(1, sizeof(*allp));
+    allp->plink_alloc = listelem_alloc_init(sizeof(plink_t));
+    allp->phmm_alloc = listelem_alloc_init(sizeof(phmm_t));
+    allp->history_alloc = listelem_alloc_init(sizeof(history_t));
 
     allp->mdef = kbcore_mdef(kbc);
     allp->lm = kbcore_lm(kbc);
@@ -730,7 +735,7 @@ srch_allphone_uninit(void *srch)
     for (f = 0; f < allp->curfrm; f++) {
         for (h = allp->frm_hist[f]; h; h = nexth) {
             nexth = h->next;
-            listelem_free(h, sizeof(*h));
+            listelem_free(allp->history_alloc, h);
         }
 
         allp->frm_hist[f] = NULL;
@@ -738,6 +743,9 @@ srch_allphone_uninit(void *srch)
     allphone_clear_phseg(allp);
     phmm_free(allp);
     hmm_context_free(allp->ctx);
+    listelem_alloc_free(allp->plink_alloc);
+    listelem_alloc_free(allp->phmm_alloc);
+    listelem_alloc_free(allp->history_alloc);
     ckd_free(allp->ci2lmwid);
     ckd_free(allp->frm_hist);
     ckd_free(allp->score_scale);
@@ -770,7 +778,7 @@ srch_allphone_begin(void *srch)
     for (f = 0; f < allp->curfrm; f++) {
         for (h = allp->frm_hist[f]; h; h = nexth) {
             nexth = h->next;
-            listelem_free(h, sizeof(*h));
+            listelem_free(allp->history_alloc, h);
         }
 
         allp->frm_hist[f] = NULL;
@@ -950,6 +958,8 @@ srch_allphone_gen_dag(void *srch,         /**< a pointer of srch_t */
     int32 i, f, k;
 
     dag = ckd_calloc(1, sizeof(*dag));
+    dag_init_r(dag, kbcore_config(s->kbc));
+
     sfwid = (glist_t *) ckd_calloc(allp->curfrm, sizeof(glist_t));
 
     /* Min. endframes value that a node must persist for it to be not ignored */
@@ -976,7 +986,7 @@ srch_allphone_gen_dag(void *srch,         /**< a pointer of srch_t */
 		    break;
 	    }
 	    if (!gn) {
-		dn = (dagnode_t *) listelem_alloc(sizeof(*dn));
+		dn = listelem_malloc(dag->node_alloc);
 		dn->wid = wid;
 		dn->node_ascr = ve->score;
 		dn->node_lscr = ve->tscore;
@@ -1077,7 +1087,7 @@ srch_allphone_gen_dag(void *srch,         /**< a pointer of srch_t */
             dn = (dagnode_t *) gnode_ptr(gn);
             if (dn->seqid == -1) {
                 /* If pruned, free the node too */
-                listelem_free(dn, sizeof(*dn));
+                listelem_free(dag->node_alloc, dn);
             }
             glist_free((glist_t) dn->hook);
             dn->hook = NULL;

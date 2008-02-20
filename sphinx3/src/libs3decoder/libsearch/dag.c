@@ -157,7 +157,8 @@
 #endif
 #include "dag.h"
 #include "vithist.h"
-#include "linklist.h"
+
+#include <listelem_alloc.h>
 
 void
 hyp_free(srch_hyp_t * list)
@@ -188,7 +189,7 @@ dag_link(dag_t * dagp, dagnode_t * pd, dagnode_t * d, int32 ascr,
 
     /* Link d into successor list for pd */
     if (pd) { /* Special condition for root node which doesn't have a predecessor */
-        l = (daglink_t *) listelem_alloc(sizeof(*l));
+        l = listelem_malloc(dagp->link_alloc);
         l->node = d;
         l->src = pd;
         l->ascr = ascr;
@@ -207,7 +208,7 @@ dag_link(dag_t * dagp, dagnode_t * pd, dagnode_t * d, int32 ascr,
     }
 
     /* Link pd into predecessor list for d */
-    l = (daglink_t *) listelem_alloc(sizeof(*l));
+    l = listelem_malloc(dagp->link_alloc);
     l->node = pd;
     l->src = d;
     l->ascr = ascr;
@@ -316,14 +317,14 @@ dag_remove_unreachable(dag_t *dag)
             /* Remove successor node links */
             for (l = d->succlist; l; l = nl) {
                 nl = l->next;
-                listelem_free(l, sizeof(*l));
+                listelem_free(dag->link_alloc, l);
             }
             d->succlist = NULL;
 
             /* Remove predecessor links */
             for (l = d->predlist; l; l = nl) {
                 nl = l->next;
-                listelem_free(l, sizeof(*l));
+                listelem_free(dag->link_alloc, l);
             }
             d->predlist = NULL;
         }
@@ -337,7 +338,7 @@ dag_remove_unreachable(dag_t *dag)
                         d->succlist = nl;
                     else
                         pl->next = nl;
-                    listelem_free(l, sizeof(*l));
+                    listelem_free(dag->link_alloc, l);
                 }
                 else
                     pl = l;
@@ -486,26 +487,10 @@ dag_chk_linkscr(dag_t * dagp)
 int32
 dag_destroy(dag_t * dagp)
 {
-    dagnode_t *d, *nd;
-    daglink_t *l, *nl;
-
-    for (d = dagp->list; d; d = nd) {
-        nd = d->alloc_next;
-
-        for (l = d->succlist; l; l = nl) {
-            nl = l->next;
-            listelem_free(l, sizeof(*l));
-        }
-        for (l = d->predlist; l; l = nl) {
-            nl = l->next;
-            listelem_free(l, sizeof(*l));
-        }
-
-        listelem_free(d, sizeof(*d));
-    }
-
+    /* No need to crawl the structure!  Just free the allocators (hooray) */
+    listelem_alloc_free(dagp->node_alloc);
+    listelem_alloc_free(dagp->link_alloc);
     ckd_free(dagp);
-
     return 0;
 }
 
@@ -675,6 +660,8 @@ dag_init_r(dag_t * dagp, cmd_ln_t *config)
     /* Initialize DAG structure */
     dagp->list = NULL;
     dagp->config = config;
+    dagp->node_alloc = listelem_alloc_init(sizeof(dagnode_t));
+    dagp->link_alloc = listelem_alloc_init(sizeof(daglink_t));
 
     /* Set limit on max DAG edges allowed after which utterance is aborted */
     dagp->maxedge = cmd_ln_int32_r(config, "-maxedge");
@@ -1073,7 +1060,7 @@ dag_remove_bypass_links(dag_t *dag)
                     d->succlist = nl;
                 else
                     pl->next = nl;
-                listelem_free(l, sizeof(*l));
+                listelem_free(dag->link_alloc, l);
             }
             else
                 pl = l;
@@ -1086,7 +1073,7 @@ dag_remove_bypass_links(dag_t *dag)
                     d->predlist = nl;
                 else
                     pl->next = nl;
-                listelem_free(l, sizeof(*l));
+                listelem_free(dag->link_alloc, l);
             }
             else
                 pl = l;
@@ -1132,11 +1119,10 @@ dag_load_r(char *file,          /**< Input: File to lod from */
     s3wid_t finishwid;
     int32 report;
 
-    linklist_init();
-
     report = 0;
     lathist = NULL;
     dag = ckd_calloc(1, sizeof(dag_t));
+    dag_init_r(dag, config);
 
     finishwid = dict_wordid(dict, S3_FINISH_WORD);
 
@@ -1144,7 +1130,6 @@ dag_load_r(char *file,          /**< Input: File to lod from */
     dag->list = NULL;
     dag->nlink = 0;
     dag->nbypass = 0;
-    dag->config = config;
 
     tail = NULL;
     darray = NULL;
@@ -1248,7 +1233,7 @@ dag_load_r(char *file,          /**< Input: File to lod from */
             goto load_error;
         }
 
-        d = (dagnode_t *) listelem_alloc(sizeof(*d));
+        d = listelem_malloc(dag->node_alloc);
         darray[i] = d;
 
         d->wid = w;

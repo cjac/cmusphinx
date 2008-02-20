@@ -124,10 +124,10 @@
  * 		Started.
  */
 
+#include <listelem_alloc.h>
 
 #include "vithist.h"
 #include "lextree.h"
-#include "linklist.h"
 
 void
 vh_lmstate_display(vh_lmstate_t * vhl, dict_t * dict)
@@ -1112,10 +1112,8 @@ vithist_dag_build_r(vithist_t * vh, glist_t hyp, dict_t * dict, int32 endid, cmd
     srch_hyp_t *h;
     dag_t *dag;
 
-    linklist_init();
-
     dag = ckd_calloc(1, sizeof(*dag));
-    dag->config = config;
+    dag_init_r(dag, config);
     sfwid = (glist_t *) ckd_calloc(vh->n_frm + 1, sizeof(glist_t));
 
     /* Min. endframes value that a node must persist for it to be not ignored */
@@ -1154,7 +1152,7 @@ vithist_dag_build_r(vithist_t * vh, glist_t hyp, dict_t * dict, int32 endid, cmd
                 break;
         }
         if (!gn) {
-            dn = (dagnode_t *) listelem_alloc(sizeof(*dn));
+            dn = listelem_malloc(dag->node_alloc);
             dn->wid = ve->wid;
 
             dn->node_ascr = ve->ascr;
@@ -1283,7 +1281,7 @@ vithist_dag_build_r(vithist_t * vh, glist_t hyp, dict_t * dict, int32 endid, cmd
             glist_free((glist_t) dn->hook);
             dn->hook = NULL;
             if (dn->seqid == -1) /* If pruned, free the node too */
-                listelem_free(dn, sizeof(*dn));
+                listelem_free(dag->node_alloc, dn);
         }
         glist_free(sfwid[f]);
     }
@@ -1793,7 +1791,7 @@ latticehist_dag_build_r(latticehist_t * vh, glist_t hyp, dict_t * dict,
     dag_t *dag;
 
     dag = ckd_calloc(1, sizeof(*dag));
-    dag->config = config;
+    dag_init_r(dag, config);
     sfwid = (glist_t *) ckd_calloc(vh->n_frm, sizeof(glist_t));
 
     /* Min. endframes value that a node must persist for it to be not ignored */
@@ -1812,7 +1810,7 @@ latticehist_dag_build_r(latticehist_t * vh, glist_t hyp, dict_t * dict,
                 break;
         }
         if (!gn) {
-            dn = (dagnode_t *) listelem_alloc(sizeof(*dn));
+            dn = listelem_malloc(dag->node_alloc);
             dn->wid = ve->wid;
 
             dn->node_ascr = ve->ascr;
@@ -1949,7 +1947,7 @@ latticehist_dag_build_r(latticehist_t * vh, glist_t hyp, dict_t * dict,
             dn = (dagnode_t *) gnode_ptr(gn);
             if (dn->seqid == -1) {
                 /* If pruned, free the node too */
-                listelem_free(dn, sizeof(*dn));
+                listelem_free(dag->node_alloc, dn);
                 /* And unlink it from all lattice entries involving it. */
                 for (gn2 = (glist_t)dn->hook; gn2; gn2 = gnode_next(gn2)) {
                     ve = (lattice_t *) gnode_ptr(gn2);

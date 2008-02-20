@@ -112,8 +112,10 @@
 #ifndef _LIBFBS_DAG_H_
 #define _LIBFBS_DAG_H_
 
+#include <listelem_alloc.h>
 #include <s3types.h>
 #include <cmd_ln.h>
+
 #include "search.h"
 #include "dict.h"
 #include "lm.h"
@@ -229,10 +231,9 @@ typedef struct {
     void *hook;                   /**< A hook for general purpose */
 
     cmd_ln_t *config;
+    listelem_alloc_t *node_alloc; /**< Allocator for nodes. */
+    listelem_alloc_t *link_alloc; /**< Allocator for edges. */
 } dag_t;
-
-
-
 
 
 /** Clean up the hypothesis list */
