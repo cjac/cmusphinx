@@ -3,8 +3,8 @@
 # to the right versions, or leave them unset and get the RedHat 7.3 defaults
 
 DIE=0
-package=gst-plugin
-srcfile=src/main.c
+package=gst-sphinx
+srcfile=src/gstpocketsphinx.c
 
 # autogen.sh helper functions (copied from GStreamer's common/ CVS module)
 if test ! -f ./gst-autogen.sh;

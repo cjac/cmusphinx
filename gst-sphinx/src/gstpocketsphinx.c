@@ -378,39 +378,6 @@ gst_pocketsphinx_set_boolean (GstPocketSphinx *sink,
 }
 
 static void
-gst_pocketsphinx_set_int32 (GstPocketSphinx *sink,
-                            const gchar *key, const GValue *value)
-{
-    /* NOTE: This is an undocumented feature of SphinxBase's cmd_ln.h.
-     * However it will be officially supported in future releases. */
-    anytype_t *val;
-    val = cmd_ln_access(key);
-    val->i_32 = g_value_get_int(value);
-}
-
-static void
-gst_pocketsphinx_set_float (GstPocketSphinx *sink,
-                             const gchar *key, const GValue *value)
-{
-    /* NOTE: This is an undocumented feature of SphinxBase's cmd_ln.h.
-     * However it will be officially supported in future releases. */
-    anytype_t *val;
-    val = cmd_ln_access(key);
-    val->fl_32 = g_value_get_float(value);
-}
-
-static void
-gst_pocketsphinx_set_double (GstPocketSphinx *sink,
-                             const gchar *key, const GValue *value)
-{
-    /* NOTE: This is an undocumented feature of SphinxBase's cmd_ln.h.
-     * However it will be officially supported in future releases. */
-    anytype_t *val;
-    val = cmd_ln_access(key);
-    val->fl_64 = g_value_get_double(value);
-}
-
-static void
 gst_pocketsphinx_set_property (GObject * object, guint prop_id,
 			       const GValue * value, GParamSpec * pspec)
 {
@@ -421,9 +388,18 @@ gst_pocketsphinx_set_property (GObject * object, guint prop_id,
         gst_pocketsphinx_set_string(sink, "-hmm", value);
         break;
     case PROP_LM_FILE:
-        /* FSG and LM are mutually exclusive */
+        /* FSG and LM are mutually exclusive. */
         gst_pocketsphinx_set_string(sink, "-fsg", NULL);
         gst_pocketsphinx_set_string(sink, "-lm", value);
+        /* Switch to this new LM if the decoder is active. */
+        if (sink->ad.initialized) {
+            lm_read(g_value_get_string(value),
+                    g_value_get_string(value),
+                    cmd_ln_float32("-lw"),
+                    cmd_ln_float32("-uw"),
+                    cmd_ln_float32("-wip"));
+            uttproc_set_lm(g_value_get_string(value));
+        }
         break;
     case PROP_DICT_FILE:
         gst_pocketsphinx_set_string(sink, "-dict", value);
@@ -432,6 +408,15 @@ gst_pocketsphinx_set_property (GObject * object, guint prop_id,
         /* FSG and LM are mutually exclusive */
         gst_pocketsphinx_set_string(sink, "-lm", NULL);
         gst_pocketsphinx_set_string(sink, "-fsg", value);
+        /* Switch to this new FSG if the decoder is active. */
+        if (sink->ad.initialized) {
+            char *fsgname;
+
+            fsgname = uttproc_load_fsgfile((char *)
+                                           g_value_get_string(value));
+            if (fsgname)
+                uttproc_set_fsg(fsgname);
+        }
         break;
     case PROP_S2_FSG:
     {
