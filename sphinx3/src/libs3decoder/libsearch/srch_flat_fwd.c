@@ -656,9 +656,9 @@ srch_FLAT_FWD_gen_dag(void *srch,         /**< a pointer of srch_t */
     fwg = (srch_FLAT_FWD_graph_t *) s->grh->graph_struct;
 
     dag =
-        latticehist_dag_build(fwg->lathist, hyp, kbcore_dict(s->kbc),
-                              kbcore_lm(s->kbc), fwg->ctxt, s->kbc->fillpen,
-                              s->exit_id);
+        latticehist_dag_build_r(fwg->lathist, hyp, kbcore_dict(s->kbc),
+                                kbcore_lm(s->kbc), fwg->ctxt, s->kbc->fillpen,
+                                s->exit_id, kbcore_config(s->kbc));
 
     return dag;
 }

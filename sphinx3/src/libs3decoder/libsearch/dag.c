@@ -300,7 +300,7 @@ dag_mark_reachable(dagnode_t * d)
 
     d->reachable = 1;
     for (l = d->predlist; l; l = l->next)
-        if (!l->node->reachable)
+        if (l->node && !l->node->reachable)
             dag_mark_reachable(l->node);
 }
 
@@ -687,30 +687,30 @@ dag_write_header_r(FILE * fp, cmd_ln_t *config)
 
     /* Print logbase first!!  Other programs look for it early in the
      * DAG */
-    fprintf(fp, "# -logbase %e\n", cmd_ln_float32("-logbase"));
-    fprintf(fp, "# -dict %s\n", cmd_ln_str("-dict"));
-    if (cmd_ln_str("-fdict"))
-        fprintf(fp, "# -fdict %s\n", cmd_ln_str("-fdict"));
+    fprintf(fp, "# -logbase %e\n", cmd_ln_float32_r(config, "-logbase"));
+    fprintf(fp, "# -dict %s\n", cmd_ln_str_r(config, "-dict"));
+    if (cmd_ln_str_r(config, "-fdict"))
+        fprintf(fp, "# -fdict %s\n", cmd_ln_str_r(config, "-fdict"));
     /* Allphone mode doesn't always have a LM. */
-    if (cmd_ln_str("-lm"))
-	fprintf(fp, "# -lm %s\n", cmd_ln_str("-lm"));
+    if (cmd_ln_str_r(config, "-lm"))
+	fprintf(fp, "# -lm %s\n", cmd_ln_str_r(config, "-lm"));
     /* We might have one or many of these arguments */
-    if (cmd_ln_exists("-hmm") && cmd_ln_str("-hmm")) 
-        fprintf(fp, "# -hmm %s\n", cmd_ln_str("-hmm"));
-    if (cmd_ln_exists("-mdef") && cmd_ln_str("-mdef")) 
-        fprintf(fp, "# -mdef %s\n", cmd_ln_str("-mdef"));
-    if (cmd_ln_exists("-mean") && cmd_ln_str("-mean")) 
-        fprintf(fp, "# -mean %s\n", cmd_ln_str("-mean"));
-    if (cmd_ln_exists("-var") && cmd_ln_str("-var")) 
-        fprintf(fp, "# -var %s\n", cmd_ln_str("-var"));
-    if (cmd_ln_exists("-mixw") && cmd_ln_str("-mixw")) 
-        fprintf(fp, "# -mixw %s\n", cmd_ln_str("-mixw"));
-    if (cmd_ln_exists("-tmat") && cmd_ln_str("-tmat")) 
-        fprintf(fp, "# -tmat %s\n", cmd_ln_str("-tmat"));
-    if (cmd_ln_exists("-senmgau") && cmd_ln_str("-senmgau"))
-        fprintf(fp, "# -senmgau %s\n", cmd_ln_str("-senmgau"));
-    if (cmd_ln_exists("-min_endfr")) {
-        fprintf(fp, "# -min_endfr %d\n", cmd_ln_int32("-min_endfr"));
+    if (cmd_ln_exists_r(config, "-hmm") && cmd_ln_str_r(config, "-hmm")) 
+        fprintf(fp, "# -hmm %s\n", cmd_ln_str_r(config, "-hmm"));
+    if (cmd_ln_exists_r(config, "-mdef") && cmd_ln_str_r(config, "-mdef")) 
+        fprintf(fp, "# -mdef %s\n", cmd_ln_str_r(config, "-mdef"));
+    if (cmd_ln_exists_r(config, "-mean") && cmd_ln_str_r(config, "-mean")) 
+        fprintf(fp, "# -mean %s\n", cmd_ln_str_r(config, "-mean"));
+    if (cmd_ln_exists_r(config, "-var") && cmd_ln_str_r(config, "-var")) 
+        fprintf(fp, "# -var %s\n", cmd_ln_str_r(config, "-var"));
+    if (cmd_ln_exists_r(config, "-mixw") && cmd_ln_str_r(config, "-mixw")) 
+        fprintf(fp, "# -mixw %s\n", cmd_ln_str_r(config, "-mixw"));
+    if (cmd_ln_exists_r(config, "-tmat") && cmd_ln_str_r(config, "-tmat")) 
+        fprintf(fp, "# -tmat %s\n", cmd_ln_str_r(config, "-tmat"));
+    if (cmd_ln_exists_r(config, "-senmgau") && cmd_ln_str_r(config, "-senmgau"))
+        fprintf(fp, "# -senmgau %s\n", cmd_ln_str_r(config, "-senmgau"));
+    if (cmd_ln_exists_r(config, "-min_endfr")) {
+        fprintf(fp, "# -min_endfr %d\n", cmd_ln_int32_r(config, "-min_endfr"));
     }
     fprintf(fp, "#\n");
 }
