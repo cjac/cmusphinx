@@ -292,7 +292,7 @@ srch_FSG_gen_hyp(void *srch           /**< a pointer of srch_t */
     s = (srch_t *) srch;
     fsgsrch = (fsg_search_t *) s->grh->graph_struct;
 
-    fsg_search_history_backtrace(fsgsrch, FALSE);
+    fsg_search_history_backtrace(fsgsrch, TRUE);
 
     ghyp = NULL;
     for (h = fsgsrch->hyp; h; h = h->next) {
