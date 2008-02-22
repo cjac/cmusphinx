@@ -47,7 +47,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <sys/utsname.h>
+/* #include <sys/utsname.h> */
 #include <sys/types.h>
 #include "../liblmest/toolkit.h"
 #include "../libs/general.h"
@@ -132,7 +132,7 @@ int main(int argc, char *argv[]) {
   char *temp_file_root;
   char *temp_file_ext;
   char *host_name;
-  struct utsname uname_info;
+  /*   struct utsname uname_info; */
   int proc_id;
 
   /* Vocab hash table things */
@@ -180,15 +180,13 @@ int main(int argc, char *argv[]) {
       temp_file_ext = salloc("");
   }
 
-  uname(&uname_info);
+  /* uname(&uname_info); /**/
+  /* host_name = salloc(uname_info.nodename); /**/
+  /*   proc_id = getpid();  /**/
+  /* sprintf(temp_word,"%s%s.%d.",TEMP_FILE_ROOT,host_name,proc_id); /**/
+  /* temp_file_root = catfile(2, tempfiles_directory, temp_word); /**/
 
-  host_name = salloc(uname_info.nodename);
-
-  proc_id = getpid();
-
-  sprintf(temp_word,"%s%s.%d.",TEMP_FILE_ROOT,host_name,proc_id);
-
-  temp_file_root = catfile(2, tempfiles_directory, temp_word);
+  temp_file_root = tempnam(tempfiles_directory,"1234567890");
 
   pc_report_unk_args(&argc,argv,verbosity);
   

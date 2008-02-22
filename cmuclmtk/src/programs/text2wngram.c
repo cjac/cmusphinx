@@ -40,16 +40,19 @@
 
 #include <sys/types.h>
 #include <unistd.h>
-#include <sys/utsname.h>
+/* #include <sys/utsname.h> /**/
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include "../liblmest/toolkit.h"
 #include "../libs/pc_general.h"
 #include "../libs/general.h"
+#include "../libs/win32compat.h"
 
 int cmp_strings(const void *string1,const void *string2) {
   
+#include "../libs/win32compat.h"  
+
   char *s1;
   char *s2;
   
@@ -339,7 +342,7 @@ int main (int argc, char **argv) {
 
   int counter;
 
-  struct utsname uname_info;
+  /*  struct utsname uname_info;  /**/
   char *temp_file_root;
   char *temp_file_ext;
   char *host_name;
@@ -395,15 +398,12 @@ int main (int argc, char **argv) {
       temp_file_ext = salloc("");
   }
 
-  uname(&uname_info);
-
-  host_name = salloc(uname_info.nodename);
-
-  proc_id = getpid();
-
-  sprintf(temp_word,"%s%s.%d.",TEMP_FILE_ROOT,host_name,proc_id);
-
-  temp_file_root = salloc(temp_word);
+  /*  uname(&uname_info); */
+  /* host_name = salloc(uname_info.nodename); */
+  /* proc_id = getpid();
+  /* sprintf(temp_word,"%s%s.%d.",TEMP_FILE_ROOT,host_name,proc_id);
+  /* temp_file_root = salloc(temp_word); /**/
+  temp_file_root = tempnam(NULL,"0123456789");
 
   pc_report_unk_args(&argc,argv,verbosity);
  
