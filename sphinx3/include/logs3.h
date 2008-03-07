@@ -118,6 +118,7 @@ extern "C" {
 #define LOGS3_FAILURE 0
 
 /** Initialize module with a new base (> 1.0).  Returns 0 if successful, -1 otherwise. */
+S3DECODER_EXPORT
 int32 logs3_init (float64 base, /**< The log base of the module */
 		  int32 bReport,  /**< Whether progress should be reported */
 		  int32 bLogTable /**< Whether log table should be used or not */
@@ -129,6 +130,7 @@ int32 logs3_add (int32 logs3p, /**< The first number in s3 log */
     );
 
 /** Given p, return logs3(p) */
+S3DECODER_EXPORT
 int32 logs3 (float64 p   /**< The first number in float */
     );
 

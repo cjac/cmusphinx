@@ -122,6 +122,7 @@ typedef struct {
  * filler words get fillprob.  As with the trigram LM, the resulting log-probabilities are
  * multiplied by a language weight and finally a word insertion penalty is tacked on.
  */
+S3DECODER_EXPORT
 fillpen_t *fillpen_init (dict_t *dict,		/**< In: Dictionary containing filler words */
 			 char *file,		/**< In: Filler word probabilities file, if any */
 			 float64 silprob,	/**< In: Default probability for silence word */
@@ -147,6 +148,7 @@ void fillpen_report(fillpen_t *f        /**< In: Filler word probabilities struc
 /* RAH 
    free memory allocated by fillpen_init
 */
+S3DECODER_EXPORT
 void fillpen_free (fillpen_t *f /**< A filler penalty structure */
     );
 

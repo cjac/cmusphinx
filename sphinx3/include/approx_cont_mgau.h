@@ -218,7 +218,7 @@ extern "C" {
     @see approx_mgau_eval 
     @return the best senone score
 */
-
+S3DECODER_EXPORT
 int32 approx_cont_mgau_frame_eval (kbcore_t * kbc,  /**< Input, kbcore, for mdef, svq and gs*/
 				   fast_gmm_t *fastgmm,	 /**< Input/Output: wrapper for
 							    parameters for Fast GMM , for
@@ -239,7 +239,7 @@ int32 approx_cont_mgau_frame_eval (kbcore_t * kbc,  /**< Input, kbcore, for mdef
  * CI senone score as a kind of approximate match of the CD score.
  */
 
-
+S3DECODER_EXPORT
 void approx_cont_mgau_ci_eval (
     kbcore_t *kbc, /**< Input, kbcore, for mdef, svq and gs*/
     fast_gmm_t *fg, /**< Input/Output: wrapper for

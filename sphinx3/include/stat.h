@@ -158,6 +158,7 @@ void stat_report_utt(
     );
 
 /** Report the total statistics */
+S3DECODER_EXPORT
 void stat_report_corpus(
     stat_t * st /**< A statistics data structure */ 
     );

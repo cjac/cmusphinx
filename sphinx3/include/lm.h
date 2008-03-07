@@ -752,6 +752,7 @@ typedef struct {
  * want to sustain this part of the development.
  *
  */
+S3DECODER_EXPORT
 lmset_t* lmset_init(char* lmfile,  /**< The lm file name, lmfile and lmctlfile are mutally exclusive */
 		    char* lmctlfile, /**< The file that specified multiple LMs and class information, lmfile and lmctlfile are mutually exclusive */
 		    char* ctl_lm,    /**< The control file that describes which lm to use for a particular utterance*/
@@ -818,6 +819,7 @@ void lmset_set_curlm_widx(lmset_t *lms, /**< In: The set of LM */
 /**
  * Set the current LM with name
  */
+S3DECODER_EXPORT
 void lmset_set_curlm_wname(lmset_t *lms, /**< In: The set of LM */
 			   const char *lmname   /**< In: The LM name */
     );
@@ -1007,6 +1009,7 @@ void lm_set_param (lm_t *lm,  /**< In: the LM */
     );
 
 
+S3DECODER_EXPORT
 int32 lm_rawscore (lm_t *lm,  /**< In: the LM */
 		   int32 score
     );
@@ -1014,10 +1017,12 @@ int32 lm_rawscore (lm_t *lm,  /**< In: the LM */
 
 
 /** LM cache related */
+S3DECODER_EXPORT
 void lm_cache_reset (lm_t *lmp /**< In: the LM */
     );
 
 /** LM cache statistic dumping */
+S3DECODER_EXPORT
 void lm_cache_stats_dump (lm_t *lmp /**< In: the LM */
     );
 
@@ -1097,6 +1102,7 @@ lm_t *lm_read_advance (const char *file,	/**< In: LM file being read */
 						 applied to the lm or not */
     );
 
+S3DECODER_EXPORT
 lm_t *lm_read_advance2(const char *file,	/**< In: LM file being read */
 		       const char *lmname,   /**<In: LM name*/
 		       float64 lw,	/**< In: Language weight */
@@ -1118,6 +1124,7 @@ lm_t *lm_read_advance2(const char *file,	/**< In: LM file being read */
    assume to be iso8859-1. Call lm_write. To convert encoding, please use
    lm_write_advance. 
 */
+S3DECODER_EXPORT
 int32 lm_write(lm_t *model, /** In: the pointer LM we want to output */
 	       const char *outputfile, /**< In: the output file name */
 	       const char *filename, /**< In: the LM file name  */
@@ -1168,6 +1175,7 @@ int32 lm_write_advance(lm_t *model, /**< In: the pointer LM we want to output */
 /**
    Deallocate the language model. 
 */
+S3DECODER_EXPORT
 void lm_free (lm_t *lm /**< In: a LM structure */
     );
 

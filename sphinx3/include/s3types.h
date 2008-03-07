@@ -83,6 +83,7 @@
 
 #include <libutil.h>
 #include <float.h>
+#include <sphinx3_export.h>
 
 /** \file s3types.h
  * \brief Size definition of semantically units. Common for both s3 and s3.X decoder. 

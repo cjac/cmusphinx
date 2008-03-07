@@ -132,11 +132,14 @@ typedef struct {
 } adapt_am_t ;
 
 /** Initialize the adaptor structure */
+S3DECODER_EXPORT
 adapt_am_t* adapt_am_init(void);
   
 /** free adaptor structure */
+S3DECODER_EXPORT
 void adapt_am_free(adapt_am_t *ad);
 
+S3DECODER_EXPORT
 void adapt_set_mllr(adapt_am_t *ad, /**< The adaptor object */
 		    mgau_model_t *g,  /**< Gaussian model object */
 		    const char *mllrfile,  /**< MLLR file name */

@@ -66,6 +66,7 @@ void utt_end (kb_t *kb     /**< A kb */
     );
 
 /** Decoding the whole utterance */
+S3DECODER_EXPORT
 void utt_decode (void *data,  /**< A kb */
 		 utt_res_t *ur, /**< Utterance resource structure */
 		 int32 sf,  /**< Starting frame of the decoding */

@@ -96,6 +96,7 @@ int encoding_str2ind(const char *enc /**< In: Input encoding */
    Resolve whether encoding is legitimate 
    @return whether the two encoding could be resolved. 
 */
+S3DECODER_EXPORT
 int encoding_resolve(char* inputenc,  /**< In: Input encoding */
 		     char *outputenc  /**< In: Input encoding */
     );

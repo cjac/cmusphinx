@@ -110,6 +110,7 @@ s2_semi_mgau_t *s2_semi_mgau_init(const char *mean_path, const char *var_path,
 
 void s2_semi_mgau_free(s2_semi_mgau_t *s);
 
+S3DECODER_EXPORT
 int32 s2_semi_mgau_frame_eval(s2_semi_mgau_t *s,
 			      ascr_t *ascr,
 			      fast_gmm_t *fgmm,

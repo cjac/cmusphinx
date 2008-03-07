@@ -162,6 +162,7 @@ ms_mgau_model_t* ms_mgau_init (char *meanfile,	/**< In: File containing means of
 void ms_mgau_free(ms_mgau_model_t *g /**< In: A set of models to free */
     );
 
+S3DECODER_EXPORT
 int32 ms_cont_mgau_frame_eval (ascr_t *ascr,   /**< In: An ascr object*/
 			       ms_mgau_model_t *msg, /**< In: A multi-stream mgau mode */
 			       mdef_t *mdef,   /**< In: A mdef */
@@ -169,6 +170,7 @@ int32 ms_cont_mgau_frame_eval (ascr_t *ascr,   /**< In: An ascr object*/
     );
 
 
+S3DECODER_EXPORT
 int32 model_set_mllr(ms_mgau_model_t* msg, /**< The model-stream Gaussian distribution model */
 		     const char *mllrfile, /**< The MLLR file name */
 		     const char *cb2mllrfile, /**< The codebook to MLLR file name */

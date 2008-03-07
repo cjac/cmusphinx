@@ -41,6 +41,7 @@ typedef struct {
     int frames_required;
 } s3_endpointer_t;
 
+S3DECODER_EXPORT
 void s3_endpointer_init(s3_endpointer_t *_ep,
 			char *_means_file,
 			char *_vars_file,
@@ -55,16 +56,22 @@ void s3_endpointer_init(s3_endpointer_t *_ep,
 			int _end_window,
 			int _end_threshold,
 			int _end_pad);
+S3DECODER_EXPORT
 void s3_endpointer_close(s3_endpointer_t *_ep);
+S3DECODER_EXPORT
 void s3_endpointer_reset(s3_endpointer_t *_ep);
+S3DECODER_EXPORT
 void s3_endpointer_feed_frames(s3_endpointer_t *_ep,
 			       float32 **_frames,
 			       int _n_frames,
 			       int _eof);
+S3DECODER_EXPORT
 int s3_endpointer_read_utt(s3_endpointer_t *_ep,
 			   float32 **_frames,
 			   int _n_frames);
+S3DECODER_EXPORT
 int s3_endpointer_next_utt(s3_endpointer_t *_ep);
+S3DECODER_EXPORT
 int s3_endpointer_frame_count(s3_endpointer_t *_ep);
 
 #ifdef __cplusplus

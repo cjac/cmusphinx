@@ -85,6 +85,7 @@ NOTE: Current match_write has four features which is different with log_hypstr.
 I don't think they are very important in processing so I removed them. 
 
 */
+S3DECODER_EXPORT
 void match_write (FILE *fp,  /**< The file pointer */
 		  glist_t hyp, /**< A link-list that contains the hypothesis */
 		  char* uttid, /**< Utterance id */
@@ -93,6 +94,7 @@ void match_write (FILE *fp,  /**< The file pointer */
     );
 
 /** write match segment */
+S3DECODER_EXPORT
 void matchseg_write (FILE *fp,  /**< The file pointer */
 		     glist_t hyp, /**< A link-list that contains the hypotheesis*/
 		     char *uttid, /**< Utterance ID of the file */
@@ -127,12 +129,14 @@ void match_detailed(FILE* fp, /**< The file pointer */
 /**
    A funtion that reads the s3 hypseg line. 
 */
+S3DECODER_EXPORT
 int read_s3hypseg_line(char *line,  /**< A line pointer */
 		       seg_hyp_line_t *seg_hyp_line,  /**< A hypseg line structure */
 		       lm_t* lm,  /**< A LM */
 		       dict_t *dict /**< A dictionary */
     );
 
+S3DECODER_EXPORT
 int free_seg_hyp_line(seg_hyp_line_t *seg_hyp_line);
 
 /** CODE DUPLICATION!!! Sphinx 3.0 family of logging hyp and hyp segments 
@@ -140,6 +144,7 @@ int free_seg_hyp_line(seg_hyp_line_t *seg_hyp_line);
     (20051109) ARCHAN: The only consumer of log_hypstr now is main_dag.c
 
 */
+S3DECODER_EXPORT
 void log_hypstr (FILE *fp,  /**< A file pointer */
 		 srch_hyp_t *hypptr,  /**< A srch_hyp_t */
 		 char *uttid,   /**< An utterance ID */
@@ -149,6 +154,7 @@ void log_hypstr (FILE *fp,  /**< A file pointer */
     );
 
 
+S3DECODER_EXPORT
 void log_hyp_detailed (FILE *fp, /**< A file poointer */
 		       srch_hyp_t *hypptr,  /**< A srch_hyp_t */
 		       char *uttid,         /**< An utternace ID */

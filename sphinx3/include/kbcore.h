@@ -162,12 +162,14 @@ typedef struct {
 /**
    Create a new kbcore 
 */
+S3DECODER_EXPORT
 kbcore_t *New_kbcore(void);
 
 /**
    Initialize just the acoustic model for kbcore, taking parameters
    from the global command-line module.
 */
+S3DECODER_EXPORT
 void s3_am_init(kbcore_t *kbc);
 
 

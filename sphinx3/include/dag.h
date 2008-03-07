@@ -237,7 +237,7 @@ typedef struct {
 
 
 /** Clean up the hypothesis list */
-
+S3DECODER_EXPORT
 void hyp_free (srch_hyp_t *list);
 
 /** Initialize a dag_t */
@@ -250,6 +250,7 @@ void dag_init_r(dag_t* dagp, cmd_ln_t *config);
 /** Link two DAG nodes with the given arguments
  * @return 0 if successful, -1 if maxedge limit exceeded.
  */
+S3DECODER_EXPORT
 int32 dag_link (dag_t * dagp,    /**< A pointer to a DAG */
                 dagnode_t *pd,  
                 dagnode_t *d,   
@@ -311,6 +312,7 @@ int32 dag_chk_linkscr (
 
 /** destroy a dag 
  */
+S3DECODER_EXPORT
 int32 dag_destroy ( 
     dag_t *dagp /**< A pointer to a DAG */
     );
@@ -320,6 +322,7 @@ int32 dag_destroy (
  * end of the utterance; i.e. the best score from the end of the link to the dag
  * exit node.
  */
+S3DECODER_EXPORT
 void dag_compute_hscr(dag_t *dag, dict_t *dict, lm_t *lm, float64 lwf);
 
 /**
@@ -369,7 +372,7 @@ int32 dag_write_htk(dag_t *dag,
  * depends on a similar best path for all links leaving the endpoint of L.  (This is
  * sufficient to handle trigram LMs.)
  */
-
+S3DECODER_EXPORT
 srch_hyp_t *dag_search (dag_t *dagp, /**< The initalized directed acyclic graph to search */
 			char *utt,  /**< The utterance ID */
 			float64 lwf,  /**< LM weight */
@@ -399,7 +402,7 @@ void dag_add_fudge_edges (dag_t* dagp,  /** An initialized DAG */
  * appear in dag->list ensures that succeeding fillers have already been bypassed.
  * @return: 0 if successful; -1 if DAG maxedge limit exceeded.
  */
-
+S3DECODER_EXPORT
 int32 dag_bypass_filler_nodes (dag_t* dagp,  /**< DAG */
 			       float64 lwf,  /**< language weight factor */
 			       dict_t *dict,  /**< Dictionary */
@@ -409,11 +412,13 @@ int32 dag_bypass_filler_nodes (dag_t* dagp,  /**< DAG */
 /**
  * Remove links created by dag_bypass_filler_nodes().
  */
+S3DECODER_EXPORT
 void dag_remove_bypass_links(dag_t *dag);
 
 /**
  * Remove nodes from which the final exit node is not reachable.
  */
+S3DECODER_EXPORT
 void dag_remove_unreachable(dag_t *dag);
 
 /**
@@ -429,7 +434,7 @@ void dag_remove_unreachable(dag_t *dag);
  * absurdum.
  * @return: 0 if successful, -1 otherwise.
  */
-
+S3DECODER_EXPORT
 dag_t* dag_load (  
     char *file,   /**< Input: File to lod from */
     int32 maxedge, /**< Maximum # of edges */

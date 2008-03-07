@@ -837,6 +837,7 @@ int32 srch_utt_begin(srch_t* srch /**< In: a search structure */
 /**
    Decode one block of speech and provide the implementation of the default search abstraction
 */
+S3DECODER_EXPORT
 int32 srch_utt_decode_blk(srch_t* srch, /**< In: a search structure */
 			  float ***block_feat,  /**< In: a pointer of a two dimensional array */
 			  int32 block_nfeatvec, /**< In: Number of feature vector */
@@ -881,6 +882,7 @@ void write_bstsenscr(FILE *fp, /**< A file pointer */
 
 
 /** using file name of the LM or defined lmctlfn mechanism */
+S3DECODER_EXPORT
 int32 srch_set_lm(srch_t* srch,  /**< A search structure */
 		  const char *lmname /**< LM fie name */
     );

@@ -326,6 +326,7 @@ void histprune_free(histprune_t *h /**< Input/Output :histprune structure */
 /**
  * Create and initialize a fast_gmm_t structure, withe the given parameters
  */
+S3DECODER_EXPORT
 fast_gmm_t *fast_gmm_init (int32 down_sampling_ratio, /**<  Input: The frame down-sampling ratio */
 			   int32 mode_cond_ds,  /**< Input: Whether conditional down sampling is used */
 			   int32 mode_dist_ds, /**< Input: (NOT USED) Whether distance-based down sampling is used */
@@ -343,6 +344,7 @@ void fast_gmm_report(fast_gmm_t* f  /**< Input: the fast GMM computation structu
     );
 
 /** Free the fast_gmm_t structure */
+S3DECODER_EXPORT
 void fast_gmm_free (fast_gmm_t *fg /**< Input: structure to free*/
     );
   

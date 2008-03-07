@@ -278,6 +278,7 @@ typedef struct {
  * @see mgau_precomp
  * @return pointer to the model created if successful; NULL if error.
  */
+S3DECODER_EXPORT
 mgau_model_t *
 mgau_init (char *meanfile,	/**< In: File containing means of mixture gaussians */
 	   char *varfile,	/**< In: File containing variances of mixture gaussians */
@@ -345,6 +346,7 @@ int32 mgau_dump (mgau_model_t *g,  /**< In: Set of mixture Gaussians */
 /** RAH
  * Free memory allocated by mgau_init
  */
+S3DECODER_EXPORT
 void mgau_free (mgau_model_t *g /**< In: A set of model to free */
     );
 
@@ -352,7 +354,7 @@ void mgau_free (mgau_model_t *g /**< In: A set of model to free */
 /** 
  * Reloading the means. This is particularly useful for speaker adaptation. 
  */
-
+S3DECODER_EXPORT
 int32 mgau_mean_reload(mgau_model_t *g,  /**< In/Out : The mean which will be resetted*/
 		       char* mean_file_name /**< In: The mean files */
     );

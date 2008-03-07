@@ -65,6 +65,7 @@ typedef struct astar_s astar_t;
 /**
  * Initialize A* search
  **/
+S3DECODER_EXPORT
 astar_t *astar_init(dag_t *dag, dict_t *dict, lm_t *lm,
                     fillpen_t *fpen,
                     float64 beam, /**< Pruning beam width */
@@ -74,6 +75,7 @@ astar_t *astar_init(dag_t *dag, dict_t *dict, lm_t *lm,
 /**
  * Clean up after A* search
  **/
+S3DECODER_EXPORT
 void astar_free(astar_t *astar);
 
 /**
@@ -81,12 +83,14 @@ void astar_free(astar_t *astar);
  * @return a glist_t of srch_hyp_t (you are responsible for freeing this)
  * or NULL if no more hypotheses are available.
  **/
+S3DECODER_EXPORT
 glist_t astar_next_hyp(astar_t *astar);
 
 /**
  * Batch-mode function for N-best search.
  * Does A* search and writes the results to the file specified.
  */
+S3DECODER_EXPORT
 void nbest_search(dag_t *dag, char *filename, char *uttid, float64 lwf,
                   dict_t *dict, lm_t *lm, fillpen_t *fpen);
 

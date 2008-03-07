@@ -120,6 +120,7 @@ typedef struct {
  * Create an ascr_t structure for the given number of senones (ordinary and composite).
  * @return Pointer to created structure if successful, NULL otherwise.
  */
+S3DECODER_EXPORT
 ascr_t *ascr_init (int32 n_sen,		/**< Input: #Ordinary senones */
 		   int32 n_comsen,	/**< Input: #Composite senones */
 		   int32 n_sseq,        /**< Input: # of senone sequences */ 
@@ -144,7 +145,7 @@ void ascr_print_senscr(ascr_t *a /**<Input: ascr data structure */
 /**
  * Free ascr_t 
  */ 
-
+S3DECODER_EXPORT
 void ascr_free(ascr_t  *a /**<Input: an initialized ascr data structure */
     );
 

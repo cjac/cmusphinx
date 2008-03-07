@@ -137,10 +137,12 @@ float64 vector_sum_norm(vector_t v, int32 dim);
 
 
 /** Print vector in one line, in %11.4e format, terminated by newline */
+S3DECODER_EXPORT
 void vector_print(FILE *fp, vector_t v, int32 dim);
 
 
 /** Return TRUE iff given vector is all 0.0 */
+S3DECODER_EXPORT
 int32 vector_is_zero (float32 *vec,	/**< In: Vector to be checked */
 		      int32 len	/**< In: Length of above vector */
     );
@@ -235,6 +237,7 @@ vector_dist_maha (float32 *vec,		/**< In: Vector for which distance from mean
  * Euclidean distance measure.
  * Return value: The squared quantization error of the final result.
  */
+S3DECODER_EXPORT
 float64 vector_vqgen (float32 **data,	/**< In: Input Data to be quantized */
 		      int32 rows,	/**< In: #Rows in input data */
 		      int32 cols,	/**< In: #Cols in input data (and output VQ table) */

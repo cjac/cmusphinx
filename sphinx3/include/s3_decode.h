@@ -110,6 +110,7 @@
 
 */
 
+#include "sphinx3_export.h"
 #include "kb.h"
 #include "fe.h"
 #include "srch.h"
@@ -128,6 +129,7 @@ extern "C" {
 } /* Fool Emacs into not indenting things. */
 #endif
 
+S3DECODER_EXPORT
 extern arg_t S3_DECODE_ARG_DEFS[];
 
 #define S3_DECODE_MAX_PROCESS_FRAMES            4096
@@ -144,6 +146,7 @@ extern arg_t S3_DECODE_ARG_DEFS[];
 
 /** Wrapper structure for live-mode recognition
  */
+S3DECODER_EXPORT
 typedef struct
 {
     /**
@@ -234,6 +237,7 @@ typedef struct
     @param decoder Pointer to the decoder.
     @return 0 for success.  -1 for failure.
 */
+S3DECODER_EXPORT
 int s3_decode_init(s3_decode_t *_decode);
 
 /** Initializes a Sphinx3 decoder object (re-entrant).  Internal
@@ -251,6 +255,7 @@ int s3_decode_init(s3_decode_t *_decode);
                   returned by <i>cmd_ln_parse_r()</i>.
     @return 0 for success.  -1 for failure.
 */
+S3DECODER_EXPORT
 int s3_decode_init_r(s3_decode_t *_decode, cmd_ln_t *_config);
 
 /** Wraps up the Sphinx3 decoder.  All internal modules are closed or unloaded.
@@ -261,6 +266,7 @@ int s3_decode_init_r(s3_decode_t *_decode, cmd_ln_t *_config);
     @param decoder Pointer to the decoder.
     @see s3_decode_init
 */
+S3DECODER_EXPORT
 void s3_decode_close(s3_decode_t *_decode);
 
 /** Marks the start of the current utterance.  An utterance is a session of
@@ -284,6 +290,7 @@ void s3_decode_close(s3_decode_t *_decode);
     @see s3_decode_process
     @see s3_decode_hypothesis
 */
+S3DECODER_EXPORT
 int s3_decode_begin_utt(s3_decode_t *_decode, char *_uttid);
 
 /** Marks the end of the current utterance.  The Sphinx3 decoder  can no longer
@@ -298,6 +305,7 @@ int s3_decode_begin_utt(s3_decode_t *_decode, char *_uttid);
     @see s3_decode_process
     @see s3_decode_hypothesis
 */
+S3DECODER_EXPORT
 void s3_decode_end_utt(s3_decode_t *_decode);
 
 /** Process a buffer of cepstrum frames for the current utterance.  This 
@@ -318,6 +326,7 @@ void s3_decode_end_utt(s3_decode_t *_decode);
     @see s3_decode_end_utt
     @see s3_decode_process_ceps
 */
+S3DECODER_EXPORT
 void s3_decode_process(s3_decode_t *_decode, 
                        float32 **_frames,
                        int32 _num_frames);
@@ -356,6 +365,7 @@ void s3_decode_process(s3_decode_t *_decode,
     segments.  If <I>null</I>, the array is not returned.
     @return 0 for success.  -1 for failure.
 */
+S3DECODER_EXPORT
 int s3_decode_hypothesis(s3_decode_t *_decode, char **_uttid,
                          char **_hyp_str, hyp_t ***_hyp_segs);
 
@@ -367,6 +377,7 @@ int s3_decode_hypothesis(s3_decode_t *_decode, char **_uttid,
  * @return A dag_t structure, or NULL on failure.  This pointer
  * becomes invalid after a call to s3_decode_begin_utt().
  */
+S3DECODER_EXPORT
 dag_t *s3_decode_word_graph(s3_decode_t *_decode);
 
 /** Set LM 
@@ -374,7 +385,7 @@ dag_t *s3_decode_word_graph(s3_decode_t *_decode);
     @param lmname the language model name
     @see s3_decode_read_lm s3_decode_delete_lm
 */
-
+S3DECODER_EXPORT
 void s3_decode_set_lm(s3_decode_t *_decode, const char *lmname);
 
 /** Delete LM 
@@ -382,7 +393,7 @@ void s3_decode_set_lm(s3_decode_t *_decode, const char *lmname);
     @param lmname the language model name 
     @see s3_decode_set_lm s3_decode_read_lm
 */
-
+S3DECODER_EXPORT
 void s3_decode_delete_lm(s3_decode_t *_decode, const char *lmname);
 
 
@@ -392,7 +403,7 @@ void s3_decode_delete_lm(s3_decode_t *_decode, const char *lmname);
     @param lmname LM name associated with this file. 
     @see s3_decode_set_lm
 */
-
+S3DECODER_EXPORT
 void s3_decode_read_lm(s3_decode_t *_decode,
                        const char *lmfile, 
                        const char *lmname);

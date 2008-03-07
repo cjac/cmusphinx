@@ -132,6 +132,7 @@ typedef struct ca_dag_type {
    Compute word posterior probability given a hypotheiss and the
    corresponding DAG. 
 */
+S3DECODER_EXPORT
 int32 confidence_word_posterior(char* dagfile,  /**< The file name of the DAG */
 				seg_hyp_line_t *seg_hyp_line,  /**< a pointer of a seg_hyp_line_t */
 				char* uttid,  /**< The utterance ID */
@@ -179,11 +180,13 @@ int ca_dag_free_lattice(ca_dag *word_lattice);
 /**
    Compute the LM type of (Need more documents) 
 */
+S3DECODER_EXPORT
 int compute_lmtype(seg_hyp_line_t *seg_hyp_line,  /**< A seg_hyp line*/
 		   lm_t* lm,
 		   dict_t* dict
     );
 
+S3DECODER_EXPORT
 int compute_combined_lmtype(seg_hyp_line_t *seg_hyp_line);
 
 #ifdef __cplusplus

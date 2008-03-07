@@ -169,6 +169,7 @@ typedef struct {
  * (but external modules might impose their own requirements).
  * Return ptr to dict_t if successful, NULL otherwise.
  */
+S3DECODER_EXPORT
 dict_t *dict_init (mdef_t *mdef,	/**< For looking up CI phone IDs; NULL if none,
 					   in which case CI phones kept internally */
 		   char *dictfile,	/**< Main dictionary file */
@@ -180,12 +181,14 @@ dict_t *dict_init (mdef_t *mdef,	/**< For looking up CI phone IDs; NULL if none,
     );
 
 /** Return word id for given word string if present.  Otherwise return BAD_S3WID */
+S3DECODER_EXPORT
 s3wid_t dict_wordid (dict_t *d, char *word);
 
 /**
  * Return 1 if w is a filler word, 0 if not.  A filler word is one that was read in from the
  * filler dictionary; however, sentence START and FINISH words are not filler words.
  */
+S3DECODER_EXPORT
 int32 dict_filler_word (dict_t *d,  /**< The dictionary structure */
 			s3wid_t w     /**< The The word */
     );

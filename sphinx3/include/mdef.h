@@ -234,6 +234,7 @@ typedef struct {
  * It should be treated as a READ-ONLY structure.
  * @return pointer to the phone structure created.
  */
+S3DECODER_EXPORT
 mdef_t *mdef_init (char *mdeffile, /**< In: Model definition file */
 		   int32 breport   /**< In: whether to report the progress or not */
     );
@@ -251,6 +252,7 @@ s3cipid_t mdef_ciphone_id (mdef_t *m,		/**< In: Model structure being queried */
     Get the phone string given the ci phone id.
     @return: READ-ONLY ciphone string name for the given ciphone id 
 */
+S3DECODER_EXPORT
 const char *mdef_ciphone_str (mdef_t *m,	/**< In: Model structure being queried */
 			      s3cipid_t ci	/**< In: ciphone id for which name wanted */
     );
@@ -275,6 +277,7 @@ int32 mdef_is_cisenone(mdef_t *m,               /**< In: Model structure being q
     Decide the phone id given the left, right and base phones. 
     @return: phone id for the given constituents if found, else BAD_S3PID 
 */
+S3DECODER_EXPORT
 s3pid_t mdef_phone_id (mdef_t *m,		/**< In: Model structure being queried */
 		       s3cipid_t b,		/**< In: base ciphone id */
 		       s3cipid_t l,		/**< In: left context ciphone id */
@@ -287,6 +290,7 @@ s3pid_t mdef_phone_id (mdef_t *m,		/**< In: Model structure being queried */
  * Also, non-SILENCE_PHONE filler phones back off to SILENCE_PHONE.
  * Ultimately, backs off to base phone id.  Thus, it should never return BAD_S3PID.
  */
+S3DECODER_EXPORT
 s3pid_t mdef_phone_id_nearest (mdef_t *m,	/**< In: Model structure being queried */
 			       s3cipid_t b,	/**< In: base ciphone id */
 			       s3cipid_t l,	/**< In: left context ciphone id */
@@ -298,6 +302,7 @@ s3pid_t mdef_phone_id_nearest (mdef_t *m,	/**< In: Model structure being queried
  * Create a phone string for the given phone (base or triphone) id in the given buf.
  * @return 0 if successful, -1 if error.
  */
+S3DECODER_EXPORT
 int32 mdef_phone_str (mdef_t *m,		/**< In: Model structure being queried */
 		      s3pid_t pid,		/**< In: phone id being queried */
 		      char *buf		/**< Out: On return, buf has the string */
@@ -307,6 +312,7 @@ int32 mdef_phone_str (mdef_t *m,		/**< In: Model structure being queried */
  * Obtain phone components: inverse of mdef_phone_id().
  * @return 0 if successful, -1 otherwise.
  */
+S3DECODER_EXPORT
 int32 mdef_phone_components (mdef_t *m,		/**< In: Model structure being queried */
 			     s3pid_t p,		/**< In: triphone id being queried */
 			     s3cipid_t *b,	/**< Out: base ciphone id */
