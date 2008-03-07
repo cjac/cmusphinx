@@ -52,6 +52,7 @@ pkginclude_HEADERS =				\
 	s3types.h				\
 	search.h				\
 	sort.h					\
+	sphinx3_export.h					\
 	srch_allphone.h				\
 	srch_debug.h				\
 	srch_do_nothing.h			\

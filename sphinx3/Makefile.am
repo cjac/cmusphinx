@@ -19,14 +19,7 @@ EXTRA_DIST = autogen.sh								\
 	win32/batch/sphinx3-test.dag.bat					\
 	win32/batch/sphinx3-test.bat						\
 	win32/batch/sphinx3-test.livepretend.bat				\
-	win32/msdev/libs3decoder/libcommon.vcproj				\
-	win32/msdev/libs3decoder/liblm.vcproj					\
-	win32/msdev/libs3decoder/libAPI.vcproj					\
-	win32/msdev/libs3decoder/libam.vcproj					\
-	win32/msdev/libs3decoder/libconfidence.vcproj				\
-	win32/msdev/libs3decoder/libdict.vcproj					\
-	win32/msdev/libs3decoder/libep.vcproj					\
-	win32/msdev/libs3decoder/libsearch.vcproj				\
+	win32/msdev/libs3decoder/s3decoder.vcproj				\
 	win32/msdev/programs/livepretend/sphinx3_livepretend.vcproj		\
 	win32/msdev/programs/decode/sphinx3_decode.vcproj			\
 	win32/msdev/programs/dp/sphinx3_dp.vcproj				\
