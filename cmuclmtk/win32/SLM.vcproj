@@ -221,7 +221,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\liblmest\idngram.c"
+				RelativePath="..\src\liblmest\idngram2lm.c"
 				>
 			</File>
 			<File
