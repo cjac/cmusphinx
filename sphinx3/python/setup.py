@@ -6,6 +6,8 @@ module = Extension('_sphinx3',
                                    '/usr/local/include/sphinxbase/',
                                    '/usr/local/include/sphinx3',
                                    ],
+		   library_dirs = ['../../sphinxbase/src/libsphinxbase/.libs',
+				'../src/libs3decoder/.libs'],
                    libraries = ['sphinxbase', 's3decoder'],
                    sources = ['_sphinx3module.c'])
 
