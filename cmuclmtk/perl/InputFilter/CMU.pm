@@ -58,6 +58,8 @@ sub _tag_start {
     my ($self, $expat, $tag, %attr) = @_;
     if ($tag eq 'Trans') {
 	$self->{utt_file} = $attr{audio_filename};
+	# Have to remove spaces from the utt file due to control file format...
+	$self->{utt_file} =~ s/\s/_/g;
 	$self->{sync_time} = 0;
 	$self->{utt_text} = undef;
     }
