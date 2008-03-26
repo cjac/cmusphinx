@@ -558,8 +558,12 @@ void load_arpa_lm(arpa_lm_t *arpa_lm,
 		pos_of_novelty = k;
 		k = arpa_lm->n;
 	      }else {
-		if ((current_ngram[k] < previous_ngram[k]) && (j > 0))
+		if ((current_ngram[k] < previous_ngram[k]) && (j > 0)) {
+		  printf("%s:%d: Incorrect order at ngram %s %s\n",
+			 __FILE__, __LINE__,
+			 temp_word[0], temp_word[1]);
 		  quit(-1,"Error : n-grams are not correctly ordered.\n");
+		}
 	      }
 	    }
 
@@ -702,8 +706,11 @@ void load_arpa_lm(arpa_lm_t *arpa_lm,
 	      pos_of_novelty = k;
 	      k = arpa_lm->n;
 	    }else {
-	      if ((current_ngram[k] < previous_ngram[k]) && (j>0))
-		quit(-1,"Error : n-grams are not correctly ordered.\n");
+	      if ((current_ngram[k] < previous_ngram[k]) && (j>0)) {
+		printf("%s:%d: Incorrect order at ngram %s %s %s\n",
+		       __FILE__, __LINE__,
+		       temp_word[0], temp_word[1], temp_word[2]);
+	      }
 	    }
 	  }
       
@@ -971,8 +978,12 @@ void robust_load_arpa_lm(arpa_lm_t *arpa_lm,
 	      pos_of_novelty = k;
 	      k = arpa_lm->n;
 	    }else {
-	      if ((current_ngram[k] > previous_ngram[k]) && (j > 0))
+	      if ((current_ngram[k] > previous_ngram[k]) && (j > 0)) {
+		printf("%s:%d: Incorrect order at ngram %s %s\n",
+		       __FILE__, __LINE__,
+		       temp_word[0], temp_word[1]);
 		quit(-1,"Error : n-grams are not correctly ordered.\n");
+	      }
 	    }
 	  }
 	}
@@ -1089,8 +1100,12 @@ void robust_load_arpa_lm(arpa_lm_t *arpa_lm,
 	    pos_of_novelty = k;
 	    k = arpa_lm->n;
 	  }else {
-	    if ((current_ngram[k] > previous_ngram[k]) && (j>0))
+	    if ((current_ngram[k] > previous_ngram[k]) && (j>0)) {
+	      printf("%s:%d: Incorrect order at ngram %s %s\n",
+		     __FILE__, __LINE__,
+		     temp_word[0], temp_word[1]);
 	      quit(-1,"Error : n-grams are not correctly ordered.\n");
+	    }
 	  }
 	}
       }
