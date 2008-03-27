@@ -75,7 +75,6 @@ sub _tag_start {
 
 sub _tag_text {
     my ($self, $expat, $data) = @_;
-    return if $data =~ /^\s*$/;
     $self->{utt_text} .= $data;
 }
 
