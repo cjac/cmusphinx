@@ -1,0 +1,7 @@
+MakeDict
+--------
+Copyright (C) 1993-2008 Carnegie Mellon University
+
+- Alexander Rudnicky wrote the original pronunciation compiler.
+- Thomas Harris reconfigured into a service.
+- Alexander Rudnicky further generalized it and brought it under configuration control.

@@ -1,0 +1,11 @@
+MakeDict pronunciation tool
+---------------------------
+Copyright (C) 1993-2008 Carnegie Mellon University
+[20080331] (air)
+
+Two interfaces: 1) 'local' 2) 'web'
+You need to change the value in Pronounce.pm accordingly
+
+make_pronunciation.pl compiles a dictionary on the local machine
+lextool.pl is a cgi script to do this through a server.
+
