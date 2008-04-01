@@ -4,7 +4,7 @@
 # this is a quick test and may not be completely robust
 # [20080401] (air)
 #
-
+#
 if [ -z `which perl` ] ; then
 echo -n "You need to have the perl interpreter installed to use MakeDict... "
 exit 0 ;
@@ -12,7 +12,7 @@ else
 echo "Perl installed"
 echo -n "Testing for perl modules... " ;
 fi
-
+#
 cat >_test_MakeDict_.pl <<EOF
 sub catch { my \$sig = shift; 
 print "failed on \$sig\n"; exit 1; }
@@ -22,14 +22,14 @@ require Config;
 require File::Spec;
 require HTML::Template;
 EOF
-
+#
 if [ `perl _test_MakeDict_.pl` ] ; then
 rm -f _test_MakeDict_.pl
 exit 0;
 fi
 rm -f _test_MakeDict_.pl
 echo "all modules available"
-
+#
 echo "test MakeDict... "
 PGM=MakeDict/make_pronunciation.pl
 perl $PGM -tools . -resources MakeDict/test \
