@@ -1,0 +1,38 @@
+HELLO - Unit in main dictionary 
+WORLD - Unit in main dictionary 
+COMPOUND_WORD - -> seems to be a compound.
+COMPOUND - Unit in main dictionary 
+WORD - Unit in main dictionary 
+HYPHEN-ATED - -> seems to be a compound.
+HYPHEN - Unit in main dictionary 
+ATED - Using morpheme decomposition: A TED 
+THREE=PART=ITEM - -> seems to be a compound.
+THREE - Unit in main dictionary 
+PART - Unit in main dictionary 
+ITEM - Unit in main dictionary 
+TEST+WITH+NON-WORD=FOUTREJANY - -> seems to be a compound.
+TEST - Unit in main dictionary 
+WITH - Unit in main dictionary 
+NON - Unit in main dictionary 
+WORD - Unit in main dictionary 
+FOUTREJANY - Using letter-to-sound rules
+LETTER-O - Using morpheme decomposition: LETTER-O 
+LETTER-N - Using morpheme decomposition: LETTER-N 
+LETTER-E - Using morpheme decomposition: LETTER-E 
+TWO - Using morpheme decomposition: TWO 
+THREE - Using morpheme decomposition: THREE 
+TWO - Using morpheme decomposition: TWO 
+ZERO - Using morpheme decomposition: ZERO 
+ZERO - Using morpheme decomposition: ZERO 
+EIGHT - Using morpheme decomposition: EIGHT 
+W - Unit in main dictionary 
+BANG - Using morpheme decomposition: BANG 
+KWEEZLEBOTTER - Using letter-to-sound rules
+ZLEBOTTERY - Hand-tuned unit .
+TEST=HANDDICT+MIX_ZLEBOTTERY - -> seems to be a compound.
+TEST - Unit in main dictionary 
+HANDDICT - Using letter-to-sound rules
+MIX - Unit in main dictionary 
+ZLEBOTTERY - Hand-tuned unit .
+GOODBYE - Unit in main dictionary 
+
