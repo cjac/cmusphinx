@@ -1,10 +1,9 @@
-;;;  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;  $Id$
-;;;  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;  $URL$
+;;;  $Id$
 ;;; 
 ;;; 
 ;;;  CMUdict  --  Major Version: 0.07a
+;;; 
 ;;;  $Rev$  -- note this is the repository count, *not* the dictionary revision count
 ;;;  $Date$
 ;;;  $Author$
@@ -16,7 +15,7 @@
 ;;;  [20080401] (air)
 :::   New dict file format introduced 
 ;;;   - comments (like this section) allowed
-;;;   - file name not version-dependent; information in this header
+;;;   - file name not version-dependent; vers/rev information is now in this header
 ;;;
 ;;; 
 
