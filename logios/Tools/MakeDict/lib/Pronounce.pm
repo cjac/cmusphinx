@@ -16,7 +16,7 @@ use LogiosLog;
 
 
 # problematic "globals"
-my ($PRONOUNCE);
+my ($PRONOUNCE,$SOURCE);
 my $pron_bin;
 
 my ($LEXDATA, $LEXILIB, $LEXICON, $OUTDIR);
@@ -33,9 +33,10 @@ BEGIN {
 
 #########  create pronouncing dictionary from vocab list  ##########
 sub make_dict {
-  my ($SOURCE,$tools,$resources,$vocfn, $handicfn, $outfn, $logfn) = @_;
+  my ($source,$tools,$resources,$vocfn, $handicfn, $outfn, $logfn) = @_;
 
   # set required tools and project paths
+  $SOURCE = $source;
   $PRONOUNCE = File::Spec->catfile($tools,'MakeDict','bin',$pron_bin);
   $LEXILIB = File::Spec->catdir($tools,'MakeDict','lib');
   $LEXICON = "cmudict.0.7a_SPHINX_40";
