@@ -38,6 +38,10 @@
   $Log: wngram2idngram.c,v
  */
 
+/*
+  [20080222] (air) temporary filenames now generated using tempnam()
+*/
+
 #define DEFAULT_HASH_SIZE 200000
 #define DEFAULT_MAX_FILES 20
 #define MAX_N 20
