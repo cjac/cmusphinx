@@ -1109,7 +1109,6 @@ vithist_dag_build_r(vithist_t * vh, glist_t hyp, dict_t * dict, int32 endid, cmd
     int32 min_ef_range;
     int32 sf, ef, n_node;
     int32 f, i, k;
-    srch_hyp_t *h;
     dag_t *dag;
 
     dag = ckd_calloc(1, sizeof(*dag));
@@ -1199,8 +1198,13 @@ vithist_dag_build_r(vithist_t * vh, glist_t hyp, dict_t * dict, int32 endid, cmd
      * But keep segments in the original hypothesis, regardless; mark them first.
      */
     for (gn = hyp; gn; gn = gnode_next(gn)) {
-        h = (srch_hyp_t *) gnode_ptr(gn);
-        for (gn2 = sfwid[h->sf]; gn2; gn2 = gnode_next(gn2)) {
+        /*
+	 * As long as the above comment about the MAJOR HACK is true
+	 * the start time has to be hacked here too
+	 */
+        srch_hyp_t *h = (srch_hyp_t *) gnode_ptr(gn);
+        int hacked_sf = h->sf == 0 ? 1 : h->sf;
+        for (gn2 = sfwid[hacked_sf]; gn2; gn2 = gnode_next(gn2)) {
             dn = (dagnode_t *) gnode_ptr(gn2);
             if (h->id == dn->wid)
                 dn->seqid = 0;  /* Do not discard (prune) this dagnode */
