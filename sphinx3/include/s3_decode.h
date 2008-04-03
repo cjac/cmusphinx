@@ -110,9 +110,9 @@
 
 */
 
+#include <fe.h>
 #include "sphinx3_export.h"
 #include "kb.h"
-#include "fe.h"
 #include "srch.h"
 #include "hyp.h"
 
@@ -131,8 +131,6 @@ extern "C" {
 
 S3DECODER_EXPORT
 extern arg_t S3_DECODE_ARG_DEFS[];
-
-#define S3_DECODE_MAX_PROCESS_FRAMES            4096
 
 #define S3_DECODE_SUCCESS			0
 #define S3_DECODE_ERROR_OUT_OF_MEMORY		-0x01
@@ -210,12 +208,6 @@ typedef struct
      * Boolean indicates whether a partial hypothesis will be dumped. 
      */
     int32 phypdump;
-
-    /**
-     * Feature buffer.  Re-allocation of feature buffer is quite expensive.  So
-     * we allocate once per decoder.
-     */ 
-    float32 ***features;
 
     /**
      * Extenstion for the raw director 

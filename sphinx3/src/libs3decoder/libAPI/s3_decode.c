@@ -155,6 +155,7 @@ date: 2004/08/06 15:07:39;  author: yitao;  state: Exp;
 #include "utt.h"
 #include "bio.h"
 #include "lm.h"
+#include <feat.h>
 #include <time.h>
 
 arg_t S3_DECODE_ARG_DEFS[] = {
@@ -254,14 +255,6 @@ s3_decode_init_r(s3_decode_t * _decode, cmd_ln_t *_config)
     _decode->hyp_str = NULL;
     _decode->hyp_segs = NULL;
 
-    _decode->features = feat_array_alloc(kbcore_fcb(_decode->kbcore),
-					  S3_DECODE_MAX_PROCESS_FRAMES);
-    if (_decode->features == NULL) {
-        E_WARN("Failed to allocate internal feature buffer.\n");
-        rv = S3_DECODE_ERROR_OUT_OF_MEMORY;
-        goto cleanup;
-    }
-
     _decode->swap =
 	    strcmp(cmd_ln_str_r(_config,"-machine_endian"),
 		   cmd_ln_str_r(_config,"-input_endian"));
@@ -281,27 +274,12 @@ s3_decode_init_r(s3_decode_t * _decode, cmd_ln_t *_config)
     _decode->rawext = (cmd_ln_str_r(_config, "-rawext"));
 
     return S3_DECODE_SUCCESS;
-
- cleanup:
-    _decode->state = S3_DECODE_STATE_FINISHED;
-
-    if (_decode->features != NULL) {
-        ckd_free((void *) **_decode->features);
-        ckd_free_2d((void **) _decode->features);
-    }
-
-    return rv;
 }
 
 void
 s3_decode_close(s3_decode_t * _decode)
 {
     assert(_decode != NULL);
-
-    if (_decode->features != NULL) {
-        ckd_free((void *) **_decode->features);
-        ckd_free_2d((void **) _decode->features);
-    }
 
     kb_free(&_decode->kb);
     s3_decode_free_hyps(_decode);
@@ -349,9 +327,9 @@ s3_decode_end_utt(s3_decode_t * _decode)
     /* Call this with no frames, to update CMN and AGC statistics. */
     num_features = feat_s2mfc2feat_live(kbcore_fcb(_decode->kbcore),
 					NULL, NULL, FALSE,
-					TRUE, _decode->features);
+					TRUE, _decode->kb.feat);
     if (num_features > 0)
-        utt_decode_block(_decode->features,
+        utt_decode_block(_decode->kb.feat,
                          num_features,
                          &_decode->num_frames_decoded,
 			 &_decode->kb);
@@ -371,7 +349,7 @@ s3_decode_process(s3_decode_t * _decode,
     int32 begin_utt = _decode->num_frames_entered == 0;
 
     assert(_decode != NULL);
-    assert(_num_frames < S3_DECODE_MAX_PROCESS_FRAMES);
+    assert(_num_frames < S3_MAX_FRAMES);
 
     if (_num_frames > 0) {
         num_features = feat_s2mfc2feat_live(kbcore_fcb(_decode->kbcore),
@@ -379,12 +357,12 @@ s3_decode_process(s3_decode_t * _decode,
 					    &_num_frames,
 					    begin_utt,
 					    FALSE,
-					    _decode->features);
+					    _decode->kb.feat);
         _decode->num_frames_entered += _num_frames;
     }
 
     if (num_features > 0)
-        utt_decode_block(_decode->features,
+        utt_decode_block(_decode->kb.feat,
                          num_features,
                          &_decode->num_frames_decoded,
 			 &_decode->kb);
