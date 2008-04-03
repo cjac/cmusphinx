@@ -34,6 +34,11 @@
  *
  */
 
+/*
+  [20080222] (air) temporary filenames now generated using tempnam()
+*/
+
+
 
 #define DEFAULT_MAX_FILES 20
 #define TEMP_FILE_ROOT "text2wngram.tmp."
@@ -403,7 +408,7 @@ int main (int argc, char **argv) {
   /* proc_id = getpid();
   /* sprintf(temp_word,"%s%s.%d.",TEMP_FILE_ROOT,host_name,proc_id);
   /* temp_file_root = salloc(temp_word); /**/
-  temp_file_root = tempnam(NULL,"0123456789");
+  temp_file_root = tempnam(NULL,"0123456789");  /* let system do the work */
 
   pc_report_unk_args(&argc,argv,verbosity);
  
