@@ -12,11 +12,11 @@ package Pronounce;
 use strict;
 use Config;
 use File::Spec;
-use LogiosLog;
 
 
 # problematic "globals"
-my ($PRONOUNCE,$SOURCE);
+my $SOURCE = 'loc';   # default
+my ($PRONOUNCE);
 my $pron_bin;
 
 my ($LEXDATA, $LEXILIB, $LEXICON, $OUTDIR);
@@ -33,13 +33,15 @@ BEGIN {
 
 #########  create pronouncing dictionary from vocab list  ##########
 sub make_dict {
-  my ($source,$tools,$resources,$vocfn, $handicfn, $outfn, $logfn) = @_;
+  my ($tools,$resources,$vocfn, $handicfn, $outfn, $logfn) = @_;
+
+  # require logging module
+  require File::Spec->catfile($tools,'lib','LogiosLog.pm');
 
   # set required tools and project paths
-  $SOURCE = $source;
   $PRONOUNCE = File::Spec->catfile($tools,'MakeDict','bin',$pron_bin);
   $LEXILIB = File::Spec->catdir($tools,'MakeDict','lib');
-  $LEXICON = "cmudict_SPHINX_40";
+  $LEXICON = "cmudict.0.7a_SPHINX_40";
   $OUTDIR = $resources;
 
   $wordfile = File::Spec->catfile($OUTDIR,$vocfn);
@@ -80,7 +82,7 @@ sub get_dic_loc {
 		       );
   push (@pronounce_args, '-H', $handdf) if -e $handdf;
 
-# print STDERR "\n$PRONOUNCE ", join " ", @pronounce_args,"\n";
+ print STDERR "\n$PRONOUNCE ", join " ", @pronounce_args,"\n";
   return system("$PRONOUNCE",@pronounce_args);
 }
 
