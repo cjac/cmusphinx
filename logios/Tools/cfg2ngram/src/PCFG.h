@@ -98,26 +98,35 @@ protected:
   int head;
 
 public:
+  /*** Constructors ****************************************/
   PCFG();
-  int addNonTerm(const LHS& x);
-  int addTerm(const string& x);
-  void redoTMap();
+
+  /*** Factories/Adapters **********************************/
   static PCFG readPhoenixGrammar(istream& pGgrammar, const string& headname);
-  void writePhoenixGrammar(ostream& pGgrammar) const;
   static PCFG CNF(const PCFG& g);
-  int train(const corpus& traingData, double threshhold = defaultTH);
-  friend ostream& operator<<(ostream& out, const PCFG& x);
-  friend istream& operator>>(istream& in, PCFG& x);
   static PCFG removeEpsilons(const PCFG& g);
   static PCFG removeUnitProductions(const PCFG& g);
-  vector<bool> reachable() const; 
-  void reachable(int from, vector<bool>& already) const;
+  friend istream& operator>>(istream& in, PCFG& x);
+
+  /*** Mutators ********************************************/
+  int addNonTerm(const LHS& x);
+  int addTerm(const string& x);
+  int train(const corpus& traingData, double threshhold = defaultTH);
+  void smooth(double amount);
+
+  /*** Accessors *******************************************/
+  friend ostream& operator<<(ostream& out, const PCFG& x);
+  void writePhoenixGrammar(ostream& pGgrammar) const;
   static string printrule(vector<LHS>::const_iterator x, 
 			  vector<RHS>::const_iterator y);
-  void smooth(double amount);
   void writeVocab(ostream& out) const;
+  vector<bool> reachable() const; 
+  void reachable(int from, vector<bool>& already) const;
+  setence generateSample() const;
+  corpus generateSamples(unsigned int n) const;
   
 protected:
+  void redoTMap();
   void rebuild_indexes();
   void reduce();
   void printChart(Chart<map<int, double> >& c) const;
@@ -128,6 +137,8 @@ protected:
   void initialize();
 };
 
+ostream& operator<<(ostream& out, const sentence& x);
+ostream& operator<<(ostream& out, const corpus& x);
 ostream& operator<<(ostream& out, const vector<PCFG::LHS>& x);
 
 #endif

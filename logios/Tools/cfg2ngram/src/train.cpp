@@ -3,9 +3,9 @@
 #include <fstream>
 #include <strstream>
 
-#include "PCFG.hpp"
+#include "PCFG.h"
 
-int main(int argc, char* argv[]) {
+int main(int argC, char* argv[]) {
   if(argc < 1) {
     cerr << "need training data" << endl;
     exit(1);

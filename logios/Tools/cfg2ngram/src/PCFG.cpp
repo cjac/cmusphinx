@@ -1019,6 +1019,19 @@ istream& operator>>(istream& in, PCFG& x) {
   return in;
 }
 
+ostream& operator<<(ostream& out, const sentence& x) {
+  out << "<s>";
+  for(sentence::const_iterator i = x.begin(); i != x.end(); i++)
+    out << ' ' << *i;
+  return out << " </s>";
+}
+
+ostream& operator<<(ostream& out, const corpus& x) {
+  for(corpus::const_iterator i = x.begin(); i != x.end(); i++)
+    out << *i << endl;
+  return out;
+}
+
 ostream& operator<<(ostream& out, const PCFG& x) {
   out << x.head << endl;
   out << x.grammar;
@@ -1052,4 +1065,48 @@ void PCFG::initialize() {
   }
 }
 
+sentence PCFG::generateSample() const {
+  /* 
+   * Algorithm: 
+   * 1. start with RHSe list consisting of just the head
+   * 2. find a NT in the vector and expand it with a random RHS's RHSe list,
+   *    in accordance with the distribution
+   * 3. do 2 until there are no more nt
+   *
+   * This is slower than it needs 
+   */
 
+  sentence s;
+  srand((unsigned)time(0)); 
+
+  //start with the head
+  list<RHSe> u;
+  u.push_front(RHSe(head, grammar[head].name));
+
+  for(RHSe::iterator i = u.begin(); i != u.end();) {
+    if(i->terminal) {
+      s.push_back(i->word);
+      i++;
+    } else {
+      //find lhs rule
+      LSH lhs = grammar[i->index];
+
+      //pick a rhs
+      double p = ((double)rand() / ((double)(RAND_MAX)+1.0L) );
+      vector<RHS>::iterator j;
+      double r = 0;
+      for(j = lhs.rule.begin(); j != lhs.end(); j++) {
+	if((r += j->probability) > p) break;
+      }
+      assert(j != lhs.end());
+      vector<RHSe> e = j->element;
+
+      //insert it in place
+      i = u.erase(i);
+      u.insert(i, e.begin(), e.end());
+    }
+  }
+
+  return s;
+}
+  
