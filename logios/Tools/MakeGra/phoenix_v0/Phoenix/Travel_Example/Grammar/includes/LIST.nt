@@ -1,0 +1,206 @@
+LIST_THE
+	(LIST *SPEC_INFO)
+	(*ANYTHING [info] *INFO_ON)
+
+SPEC_INFO
+	(*ANYTHING [info] *INFO_ON)
+	(WHAT *KIND_OF)
+
+LIST
+	(*I_WANT LIST_VERB_ME *LIST_NOUN)
+	(I_WANT *SEE *LIST_NOUN)
+	(*LIST_VERB_ME WHAT_ARE *THE_AVAIL)
+	(how do *WE) 
+
+THE_AVAIL
+	(*the AVAILABLE)
+	(there)
+
+LIST_VERB_ME
+	(LIST_VERB *ME)
+
+LIST_VERB
+	(LISTING)
+	(SHOW)
+
+KIND_OF
+	(*the KIND *of)
+
+LIST_NOUN
+	(*A LISTING *of)
+	(again)
+	(*one more TIME)
+
+KIND
+	(kind)
+	(kinds)
+	(type)
+	(types)
+	(sort)
+	(sorts)
+
+I_WANT
+	(*FIRST_I'D WANT_NEED_LIKE *TO_KNOW)
+	(MAY_CAN WE_I *KNOW_ABOUT)
+	(let ME *KNOW_ABOUT)
+	(and now for)
+	(CAN_YOU)
+	(*I'M IM_OPTS)
+
+IM_OPTS
+	(interested *in)
+	(LOOKING *for)
+
+LOOKING
+	(inquiring *about)
+	(looking)
+	(requesting)
+
+MAY_CAN
+	(may)
+	(CAN_WILL)
+
+CAN_YOU
+	(CAN_WILL you)
+
+CAN_WILL	
+	(can)
+	(could)
+	(WILL)
+
+TO_KNOW
+	(to *KNOW)
+	(service)
+	(*to coordinate)
+
+KNOW
+	(know *about)
+	(arrange)
+
+KNOW_ABOUT
+	(know *about)
+	(coordinate)
+
+WANT_NEED_LIKE
+	(like)
+	(need)
+	(needed)
+	(prefer)
+	(prefered)
+	(want)
+	(wanted)
+	(wish)
+	(wished)
+
+FIRST_I'D
+	(*FIRST I'D)
+
+FIRST
+        (*<s> first)
+
+I'D
+	(I'D_OPTS *ALSO_ONLY)
+
+I'D_OPTS
+	(i)
+	(i'd)
+	(*i WILL)
+	(i'll)
+	(*i had)
+
+I'M
+	(i'm *ALSO_ONLY)
+	(*i am *ALSO_ONLY)
+	(*i WILL *ALSO_ONLY be)
+	(i'll *ALSO_ONLY be)
+
+SEE
+	(check on)
+	(get)
+	(have)
+	(look at)
+	(make)
+	(plan)
+	(see)
+
+SHOW
+	(display)
+	(find)
+	(give)
+	(get)
+	(look *at)
+	(print)
+	(show)
+	(specify)
+	(tell)
+	([tell_about])
+
+WHAT_ARE
+	(WHAT ARE)
+	(what'll *be)
+	(what're)
+	(which're)
+
+WHAT
+	(what)
+	(what's)
+	(which)
+	(which's)
+
+ARE
+	(are)
+	(is)
+	(was)
+	(were)
+	(WILL *be)
+
+ANYTHING
+	(some)
+	(any)
+	(that)
+	(A)
+
+A
+	(a)
+	(an)
+	(the)
+
+INFO_ON
+	(about)
+	(concerning)
+	(for)
+	(on)
+
+WILL
+	(will)
+	(would)
+
+ALSO_ONLY
+	(also)
+	(only)
+
+LISTING
+	(list)
+	(listing)
+
+WE
+	(we)
+	(i)
+	(us)
+	(you)
+
+WE_I
+	(we)
+	(i)
+
+ME
+	(me *my)
+	(us)
+
+TIME
+	(time)
+	(times)
+
+AVAILABLE
+	(available)
+	(availability)

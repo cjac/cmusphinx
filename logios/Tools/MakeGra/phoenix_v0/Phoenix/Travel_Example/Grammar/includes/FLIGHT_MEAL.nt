@@ -1,0 +1,65 @@
+FOR_FLIGHT
+	(*FOR *all *the *FOR_FLITE [flight_list])
+
+FOR_FLITE
+	(flight)
+	(flights)
+
+FOR
+	(for)
+	(on)
+	(DO)
+
+DO
+	(do)
+	(does)
+	(if)
+	(whether)
+
+ANY
+	(any)
+	(a)
+
+SORT_OF
+	(KIND of *AN)
+
+INFLT
+	(*in flight)
+	(inflight)
+
+THEY
+	(they)
+	(i)
+
+SERVE
+	(serve)
+	(serves)
+
+SERVED
+	(serve)
+	(served)
+	(service)
+	(available)
+	(availability)
+	(offer)
+	(offered)
+	(provided)
+	(get)
+
+MEAL
+	(meals)
+	(*a meal)
+	(food)
+
+KIND
+	(kind)
+	(kinds)
+	(type)
+	(types)
+	(sort)
+	(sorts)
+
+AN
+	(a)
+	(an)
+

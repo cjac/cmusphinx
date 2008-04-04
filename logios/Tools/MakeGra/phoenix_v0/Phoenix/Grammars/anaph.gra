@@ -1,0 +1,50 @@
+
+[Anaph]
+	(THAT one)
+THAT
+	(that)
+	(this)
+	(THE [_other])
+THE
+	(the)
+	(any)
+	(an)
+;
+
+[_other]
+	(other)
+;
+
+[interj]
+	(i guess)
+	(i mean)
+	(i meant)
+	(i'm not sure)
+	(i think)
+	(*okay LET see)
+	(WAIT *a MINUTE)
+	(*i say)
+	(no matter what)
+	(if *IT possible)
+	(if *IT available)
+	(in any case)
+	(wow)
+	(hey)
+	(then)
+	(wait a minute)
+	(actually)
+WAIT
+	(wait)
+	(hold on)
+MINUTE
+	(minute)
+	(second)
+LET
+	(let's)
+	(let *me)
+	(let us)
+IT
+	(that's)
+	(it's)
+;
+

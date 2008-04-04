@@ -1,0 +1,14 @@
+LOCAL_TIME
+	(LOCAL TIME_TIMES)
+
+TIME_TIMES
+	(time)
+	(times)
+
+LOCAL
+	(local)
+	(mountain)
+	(standard)
+	(eastern)
+	(central)
+

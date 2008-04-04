@@ -1,0 +1,116 @@
+THAT_ARE
+	(*THAT_WHICH THAT_WHICH_OPTS)
+	(THAT_WHICH_COST *YOU)
+	([again])
+
+THAT_WHICH_OPTS
+	(DO_ARE *IS_PLANES)
+	(*ARE *USED [restart_res])
+	(*THE *AIRLINE OFFER)
+	([with_meals_bot])
+
+THAT_WHICH_COST
+	([most_cost])
+	([least_cost])
+	(HAS_HAVE THIS_THESE AIR_FARE)
+	(*ARE *THERE *THE *AIR_FARE THAT_WHICH *COST_PL)
+
+DO_ARE
+	(does *your)
+	(DO_WILL *YOU *be)
+	(ARE *USED *THERE)
+	(USED)
+	([is_that_anaph] *AIRLINE)
+
+YOU
+	(i)
+	(we)
+	(you)
+
+THERE
+	(available)
+	(availability)
+	(there)
+
+DO_WILL
+	(can)
+	(could)
+	(do)
+	(shall)
+	(should)
+	(will)
+	(would)
+
+IS_PLANES
+	(*THE PLANES)
+
+PLANES
+	(FLIGHTS)
+	([flight_list] *FLY_FLIES)
+
+THE
+	(any)
+	(THE_TOP)
+
+THE_TOP
+	(a)
+	(an)
+	(the)
+	(your)
+
+THAT_WHICH
+	(that)
+	(which)
+
+ARE
+	(are)
+	(is)
+
+AIRLINE
+	(airline)
+	(airlines)
+
+FLY_FLIES
+	(flies)
+	(fly)
+
+COST_PL
+	(cost)
+	(costs)
+
+FLIGHTS
+	(*air plane)
+	(*air planes)
+	(airplane)
+	(airplanes)
+	(flight)
+	(flights)
+
+AIR_FARE
+	(airfare)
+	(airfares)
+	(fare)
+	(fares)
+	(price)
+	(prices)
+	(rate)
+	(rates)
+	(cost)
+	(costs)
+
+HAS_HAVE
+	(has)
+	(have)
+
+THIS_THESE
+	(this)
+	(that)
+	(these)
+
+USED
+	(available)
+	(used)
+
+OFFER
+	(offer)
+	(offers)

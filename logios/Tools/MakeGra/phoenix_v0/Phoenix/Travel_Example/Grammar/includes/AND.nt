@@ -1,0 +1,51 @@
+AND
+	(and *or)
+	(or)
+
+A
+	(a)
+	(an)
+	(any)
+	(the)
+	(your)
+
+I'D
+	(I'D_OPTS *ALSO_ONLY)
+
+I'D_OPTS
+	(i)
+	(i'd)
+	(*i WILL)
+	(*i had)
+
+I'M
+	(I'M_OPTS *ALSO_ONLY)
+	(I'LL *ALSO_ONLY be)
+
+I'M_OPTS
+	(i'm )
+	(*i am )
+
+I'LL
+	(*i WILL)
+	(i'll)
+
+ARE
+	(are)
+	(is)
+
+DO
+	(do)
+	(does)
+
+ALSO_ONLY
+	(also)
+	(only)
+
+WILL
+	(will)
+	(would)
+
+HAS
+	(has)
+	(have)

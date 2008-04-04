@@ -1,0 +1,14 @@
+STOP_NUMBER
+	(first)
+	(second)
+	(third)
+	(fourth)
+	(last)
+	(SM_NUM *SM_NUM)
+
+SM_NUM
+	(one)
+	(two)
+	(three)
+	(four)
+	(five)

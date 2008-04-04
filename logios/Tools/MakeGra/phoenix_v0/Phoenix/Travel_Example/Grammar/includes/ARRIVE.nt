@@ -1,0 +1,283 @@
+TO
+	(*GOING TO_INTO)
+	(GET_ME in)
+	(BOUND TO_TOWARD)
+	(for)
+	(toward)
+	(towards)
+	(ARRIVING)
+
+TO_TOWARD
+	(TO_VISIT)
+	(TOWARD)
+
+TOWARD
+	(FOR_FOUR)
+	(toward)
+	(towards)
+
+FROM
+	(*GOING FROM_OUT)
+	(LEAVE_GEN *FROM_OUT)
+	(*I_WE RESIDE *here *in)
+	(I_WE_AM *here in)
+	(*TAKE *THE PLANE *IN_AT)
+
+GOING
+	(bound)
+	(come)
+	(enroute)
+	(heading)
+	(FLY)
+	(GETTING)
+	(go)
+	(goes)
+	(going)
+	(go on)
+	(going on)
+	(on *the way)
+	(TRAVEL)
+
+ARRIVING_TO
+	(ARRIVING)
+	(*AND *FLY INTO)
+
+ARRIVING
+	(*AND_THAT ARRIVING_THAT)
+	(*AND be THERE_IN)
+
+ARRIVING_THAT
+	(ARR *[flight_ref_bot] *AT_INTO)
+	(GET_ME IN_THERE)
+
+GET_ME
+	(GET *ME)
+
+GET
+	(come)
+	(comes)
+	(goes)
+	(GETTING)
+	(bring)
+	(bringing)
+	(brings)
+
+ARR
+	(arrival)
+	(arrivals)
+	(arrive *there)
+	(arrives *there)
+	(arriving)
+	(*with *THE destination *city *of *as *is)
+	(LAND *IN)
+	(reach)
+	(reaches)
+	(reaching)
+	(show up)
+	(showing up)
+	(shows up)
+	(VISIT *ME *here)
+
+LEAVE_GEN
+	(LEAVE_SPEC)
+	(ORIGINATE *MY_OUR *FLT_PL *IN_AT)
+
+ORIGINATE
+	(begin)
+	(begins)
+	(beginning)
+	(origin)
+	(originate)
+	(originates)
+	(originating)
+	(start)
+	(starts)
+	(starting)
+
+LEAVE_SPEC
+	(depart)
+	(departing)
+	(departs)
+	(*FOR_FOUR DEPARTURE)
+	(leave)
+	(leaves)
+	(leaving)
+	(TAKE off)
+
+FROM_OUT
+	(from)
+	(out of)
+
+IN
+	(*here in)
+	(*here at)
+	(INTO)
+
+IN_AT
+	(*here HERE_ATIN)
+
+AT_INTO
+	(*here HERE_ATIN)
+	(TO_VISIT)
+	(INTO)
+
+HERE_ATIN
+	(at)
+	(in)
+	(on)
+
+IN_THERE
+	(IN_INTO)
+	(there)
+
+IN_INTO
+	(*here in)
+	(TO_VISIT)
+	(INTO)
+
+TO_INTO
+	(TO_VISIT)
+	(INTO)
+
+INTO
+	(*here HERE_INTO)
+
+HERE_INTO
+	(into)
+	(in to)
+
+EARLIEST
+	([_earliest])
+	([_latest])
+	([Time_Range] *[flight_ref])
+
+THE
+	(a)
+	(an)
+	(the)
+
+GETTING
+	(get)
+	(gets)
+	(getting)
+	(coming)
+
+LAND
+	(end)
+	(ending)
+	(ends)
+	(land)
+	(lands)
+	(landing)
+	(landings)
+	(terminate)
+	(terminates)
+	(terminating)
+
+BOUND
+	(bound)
+	(heading)
+	(enroute)
+
+TRAVEL
+	(travel)
+	(travels)
+	(traveling)
+	(travelling)
+
+ME
+	(me)
+	(us)
+
+DEPARTURE
+	(departure)
+	(departures)
+
+FLT_PL
+	(flight)
+	(flights)
+
+MY_OUR
+	(my)
+	(our)
+	(the)
+
+OUT_OF
+	(out of)
+
+AND_THAT
+	(AND *THAT_WHICH)
+
+AND
+	(and *or)
+	(or)
+
+THAT_WHICH
+	(that)
+	(which)
+
+THERE_IN
+	(*here in)
+	(there)
+
+FLY
+	(*WHEN_I FLY_FLYING)
+	(flies)
+
+FLY_FLYING
+	(fly)
+	(flying)
+
+PLANE
+	(airplane)
+	(airplanes)
+	(plane)
+	(planes)
+
+RESIDE
+	(live)
+	(lives)
+	(living)
+	(reside)
+	(resides)
+
+WHEN_I
+	(when *I_WE_AM)
+
+I_WE_AM
+	(i am)
+	(i_am)
+	(i'm)
+	(we are)
+	(we're)
+	(you're)
+	(you are)
+
+I_WE
+	(i)
+	(we)
+	(you)
+
+TO_VISIT
+	(TO_TWO *visit)
+
+TO_TWO
+	(to)
+	(two)
+
+TAKE
+	(take)
+	(takes)
+
+FOR_FOUR
+
+	(for)
+	(four)
+
+VISIT
+	(visit)
+	(visiting)
+	(see)
+	(seeing)
+	(drop *by)
+	(dropping *by)

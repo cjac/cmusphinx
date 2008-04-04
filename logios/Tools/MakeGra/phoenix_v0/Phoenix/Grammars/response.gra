@@ -1,0 +1,561 @@
+[negative]
+	(NEGATIVE *ALL *of *THE)
+	(no)
+
+NEGATIVE
+	(*ALL but)
+	(none)
+	(don't *WANT *TO_TWO)
+	(other than)
+	(rather than)
+	(instead of)
+	(without)
+	(exclude)
+	(excluding)
+	(aside from)
+	(except)
+	(beside)
+	(besides)
+	(DOESN'T *NECESSARILY)
+
+WANT
+	(like)
+	(need)
+	(want)
+
+DOESN'T
+	(not)
+	(doesn't)
+	(isn't)
+
+NECESSARILY
+	(necessarily)
+	(include)
+	(including)
+	(contain)
+	(containing)
+
+TO_TWO
+	(to)
+	(two)
+
+ALL
+	(all)
+	(any)
+	(each)
+
+THE
+	(a)
+	(an)
+	(the)
+	(these)
+	(your)
+	(those)
+;
+
+
+[negative_1]
+	(NEGATIVE *ALL *of *THE)
+	(non)
+
+NEGATIVE
+	(*ALL but)
+	(aside from)
+	(beside)
+	(besides)
+	(cancel)
+	(don't *WANT *TO_TWO)
+	(DOESN'T *NECESSARILY)
+	(except)
+	(exclude)
+	(excluding)
+	(forget *about)
+	(instead *of)
+	(other than)
+	(none)
+	(rather than)
+	(without)
+
+WANT
+	(like)
+	(need)
+	(want)
+
+DOESN'T
+	(not)
+	(doesn't)
+	(isn't)
+
+NECESSARILY
+	(necessarily)
+	(include)
+	(including)
+	(contain)
+	(containing)
+
+TO_TWO
+	(to)
+	(two)
+
+ALL
+	(all)
+	(any)
+	(each)
+
+THE
+	(a)
+	(an)
+	(the)
+	(these)
+	(your)
+	(those)
+;
+
+
+[negative_res]
+	(not)
+	(nothing)
+;
+
+[Repeat]
+	(*PLEASE REPEAT *THE *same *INFO *again *PLEASE)
+	(*PLEASE REPEAT_GENERIC *THE *same INFO *again *PLEASE)
+	(are you sure)
+	(*beg *your pardon)
+	(EXCUSE me)
+	(what was that)
+	(what are you saying)
+	(WHATD you *just say)
+WHATD
+	(what did)
+	(what'd)
+PLEASE
+	(please)
+	(could you)
+	(would you)
+	(can you)
+WHATEVER	
+	(maybe)
+	(perhaps)
+	(whatever)
+REPEAT
+	(repeat)
+	(say)
+REPEAT_GENERIC
+	(tell me)
+
+INFO
+	(info)
+	(information)
+	(flight)
+	(answer)
+	(thing)
+	(things)
+	(condition)
+	(conditions)
+	(requirement)
+	(requirements)
+	(restriction)
+	(restrictions)
+THE
+	(the)
+	(that)
+	(your)
+EXCUSE
+	(excuse)
+	('cuse)
+;
+
+[Decline]
+	(don't)
+	(do not)
+	(won't)
+	(will not)
+	(cancel)
+	(no)
+;
+
+[Yes]
+	(YES *MOD)
+	([_yes])
+	(yes that one)
+	(*yes that's IT)
+	(STRONG_MOD)
+	(FINE)
+	(<s> okay </s>)
+	(<s> please </s>)
+	(<s> it is </s>)
+	(go ahead *MOD)
+	(*i think so)
+	(i would like it)
+	(THAT *be *much BETTER)
+	(of course)
+YES
+	(yes)
+	(yeah)
+	(yep)
+	(yup)
+	(sure)
+
+IT
+	(it)
+	(the one)
+
+MOD
+	(STRONG_MOD)
+	(WEAK_MOD)
+STRONG_MOD
+	(please do)
+	(*please go AHEAD)
+	(i do)
+	(i WILL)
+	(THAT BE GOOD)
+	(THAT *WILL DO)
+	(you betcha)
+	(*let's go for it)
+	(*THAT close enough)
+	(absolutely)
+BETTER
+	(better)
+	(GOOD *to *me)
+	(*have *to do)
+THAT
+	(that's)
+	(that *is)
+	(that *sounds)
+	(*it sounds)
+	(that'll)
+	(that will)
+	(definitely)
+	(it)
+	(it's)
+GOOD
+	(okay)
+	(FINE)
+	(nice)
+
+WEAK_MOD
+	(why not)
+	(i will)
+	(i think so)
+	(that's a good one)
+
+AHEAD
+	(ahead)
+	('head)
+BE
+	(*WILL *be)
+	(one is)
+	(one's)
+
+WILL
+	(will)
+	(would)
+
+DO
+	(do)
+	(work)
+
+FINE
+	(fine)
+	(perfect)
+	(great)
+	(wonderful)
+	(acceptable)
+	(good *enough)
+	(right)
+	(alright)
+	(all right)
+	(cool)
+;
+
+[No]
+	(no *MOD)
+	([_no])
+	([_emphatic] no)
+	(absolutely not)
+	(nope)
+	(nah)
+	(no way)
+	(*no THATS *would not *be OK)
+	(i DONT *WANT)
+	(DONT WANT)
+	(not NOW)
+	(*this *is not what i want)
+	(THATS NO *good)
+	(THAT WONT do)
+	(blow that one off)
+	(not *at this time)
+	(the hell with that)
+	(forget it)
+	(forget that)
+	(never mind)
+	(not really)
+	(negative)
+	(*please CANCEL *please)
+DONT
+	(don't)
+	(won't)
+	(wouldn't)
+	(do not)
+	(will not)
+	(would not)
+	(can't)
+	(can not)
+	(couldn't)
+	(could not)
+THATS
+	(that's)
+	(that *is)
+	(it's)
+	(it *is)
+THAT
+	(that)
+	(it)
+OK
+	(okay)
+	(correct)
+	(acceptable)
+	(*all right)
+CANCEL
+	(cancel that)
+	(cancel this transaction)
+WANT
+	(think so)
+	(like that)
+	(want that)
+	(want to)
+MOD
+	(thanks)
+	(thank you)
+	(that's FINE)
+	(it's okay)
+	(it's not)
+	(i'm not)
+	(i'm DONE)
+	(i'll stay there)
+DONE
+	(done)
+	(finished)
+FINE
+	(fine)
+	(okay)
+	(all right)
+	(alright)
+	(it)
+	(all)
+NOW
+	(now)
+	(yet)
+NO
+	(no)
+	(not)
+WILL
+	(will)
+	(would)
+	(do)
+WONT
+	(won't)
+	(will not)
+	(wouldn't)
+	(would not)
+;
+
+[Accept]
+	(*I *MUST TAKE *on REF *please)
+	(*GOOD GENERIC_REF)
+	([Accept_Row])
+	(REF SOUNDS GOOD)
+SOUNDS
+	(sounds)
+	(seems)
+	(is)
+	(feels)
+	(will be)
+I
+	(i *will)
+	(i'll)
+MUST
+	(must)
+	(have to)
+GOOD
+	(good)
+	(ok)
+	(okay)
+	(fine)
+	(all right)
+	(good enough)
+REF
+	(that *ONE)
+	(this *ONE)
+	(it)
+ONE
+	(one)
+	(flight)
+GENERIC_REF
+	(got it)
+	(that's the one)
+
+TAKE
+	(take)
+	(do)
+	(give me)
+	(book *me)
+	(reserve *me)
+	(i want)
+;
+
+[_emphatic]
+	(i said)
+	(you sure)
+	(i already told you)
+;
+
+[tentative]
+	(i quess)
+;
+
+[Bye]
+	(*good bye)
+	(goodbye)
+	(byebye)
+	(ME WANT hang up *now)
+	(see you later)
+	(that's all)
+	(have a good day)
+	(good night)
+ME
+	(i)
+	(i'd)
+WANT
+	(like to)
+	(have to)
+	(want to)
+	(wanna)
+;
+
+[_yes]
+	(*that's correct)
+	(that is correct)
+	(*i don't WANT *to CHANGE)
+	(no change)
+	(no changes)
+CHANGE
+	(change anything)
+	(make any changes)
+WANT
+	(want)
+	(need)
+;
+
+[_no]
+	(no *it's *not)
+ITS
+	(it's)
+	(it *is)
+	(that's)
+	(that *is)
+;
+
+[Accept_Row]
+	( *I TAKE *the *OPTION [Row] *OPTION)
+	(OPTION [Row])
+	([Row] OPTION)
+THE
+	(the)
+	(a)
+OPTION
+	(option)
+	(options)
+	(one)
+	(row)
+	(flight)
+	(flights)
+I
+	(i *WILL)
+	(i'll)
+	(i'd)
+	
+WILL
+	(will)
+	(would)
+TAKE
+	(take)
+	(want)
+	(like)
+	(GIVE *me *on)
+GIVE
+	(give)
+	(reserve)
+	(book)
+;
+
+[Select_Row]
+	(*PLEASE *LIST *the NEXT OPTIONS)
+	([another] OPTIONS)
+	(<s> [_next] </s>)
+	(<s> [_previous] </s>)
+	(<s> [_another] </s>)
+	(*PLEASE *LIST *the [Row] OPTIONS)
+	(*PLEASE *LIST *the OPTIONS [Row])
+OPTIONS
+	(options)
+	(option)
+	(possibility)
+	(row)
+	(record)
+	(one)
+	(flight)
+	(selection)
+
+NEXT
+	([_next])
+	([_previous])
+
+PLEASE
+	(please)
+	(could you)
+	(would you)
+LIST
+	(what ARE)
+	(list)
+	(SHOW *me)
+	(play)
+	(repeat)
+SHOW
+	(show)
+	(tell)
+ARE
+	(are)
+	(is)
+;
+
+[Row]
+	([Number])
+;
+
+[another]
+	([_another] *one)
+	(what else HAVE)
+	(something else)
+	(what other flights HAVE)
+HAVE
+	(do you have)
+	(are there)
+	(is there)
+;
+
+[_another]
+	(another)
+	(A different)
+	(any other)
+	(the other)
+A
+	(a)
+	(any)
+;
+
+[_quantify]
+	(how much)
+;
+

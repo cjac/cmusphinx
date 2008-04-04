@@ -1,0 +1,87 @@
+LOCATIONS
+	(*THE *TERMINAL AIRPORT_CITY *AIRPORT)
+	([all_airports])
+	([each_airport])
+	([each_city])
+
+#AIRPORT_CITY 1n0023
+#	(*ALL_NEAR *AIRPORT [city] *[state] *[city_state] *AREA) 
+#	(*AIRPORT *[Cityname] [Airport_Code])
+#	(*AIRPORT [Airport_Code])
+#	([state])
+
+AIRPORT_CITY
+	([city] *[state] *[city_state] *[country] *AREA)
+	(*AIRPORT *[Cityname] [Airport_Code])
+	(*AIRPORT [Airport_Code])
+
+ALL_NEAR
+	(*ALL *of *the AIRPORT *WHICH *IS NEAR *the)
+
+AIRPORT
+	(*the *DIFFERENT_NR AIRPORT_OPTS)
+
+AIRPORT_OPTS
+	(airport)
+	(airports)
+
+DIFFERENT_NR
+	(DIFFERENT *NEAR)
+
+DIFFERENT
+	(different)
+	(another)
+	(*ANY other)
+
+NEAR
+	(around)
+	(close *to)
+	(in)
+	(near)
+	(serves)
+	(serves)
+	(serving)
+	(servicing)
+
+CITY
+	(city)
+	(cities)
+	(town)
+
+WHICH
+	(which)
+	(that)
+
+IS
+	(is)
+	(are)
+
+AREA
+	(area)
+	(city)
+
+ALL
+	(all)
+	(ANY)
+
+ANY
+	(any)
+	(some)
+
+THE
+	(a)
+	(an)
+	(the)
+
+TERMINAL
+	([Airline_Code] GATE *ATIN)
+
+GATE
+	(gate)
+	(gates)
+	(terminal)
+	(terminals)
+
+ATIN
+	(at)
+	(in)

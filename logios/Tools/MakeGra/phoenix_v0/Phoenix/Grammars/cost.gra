@@ -1,0 +1,396 @@
+
+[Price_Range]
+	(*A PRICE_RANGE_OPTIONS)
+PRICE_RANGE_OPTIONS	
+	(PAY_COSTING_SPEC *OF_ONLY SPEC_PRICE)
+	(*COSTING_HILO *OF_ONLY HI_LO)
+	(*something RANGE)
+RANGE
+	(between [lo_amount] *[x_dollars] and [hi_amount] *[x_dollars] *[x_inprice])
+	(in *the [lo_amount] *[x_dollars] to [hi_amount] *[x_dollars] range)
+
+SPEC_PRICE
+	([at_price])
+	([aprx_price])
+
+HI_LO
+	([hi] *AND_LOW)
+	([low] *AND_HI)
+
+COSTING_HILO
+	(*FOR_WHICH *the total COST *ARE)
+	(WHOSE_RES COST *ARE)
+	(costing)
+	(pay)
+
+WHOSE_RES
+	(whose)
+	(with *A)
+	(FOR_WHICH)
+	(AND_THAT HAVE *SOME)
+
+PAY_COSTING_SPEC
+	(*for COSTING_SPEC)
+	(for)
+	(pay)
+	(like)
+	(around)
+
+COSTING_SPEC
+	(*FOR_WHICH *the total COST *ARE)
+AND_HI
+	(*and [hi])
+
+AND_LOW
+	(*and [low])
+
+OF_ONLY
+	(*of only)
+	(only)
+
+FOR_WHICH
+	(FOR *WHOM)
+
+WHOM
+	(which)
+	(whom)
+
+FOR
+	(for)
+	(on)
+	(in)
+
+COST
+	(price)
+	(prices)
+	(cost)
+	(costs)
+	(costing)
+
+AMOUNT
+	(amount)
+	(amounts)
+	(charge)
+	(charges)
+
+ARE
+	(are)
+	(is)
+
+AND_THAT
+	(and *THAT_WHICH)
+
+THAT_WHICH
+	(that)
+	(which)
+
+HAVE
+	(has)
+	(have)
+	(having)
+
+SOME
+	(a)
+	(an)
+	(any)
+	(some)
+	(the)
+
+A
+	(a)
+	(an)
+	(the)
+
+;
+
+[_cheapest]
+	([lowest])
+	([least_cost])
+	(best PRICE)
+	(nothing fancy)
+	(*a little more cheaply)
+PRICE
+	(price)
+	(rate)
+
+;
+
+[_expensive]
+	([highest])
+	([most_cost])
+	(*SOMETHING more expensive)
+	(SOMETHING *a *little BETTER *than *that)
+	(*a BETTER *one)
+	
+SOMETHING
+	(one)
+	(something)
+	(anything)
+BETTER
+	(better)
+	(nicer)
+;
+
+[_cheaper]
+	(*a cheaper *one)
+	(less expensive)
+	(lower)
+	(*THAT *sounds *PRETTY HIGH *to *me)
+	(more economical)
+THAT
+	(that *is)
+	(that's)
+	([Number] *dollars)
+PRETTY
+	(pretty)
+	(KIND of)
+	(*a little)
+	(*way too)
+KIND
+	(kind)
+	(sort)
+HIGH
+	(high)
+	(expensive)
+	(too much)
+	(a lot)
+;
+
+[lo_amount]
+	([Number])
+;
+
+[hi_amount]
+	([Number])
+;
+
+
+[low]
+	(*of *only MORE_THAN [Number] *[x_dollars] *[x_inprice])
+	(*of *only [Number] *[x_dollars] *[x_inprice] [atleast1])
+MORE_THAN
+	(more *expensive than)
+	(greater than)
+	(higher than)
+	([atleast])
+;
+
+[hi]
+	(*of *only LESS_THAN [Number] *[x_dollars] *[x_inprice])
+	(*of *only [Number] *[x_dollars] *[x_inprice] [atmost1])
+LESS_THAN
+	(cheaper than)
+	(less *expensive than)
+	(lower than)
+	(below)
+	(under)
+	([atmost])
+;
+
+
+[aprx_price]
+	(APPROX [Number] *[x_dollars] *[x_inprice])
+APPROX
+	(about)
+	(around)
+	(approximately)
+	(more or less)
+	(in *the range *of)
+	(like)
+;
+
+[at_price]
+	(*FOR_PRICE [Number] [x_dollars] *[x_inprice])
+	(at [Number] DOLLARS_PRICE)
+
+FOR_PRICE
+	(for)
+	(at)
+	(is)
+	(of)
+	(only)
+
+DOLLARS_PRICE
+	([x_dollars] *[x_inprice])
+;
+
+[lowest]
+	(LOWEST *[x_inprice])
+	(least cost)
+
+LOWEST
+	(lowest)
+	(*REAL cheap *one)
+	(*as cheaply as possible)
+	(*in *the CHEAPEST *way *possible *way)
+	(smallest)
+	(minimum)
+REAL
+	(real)
+	(really)
+CHEAPEST
+	(cheapest)
+	(*most INEXPENSIVE)
+
+INEXPENSIVE
+	(inexpensive)
+	(least expensive)
+;
+
+[highest]
+	(HIGHEST *[x_inprice])
+	(most cost)
+
+HIGHEST
+	(highest)
+	(*in *the most expensive *way *possible *way)
+	(largest)
+	(biggest)
+	(maximum)
+	(greatest)
+;
+
+[least_cost]
+	(COST *the least *amount *OF_MONEY)
+	(*the least amount *OF_MONEY)
+
+COST
+	(cost)
+	(costs)
+
+OF_MONEY
+	(*of money)
+;
+
+[most_cost]
+	(COST *the most *amount *OF_MONEY)
+	(*the most amount *OF_MONEY)
+
+COST
+	(cost)
+	(costs)
+
+
+OF_MONEY
+	(*of money)
+;
+
+[atleast]
+	(at least)
+	(MORE than *or equal *to)
+	(equal *to or MORE *than)
+	(NOT less than)
+MORE
+	(more)
+	(greater)
+
+NOT
+	(no)
+	(not)
+;
+
+
+[atleast1]
+	(at least)
+	(ANDOR MORE *MORE_OPTS)
+	(ANDOR equal *to ANDOR MORE *than THAT)
+
+MORE_OPTS
+	(*than *OR_EQ THAT)
+
+MORE_LESS
+	(MORE)
+	(NOT less THAN_THEN)
+
+MORE
+	(more *expensive)
+	(greater)
+	(higher)
+
+OR_EQ
+	(or equal *to)
+
+NOT
+	(no)
+	(not)
+
+THAN_THEN
+	(than)
+	(then)
+
+THAT
+	(that)
+	(it)
+
+ANDOR
+	(and *or)
+	(or)
+;
+
+
+[atmost]
+	(at most)
+	(less than *or equal *to)
+	(equal *to or less *than)
+	(NOT MORE than)
+	(up to)
+NOT
+	(no)
+	(not)
+MORE
+	(more)
+	(greater)
+;
+
+
+[atmost1]
+	(at most)
+	(ANDOR LESS *than *OR_EQ *THAT)
+	(ANDOR equal *to ANDOR LESS *than THAT)
+
+LESS_OPTS
+	(*than *OR_EQ THAT)
+
+LESS_MORE
+	(NOT MORE)
+	(up to)
+	(upto)
+	(LESS)
+
+LESS
+	(cheaper)
+	(less)
+	(lower)
+	(below)
+	(under)
+
+NOT
+	(no)
+	(not)
+
+MORE
+	(more)
+	(greater)
+
+THAT
+	(that)
+	(it)
+
+OR_EQ
+	(or equal *to)
+ANDOR
+	(and *or)
+	(or)
+;
+
+[x_inprice]
+	(*in price)
+	(priced)
+	(cost)
+;
+
+[x_dollars]
+	(dollar)
+	(dollars)
+;
+

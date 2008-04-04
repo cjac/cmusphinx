@@ -1,0 +1,5 @@
+verbose:2
+extract:1
+dir: Grammar
+grammar: TA.net
+PROFILE:0

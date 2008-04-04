@@ -1,0 +1,156 @@
+EXPLAIN
+	(*and DESCRIBE *MEANING)
+
+EXPLAIN_RESTRICTIONS
+	(*<s> DESCRIBE_SPEC *MEANING)
+	(*<s> DESCRIBE_GEN MEANING)
+
+DESCRIBE
+	(DESCRIBE_GEN)
+	(*<s> DESCRIBE_SPEC)
+
+DESCRIBE_SPEC
+	(describe)
+	(*A *brief description *of *each)
+	(explain)
+	(define)
+	(*give *me *SOME INFORMATION *ON *what)
+	(*IS_THERE *an explanation *OF)
+	(DIFFERENCE BETWEEN)
+	(WHAT_DO MEAN)
+
+DESCRIBE_GEN
+	(WHAT_IS)
+	(show *me)
+	(*could *you tell *me *what)
+	(list)
+
+MEANING
+	(*the MEANING_PL *of)
+
+MEANING_PL
+	(meaning)
+	(meanings)
+
+WHAT_IS
+	(what *DO_IS)
+	(what's)
+	(what're)
+
+DO_IS
+	(DO)
+	(is)
+	(are)
+	(has)
+	(use)
+	(uses)
+
+INFORMATION
+	(info)
+	(information)
+	(description)
+
+A
+	(a)
+	(an)
+	(the)
+	(these)
+
+SOME
+	(some)
+	(the)
+	(a)
+
+ON
+	(of)
+	(on)
+	(for)
+	(about)
+
+OF
+	(of)
+	(for)
+	(on)
+
+IS_THERE
+	(is there)
+
+IN_COL
+	(*MEAN FOR *the *COLUMN)
+	(in the table)
+
+COLUMN
+	(column *name)
+	(columns)
+	(heading)
+	(header)
+	(label)
+	(category)
+	(diagram)
+	(field)
+
+MEAN
+	(mean)
+	(means)
+	(stand for)
+	(stands for)
+	(represent)
+	(represents)
+	(designate)
+	(designates)
+
+FOR
+	(for)
+	(on)
+	(in)
+	(under)
+
+ABB
+	(abbreviation)
+	(abbreviations)
+	(class)
+	(classes)
+	(code)
+	(codes)
+	(designation)
+	(prefix)
+	(prefixes)
+	(symbol)
+	(symbols)
+	(type)
+	(types)
+
+RESTRICTION
+	(restriction)
+	(restrictions)
+	(restrict)
+
+WHAT_GET
+	(WHAT_DO ONE *get *with)
+
+WHAT_DO
+	(what DO)
+
+DO
+	(do)
+	(does *ITTHAT)
+	(will)
+	(would *ITTHAT)
+
+ONE
+	(one)
+	(you)
+	(we)
+	(i)
+
+DIFFERENCE
+	(differ)
+	(difference)
+
+BETWEEN
+	(among)
+	(between)
+
+ITTHAT
+	(it)
+	(that)

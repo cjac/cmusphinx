@@ -1,0 +1,19 @@
+#   Basic flight reservation info
+    FRAME: Air
+    NETS:
+#       fully specified entities
+	[depart_loc]
+	[arrive_loc]
+	[travel_date]
+	[travel_time]
+#       under-specified entities
+	[location]
+	[Date_Time]
+	[Time_Range]
+;
+
+#   General integer
+    FRAME: Number
+    NETS:
+	[Number]
+;

@@ -1,0 +1,129 @@
+TIME_RANGE_OPTS
+	([start_time])
+	([end_time] *AND_START_TIME)
+	(between [start_between] *AND_TILL [end_between])
+	(*from [start_between] TILL [end_between])
+	([start_time] *AND [end_time])
+	(APPROX_OPTS *AS_POSS)
+
+AND_TILL
+	(AND)
+	(*AND TILL)
+
+TILL
+	(to)
+	(till)
+	(until)
+
+AND_START_TIME
+	(and *SOMETIME [start_time])
+
+APPROX_OPTS
+	(APPROX [_aprx_time])
+	([aprox_after])
+	([aprox_before])
+	([aprox_aftbef])
+
+APPROX
+	(*JUST AROUND_ABOUT)
+	(*SOMETIME AROUND_ABOUT)
+	(one AROUND_ABOUT)
+	(*as CLOSE *to)
+	(*at approximately)
+	(in *the vicinity *of)
+
+AROUND_ABOUT
+	(around)
+	('round)
+	(about)
+	('bout)
+
+AS_POSS
+	(*as possible)
+
+AFTER
+	(after)
+	(later than)
+	(NO_NOT BEFORE)
+
+CLOSE
+	(close)
+	(closest)
+	(closer)
+	(near)
+	(nearer)
+	(nearest)
+
+BEFORE
+	(before)
+	(sooner than)
+	(prior to)
+	(by)
+	(earlier than)
+	(NO_NOT AFTER_CPY)
+
+AFTER_CPY
+	(after)
+	(later than)
+
+IN_THE
+	(*in the)
+	(at)
+
+AND
+	(and *or)
+	(or)
+
+SOMETIME
+	(sometime)
+	(somewhere)
+
+AND_THAT
+	(and *THAT_WHICH)
+
+THAT_WHICH
+	(that)
+	(which)
+
+AT_ON
+	(at)
+	(on *the)
+
+NO_NOT
+	(no)
+	(not)
+
+TILL
+	(till)
+	(until)
+	(to)
+#	(and)
+
+EARLIER_LATER
+	(earlier *in)
+	(later *in)
+
+JUST
+	(just)
+	(*I'D_WE SAY)
+
+I'D_WE
+	(i'd)
+	(we'd)
+	(*I_WE WILL_WOULD)
+	(I_WE)
+	(let's)
+	(let *us *me)
+
+I_WE
+	(i)
+	(we)
+	(you)
+
+WILL_WOULD
+	(will)
+	(would)
+
+SAY
+	(say)
+	(said)

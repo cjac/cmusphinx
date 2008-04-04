@@ -1,0 +1,167 @@
+COSTING
+	(COSTING_SPEC)
+	(COSTING_GEN)
+
+COSTING_SPEC
+	(*FOR_WHICH *the total COST *ARE)
+	(*WHOSE *[one_way] COST *ARE)
+
+COSTING_GEN
+	(WHICH *of *THOSE ARE)
+	(for)
+	(AVAILABLE at)
+
+THOSE
+	(those)
+	(these)
+
+FARE_CONS
+	(CLASS)
+	([one_way])
+	([excursion])
+	([advance])
+	([highest])
+	([lowest])
+
+CLASS
+	(*class CLASS_COST_OPTS *LEVEL)
+
+CLASS_COST_OPTS
+	([class_type_list])
+	(*[class_type_list] [fare_basis_field] *[class_type_list])
+	([fare_basis_field_list])
+	([fare_basis_list])
+
+LEVEL
+	(level)
+	(class)
+	(classes)
+
+WHOSE
+	(whose)
+	(with *A)
+	(FOR_WHICH)
+	(*AND_THAT HAVE *SOME)
+ 
+COST
+	(price)
+	(prices)
+	(cost)
+	(costs)
+	(costing)
+	(*ground FARE *INFO)
+	(*ticket AMOUNT)
+	(RATE *INFO)
+
+AMOUNT
+	(amount)
+	(amounts)
+	(charge)
+	(charges)
+
+DOLLARS
+	(dollar)
+	(dollars)
+
+FARE
+	(fare)
+	(fares)
+	(airfare)
+	(airfares)
+
+RATE
+	(rate)
+	(rates)
+
+IN_PRICE
+	(*in price)
+	(priced)
+	(cost)
+
+LESS_THAN
+	(cheaper THAN_THEN)
+	(less *expensive THAN_THEN)
+	(lower THAN_THEN)
+	(below)
+	(under)
+	([atmost])
+
+APPROX
+	(about)
+	(around)
+	(approximately)
+	(in *the range *of)
+	(like)
+
+MORE_THAN
+	(more *expensive THAN_THEN)
+	(greater THAN_THEN)
+	(higher THAN_THEN)
+	([atleast])
+
+WHICH
+	(what)
+	(AND_THAT)
+
+A
+	(a)
+	(an)
+	(the)
+
+INFORMATION
+	(*SOME INFO)
+
+INFO
+	(information)
+	(info)
+
+SOME
+	(a)
+	(an)
+	(any)
+	(some)
+	(the)
+
+WITH
+	(with)
+	(*AND_THAT HAVE)
+
+ARE
+	(are)
+	(is)
+
+HAVE
+	(has)
+	(have)
+	(having)
+
+AND_THAT
+	(and *THAT_WHICH)
+
+THAT_WHICH
+	(that)
+	(which)
+
+FOR_WHICH
+	(FOR *WHOM)
+
+WHOM
+	(which)
+	(whom)
+
+FOR
+	(for)
+	(on)
+	(in)
+
+NOT
+	(no)
+	(not)
+
+THAN_THEN
+	(than)
+	(then)
+
+AVAILABLE
+	(available)
+	(availability)

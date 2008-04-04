@@ -1,0 +1,91 @@
+[Items_w_Property]
+    (WHAT *are *the *options *for SUBJECT *options *are *there)
+WHAT
+	(what *are)
+	(list)
+	(tell me *about)
+SUBJECT
+	([Hotel])
+	([Dining])
+;
+
+[Hotel]
+	(hotel)
+	(hotels)
+	(motel)
+	(motels)
+;
+[Resort]
+	(resort)
+	(resorts)
+;
+
+[Dining]
+	(*local DINING)
+	(what is *the food like)
+DINING
+	(restaurants *and *dining)
+	(dining *and *restaurants)
+	(cuisine)
+;
+
+[Info_on_Item]
+	([tell_me] ITEM)
+	(WHATS ITEM)
+WHATS
+	(what is)
+	(what's)
+	(what are)
+	(what're)
+ITEM
+	(*the [Hotel_Name] *hotel *[location])
+	(*the [Activity] *[location])
+THEN
+	(then)
+	(*at that time *of *the *year)
+	(*in [Date_Period]);
+;
+
+[Activity]
+	([_water_sports])
+	([_swimming])
+	([_diving])
+	([_sailing])
+	([_fishing])
+	([_golf])
+	([_gambling])
+;
+
+[_water_sports]
+	(water sports)
+;
+[_swimming]
+	(swimming)
+;
+[_diving]
+	(diving)
+;
+[_sailing]
+	(sailing)
+;
+[_fishing]
+	(fishing)
+;
+[_golf]
+	(golf)
+;
+[_gambling]
+	(gambling)
+;
+
+[Date_Period]
+	([Month_Name])
+	([Season])
+;
+
+[Season]
+	(spring)
+	(summer)
+	(fall)
+	(winter)
+;

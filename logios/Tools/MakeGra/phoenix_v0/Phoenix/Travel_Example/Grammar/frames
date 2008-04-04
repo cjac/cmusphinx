@@ -1,0 +1,108 @@
+#   Basic flight reservation info
+    FRAME: Air
+    NETS:
+	[air_request]
+	[route]
+	[origin]
+	[destination]
+	[travel_date]
+	[depart_time]
+	[arrive_time]
+	[Airline]
+	[RoundTrip]
+	[Flight_Reference]
+	[Leg_Spec]
+	[Flight_Type]
+	[fare_class]
+	[Earlier]
+	[Cost_Relative]
+#	underspecified
+	[location]
+	[Depart_Time]
+	[Reserve]
+#	library
+	[Date_Time]
+	[Time_Range]
+	[List_Cost]
+	[list]
+	[i_want]
+	[_existential]
+	[Activate]
+	[Correct]
+;
+
+#   return leg info
+    FRAME: Return
+    NETS:
+	[return]
+;
+
+
+#   reserve hotel room
+    FRAME: Hotel
+    NETS:
+	[hotel_request]
+	[location]
+	[hotel_duration]
+	[List_Address]
+	[List_Distance]
+	[Cost_Relative]
+	[Room_Price_Range]
+	[Room_Type]
+	[Discount]
+#	library
+	[Date_Time]
+	[Time_Range]
+	[i_want]
+	[list]
+;
+
+#   reserve rental car
+    FRAME: Car
+    NETS:
+	[car_request]
+	[car_spec]
+	[Car_Type]
+	[Drop_Loc]
+	[List_Cost]
+	[Cost_Relative]
+	[Date_Time]
+	[Time_Range]
+	[i_want]
+	[location]
+	[Reserve]
+	[Leg_Spec]
+	[list]
+;
+
+#   user response
+    FRAME: Respond
+    NETS:
+	[Yes]
+	[No]
+	[Accept]
+	[Repeat]
+	[Reset]
+	[BargeIn]
+	[Number]
+	[Anything]
+	[Help]
+	[Confusion]	
+	[Summary]
+	[Select_Row]
+;
+
+#   query
+    FRAME: Query
+    NETS:
+	[Items_w_Property]
+	[Info_on_Item]
+	[Options]
+;
+
+#   closing
+    FRAME: Closing
+    NETS:
+	[Summarize]
+	[Success]
+;

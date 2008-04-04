@@ -1,0 +1,187 @@
+	([_AM])
+	([_AC])
+	([_CA])
+	([_AF])
+	([_NZ])
+	([_FL])
+	([_AS])
+	([_NH])
+	([_HP])
+	([_TZ])
+	([_AA])
+	([_EV])
+	([_OS])
+	([_GQ])
+	([_BA])
+	([_CI])
+	([_CO])
+	([_DL])
+	([_BR])
+	([_F9])
+	([_HA])
+	([_LY])
+	([_KP])
+	([_KE])
+	([_LH])
+	([_JI])
+	([_YX])
+	([_NW])
+	([_QF])
+	([_QQ])
+	([_SN])
+	([_SK])
+	([_WN])
+	([_NK])
+	([_SR])
+	([_FF])
+	([_TW])
+	([_TR])
+	([_UA])
+	([_US])
+	([_NJ])
+	([_RG])
+;
+
+[_AM]
+	(aeromexico)
+;
+[_AC]
+	(air canada)
+;
+[_CA]
+	(air china)
+;
+[_AF]
+	(air france)
+;
+[_NZ]
+	(air new zealand)
+;
+[_FL]
+	(airtran)
+;
+[_AS]
+	(alaska airlines)
+	(alaskan)
+;
+[_NH]
+	(*all nippon)
+;
+[_HP]
+	(america west)
+;
+[_TZ]
+	(american trans air)
+;
+[_AA]
+	(american)
+	(americans)
+;
+[_EV]
+	(atlantic southeast)
+	(atlantic southeasts)
+;
+[_OS]
+	(austrian)
+;
+[_GQ]
+	(big sky)
+;
+[_BA]
+	(british AIRWAYS)
+
+AIRWAYS
+	(airway)
+	(airways)
+;
+[_CI]
+	(china airlines)
+;
+[_CO]
+	(continental)
+	(continentals)
+;
+[_DL]
+	(delta)
+	(deltas)
+;
+[_BR]
+	(eva)
+;
+[_F9]
+	(frontier)
+;
+[_HA]
+	(hawaiian)
+;
+[_LY]
+	(el al)
+;
+[_KP]
+	(kiwi *international)
+;
+[_KE]
+	(korean)
+;
+[_LH]
+	(lufthansa)
+	(lufthansas)
+;
+[_JI]
+	(midway)
+;
+[_YX]
+	(midwest express)
+;
+[_NW]
+	(northwest)
+	(northwests)
+;
+[_QF]
+	(quantas)
+;
+[_QQ]
+	(reno air)
+;
+[_SN]
+	(sabena)
+;
+[_SK]
+	(scandinavian)
+;
+[_WN]
+	(southwest)
+	(southwests)
+;
+[_NK]
+	(spirit)
+;
+[_SR]
+	(swissair)
+;
+[_FF]
+	(tower air)
+;
+[_TW]
+	(trans world *express)
+	(trans world airlines)
+	(trans worlds)
+	(t w a)
+;
+[_TR]
+	(transbrazil)
+;
+[_UA]
+	(united)
+	(uniteds)
+;
+[_US]
+	(u s air)
+	(u s airways)
+;
+[_NJ]
+	(vanguard)
+;
+[_RG]
+	(varig)
+;

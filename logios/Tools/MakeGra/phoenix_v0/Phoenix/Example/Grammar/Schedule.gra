@@ -1,0 +1,64 @@
+###### Domain Specific Schedule Rules #############
+[travel_date]
+	(DEPARTING *on [Depart_Date])
+	(ARRIVING *on [Arrive_Date])
+DEPARTING
+	(depart)
+	(departs)
+	(departing)
+	(departure)
+	(leave)
+	(leaves)
+	(leaving)
+	(fly)
+	(travel)
+	(traveling)
+	(begin)
+	(begins)
+	(beginning)
+	(originate)
+	(originates)
+	(originating)
+	(start)
+	(starts)
+	(starting)
+
+ARRIVING
+	(arrive)
+	(arrives)
+	(arriving)
+	(arrival)
+;
+
+[Depart_Date]
+	([Date_Time])
+;
+
+[Arrive_Date]
+	([Date_Time])
+;
+
+[travel_time]
+	(DEPARTING *from *[Depart_Loc] [Depart_Time])
+	(ARRIVING *in *[Arrive_Loc] [Arrive_Time])
+DEPARTING
+	(depart)
+	(departing)
+	(departs)
+	(leave)
+	(leaves)
+	(leaving)
+ARRIVING
+	(arrive)
+	(arrives)
+	(arriving)
+;
+
+[Depart_Time]
+	([Time])
+;
+
+[Arrive_Time]
+	([Time])
+;
+

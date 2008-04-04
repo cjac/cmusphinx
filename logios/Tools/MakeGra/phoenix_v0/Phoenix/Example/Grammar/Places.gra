@@ -1,0 +1,113 @@
+###### Domain Specific Place Rules #############
+[depart_loc]
+	(DEPARTING [Depart_Loc])
+	([Depart_Loc] *AS *THE DEPARTURE *LOCATION)
+DEPARTING
+	(DEPART *FROM)
+	(FROM)
+DEPART
+	(leave)
+	(leaving)
+	(leaves)
+	(DEPARTURE)
+DEPARTURE
+	(depart)
+	(departure)
+	(departing)
+	(departs)
+	(ORIGINATE *IN)
+ORIGINATE
+	(begin)
+	(begins)
+	(beginning)
+	(origin)
+	(originate)
+	(originates)
+	(originating)
+	(start)
+	(starts)
+	(starting)
+FROM
+	(from)
+	(out of)
+AS
+	(as)
+	(is)
+LOCATION
+	(location)
+	(city)
+THE
+	(the)
+	(a)
+	(an)
+	(my)
+	(our)
+IN
+	(in)
+	(at)
+;
+
+[arrive_loc]
+	(ARRIVING [Arrive_Loc])
+	([Arrive_Loc] *AS *THE ARRIVAL *LOCATION)
+ARRIVING
+	(ARRIVAL *IN)
+	(*GO to)
+ARRIVAL
+	(destination)
+	(arrival)
+	(arrive)
+	(arriving)
+	(arrives)
+	(end)
+	(ending)
+	(ends)
+	(stop)
+	(stopping)
+	(stops)
+	(terminating)
+LOCATION
+	(location)
+	(city)
+AS
+	(as)
+	(is)
+THE
+	(the)
+	(a)
+	(an)
+	(my)
+	(our)
+GO
+	(go)
+	(goes)
+	(going)
+IN
+	(in)
+	(at)
+;
+
+[Depart_Loc]
+	([location])
+;
+
+[Arrive_Loc]
+	([location])
+;
+
+[location]
+	([City_Name] *in *[State] *airport)
+	(*[City_Name] [Airport_Name] *airport)
+;
+
+[City_Name]
+#include cities
+;
+
+[State]
+#include states
+;
+
+[Airport_Name]
+#include airports
+;

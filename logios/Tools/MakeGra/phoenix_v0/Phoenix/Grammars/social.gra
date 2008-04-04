@@ -1,0 +1,122 @@
+
+[Polite]
+	(please)
+	(thank you)
+	(thank you very much)
+	(thanks *a *lot)
+	(you're welcome)
+;
+
+[Compliment]
+	(you did WHAT)
+	(THATS perfect recognition)
+	(THATS marvellous)
+	(it seemd to work very well)
+	(THATS pretty impressive)
+	(good luck)
+THATS
+	(that's)
+	(that was)
+WHAT
+	(great)
+	(a good job)
+	(excellent)
+;
+
+[Complaint]
+	(hurry up)
+	(you dumb machine)
+	(you don't do this right)
+	(i don't like you)
+	(i'm laughing at you)
+;
+
+[Greeting]
+	(hello)
+	(hi)
+	(yo)
+	(good morning)
+;
+
+[Confusion]
+	(GENERAL)
+	(CHANNEL)
+GENERAL
+	(*now i'm confused)
+	(we are confused)
+	(*i got confused)
+	(it's *pretty confused)
+	(do you even care)
+	(do you understand what i'm saying)
+	(you didn't understand me)
+	(can you *still understand me)
+	(*i didn't understand that)
+	(*i didn't say anything)
+	(what are you waiting for)
+	(who are you talking to)
+	(you're repeating yourself)
+	(are you sure about that)
+	(*there's something wrong)
+	(something must be wrong)
+	(there's a problem)
+	(this is not normal)
+	(this STATE stuck)
+	(i'm stuck)
+	(you're stuck)
+	(it's stuck)
+	(are we stuck *again)
+	(it's not getting anything)
+	(NO_CAN *quite understand *you)
+	(NO_CAN understand what you're saying)
+	(i don't know what you're talking about)
+	(it's not understanding *correctly)
+	(it's not doing anything)
+	(*now i've got nothing at all)
+	(the system has failed)
+	(this isn't working)
+	(this doesn't work)
+	(*it didn't work)
+	(did that work)
+	(this isn't going so well)
+	(this is *really screwing up)
+	(that's not very good)
+	(that's not okay)
+	(what's going on)
+	(what's the deal)
+	(is anybody home)
+	(what *just happened)
+	(what happened to that)
+	(what do you mean)
+	(we're getting *a *little mixed up *here)
+	(we have already gone over that)
+	(we don't know what happened)
+	(completely DEAD)
+	(i think it's DEAD)
+	(oh shit)
+	(damn it)
+	(oh oh)
+STATE
+	(is)
+	(shouldn't be)
+DEAD
+	(dead)
+	(died)
+CHANNEL
+	(can you hear me)
+	(did you hear that)
+	(is *there anybody there)
+	(*my mic is not on)
+	(*are you awake)
+	(NO_CAN hear anything)
+	(NO_CAN hear you)
+	(are you *still there)
+	(anybody home)
+	(are you listening)
+NO_CAN
+	(i don't)
+	(i didn't)
+	(i can't)
+	(*i couldn't)
+	
+;
+

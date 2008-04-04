@@ -1,0 +1,33 @@
+MOD_DAY
+	(*NUM DAY_WEEK AFTER_BEFORE)
+
+NUM
+	(a)
+	(one)
+	(two)
+	(three)
+	(four)
+	(five)
+	(six)
+	(eight)
+	(nine)
+	(ten)
+	(twenty)
+
+DAY_WEEK
+	(DAY)
+	(WEEK)
+
+WEEK
+	(week)
+	(weeks)
+
+DAY
+	(day)
+	(days)
+
+AFTER_BEFORE
+	(after)
+	(before)
+	(from)
+	(prior to)

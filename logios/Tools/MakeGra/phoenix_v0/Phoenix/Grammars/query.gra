@@ -1,0 +1,461 @@
+[i_want]
+	(*CAN_ONE [show_me])
+	(I'M *ALSO_ONLY *be INTEREST)
+	(*FIRST_I'D *ALSO_ONLY WANT_NEED_LIKE *to *KNOW)
+	(let ME)
+	(HOW BOUT)
+	(make that)
+
+ME
+	(me)
+	(us)
+HOW
+	(what)
+	(how)
+
+BOUT
+	(about)
+	('bout)
+
+CAN_ONE
+	(CAN ONE)
+
+INTEREST
+	(interested *in)
+	(LOOKING *for)
+
+LOOKING
+	(inquiring *about)
+	(looking)
+	(requesting)
+
+KNOW
+	(know *about)
+	(arrange)
+	(take)
+
+WANT_NEED_LIKE
+	(have to)
+	(like)
+	(need)
+	(needed)
+	(be needing)
+	(prefer)
+	(prefered)
+	(want)
+	(wanna)
+	(wanted)
+	(wish)
+	(wished)
+	(want to change)
+
+FIRST_I'D
+	(*first I'D)
+
+I'D
+	(i)
+	(i'd)
+	(i WILL)
+	(i'll)
+	(i had)
+
+I'M
+	(i'm)
+	(i am)
+	(i WILL)
+	(i'll)
+
+CAN
+	(may)
+	(can)
+	(could)
+	(WILL)
+
+WILL
+	(will)
+	(would)
+
+ALSO_ONLY
+	(also)
+	(only)
+
+ONE
+	(one)
+	(we)
+	(i)
+	(us)
+	(you)
+
+;
+
+
+
+[is_that]
+	(IS THAT)
+	(ARE THOSE *[both_all])
+	(WILL *[both_all] *of THAT_THOSE *be)
+
+THAT_THOSE
+	(THAT)
+	(THOSE)
+
+THAT
+	(it)
+	(that)
+	(this)
+
+WILL
+	(will)
+	(would)
+	(can)
+	(could)
+
+IS
+	(is)
+	(does)
+
+ARE
+	(are)
+	(do)
+
+THOSE
+	(those)
+	(these)
+	(they)
+;
+
+[show_me]
+        (SHOW *ME)
+
+SHOW
+        (display)
+        (give)
+        (find)
+        (list)
+        (print)
+        (show)
+        (specify)
+ME
+	(me *my)
+	(us *our)
+;
+
+[tell_me]
+	(*what *CAN_YOU *please TELL)
+	(*I WANT *to KNOW *some *INFO ABOUT)
+	(*what do you know ABOUT)
+CAN_YOU
+	(can you)
+	(would you)
+	(will you)
+TELL
+	(tell *ME about)
+	(tell me)
+ABOUT
+	(on)
+	(about)
+	(concerning)
+	(related to)
+I
+	(i)
+	(we)
+WANT
+	(want)
+	(need)
+	(would like)
+KNOW
+	(know)
+	(learn)
+	(hear)
+	(find *out)
+	(get )
+INFO
+	(something)
+	(information)
+
+ME
+	(me)
+	(us)
+;
+
+[list]
+	(LIST *SPEC_INFO_ONE)
+	(SPEC_INFO)
+	(WHAT_ARE *THE_AVAIL)
+
+LIST
+	(*CAN_I_WANT LIST_VERB *ME *LIST_NOUN)
+	(I_WANT *SEE *LIST_NOUN)
+	(CAN ONE SEE_LIST)
+	(how DO_WILL *WE)
+	(WHAT_DO YOU_GET)
+	(I_WAS WONDER_ABOUT)
+
+CAN_I_WANT
+	(CAN ONE)
+	(I_WANT)
+
+SEE_LIST
+	(SEE *LIST_NOUN)
+	(LIST_NOUN)
+	(*one more TIME)
+
+LIST_VERB
+	(LISTING)
+	(SHOW)
+	(WHAT'S)
+
+LIST_NOUN
+	(*is *have *A LISTING *of)
+	(*A_THE travel ARRANGEMENT)
+
+I_WANT
+	(*FIRST_I'D WANT_NEED_LIKE *TO_KNOW)
+	(may ONE)
+	(let ME *KNOW_ABOUT)
+	(I'M *IM_OPTS)
+
+IM_OPTS
+	(interested *in)
+	(LOOKING *for)
+
+LOOKING
+	(inquiring *about)
+	(looking)
+	(requesting)
+
+TO_KNOW
+	(to *KNOW)
+	(service)
+	(*to coordinate)
+
+KNOW
+	(know *about)
+	(arrange)
+	(do)
+
+WANT_NEED_LIKE
+	(like)
+	(need)
+	(needed)
+	(prefer)
+	(prefered)
+	(want)
+	(wanted)
+	(wish)
+	(wished)
+	(wanna)
+
+FIRST_I'D
+	(*FIRST I'D)
+
+FIRST
+        (first)
+
+I'D
+	(I'D_OPTS *ALSO_ONLY)
+
+I'D_OPTS
+	(i)
+	(i'd)
+	(*i WILL)
+	(i'll)
+	(*i had)
+
+I'M
+	(i'm *ALSO_ONLY)
+	(*i am *ALSO_ONLY)
+	(*i WILL *ALSO_ONLY be)
+	(i'll *ALSO_ONLY be)
+
+SEE
+	(check ON)
+	(look at)
+	(make)
+	(plan)
+	(see)
+
+A
+	(a)
+	(an)
+	(the)
+
+SHOW
+	(display)
+	(find)
+	(give)
+	(look *at)
+	(print)
+	(show)
+	(specify)
+	(tell)
+	([tell_me])
+
+I_WAS
+	(i'm)
+	(i'll)
+	(we'll)
+	(*i WAS_CAN)
+	(*we CAN)
+	
+WAS_CAN
+	(was)
+	(am)
+	(CAN)
+
+CAN
+	(can)
+	(could)
+	(WILL)
+
+WHAT_ARE
+	(WHAT'S)
+	(WHAT ARE)
+	(what'll *be)
+	(what're)
+	(which're)
+
+WHAT'S
+	(what is)
+	(what's)
+
+WHAT
+	(what)
+	(which)
+
+ARE
+	(WERE)
+	(do you *KNOW_ABT)
+
+ALSO_ONLY
+	(also)
+	(only)
+
+WHAT_DO
+	(what DO)
+
+DO_WILL
+	(DO)
+	(WILL)
+
+DO
+	(can)
+	(could)
+	(do)
+	(does)
+
+YOU_GET
+	(ONE *get)
+	(KNOW_ABOUT)
+
+KNOW_ABOUT
+	(KNOW_ABT)
+	(coordinate)
+
+KNOW_ABT
+	(know *about)
+
+ONE
+	(one)
+	(WE)
+
+THE_AVAIL
+	(*is *the AVAILABLE)
+	(there)
+
+SPEC_INFO_ONE
+	(fly)
+	(one THAT_WHICH)
+	(SPEC_INFO)
+
+SPEC_INFO
+	(*ANYTHING information)
+
+ANYTHING
+	(any)
+	(some)
+	(that)
+	(A_THE)
+
+A_THE
+	(a)
+	(an)
+	(the)
+
+LISTING
+	(list)
+	(listing)
+#	(flight)
+
+ARRANGEMENT
+	(arrangement)
+	(arrangements)
+	(coordinate)
+
+WONDER_ABOUT
+	(WONDER *about)
+
+WONDER
+	(wonder)
+	(*be wondering)
+	(inquiring *about)
+	(thinking *about)
+
+WE
+	(we)
+	(i)
+	(us)
+	(you)
+
+ME
+	(me *my)
+	(us)
+
+ON
+	(for)
+	(on)
+
+BEGIN
+	(begin)
+	(beginning)
+	(start)
+	(starting)
+
+A_NUMBER
+	(a)
+	([one_number])
+
+FLIGHT_PL
+	(flight)
+	(flights)
+
+WERE
+	(are)
+	(is)
+	(was)
+	(were)
+	(WILL *be)
+
+WILL
+	(will)
+	(would)
+
+TIME
+	(time)
+	(times)
+
+THAT_WHICH
+	(that)
+	(which)
+
+AVAILABLE
+	(available)
+	(availability)
+
+;
+
+[both_all]
+	(both)
+	(all)
+;
+

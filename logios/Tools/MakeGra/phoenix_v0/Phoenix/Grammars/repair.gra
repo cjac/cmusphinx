@@ -1,0 +1,95 @@
+
+
+[repair]
+	(i'm sorry)
+	(sorry)
+	(sorry ABOUT that)
+	(ME CHANGE my mind)
+	(*PREFIX correction)
+	(*please change ITEM)
+	(*please correct ITEM)
+	(we need to repair this)
+	(undo)
+	(back up)
+	(cancel that *please)
+PREFIX
+	(go back)
+ME
+	(i)
+	(i've)
+	(i'll)
+CHANGE
+	(change)
+	(changed)
+ABOUT
+	(about)
+	('bout)
+ITEM
+	(that)
+	(the city)	
+;
+
+
+[Done]
+	(i'm DONE)
+	(this is over)
+DONE
+	(done)
+	(finished)
+;
+
+[Reset]	
+	(CANCEL everything)
+	(abort)
+	(restart)
+	(reset)
+	(*WANT start *all OVER)
+	(WANT start from the *very beginning)
+CANCEL
+	(cancel)
+	(clear)
+OVER
+	(over)
+	(again)
+WANT
+	(i want to)
+	(could we)
+	(i wanna)
+	(let's)
+	(skip)
+;
+
+[BargeIn]
+	(*OPENING STOP *TALKING *MOD)
+OPENING
+	(okay)
+	(please)
+TALKING
+	(talking)
+	(speaking)
+STOP
+	(stop)
+	(quit)
+	(enough)
+	(that's enough)
+	(shut up)
+	(shutup)
+	(wait)
+	(hold on)
+MOD
+	(i don't WANT to hear THIS)
+WANT
+	(want)
+	(wanna)
+THIS
+	(this)
+	(it)
+;
+
+[Help] 
+	(help *me)
+	(what can i say)
+	(what are you talking about *exactly)
+	(customer service)
+;
+

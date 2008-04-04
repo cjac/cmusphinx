@@ -1,0 +1,97 @@
+FROM
+	(*GOING FROM_OUT)
+	(LEAVING_FROM)
+
+LEAVING_FROM
+	(LEAVING *FROM_OUT)
+
+FROM_OUT
+	(from)
+	(out of)
+
+LEAVING
+	(depart)
+	(departing)
+	(departs)
+	(departure)
+	(*for departures)
+	(*would leave *OUT_OF)
+	(leaves *OUT_OF)
+	(take off)
+	(goes)
+	(flying)
+	(leaving)
+	(traveling)
+	(travelling)
+
+TO
+	(*GOING TO_INTO)
+	(GET there)
+	(*bound for)
+	(heading TO_TOWARD)
+	(TOWARD)
+	(ARR *AT_INTO)
+
+ARR
+	(arrival)
+	(arrivals)
+	(arrive)
+	(arrives)
+	(arriving)
+	(lands *IN)
+	(landing *IN)
+	(show up)
+	(shows up)
+	(terminates)
+	(terminating)
+
+TO_TOWARD
+	(for)
+	(to)
+	(TOWARD)
+
+TOWARD
+	(toward)
+	(towards)
+
+GOING
+	(enroute)
+	(GET)
+	(going)
+	(on *the way)
+	(travel)
+	(traveling)
+	(travelling)
+
+IN
+	(in)
+	(at)
+	(INTO)
+
+AT_INTO
+	(in)
+	(at)
+	(to)
+	(INTO)
+
+TO_INTO
+	(to)
+	(INTO)
+
+INTO
+	(in)
+	(into)
+	(in to)
+
+OUT_OF
+	(out of)
+
+
+GET
+	(get ME)
+	(gets ME)
+	(goes)
+
+ME
+	(me)
+	(us)

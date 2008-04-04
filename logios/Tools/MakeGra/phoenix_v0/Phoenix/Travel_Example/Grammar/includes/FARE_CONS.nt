@@ -1,0 +1,55 @@
+FLIGHT_CONS
+	(*ANY FLIGHT_CONS_OPTIONS)
+
+FLIGHT_CONS_OPTIONS
+	([_direct])
+	([class_type_list])
+	(*[class_type_list] [fare_basis_field] *[class_type_list])
+	([Time_Range])
+	([departtimerange])
+	([departdaterange])
+	([_earliest])
+	([_latest])
+	([_earlier])
+	([_later])
+	([Airline_Code] *AIRLINES)
+	([overnight])
+	([num_stops])
+	([one_way])
+	([highest])
+	([lowest])
+	([meal_type])
+	([capacity])
+	([aircraft_propulsion])
+	([all_airlines])
+
+AIRLINES
+	(airlines)
+	(airline)
+
+ANY
+	(any *more)
+	(some *more)
+	(a)
+	(an)
+	(the)
+
+AVAIL
+	(available)
+	(availability)
+	(that are *the)
+	(will)
+	(would)
+	(do)
+	(does)
+
+PRICE
+	(AIRFARE)
+	(cost)
+	(costs)
+	
+AIRFARE
+	(airfare)
+	(airfares)
+	(fare)
+	(fares)

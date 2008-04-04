@@ -1,0 +1,2565 @@
+###### Domain Specific Rules #############
+[air_request]
+	(*A FLIGHT RESERVATION)
+FLIGHT
+	(flight)
+	(airline)
+	(air *travel)
+	(travel)
+	(airplane)
+	(plane)
+RESERVATION
+	(reservation)
+	(reservations)
+	(plan)
+	(plans)
+	(schedule)
+	(schedules)
+A
+	(a)
+	(an)
+	(some)
+;
+
+[route]
+	(*FROM [Origin] *and TO [Destination] *CONNECT)
+CONNECT
+	(*connecting THROUGH [connect_loc])
+THROUGH
+	(via)
+	(through)
+	(in)
+	(at)
+FROM
+	(from)
+	(leaving)
+	(departing)
+	(origin)
+	(originating)
+TO
+	(*going to)
+	(arrive)
+	(arriving)
+	(destination)
+;
+
+[origin]
+	(*and DEPART [Origin])
+	(*and *with [Origin] *as *the DEPARTURE *LOCATION)
+
+DEPART
+	(*GOING FROM)
+	(ORIGINATE *MY *FLIGHT *IN_AT *FROM)
+	(*I_WE RESIDE *here *in)
+	(I_AM *here in)
+
+GOING
+	(bound)
+	(enroute)
+	(in route)
+	(heading)
+	(flies)
+	(get)
+	(go)
+	(goes)
+	(going)
+	(travel)
+	(travels)
+	(traveling)
+
+ORIGINATE
+	(begin)
+	(begins)
+	(beginning)
+	(origin)
+	(originate)
+	(originates)
+	(originating)
+	(start)
+	(starts)
+	(starting)
+	(depart)
+	(departing)
+	(departs)
+	(departure)
+	(leave)
+	(leaves)
+	(leaving)
+
+DEPARTURE
+	(depart)
+	(departure)
+	(departures)
+	(start)
+	(starting)
+	(origin)
+
+LOCATION
+	(location)
+	(city)
+
+FLIGHT
+	(flight)
+	(flights)
+MY
+	(my)
+	(our)
+	(the)
+RESIDE
+	(live)
+	(lives)
+	(living)
+	(reside)
+	(resides)
+
+I_AM
+	(i am)
+	(i_am)
+	(i'm)
+	(we are)
+	(we're)
+IN_AT
+	(in)
+	(at)
+I_WE
+	(i)
+	(we)
+
+FROM
+	(from)
+	(out of)
+;
+
+[destination]
+	(*GO [to] [Destination])
+	([to] [Connect_Loc] *and THEN to [Destination])
+	(*with [Destination] *as *THE DESTINATION *LOCATION)
+	(*WITH *THE DESTINATION *LOCATION *WILL *be [Destination])
+	([Return] [to] [Destination])
+GO
+	(go)
+	(fly)
+	(travel)
+
+THEN
+	(then)
+	(on)
+
+DESTINATION
+	(arrival)
+	(arrivals)
+	(destination)
+	(destinations)
+
+LOCATION
+	(location)
+	(city)
+
+THE
+	(the)
+	(a)
+	(an)
+	(my)
+	(our)
+
+WILL
+	(will)
+	(would)
+	(being)
+
+WITH
+	(with *a)
+;
+
+[travel_date]
+	(*LEAVING [Date_Time])
+
+LEAVING
+	(go)
+	(fly)
+	(travel)
+	(travels)
+	(traveling)
+	(*the DATE *IS)
+	(begin)
+	(begins)
+	(beginning)
+	(origin)
+	(originate)
+	(originates)
+	(originating)
+	(start)
+	(starts)
+	(starting)
+	(depart)
+	(departing)
+	(departs)
+	(departure)
+	(leave)
+	(leaves)
+	(leaving)
+DATE
+	(date)
+	(dates)
+IS
+	(WILL *be)
+	(is)
+	(are)
+WILL
+	(will)
+	(would)
+;
+
+[depart_time]
+	(LEAVE *IN *A [Depart_Time] *DEPARTURE *time)
+	(*with *the DEPARTURE time [Depart_Time])
+	(LEAVE *FROM [Origin] [Depart_Time])
+
+LEAVE
+	(depart)
+	(departs)
+	(departing)
+	(departure)
+	(leave)
+	(leaves)
+	(leaving)
+	(begin)
+	(begins)
+	(beginning)
+	(origin)
+	(originate)
+	(originates)
+	(originating)
+	(start)
+	(starts)
+	(starting)
+	(travel)
+	(travels)
+	(traveling)
+	(travelling)
+DEPARTURE
+	(flight)
+	(departure)
+	(depart)
+	(departures)
+FROM
+	(from)
+	(out of)
+A
+	(a)
+	(the)
+	(an)
+IN
+	(in)
+	(for)
+	(with)
+;
+
+[arrive_time]
+	([arrive] *time [Arrive_Time] *LOCAL_TIME *[Date_Time])
+	([Arrive_Time] [arrive] *time)
+	([arrive] *AT [Origin] [Arrive_Time])
+	(SUPER [arrive])
+	([arrive] SUPER)
+LOCAL_TIME
+	(local time)
+	(their time)
+SUPER
+	([_earliest] *AVAILABLE)
+	([_latest] *AVAILABLE)
+AVAILABLE
+	(available)
+	(possible)
+AT
+	(at)
+	(in)
+;
+
+[arrive]
+	(ARRIVE *INTO_IT)
+	(INTO_IT)
+
+ARRIVE
+	(arrive)
+	(arrives)
+	(arriving)
+	(arrival)
+	(arrivals)
+
+INTO_IT
+	(INTO it)
+
+INTO
+	(*in to)
+	(into)
+;
+
+[Airline]
+	(*[negative] *to *FLY *ON [airlinename] *AIRLINE)
+	([_anyairline] *IS *OK)
+	([_other_airlines])
+	([same_airline])
+OK
+	(okay)
+	(fine)
+	(will do)
+	(allright)
+	(all right)
+	(acceptable)
+FLY
+	(fly)
+	(flying)
+	(go)
+	(take)
+	(use)
+ON
+	(on)
+	(using)
+	(with)
+IS
+	(is)
+	(are)
+	(will be)
+	(would be)
+AIRLINE
+	(airline)
+	(airlines)
+	(carrier)
+;
+
+[RoundTrip]
+	([_oneway])
+	([_roundtrip])
+;
+
+[_oneway]
+	(oneway)
+	(one way)
+	(one direction)
+	(single direction)
+;
+
+
+[_roundtrip]
+	(roundtrip)
+	(round trip)
+;
+
+[return]
+	([Return] *[Date_Time])
+;
+
+[Return]
+	(RETURN_PL *back *home)
+	(GETTING back *home)
+	(*GETTING home)
+	(go *back home)
+	(go back [Date_Time])
+
+
+GETTING
+	(arrive)
+	(arrives)
+	(arriving)
+	(*to come)
+	(comes)
+	(coming)
+	(get)
+	(gets)
+	(getting)
+	(fly)
+
+RETURN_PL
+	(return)
+	(returns)
+	(returning)
+GETTING
+	(get)
+	(gets)
+	(getting)
+	(coming)
+
+;
+
+[Flight_Reference]
+	(*ON FR)
+ON
+	(on)
+	(for)
+FR
+	([Flight_Number])
+	(*the SUPER *ONE *MOD)
+	(*the flights)
+
+SUPER
+	([_earliest])
+	([_latest])
+ONE
+	(one)
+	(flight)
+MOD
+	(there)
+	(back)
+;
+
+[Leg_Spec]
+	(*ON *the LEGSPEC)
+LEGSPEC
+	([Leg_Num] LEG)
+	([location] LEG)
+	(LEG *number [Leg_Num])
+ON
+	(on)
+	(for)
+LEG
+	(leg)
+	(flight)
+	(trip)
+	(segment)
+;
+
+[Flight_Type]
+	(*a TYPE *[flight_ref])
+
+TYPE
+	([_non_stop])
+	([_direct])
+;
+
+[fare_class]
+	(*THE [Fare_Class] *class *[flight_ref])
+THE
+	(a)
+	(an)
+	(the)
+;
+
+[Fare_Class]
+	(first class)
+	(coach)
+	(economy)
+	(thrift)
+	(thrifty)
+	(business)
+	(shuttle)
+	(standard)
+;
+
+
+[Cost_Relative]
+	(*[_existential] COST_REL *FARE *[flight_ref])
+	([_quantify] [_cheaper])
+COST_REL
+	([_cheapest])
+	(*SOMETHING [_cheaper])
+SOMETHING
+	(something)
+	(anything)
+FARE
+	(fare)
+	(airfare)
+;
+
+[Reserve]
+	(MAKE_RES *for *ME)
+	(RESERVE it)
+MAKE_RES
+	(RESERVE *ME *A ROOM *reservation)
+	(i'll take SERVICE)
+	(make arrangements)
+	(make reservations)
+	(make that reservation)
+A
+	(a)
+	(the)
+RESERVE
+	(reserve)
+	(book)
+	(make)
+	(get)
+	(hold)
+ROOM
+	(room)
+	(something)
+	(reservation)
+ME
+	(me)
+	(us)
+SERVICE
+	([_flight_reservation])
+	([_hotel_reservation])
+	([_car_reservation])
+;
+
+[hotel_request]
+	(*i *DO *think *that *I *NEED *to *RENT *THE *PRICE HOTEL *room *reservation)
+	([Reserve] *AT *the [Hotel_Name] *[hotel_loc])
+AT
+	(at)
+	(in)
+	(for)
+DO
+	(do)
+	(will)
+	([Decline])
+PRICE
+	([_expensive])
+	([_cheaper])
+RENT
+	(rent)
+	(reserve)
+	(stay *at)
+I
+	(i)
+	(i'll)
+	(i will)
+	(i'd)
+	(i would)
+	(i'm going to)
+
+NEED
+	(need)
+	(want)
+	(wanna)
+	(like)
+	(require)
+	(be needing)
+THE
+	(the)
+	(a)
+	(any)
+HOTEL
+	(hotel *HOTEL_COM)
+	(motel *HOTEL_COM)
+	(room *HOTEL_COM)
+	(place HOTEL_COM)
+	(hotels)
+	(rooms)
+	([Hotel_Spec])
+HOTEL_COM
+	(to stay *in)
+;
+
+[Hotel_Spec]
+	(*HOWABOUT *preferably *A *ROOM *AT *THE [Hotel_Name] *THERE *IS *FINE)
+	(either *THE [Hotel_Name] or *THE [Hotel_Name] *IS *FINE)
+	(*[i_want] *A [hotel_loc])
+THERE
+	(there)
+	([hotel_loc])
+HOWABOUT
+	(how about)
+	(*i prefer)
+	([_existential])
+	(*i'll STAY)
+	([i_want])
+STAY
+	(stay)
+	(be staying)
+AT
+	(at)
+	(in)
+ROOM
+	(room)
+	(vacancy)
+A
+	(a)
+	(an)
+	(any)
+THERE
+	(there)
+	(in [City_Name])
+THE
+	(the)
+	(a)
+IS
+	(is)
+	(WILL be)
+FINE
+	(okay)
+	(fine)
+	(good)
+	(WILL do)
+
+WILL
+	(will)
+	(would)
+
+;
+
+[hotel_duration]
+	(*for *the [Hotel_Duration] DAYS)
+DAYS
+	(day)
+	(days)
+	(night)
+	(nights)
+	(evening)
+	(evenings)
+;
+
+[Hotel_Duration]
+	([Number])
+;
+
+[List_Address]
+	(WHATS *the address OF *THE *HOTEL)
+	(where is the [Hotel_Name] *located)
+THE
+	(the)
+	(that)
+WHATS
+	(what's)
+	(what *is)
+OF
+	(of)
+	(for)
+HOTEL
+	(hotel)
+	([Hotel_Name])
+;
+
+[List_Distance]
+	(HOW_FAR *THE *FROM PLACE FROM *the PLACE)
+FROM
+	(from)
+	(to)
+PLACE
+	(hotel)
+	([Hotel_Name])
+	([hotel_loc])
+HOW_FAR
+	(how far *is *it)
+	(what *is *the distance)
+THE
+	(the)
+	(that)
+WHATS
+	(what's)
+	(what *is)
+OF
+	(of)
+	(for)
+;
+
+[Room_Price_Range]
+	(*HOTEL *in *a *reasonable *range *FOR [Price_Range] PER NIGHT)
+	(*a [_cheap] HOTEL)
+	(*[_existential] CHEAPER HOTEL)
+CHEAPER
+	([_cheaper])
+	([_cheapest])
+	([_expensive])
+FOR
+	(for)
+	(at)
+HOTEL
+	(hotel)
+	(*a room)
+	(something)
+	(place)
+PER
+	(per)
+	(*for A)
+A
+	(a)
+	(the)
+	(each)
+NIGHT
+	(night)
+	(day)
+;
+
+[Room_Type]
+	(*[_existential] [Smoking] *room)
+;
+
+[Smoking]
+	([_smoking])
+	([_non-smoking])
+;
+
+[_smoking]
+	(smoking)
+	(i *do smoke)
+;
+[_non-smoking]
+	(non-smoking)
+	(non smoking)
+	(no smoking)
+	(i don't smoke)
+;
+
+[_cheap]
+	(cheap)
+	(inexpensive)
+	(reasonably priced)
+	(economy)
+;
+
+[Discount]
+	(*EXIST *a *CHEAPER TYPE RATE)
+EXIST
+	([_existential])
+	(there's)
+	(there is)
+CHEAPER
+	(cheaper)
+	(lower)
+	(discount)
+	(discounted)
+TYPE
+	(corporate)
+	(aaa)
+	(conference)
+RATE
+	(rate)
+	(discount)
+;
+
+[car_request]
+	(*i *DO *think *I *also *NEED *to *RENT *a *[car_spec] *rental CAR)
+	(*GIMME *a *[car_spec] CAR *rented)
+	(*can *i RENT *A *[car_spec] CAR)
+	(*if *you *could check *into *the *[car_spec] CAR)
+	(*i [Decline] *think *I *also *NEED *to *RENT *a *rental CAR)
+A
+	(a)
+	(the)
+GIMME
+	(get me)
+	(can i have)
+RENT
+	(rent)
+	(reserve)
+
+DO
+	(do)
+	(will)
+
+I
+	(i)
+	(i'll)
+	(i will)
+	(i'd)
+	(i would)
+	(*i'm going to)
+
+NEED
+	(need)
+	(want)
+	(wanna)
+	(like)
+	(require)
+	(be needing)
+
+CAR
+	(car)
+	(cars)
+	(auto)
+	(automobile)
+	(vehicle)
+
+;
+
+[Car_Type]
+	(what TYPE *of CAR *is *that)
+TYPE
+	(type)
+	(kind)
+	(size)
+	(sized)
+CAR
+	(car)
+	(auto)
+	(automobile)
+;
+
+[Hotel_Loc]
+	([_downtown])
+	(airport)
+;
+
+[_downtown]
+	(downtown)
+	(city)
+;
+
+[Drop_Loc]
+	(*and *[i_want] *to DROP *AT [location])
+DROP
+	(drop *it *off)
+	(leave it)
+	(return it *to)
+AT
+	(at)
+	(in)
+;
+
+[List_Cost]
+	(HOW_MUCH *IS *the *ATTRIBUTE PRICE)
+	(how much IS it)
+	(if the PRICE is reasonable)
+	(*OPENING GIVE_ME the ATTRIBUTE PRICE)
+OPENING
+	(please)
+	(could you)
+GIVE_ME
+	(tell me)
+	(give me)
+HOW_MUCH
+	(how much)
+	(what)
+IS
+	(is)
+	(does)
+ATTRIBUTE
+	([_cheapest])
+	([_expensive])
+	([Hotel_Name])
+PRICE
+	(price)
+	(*it cost)
+	(rate)
+	(*air fare)
+	(airfare)
+	(trip)
+;
+
+[Summary]
+	(*WANT REPORT *my *TRIP *EXTENT)
+	(*WANT REPORT_A *the status *EXTENT)
+	(*WANT REPORT_A what flights i'm taking)
+	(*WANT REPORT the whole TRIP *EXTENT)
+	(*please [i_want] *a summary *of *my *TRIP)
+	(what FLIGHT did you reserve *for *me)
+	(*WANT give me back my TRIP)
+	(*just tell me what the flights are *again)
+	(list my flights)
+	(go over the *whole TRIP)
+WANT
+	(can you)
+	(could you *please)
+	(please)
+
+REPORT_A
+	(REPORT)
+	(give me)
+	(tell me)
+	(repeat)
+REPORT
+	(summarize)
+	(review)
+
+TRIP
+	(travel)
+	(itinerary)
+	(trip)
+	(schedule)
+EXTENT
+	(so far)
+FLIGHT
+	(flight)
+	(flights)
+;
+
+[Summarize]
+	(summarize *the *itenerary)
+;
+
+[Success]
+	(i did get what i wanted)
+	(i did not get what i wanted)
+;
+
+[Origin]
+	([location])
+;
+
+[Destination]
+	([location])
+;
+
+[location]
+	(*in AIRPORT_CITY *AIRPORT)
+	(*STATE_OF [State])
+	(*COUNTRY_OF [country])
+	([continent])
+STATE_OF
+	(the state of)
+	(the province of)
+COUNTRY_OF
+	(the country of)
+
+AIRPORT_CITY
+	([City_Name] *in *[State] *[city_state] *[country] *[continent] *AREA)
+	(*AIRPORT *[City_Name] [Airport_Name])
+	(*AIRPORT [Airport_Code])
+
+AIRPORT
+	(airport)
+	(airports)
+
+AREA
+	(area)
+	(city)
+;
+
+[Connect_Loc]
+	([location] *AIRPORT)
+
+AIRPORT
+	(airport)
+	(airports)
+;
+
+[connect_loc]
+	(*and *WITH STOP_CONN)
+	(*and *HAVE *a STOP *AT [Connect_Loc])
+	(THEN [Connect_Loc])
+
+STOP
+	(layover)
+	(layovers)
+	(stop)
+	(stops)
+	(stopping)
+	(stopover)
+	(stopovers)
+	(stayover)
+
+THEN
+	(*and then *i'll *CONTINUE *on *to)
+	(*and *CONTINUE *on to)
+
+CONTINUE
+	(go)
+	(goes)
+	(going)
+	(continue)
+	(continues)
+	(continuing)
+
+AT
+	(at)
+	(in)
+
+WITH
+	([i_want])
+	(with)
+STOP_CONN
+	([with_stop_loc])
+	(CONNECT_OPTS LOC_OPTS *[connect_time_range])
+	(STAY TIMEINT *IN_AT *the LOC_OPTS)
+	(*a LOC_OPTS CONNECTING_RES)
+
+CONNECT_OPTS
+	(*GO_CONNECTING THROUGH)
+	(*to CONNECTING *TRIP IN_AT)
+
+TIMEINT
+	(overnight)
+	(*IN_AT *the night)
+	(*the INTERVAL)
+
+INTERVAL
+	(day)
+	(morning)
+	(evening)
+	(night)
+
+IN_AT
+	(with)
+	(in)
+	(at)
+
+STAY
+	(spend)
+	(spent)
+	(stay)
+	(stays)
+	(staying)
+	(stop)
+	(stops)
+	(stopping)
+
+GO_CONNECTING
+	(go)
+	(goes)
+	(CONNECTING)
+
+CONNECTING
+	(connecting)
+	(transferring)
+	(*WITH_A CONNECT)
+
+CONNECTING_RES
+	(connecting)
+	(transferring)
+	(CONNECT)
+
+WITH_A
+	(*THAT HAVE *ONE)
+
+ONE
+	(one)
+	(a)
+
+CONNECT
+	(connect)
+	(connects)
+	(connection)
+	(connections)
+	(layover)
+	(layovers)
+	(transfer)
+
+THROUGH
+	(through)
+	(via)
+	(by way of)
+
+THE
+	(a)
+	(an)
+	(the)
+
+THAT
+	(that)
+	(which)
+
+TRIP
+	(trip)
+	(trips)
+	(over)
+	(overs)
+
+LOC_OPTS
+	(*either *a [Connect_Loc] *OR_LOC *OR_LOC)
+
+OR_LOC
+	(or [Connect_Loc])
+HAVE
+	(has)
+	(have)
+	(having)
+	(make)
+	(makes)
+	(making)
+	(with)
+
+;
+
+[Depart_Time]
+	(EAR_LAT [Time_Range] DEPARTURE *time)
+	(DEPARTURE *time *AT_ON [Time_Range] *AS_POSS)
+	(LEAVING *at [Time_Range])
+	(LEAVING that [Time_Range])
+	(LEAVING in the [Period_Of_Day])
+	([same_time])
+	(LEAVING *on *the EAR_LAT *[flight_ref])
+AS_POSS
+	(as possible)
+
+ON
+	(on)
+	(of)
+	(for)
+
+AT_ANY_TIME
+	([flight_ref] *AT_ON *any *DEPARTURE TIME)
+	(*[flight_ref] DEPARTURE *TIME)
+	(AT_ANY *DEPARTURE TIME)
+
+AT_ANY
+	(AT_ON *any)
+	(any)
+
+ONE
+	(one)
+	(ones)
+
+EAR_LAT
+	([_earliest] *and *or *[_latest] *in)
+	([_latest] *and *or *[_earliest] *in)
+
+TIME
+	(time)
+	(times)
+
+DEPARTURE
+	(depart)
+	(departing)
+	(departure)
+	(departures)
+	(flight *out)
+
+LEAVING
+	(leave)
+	(leaves)
+	(leaving)
+	(depart)
+	(departure)
+	(departing)
+	(get out)
+	(go)
+
+ATTIME
+	(*at [Time_Range])
+AT_ON
+	(at)
+	(on)
+
+;
+
+[Arrive_Time]
+	(*ARRIVAL *the TIME_OPTIONS)
+
+TIME_OPTIONS
+	(*EAR_LAT [Time_Range] *[flight_ref])
+	(EAR_LAT ARRIVAL_TIME *time *[Time_Range])
+	(AT_ON [Time_Range] *[flight_ref])
+	([same_time])
+AT_ON
+	(at)
+	(on)
+
+ARRIVAL
+	(arrival)
+	(arriving *in)
+	(*AND_THAT gets in)
+	(arrive)
+
+ON
+	(on)
+	(of)
+	(for)
+
+ARRIVAL_TIME
+	(arrival)
+	(arrivals)
+
+EAR_LAT
+	([_earliest])
+	([_latest])
+AND_THAT
+	(and *THAT)
+
+THAT
+	(that)
+	(which)
+;
+
+
+[_other_airlines]
+	(*ANY *ON_AIRLINE OTHER_THAN *the [airlinename])
+	(IS [airlinename] the only)
+	(*ANY other AIRLINE)
+
+OTHER_THAN
+	(other *airline than)
+	(different *airline than)
+	(*airline beside)
+	(*airline besides)
+	(*other *airline aside from)
+
+IS
+	(is)
+	(are)
+
+FLIGHT
+	(flight)
+	(flights)
+
+ON_AIRLINE
+	(*on *A_THE AIRLINE)
+
+A_THE
+	(a)
+	(an)
+	(the)
+
+AIRLINE
+	(airline)
+	(airlines)
+	(carrier)
+	(carriers)
+
+ANY
+	(any)
+	(some)
+;
+
+[same_airline]
+	(same AIRLINE)
+
+AIRLINE
+	(airline)
+	(airlines)
+;
+
+[Leg_Num]
+	(first)
+	(second)
+	(third)
+	(fourth)
+	(one)
+	(two)
+	(three)
+	(four)
+	(last)
+;
+
+[flight_ref]
+	(*THAT_HAS *THE FLIGHTS *FLT_OPTS)
+
+THAT_HAS
+	(*THAT HAS)
+
+THAT
+	(that)
+	(which)
+
+FLIGHTS
+	(flight)
+	(flights)
+
+HAS
+	(has)
+	(have)
+	(offer)
+	(service)
+
+THE
+	(a)
+	(an)
+	(the)
+
+FLT_OPTS
+	(*service DO_WILL)
+	(DO_WILL)
+	(cost)
+	(costs)
+
+DO_WILL
+	(do)
+	(does)
+	(WILL *there *be)
+
+WILL
+	(will)
+	(would)
+	(*there are)
+;
+
+[_non_stop]
+	(NONSTOP_OPTS *[flight_ref])
+	(*which *HAVE no STOP *over)
+	(straight *through)
+	(NOT *WANT_HAVE *any *a STOP)
+STOP
+	(stop)
+	(stops)
+	(stay)
+	(layover)
+	(layovers)
+	(change *of planes)
+
+NONSTOP_OPTS
+	(nonstop)
+	(nonstops)
+	(non stop)
+	(zero stop)
+	(zero stops)
+
+NOT
+	(DO not)
+	(can't)
+	(couldn't)
+	(don't)
+	(doesn't)
+	(without)
+	(won't)
+	(wouldn't)
+
+DO
+	(do)
+	(will)
+	(would)
+	(can)
+	(could)
+
+WANT_HAVE
+	(*WANT *to HAVE)
+	(WANT)
+
+WANT
+	(want)
+	(need)
+	(like)
+HAVE
+	(have)
+	(has)
+	(offer)
+	(offers)
+	(provide)
+	(provides)
+	(having)
+	(offering)
+	(providing)
+
+;
+
+[_direct]
+	(WITHOUT CONN)
+	(direct *only)
+	(directly)
+
+WITHOUT
+	(without *ANY)
+	(*WITH no)
+
+WITH
+	(with)
+	(have)
+	(having)
+
+CONN
+	(connection)
+	(connections)
+
+ANY
+	(any)
+	(a)
+;
+
+[hotel_loc]
+	(*ONE NEAR *the [Hotel_Loc] *area)
+	(ONE [Hotel_Loc] *area)
+	([Hotel_Loc] [Hotel_Name])
+	([Hotel_Name] [Hotel_Loc])
+	([Hotel_Loc] hotel)
+ONE
+	(one)
+	(something)
+A
+	(a)
+	(an)
+NEAR
+	(near)
+	(at)
+	(close *to)
+	(*close by)
+	(adjacent *to)
+	(in)
+;
+
+[car_spec]
+	(*[_existential] *a +SPEC)
+SPEC
+	([Rental_Company])
+	([Car_Class])
+	([Mileage])
+
+;
+
+[Mileage]
+	(unlimited mileage)
+;
+
+[Rental_Company]
+	(hertz)
+	(avis)
+	(national)
+	(budget)
+	(alamo)
+	(dollar)
+	(enterprise)
+	(thrifty)
+
+;
+
+[Car_Class]
+	([_cheap])
+	(subcompact)
+	(compact)
+	(intermediate)
+	([_standard])
+	([_fullsize])
+	([_luxury])
+	([_sports])
+	(convertible)
+	(wagon)
+	(*mini van)
+	(minivan)
+	([_4wd])
+
+;
+
+[_4wd]
+	(four wheel drive)
+	(all wheel drive)
+	(s u v)
+;
+
+[_sports]
+	(sport)
+	(sports)
+;
+
+[_luxury]
+	(premium)
+	(luxury)
+;
+
+[_fullsize]
+	(full size)
+	(full sized)
+	(fullsize)
+	(fullsized)
+;
+
+[_standard]
+	(standard)
+	(midsize)
+	(midsized)
+;
+
+
+[car_reservation]
+	(*A CAR *reservation)
+	(rent *A CAR)
+CAR
+	(*rental car)
+RESERVATION
+	(reservation)
+	(reservations)
+	(plans)
+A
+	(a)
+	(an)
+	(some)
+;
+
+
+
+[Flight_Number]
+	(*AN *AIRLINE FLIGHT [Number] *OF_AIRLINE)
+	(*AN *FLIGHT AIRLINE [Number])
+
+OF_AIRLINE
+	(*OF AIRLINE)
+
+AIRLINE
+	(*a [airlinename] *AIRL)
+
+AIRL
+	(airline)
+	(airlines)
+
+FLIGHT
+	(*a A_FLIGHT)
+
+A_FLIGHT
+	(flights)
+	(*flight NUMBER)
+	(flight)
+
+OF
+	(of)
+	(on)
+
+NUMBER
+	(number)
+	(numbers)
+	(flight_number)
+	(flight_numbers)
+
+A
+	(a)
+	(AN)
+
+AN
+	(an)
+	(and)
+	(the)
+	(your)
+;
+
+
+
+
+[airlinename]
+	(*AN [Airline_Code] *AIRLINES *inc.)
+
+AIRLINES
+	(airline)
+	(airlines)
+	(airways)
+	(air)
+
+AN
+	(a)
+	(an)
+;
+
+[Airline_Code]
+	([_AM])
+	([_AC])
+	([_CA])
+	([_AF])
+	([_NZ])
+	([_FL])
+	([_AS])
+	([_NH])
+	([_HP])
+	([_TZ])
+	([_AA])
+	([_EV])
+	([_OS])
+	([_GQ])
+	([_BA])
+	([_CI])
+	([_CO])
+	([_DL])
+	([_BR])
+	([_F9])
+	([_HA])
+	([_LY])
+	([_KP])
+	([_KE])
+	([_LH])
+	([_JI])
+	([_YX])
+	([_NW])
+	([_QF])
+	([_QQ])
+	([_SN])
+	([_SK])
+	([_WN])
+	([_NK])
+	([_SR])
+	([_FF])
+	([_TW])
+	([_TR])
+	([_UA])
+	([_US])
+	([_NJ])
+	([_RG])
+;
+
+[_AM]
+	(aeromexico)
+;
+[_AC]
+	(air canada)
+;
+[_CA]
+	(air china)
+;
+[_AF]
+	(air france)
+;
+[_NZ]
+	(air new zealand)
+;
+[_FL]
+	(airtran)
+;
+[_AS]
+	(alaska airlines)
+	(alaskan)
+;
+[_NH]
+	(*all nippon)
+;
+[_HP]
+	(america west)
+;
+[_TZ]
+	(american trans air)
+;
+[_AA]
+	(american)
+	(americans)
+;
+[_EV]
+	(atlantic southeast)
+	(atlantic southeasts)
+;
+[_OS]
+	(austrian)
+;
+[_GQ]
+	(big sky)
+;
+[_BA]
+	(british AIRWAYS)
+
+AIRWAYS
+	(airway)
+	(airways)
+;
+[_CI]
+	(china airlines)
+;
+[_CO]
+	(continental)
+	(continentals)
+;
+[_DL]
+	(delta)
+	(deltas)
+;
+[_BR]
+	(eva)
+;
+[_F9]
+	(frontier)
+;
+[_HA]
+	(hawaiian)
+;
+[_KL]
+	(k l m)
+;
+[_LY]
+	(el al)
+;
+[_KP]
+	(kiwi *international)
+;
+[_KE]
+	(korean)
+;
+[_LH]
+	(lufthansa)
+	(lufthansas)
+;
+[_JI]
+	(midway)
+;
+[_YX]
+	(midwest express)
+;
+[_NW]
+	(northwest)
+	(northwests)
+;
+[_QF]
+	(quantas)
+;
+[_QQ]
+	(reno air)
+;
+[_SN]
+	(sabena)
+;
+[_SK]
+	(scandinavian)
+;
+[_WN]
+	(southwest)
+	(southwests)
+;
+[_NK]
+	(spirit)
+;
+[_SR]
+	(swissair)
+;
+[_FF]
+	(tower air)
+;
+[_TW]
+	(trans world *express)
+	(trans world airlines)
+	(trans worlds)
+	(t w a)
+;
+[_TR]
+	(transbrazil)
+;
+[_UA]
+	(united)
+	(uniteds)
+;
+[_US]
+	(u s air)
+	(u s airways)
+;
+[_NJ]
+	(vanguard)
+;
+[_RG]
+	(varig)
+;
+
+
+[Airport_Code]
+	([_ATL])
+	([_BNA])
+	([_BOS])
+	([_BUR])
+	([_BWI])
+	([_CLE])
+	([_CLT])
+	([_CMH])
+	([_CVG])
+	([_DIA])
+	([_DET])
+	([_DEN])
+	([_DFW])
+	([_DTW])
+	([_EWR])
+	([_HNL])
+	([_HOU])
+	([_HPN])
+	([_IAH])
+	([_IND])
+	([_JFK])
+	([_LAS])
+	([_LAX])
+	([_LGB])
+	([_MCI])
+	([_MCO])
+	([_MEM])
+	([_MIA])
+	([_MKE])
+	([_MRY])
+	([_MSY])
+	([_MSP])
+	([_OAK])
+	([_ONT])
+	([_PDX])
+	([_PVD])
+	([_PHL])
+	([_PHX])
+	([_PIE])
+	([_PIT])
+	([_SAN])
+	([_SEA])
+	([_SFO])
+	([_SJC])
+	([_SLC])
+	([_SNA])
+	([_STL])
+	([_TPA])
+	([_YKZ])
+	([_YMX])
+	([_YTZ])
+	([_YUL])
+	([_YYZ])
+	([_IAD])
+	([_DCA])
+	([_LGA])
+	([_DAL])
+	([_ORD])
+	([_MDW])
+;
+
+[_ATL]
+	(a t l)
+;
+[_BNA]
+	(b n a)
+;
+[_BOS]
+	(b o s)
+;
+[_BUR]
+	(b u r)
+;
+[_BWI]
+	(b w i)
+;
+[_CLE]
+	(c l e)
+;
+[_CLT]
+	(c l t)
+;
+[_CMH]
+	(c m h)
+;
+[_CVG]
+	(c v g)
+;
+[_DIA]
+	(d i a)
+;
+[_DET]
+	(d e t)
+;
+[_DEN]
+	(d e n)
+;
+[_DFW]
+	(d f w)
+;
+[_DTW]
+	(d t w)
+;
+[_EWR]
+	(e w r)
+;
+[_HNL]
+	(h n l)
+;
+[_HOU]
+	(h o u)
+;
+[_HPN]
+	(h p n)
+;
+[_IAH]
+	(i a h)
+;
+[_IND]
+	(i n d)
+;
+[_JFK]
+	(j f k)
+;
+[_LAS]
+	(l a s)
+;
+[_LAX]
+	(l a x)
+;
+[_LGB]
+	(l g b)
+;
+[_MCI]
+	(m c i)
+;
+[_MCO]
+	(m c o)
+;
+[_MEM]
+	(m e m)
+;
+[_MIA]
+	(m i a)
+;
+[_MKE]
+	(m k e)
+;
+[_MRY]
+	(m r y)
+;
+[_MSY]
+	(m s y)
+;
+[_MSP]
+	(m s p)
+;
+[_OAK]
+	(o a k)
+;
+[_ONT]
+	(o n t)
+;
+[_PDX]
+	(p d x)
+;
+[_PVD]
+	(p v d)
+;
+[_PHL]
+	(p h l)
+;
+[_PHX]
+	(p h x)
+;
+[_PIE]
+	(p i e)
+;
+[_PIT]
+	(p i t)
+;
+[_SAN]
+	(s a n)
+;
+[_SEA]
+	(s e a)
+;
+[_SFO]
+	(s f o)
+;
+[_SJC]
+	(s j c)
+;
+[_SLC]
+	(s l c)
+;
+[_SNA]
+	(s n a)
+;
+[_STL]
+	(s t l)
+;
+[_TPA]
+	(t p a)
+;
+[_YKZ]
+	(y k z)
+;
+[_YMX]
+	(y m x)
+;
+[_YTZ]
+	(y t z)
+;
+[_YUL]
+	(y u l)
+;
+[_YYZ]
+	(y y z)
+;
+[_IAD]
+	(i a d)
+;
+
+[_DCA]
+	(d c a)
+;
+
+[_LGA]
+	(l g a)
+;
+
+[_DAL]
+	(d a l)
+;
+
+[_ORD]
+	(o r d)
+;
+
+[_MDW]
+	(m d w)
+;
+
+[Airport_Name]
+	(baltimore/washington *international)
+	(baltimore international)
+	(buttonville)
+	(*charles degaulle)
+	(charlotte/douglas *international)
+	(douglas *international)
+	(charlotte international)
+	(cincinnati/northern kentucky *international)
+	(*northern kentucky international)
+	(cincinnati international)
+	(dallas fort worth international)
+	(dallas_fort_worth international)
+	(denver *international AIRPORT)
+	(detroit city AIRPORT)
+	(dorval *international)
+	(dulles *international)
+	(gatwick)
+	(*general mitchell *international)
+	(greater pittsburgh *INTL)
+	(pittsburgh INTL)
+	(hartsfield)
+	(heathrow)
+	(hobby)
+	(hopkins *international)
+	(houston intercontinental)
+	(indianapolis international)
+	(*john *f. kennedy *international)
+	(*john *f kennedy *international)
+	(kansas *city international)
+	(la_guardia)
+	(la guardia)
+	(laguardia)
+	(lambert *international)
+	(lambert *st. *louis international)
+	(*lester *b. pearson *international)
+	(lindbergh *field)
+	(san_diego international)
+	(lindbergh field/san_diego international)
+	(lindbergh *field *san_diego *diego international)
+	(logan *international)
+	(long beach municipal)
+	(los_angeles international)
+	(love field)
+	(mccarran *international)
+	(memphis international)
+	(metropolitan oakland)
+	(*metropolitan oakland INTL)
+	(*metropolitan wayne county)
+	(miami international)
+	(midway)
+	(*st. paul international)
+	(minneapolis/st. paul international)
+	(minneapolis international)
+	(mirabel)
+	(nashville international)
+	(newark international)
+	(o'hare *international)
+	(ontario international)
+	(orlando international)
+	(orly)
+	(philadelphia INTL)
+	(*port columbus international)
+	(raleigh durham)
+	(salt lake city international)
+	(san_francisco international)
+	(san_jose international)
+	(seattle/tacoma *international)
+	(seattle international)
+	(tacoma international)
+	(sky harbor international)
+	(clearwater international)
+	(st. petersburg/clearwater international)
+	(*st. petersburg international)
+	(stapleton *international)
+	(tampa international)
+	(toronto island)
+	(*washington national)
+	(*william *b. hartsfield atlanta *international)
+	(william *b. hartsfield *international)
+
+INTL
+	(AIRPORT)
+	(international)
+
+AIRPORT
+	(airport)
+	(airports)
+;
+
+
+
+[city_state]
+	(ontario)
+	(washington)
+;
+
+[_anyairline]
+	(ANY *of *the AIRLINE)
+	(*the AIRLINE MATTER)
+	(*i don't care WHAT AIRLINE)
+WHAT
+	(what)
+	(which)
+	(about *the)
+MATTER
+	(doesn't matter)
+	(does not matter)
+	(isn't important)
+	(is not important)
+ANY
+	(any)
+	(all)
+AIRLINE
+	(airline)
+	(airlines)
+;
+
+
+[connect_time_range]
+	([Time_Range] *[flight_ref])
+;
+
+
+[with_stop_loc]
+	(*HAVE_ONE *a STOP_PL IN_LOC)
+	(HAVE_ST *a LOC_OPTS STOP_PL *TIME_DURATION)
+        (CONTINUE from [Connect_Loc])
+
+HAVE_ST
+	(HAVE)
+
+HAVE_WANT
+	(HAVE)
+	([i_want])
+
+TIME_DURATION
+	(OF_DURATION)
+	([connect_time_range])
+
+IN_LOC
+	(*OF_DURATION IN LOC_OPTS *[connect_time_range])
+	(OF_DURATION)
+
+HAVE_ONE
+	(HAVE *ONE_ITS)
+ONE_ITS
+	(one)
+	(its)
+
+STOP_PL
+	(STOP_RES *OFF)
+
+STOP_RES
+	(stop)
+	(stops)
+	(stopping)
+	(stopover)
+	(stopovers)
+
+OF_DURATION
+	(*OF DURATION)
+
+DURATION
+	([stop_duration_min])
+	([stop_duration_max])
+
+IN
+	(in)
+	(at)
+	(for)
+
+OF
+	(of)
+	(for)
+
+OFF
+	(off)
+	(over)
+	(overs)
+	(trip)
+	(trips)
+
+LOC_OPTS
+	(*either *a [Connect_Loc] *OR_LOC *OR_LOC)
+
+OR_LOC
+	(or [Connect_Loc])
+
+CONTINUE
+        (continue)
+        (continues)
+HAVE
+	(have)
+	(has)
+	(offer)
+	(offers)
+	(provide)
+	(provides)
+	(having)
+	(offering)
+	(providing)
+
+;
+
+
+[stop_duration_max]
+	(LESS_THAN *AN [Time_Duration])
+
+LESS_THAN
+	(less than)
+	(under)
+	(NOT more than)
+	(about)
+	(around)
+	(approximately)
+
+AN
+	(a)
+	(an)
+
+NOT
+	(not)
+	(no)
+;
+
+
+[stop_duration_min]
+	(MORE_THAN *AN [Time_Duration])
+
+MORE_THAN
+	(NOT less than)
+	(more than)
+
+AN
+	(a)
+	(an)
+
+NOT
+	(no)
+	(not)
+;
+
+
+
+[each]
+	(each)
+;
+
+[stop]
+	(STOP_PL *OFF)
+	(stopping)
+	(stopover)
+	(stopovers)
+	(layover)
+	(layovers)
+	(connect)
+	(connection)
+
+OFF
+	(off)
+	(over)
+
+STOP_PL
+	(stop)
+	(stops)
+;
+
+
+[flight_anaph_pl]
+	(*ALL *ON ANY_THOSE FLIGHTS)
+
+ON
+	(of)
+	(on)
+	(from)
+	(for)
+
+ANY_THOSE
+	(THESE)
+	(*the *THESE ONE)
+	(EITHER *OF_THESE)
+	(ANY_EACH OF_THESE)
+
+ANY_EACH
+	(any)
+	([each])
+	(one)
+
+FLIGHTS
+	(airplane)
+	(airplanes)
+	(plane)
+	(planes)
+	(flight)
+	(flights)
+
+OF_THESE
+	(*ONE *of THESE)
+
+THESE
+	(these)
+	(those)
+
+ONE
+	(one)
+	(ones)
+
+ALL
+	(all)
+	(any)
+	([each])
+	(every)
+
+EITHER
+	(either)
+	(both)
+;
+
+
+[flight_anaph_sing]
+	(*ON THAT *one *SAME FLIGHT)
+	(*ON *the SAME FLIGHT)
+	(ON it FLIGHT)
+
+THAT
+	(that)
+	(this)
+
+ON
+	(of)
+	(on)
+	(from)
+	(for)
+	(which *of)
+	(is)
+
+FLIGHT
+	(airplane)
+	(airplanes)
+	(plane)
+	(planes)
+	(flight)
+	(flights)
+	(trip)
+	(trips)
+
+SAME
+	(same)
+	(air)
+;
+
+
+
+  
+[Pickup_Loc]
+	(*[i_want] *to *PICKUP *AT [location])
+AT
+	(at)
+	(in)
+PICKUP
+	(pickup)
+	(pick it up)
+	(rent *it)
+	(get it)
+;
+
+
+
+
+
+[_flight_reservation]
+	(the flight)
+;
+
+[_hotel_reservation]
+	(the hotel)
+	(the room)
+;
+[_car_reservation]
+	(the car)
+;
+
+
+
+[Hotel_Name]
+	(amerisuites)
+	(best western)
+	(comfort inn)
+	(days inn)
+	(doubletree)
+	(econo lodge)
+	(embassy suites)
+	(fairfield inn)
+	(four seasons)
+	(hampton inn)
+	(homegate)
+	(holiday inn)
+	(howard johnson)
+	(hilton)
+	(hyatt)
+	(ls quinta)
+	(marriott)
+	(motel six)
+	(omni)
+	(quality inn)
+	(radisson)
+	(ramada *inn)
+	(red roof *inn)
+	(ritz carlton)
+	(sheraton)
+	(signature inn)
+	(travelodge)
+	(westin)
+;
+
+[Correct]
+	(a place holder)
+;
+
+[Activate]
+	(this is definately a hack)
+;
+[Real]
+	(this is definately a hack)
+;
+
+[leg_num]
+	(this is the leg)
+;
+
+[to]
+	(*GOING TO_INTO)
+	(GET_ME in)
+	(GOING TO_TOWARD)
+	(for)
+	(toward)
+	(towards)
+	(ARRIVING)
+TO_INTO
+	(to)
+	(into)
+
+TO_TOWARD
+	(TO_VISIT)
+	(TOWARD)
+
+TO_VISIT
+	(to *visit)
+TOWARD
+	(for)
+	(toward)
+	(towards)
+
+GOING
+	(bound)
+	(come)
+	(enroute)
+	(heading)
+	(FLY)
+	(GETTING)
+	(go)
+	(goes)
+	(going)
+	(go on)
+	(going on)
+	(on *the way)
+	(TRAVEL)
+FLY
+	(fly)
+	(flies)
+	(flying)
+
+ARRIVING
+	(*AND_THAT ARRIVING_THAT)
+	(*AND be THERE_IN)
+
+ARRIVING_THAT
+	(ARR *FLIGHTS *AT_INTO)
+	(GET_ME IN_THERE)
+FLIGHTS
+	(flight)
+	(flights)
+
+GET_ME
+	(GET *ME)
+
+GET
+	(come)
+	(comes)
+	(goes)
+	(GETTING)
+	(bring)
+	(bringing)
+	(brings)
+
+ARR
+	(arrival)
+	(arrivals)
+	(arrive *there)
+	(arrives *there)
+	(arriving)
+	(*with *THE destination *city *of *as *is)
+	(LAND *IN)
+	(reach)
+	(reaches)
+	(reaching)
+	(show up)
+	(showing up)
+	(shows up)
+
+AND_THAT
+	(and *THAT)
+
+THAT
+	(that)
+	(which)
+GETTING
+	(get)
+	(gets)
+	(getting)
+	(coming)
+THE
+	(the)
+	(a)
+	(an)
+
+LAND
+	(end)
+	(ending)
+	(ends)
+	(land)
+	(lands)
+	(landing)
+	(landings)
+	(terminate)
+	(terminates)
+	(terminating)
+
+TRAVEL
+	(travel)
+	(travels)
+	(traveling)
+	(travelling)
+
+ME
+	(me)
+	(us)
+AND
+	(and)
+	(or)
+THERE_IN
+	(*here in)
+	(there)
+
+IN_THERE
+	(IN_INTO)
+	(there)
+
+IN_INTO
+	(*here in)
+	(TO_VISIT)
+	(INTO)
+
+AT_INTO
+	(*here HERE_ATIN)
+	(TO_VISIT)
+	(INTO)
+
+IN
+	(*here in)
+	(*here at)
+	(INTO)
+
+HERE_ATIN
+	(at)
+	(in)
+	(on)
+INTO
+	(*here HERE_INTO)
+
+HERE_INTO
+	(into)
+	(in to)
+TO_VISIT
+	(to *visit)
+;
+
+[Options]
+	([list] MY OPTIONS *for *STUFF)
+	(what OPTIONS are there)
+	(what do you have)
+	(WHAT *the *TYPE *of STUFF *TYPES_OPTIONS *IS_THERE)
+WHAT
+	(what *are)
+	(tell me)
+	(list)
+TYPES_OPTIONS
+	(TYPE)
+	(OPTIONS)
+MY
+	(my)
+	(the)
+OPTIONS
+	(options)
+	(possibilities)
+STUFF
+	(car)
+	(cars)
+	(hotel)
+	(hotels)
+TYPE
+	(type)
+	(types)
+	(kind)
+	(kinds)
+IS_THERE
+	(ARE there)
+ARE
+	(are)
+	(is)
+;

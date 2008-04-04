@@ -1,0 +1,34 @@
+[weather_info]
+	(*WHATS *the INFO *like *in *[location])
+INFO
+	([General_Weather])
+	([Temp])
+	([Precip])
+WHATS
+	(what *is)
+	(tell *me)
+	(*i want to know)
+	(is IT)
+	(will IT)
+IT
+	(it)
+	(there be)
+;
+
+[General_Weather]
+	(weather)
+;
+[Temp]
+	(temperature)
+;
+[Precip]
+	(pecipitate)
+	(preciptation)
+	(precipitating)
+	(rain)
+	(raining)
+	(snow)
+	(snowing)
+;
+
+

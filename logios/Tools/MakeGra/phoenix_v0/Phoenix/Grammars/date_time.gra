@@ -1,0 +1,1159 @@
+
+[_anytime]
+	(any TIME)
+	(anytime)
+	(all TIME)
+	(regardless of time)
+
+TIME
+	(time)
+	(times)
+;
+
+
+[_am]
+	(a_m)
+	(a m)
+;
+
+
+
+
+[anyday]
+	(any DAY *OF_WEEK)
+DAY
+	(date)
+	(dates)
+	(day)
+	(days)
+
+OF_WEEK
+	(of *the week)
+;
+
+
+[_aprx_time]
+	(*at APPROX [Time] *AS_POSS)
+	(APPROX [periodofday])
+AS_POSS
+	(*as possible)
+
+APPROX
+	(*SOMETIME AROUND_ABOUT)
+	(*as CLOSE *to)
+	(*at approximately)
+	(in *the vicinity *of)
+
+AROUND_ABOUT
+	(around)
+	('round)
+	(about)
+	('bout)
+
+CLOSE
+	(close)
+	(closest)
+	(closer)
+	(near)
+	(nearer)
+	(nearest)
+
+SOMETIME
+	(sometime)
+	(somewhere)
+	(any time)
+;
+
+[_before]
+	([before])
+;
+
+[before]
+	(*JUST BEFORE)
+BEFORE
+	(before)
+	(sooner than)
+	(prior to)
+	(earlier than)
+	(not AFTER *that)
+
+AFTER
+	(after)
+	(later than)
+	(afterwards)
+	(past)
+JUST
+	(just)
+	(soon)
+	(*a little)
+;
+
+[Date]
+	(*SELECTOR *ON *the MONTH_DAY *[year] *[Time_Range])
+	(*a DAY_WEEK *OF_MONTH)
+	(*SOMETIME *[Date_Relative] [Today_Relative])
+	(*SOMETIME *ON *the DATE_REL *DAY *OF_MONTH)
+	(*[Date_Relative] [holiday])
+
+SELECTOR
+	(*a DAY_WEEK )
+	(sometime)
+SOMETIME
+	(sometime)
+	([anyday])
+DATE_REL
+	([Date_Relative])
+	([Day_Ordinal] *of [Date_Relative])
+	([holiday])
+	([anyday])
+	([everyday])
+	(last day *of *[_month_after])
+MONTH_DAY
+	([Month_Name] *the [Day_Number])
+	([Day_Number] *day *of [Month_Name])
+DAY_WEEK
+	(*A *MOD_DAY *ON [Day_Of_Week] *OF_WEEK)
+ON
+	(date)
+	(during)
+	(for)
+	(on *that)
+	(of)
+
+OF_MONTH
+	(*IN_OF *A [Month_Name])
+	(*IN_OF *A THIS_LAST month)
+THIS_LAST
+	(this)
+	(last)
+MOD_DAY
+	([anyday])
+	([everyday])
+	(EACH)
+	(next)
+
+OF_WEEK
+	(*IN_OF *A *this week)
+	(*IN_OF *A [Date_Relative])
+
+EACH
+	(any)
+	(each)
+	(every)
+
+A
+	(a)
+	(an)
+	(the)
+
+IN_OF
+	(in)
+	(of)
+DAY
+	(day)
+	(date)
+	([Day_Name])
+;
+
+[Date_Relative]
+	(*ON *the NEXT DAY)
+	(*THE day [_day_after] *that)
+	(*THE day [_day_prior] *that)
+	([_week_after])
+	([_week_prior])
+	([_month_after])
+	([_year_after])
+	([date_offset])
+DAY
+	(day)
+	(days)
+	(date)
+	(dates)
+	([Time_Range])
+ON
+	(on)
+	(for)
+THE
+	(a)
+	(the)
+NEXT
+	([_same])
+	([_next])
+	([_previous])
+;
+
+[Day_Number]
+	(*M_TEN ONE_ORD)
+	(M_TEN)
+	(TEEN)
+ONE_ORD
+	(ONE)
+	(ORDINAL)
+
+TEEN
+	(ten)
+	(eleven)
+	(twelve)
+	(thirteen)
+	(fourteen)
+	(fifteen)
+	(sixteen)
+	(seventeen)
+	(eighteen)
+	(nineteen)
+	(tenth)
+	(eleventh)
+	(twelfth)
+	(thirteenth)
+	(fourteenth)
+	(fifteenth)
+	(sixteenth)
+	(seventeenth)
+	(eighteenth)
+	(nineteenth)
+	(twentieth)
+	(thirtieth)
+
+M_TEN
+	(twenty)
+	(thirty)
+	
+ONE
+	(one)
+	(two)
+	(three)
+	(four)
+	(five)
+	(six)
+	(seven)
+	(eight)
+	(nine)
+
+ORDINAL
+	(first)
+	(second)
+	(third)
+	(fourth)
+	(fifth)
+	(sixth)
+	(seventh)
+	(eighth)
+	(ninth)
+	
+;
+
+
+[Day_Of_Week]
+	([Day_Name])
+	([weekend])
+	([weekday])
+;
+
+
+[Day_Ordinal]
+	(thirty first)
+	(*twenty SMALL_ORD)
+	(tenth)
+	(eleventh)
+	(twelfth)
+	(thirteenth)
+	(fourteenth)
+	(fifteenth)
+	(sixteenth)
+	(seventeenth)
+	(eighteenth)
+	(nineteenth)
+	(twentieth)
+	(thirtieth)
+
+SMALL_ORD
+	(first)
+	(second)
+	(third)
+	(fourth)
+	(fifth)
+	(sixth)
+	(seventh)
+	(eighth)
+	(ninth)
+;
+
+
+[Day_Name]
+	(monday)
+	(tuesday)
+	(wednesday)
+	(thursday)
+	(friday)
+	(saturday)
+	(sunday)
+	(mondays)
+	(tuesdays)
+	(wednesdays)
+	(thursdays)
+	(fridays)
+	(saturdays)
+	(sundays)
+	(monday's)
+	(tuesday's)
+	(wednesday's)
+	(thursday's)
+	(friday's)
+	(saturday's)
+	(sunday's)
+;
+
+[Today_Relative]
+	(today)
+	(today's)
+	(tonight)
+#	(this [Time_Range])
+	(tomorrow)
+	(tomorrow's)
+	(yesterday)
+	(yesterday's)
+;
+
+[Date_Time]
+	([Date] *[Time_Range])
+	([Time_Range] [Date])
+	([Period_Mod] DATE *[Time_Range])
+	(*[Period_Mod] [Today_Relative])
+	(*[Time_Range] *the [Date_Relative] *[Time_Range])
+DATE
+	([Date])
+	([Day_Name])
+NEXT
+	([_next])
+	([_previous])
+;
+
+[_earliest]
+	(*the EARLIEST *ONE *out *in *the *[Time_Range] *as *possible)
+	(as soon *[Time_Range] *as *possible)
+EARLIEST
+	(closest)
+	(soonest)
+	(earliest)
+	(first available)
+	(first *available ONE)
+	(as early)
+ONE
+	(one)
+	(thing)
+;
+
+
+[End_Time]
+	([time_spec])
+	([Hour])
+;
+
+
+[Start_Time]
+	([time_spec])
+	([Hour])
+;
+
+
+[est]
+	(ZONE *standard TIME)
+	(*standard TIME)
+
+ZONE
+	(eastern)
+	(pacific)
+	(mountain)
+	(central)
+
+TIME
+	(time)
+	(times)
+;
+
+
+[everyday]
+	(EACH DAY *OF_WEEK)
+	(daily)
+	(dailies)
+	(everyday)
+
+EACH
+	(all)
+	(every)
+
+DAY
+	(day)
+	(days)
+
+OF_WEEK
+	(of *the week)
+;
+
+[half_hour]
+	(*and a half)
+
+;
+
+
+[holiday]
+	(DAY_NAME)
+
+DAY_NAME
+	([holiday_name])
+	([holiday_nameday])
+;
+
+
+[holiday_name]
+	(HOL *DAY)
+
+HOL
+	(christmas)
+	(easter)
+#	(passover)
+	(*the fourth of july)
+	(new year's *eve)
+	(new years *eve)
+	(new year *eve)
+	(thanksgiving)
+	(april fool's)
+	(halloween)
+
+DAY
+	(day)
+	(days)
+;
+
+
+[holiday_nameday]
+	(HOL_1 DAY)
+
+HOL_1
+	(independence)
+	(labor)
+	(memorial)
+	(st patrick's)
+	(valentine)
+	(st* valentine's)
+	(groundhog)
+	(flag)
+	(united nations)
+	(veterans)
+	(martin luther king)
+	(presidents')
+	(armed forces)
+	(mothers')
+	(fathers')
+	(parent's)
+	(columbus)
+
+DAY
+	(day)
+	(days)
+;
+
+
+[Hour]
+	(one)
+	(two)
+	(three)
+	(four)
+	(five)
+	(six)
+	(seven)
+	(eight)
+	(nine)
+	(ten)
+	(eleven)
+	(twelve)
+;
+
+
+[_latest]
+	(*the LATEST *available *ONE *out *in *the *TIMERANGE *as *possible)
+TIMERANGE
+	([Time_Range])
+	(day)
+ONE
+	(one)
+	(thing)
+	(flight)
+LATEST
+	(latest)
+	(last)
+	(as late)
+;
+
+
+[meal_Time]
+	(MEAL time)
+	(APPROX MEAL *time)
+
+MEAL
+	([_breakfast])
+	([_lunch])
+	([_dinner])
+	([_supper])
+
+APPROX
+	(*SOMETIME AROUND_ABOUT)
+	(*as CLOSE *to)
+	(*at approximately)
+	(in *the vicinity *of)
+
+AROUND_ABOUT
+	(around)
+	('round)
+	(about)
+	('bout)
+
+CLOSE
+	(close)
+	(closest)
+	(closer)
+	(near)
+	(nearer)
+	(nearest)
+
+SOMETIME
+	(sometime)
+	(somewhere)
+	(any time)
+;
+
+[_breakfast]
+	(breakfast)
+;
+[_lunch]
+	(lunch)
+	(lunchtime)
+	(lunch time)
+;
+[_supper]
+	(supper)
+;
+[_dinner]
+	(dinner)
+	(dinnertime)
+	(dinner time)
+;
+
+
+[Minute]
+	(T_ONE)
+	(T_TEN *T_ONE)
+	(TEEN)
+	(ZERO T_ONE)
+
+
+T_ONE
+	(one)
+	(two)
+	(three)
+	(four)
+	(five)
+	(six)
+	(seven)
+	(eight)
+	(nine)
+
+T_TEN
+	(twenty)
+	(thirty)
+	(forty)
+	(fifty)
+
+TEEN
+	(ten)
+	(eleven)
+	(twelve)
+	(thirteen)
+	(fourteen)
+	(fifteen)
+	(sixteen)
+	(seventeen)
+	(eighteen)
+	(nineteen)
+
+ZERO
+	(zero)
+	(oh)
+
+;
+
+
+[Month_Name]
+	(*THE_MONTH NAME)
+
+NAME
+	(january)
+	(february)
+	(march)
+	(april)
+	(may)
+	(june)
+	(july)
+	(august)
+	(september)
+	(october)
+	(november)
+	(december)
+
+THE_MONTH
+	(*the month *of)
+;
+
+
+[month_number]
+	(one)
+	(two)
+	(three)
+	(four)
+	(five)
+	(six)
+	(seven)
+	(eight)
+	(nine)
+	(ten)
+	(eleven)
+	(twelve)
+
+;
+
+[periodofday]
+	(*SOMETIME *[Period_Mod] *in *the *[Period_Mod] [Period_Of_Day])
+
+SOMETIME
+	(sometime)
+	(some time)
+	(anytime)
+	(any time)
+	(something)
+;
+
+[Period_Of_Day]
+	([_am])
+	([_pm])
+	([_morning])
+	([_afternoon])
+	([_evening])
+	([_night])
+	([_early_day])
+	([_late_day])
+	([_mid_day])
+	([_overnight])
+	([_breakfast])
+	([_lunch])
+	([_dinner])
+	([_supper])
+	([_anytime])
+;
+
+[Period_Mod]
+	([_early])
+	([_late])
+	([_mid])
+;
+
+[_early]
+	(*MOD early)
+MOD
+	(very)
+	(real)
+	(really)
+;
+
+[_late]
+	(late)
+;
+
+[_mid]
+	(mid)
+	(*in *the middle of the)
+;
+
+[_early_day]
+	(early in the day)
+	(*in the early part of the day)
+	(*at *the beginning of the day)
+;
+[_late_day]
+	(late in the day)
+	(late *in day)
+	(*at *the end of the day)
+;
+[_mid_day]
+	(midday)
+	(mid day)
+	(*in *the middle *part of the day)
+;
+
+[_overnight]
+	(overnight)
+	(*the red eye)
+;
+
+[_afternoon]
+	(afternoon)
+	(after noon)
+	(afternoons)
+#	(mid afternoon)
+;
+
+[_morning]
+	(morning)
+	(mornings)
+#	(mid morning)
+#	(*in *the middle of the morning)
+;
+
+[_night]
+	(night)
+	(nights)
+	(nighttime)
+	(night time)
+;
+[_evening]
+	(evening)
+	(evenings)
+;
+
+
+[_noon]
+	(*twelve noon)
+	(noontime)
+	(noon time)
+;
+
+[_midnight]
+	(midnight)
+;
+
+[now_day]
+	(now)
+;
+
+[year]
+	(*nineteen DECADE *ONE)
+	(two thousand *and *ONE)
+	(twenty oh ONE)
+
+DECADE
+	(seventy)
+	(eighty)
+	(ninety)
+ONE
+	(one)
+	(two)
+	(three)
+	(four)
+	(five)
+	(six)
+	(seven)
+	(eight)
+	(nine)
+;
+
+[on_day]
+	([Day_Of_Week] *OPT_MONTH)
+	([Month_Name] *the [Day_Number] *[year])
+	(*the [Day_Number] *of [Month_Name] *[year])
+
+OPT_MONTH
+	([Month_Name] *the [Day_Number] *[year])
+	(*the [Day_Number] *of [Month_Name] *[year])
+;
+
+[_pm]
+	(p_m)
+	(pm)
+	(p m)
+;
+
+[same_time]
+	(*at *the same TIME_PL)
+
+TIME_PL
+	(time)
+	(times)
+;
+
+[Time_Range]
+	(*[periodofday] [time_spec])
+	(*SOMETIME [_after] [Start_Time] *AND *BEFORE_TIME *DAY_PERIOD)
+	(START *at [Start_Time] *AND *[_after])
+	(*at [Start_Time] AND [_after])
+	(*SOMETIME [_before] DAY_TIME)
+	(*END *at [End_Time] AND [_before])
+	(between [Start_Time] and [End_Time])
+BEFORE_TIME
+	([_before] [End_Time])
+SOMETIME
+	(ANYTIME)
+	([periodofday])
+	
+ANYTIME
+	(anytime)
+	(any time)
+	(any times)
+	(sometime)
+	(some time)
+	(some times)
+	(anything)
+
+DAY_TIME
+	(*[on_day] [End_Time])
+	([End_Time] *ON *THE [on_day] [Time_Range])
+
+
+DAY_PERIOD
+	(*ON *THE [on_day] [Time_Range])
+
+AND
+	(and *or)
+	(or)
+	(but)
+
+ON
+	(of)
+	(on)
+
+THE
+	(a)
+	(an)
+	(the)
+
+END
+	(end)
+	(ends)
+	(ending)
+
+START
+	(start)
+	(starts)
+	(starting)
+	(begin)
+	(begins)
+	(beginning)
+
+;
+
+[time_spec]
+	(*at [Time])
+	([periodofday])
+	([_aprx_time])
+;
+
+[Time]
+	([Hour] MIN *[periodofday])
+	([Hour] *o'clock [periodofday])
+	([Hour] o'clock)
+	(TIME_PERIOD BEFORE TIME *o'clock *[periodofday])
+	([_noon])
+	([_midnight])
+	([TwentyFour])
+MIN
+	([Minute])
+TIME_PERIOD
+	([Minute_Rel] *MINUTE)
+	(*a [_quarter])
+	(*a [_half])
+
+BEFORE
+	([_before])
+	([_after])
+
+TIME
+	([Hour])
+	([_noon])
+	([_midnight])
+
+MINUTE
+	(minute)
+	(minutes)
+;
+
+[Minute_Rel]
+	([Minute])
+;
+
+[_quarter]
+	(quarter)
+;
+
+[_half]
+	(half)
+;
+
+[TwentyFour]
+	(oh [Hour] MIN *hours)
+	([Hour] MIN hours)
+MIN
+	(hundred)
+	([Minute])
+;
+
+[Time_Duration]
+	([Hour] *[half_hour] HOURS)
+	([Hour] HOURS [half_hour])
+	([Hour] HOURS and [Minute] minutes)
+	(*[half_hour] HOURS)
+
+HOURS
+	(hours)
+	(hour)
+
+;
+
+
+
+[time_int]
+	(early)
+	(late)
+;
+
+[weekday]
+	(MIDDLE *of *THE week)
+	(midweek)
+	(weekday)
+	(weekdays)
+	(MONDAY through FRIDAY)
+	(MONDAY *AND TUESDAY *AND WEDNESDAY *AND THURSDAY *AND FRIDAY)
+
+THE
+	(a)
+	(the)
+
+MIDDLE
+	(mid)
+	(middle)
+
+MONDAY
+	(monday)
+	(mondays)
+
+TUESDAY
+	(tuesday)
+	(tuesdays)
+
+WEDNESDAY
+	(wednesday)
+	(wednesdays)
+
+THURSDAY
+	(thursday)
+	(thursdays)
+
+FRIDAY
+	(friday)
+	(fridays)
+
+AND
+	(and *or)
+	(or)
+;
+
+
+[weekend]
+	(weekend)
+	(weekends)
+	(saturday and sunday)
+;
+
+[_earlier]
+	([before])
+	(too late)
+	(is late)
+	(*the one before *that)
+	(earlier *THAN_DAY)
+	(next to *the last)
+	(before THIS *time)
+	(no later THAN )
+THIS
+	(this)
+	(that)
+
+THAN_DAY
+	(*ONE THAN *DAY)
+	(DAY)
+	(ONE)
+
+THAN
+	(than *that)
+
+DAY
+	(*ONE *in *the day)
+
+ONE
+	(one)
+	(ones)
+;
+
+[_later]
+	([after])
+	(*THAT TOO early *for *me)
+	(is early)
+	(later *THAN_DAY)
+	(after that *time)
+
+THAT
+	(that *is)
+	(that's)
+TOO
+	(too)
+	(*a little)
+
+THAN_DAY
+	(*ONE THAN *DAY)
+	(DAY)
+	(ONE)
+
+THAN
+	(than *that)
+
+DAY
+	(*one *in *the day)
+
+ONE
+	(one)
+	(ones)
+;
+
+[Earlier]
+	(*SOMETHING *a *little COMP)
+SOMETHING
+	(something)
+	(anything)
+COMP
+	([_earlier])
+	([_later])
+;
+
+[date_offset]
+	([day_offset])
+	([week_offset])
+;
+
+[day_offset]
+	([Number] DAY OFFSET)
+	(IN [Number] DAY)
+IN
+	(in)
+	(after)
+DAY
+	(day)
+	(days)
+OFFSET
+	([_days_after])
+	([_days_prior])
+;
+
+[week_offset]
+	([_weeks_after])
+;
+
+[_weeks_after]
+	(in [Number] weeks)
+;
+
+[_days_after]
+	(later)
+	(after *that)
+;
+
+[_days_prior]
+	(before)
+	(prior to)
+	(earlier)
+;
+
+[_day_prior]
+	(before)
+	(prior to)
+;
+
+[_day_after]
+	(after)
+	(afterwards)
+	(from)
+;
+
+[_week_after]
+	(in ONE week)
+	(ONE week later)
+	(*the NEXT week)
+	(a week AFTER)
+	(after *about a week)
+	(the week after)
+	(ONE week from)
+ONE
+	(one)
+	(a)
+NEXT
+	(next)
+	(coming)
+	(following)
+AFTER
+	(after)
+	(afterwards)
+;
+
+[_week_prior]
+	(THE week before *that)
+	(the LAST week)
+THE
+	(a)
+	(the)
+LAST
+	(last)
+	(previous)
+;
+
+[_month_after]
+	(NEXT month)
+
+NEXT
+	(next)
+	(coming)
+	(following)
+
+;
+
+[_year_after]
+	(*of next year)
+;
+
+[_same]
+	(*that same)
+;
+
+[_after]
+	([after])
+;
+
+[after]
+	(*JUST AFTER)
+
+JUST
+	(just)
+	(soon)
+	(*a little)
+AFTER
+	(after)
+	(later than)
+	(afterwards)
+	(NOT BEFORE *that)
+	(past)
+
+BEFORE
+	(before)
+	(sooner *than)
+	(earlier *than)
+	(prior to)
+
+NOT
+	(not)
+	(no)
+;
+

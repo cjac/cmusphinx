@@ -1,0 +1,23 @@
+I_SAY
+	(*I'D_WE SAY)
+
+I'D_WE
+	(i'd)
+	(we'd)
+	(*I_WE WILL_WOULD)
+	(I_WE)
+	(let's)
+	(let *us *me)
+
+I_WE
+	(i)
+	(we)
+	(you)
+
+WILL_WOULD
+	(will)
+	(would)
+
+SAY
+	(say)
+	(said)

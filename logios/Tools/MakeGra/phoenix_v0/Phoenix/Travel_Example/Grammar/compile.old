@@ -1,0 +1,50 @@
+#!/bin/tcsh
+
+# compile grammars in .
+# put compiled nets in file $TASK.net
+# set PHOENIX to point to root of Phoenix system
+# set LIBS to .gra files to load from $PHOENIX/Grammars
+# if SingleFile == 1, then all grammar rules are in file $TASK.gra
+# if SingleFile == 0, then compiles all files in dir with extension .gra
+
+set TASK="TA"
+set LIBS="date_time.gra number.gra cost.gra places.gra response.gra existential.gra query.gra repair.gra next.gra anything.gra social.gra"
+set PHOENIX=".."
+@ SingleFile = 0
+
+set DIR=`pwd`
+
+#save old grammar
+mv $TASK.gra $TASK.gra.old
+
+# if separate files, pack into single file
+if( $SingleFile == 0 ) then
+    ls *.gra | $PHOENIX/Scripts/pack_gra.perl > $TASK.xx
+else
+    cp $TASK.gra.old $TASK.xx
+endif
+mv $TASK.xx $TASK.gra
+
+# append lib grammars to file
+cd $PHOENIX/Grammars
+cat $LIBS >> $DIR/$TASK.gra
+cd $DIR
+
+# remove old compiled files
+rm base.dic
+rm nets
+rm log
+rm $TASK.net
+
+# create list of nets to be compiled
+cat $TASK.gra | $PHOENIX/Scripts/mk_nets.perl > nets
+
+# compile grammar output messages to file "log"
+echo "compiling grammar"
+$PHOENIX/ParserLib/compile_grammar -SymBufSize 200000 \
+	-f $TASK > log
+grep WARN log
+
+# flag leaf nodes for extracts function
+echo "flagging leaf nodes"
+$PHOENIX/ParserLib/concept_leaf -grammar $TASK.net

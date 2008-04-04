@@ -1,0 +1,51 @@
+STOP
+	(STOP_STAY *OVER)
+	(landing)
+	(landings)
+	(stopover)
+	(stopovers)
+	(layover)
+	(layovers)
+	(stayover)
+	(stayovers)
+	(wait)
+	(waits)
+	(waiting)
+
+STOP_STAY
+	(stop)
+	(stops)
+	(stopping)
+	(stopover)
+	(stopovers)
+	(stay)
+	(stayover)
+	(stays)
+	(staying)
+
+HAVE
+	(has)
+	(have)
+	(having)
+	(include)
+	(includes)
+	(including)
+	(make)
+	(makes)
+	(making)
+	(provide)
+	(provides)
+	(providing)
+	(with)
+
+ONE_ITS
+	(a)
+	(one)
+	(its)
+	(the)
+	(their)
+	(there)
+
+OVER
+	(over)
+	(overs)

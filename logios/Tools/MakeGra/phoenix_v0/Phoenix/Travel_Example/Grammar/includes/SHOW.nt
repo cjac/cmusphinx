@@ -1,0 +1,16 @@
+SHOW_ME
+	(SHOW *ME)
+
+SHOW
+	(display)
+	(give)
+	(find)
+	(list)
+	(print)
+	(show)
+	(specify)
+	(tell *ME)
+
+ME
+	(me *my)
+	(us)
