@@ -68,7 +68,7 @@ if (not defined $okw or defined $cgi->cgi_error()) {
 my $okh = $cgi->upload( $cgi->param('handfile'),File::Spec->catfile($workdir,"$base.hand"));
 
 # generate the dictionary
-&Pronounce::make_dict('loc'$tools,$workdir,"$base.word","$base.hand","$base.dict","$base.pron.log");
+&Pronounce::make_dict($tools,$workdir,"$base.word","$base.hand","$base.dict","$base.pron.log");
 
 # compose the results page ****
 $rslttempl->param(server => "http://ramps.speech.cs.cmu.edu",
