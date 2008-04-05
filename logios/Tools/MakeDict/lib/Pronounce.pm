@@ -41,7 +41,7 @@ sub make_dict {
   # set required tools and project paths
   $PRONOUNCE = File::Spec->catfile($tools,'MakeDict','bin',$pron_bin);
   $LEXILIB = File::Spec->catdir($tools,'MakeDict','lib');
-  $LEXICON = "cmudict.0.7a_SPHINX_40";
+  $LEXICON = "CMUdict_SPHINX_40";
   $OUTDIR = $resources;
 
   $wordfile = File::Spec->catfile($OUTDIR,$vocfn);
