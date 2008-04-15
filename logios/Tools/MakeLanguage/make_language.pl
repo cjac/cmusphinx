@@ -30,6 +30,7 @@ my $SAMPSIZE = 30000;  # size of synthetic corpus
 my $LOGFILE = "";  # name of log file
 my $PROJECT = "";  # name of the project (domain, really) we're in.
 my $INSTANCE = "";  # name of the particular language we're building here
+my $LOGIOS = "";  # root of the Logios tools
 
 sub usage {
   return "usage: $0 [--resources <abspath>] [--samplesize <n>] [--source {local|web}]"
@@ -42,6 +43,7 @@ GetOptions("resources=s", \$RESOURCES,  # needs to be an abs path
 	   "project=s", \$PROJECT,
 	   "instance=s", \$INSTANCE,
 	   "logfile=s", \$LOGFILE,
+	   "logios=s", ,\$LOGIOS,
 	  );
 fail(&usage) if @ARGV;
 fail("You must specify both the PROJECT and the INSTANCE for this language!")
@@ -52,7 +54,7 @@ fail("PROJECT and INSTANCE have to be different!")
 # create some useful paths and files
 chdir($RESOURCES); system('chdir');
 my $PROJECTROOT = File::Spec->rel2abs(File::Spec->updir());
-my $TOOLS = File::Spec->catdir($PROJECTROOT,'Tools');
+my $TOOLS = File::Spec->catdir($LOGIOS,'Tools');
 
 open(LOG, ">$LOGFILE") if $LOGFILE ne "";  #open log file
 
