@@ -10,15 +10,15 @@ University.
 The Carnegie Mellon Speech Group does not guarantee the accuracy of
 this dictionary, nor its suitablity for any specific purpose. In fact,
 we expect a number of errors, omissions and inconsistencies to remain
-in the current result. We intend to continually update the dictionary
+in the dictionary. We intend to continually update the dictionary
 as we make progress in correcting them. From time to time a new
 version will be released. 
 
 We welcome input from users: Please send email to Alex Rudnicky
-(air+cmudict@cs.cmui.edu).
+(air+cmudict@cs.cmu.edu).
 
 The Carnegie Mellon Pronouncing Dictionary, in its current and
-previous versions is Copyright 1993-2008 by Carnegie Mellon
+previous versions is Copyright (C) 1993-2008 by Carnegie Mellon
 University.  Use of this dictionary for any research or commercial
 purpose is completely unrestricted.  If you make use of or
 redistribute this material we request that you acknowledge its
