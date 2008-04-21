@@ -39,7 +39,7 @@
  */
 
 /*
-  [20080222] (air) temporary filenames now generated using tempnam()
+  [20080222] (air) temporary filenames now generated using tempnam() 
 */
 
 #define DEFAULT_HASH_SIZE 200000
