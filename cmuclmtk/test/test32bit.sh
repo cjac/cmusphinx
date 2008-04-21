@@ -1,5 +1,5 @@
 #
-# [20080328] (air) added  DIFF to deal with win/linux texts
+# [20080328] (air) added  DIFF to deal with win/linux texts 
 #
 DIFF='diff --strip-trailing-cr'
 
