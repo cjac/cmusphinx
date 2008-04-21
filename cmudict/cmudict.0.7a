@@ -47,8 +47,7 @@
 ;;;
 ;;;  NOTES  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; 
-;;;  [20080401] (air)
-:::   New dict file format introduced 
+;;;  [20080401] (air)  New dict file format introduced 
 ;;;   - comments (like this section) are allowed
 ;;;   - file name is major version; vers/rev information is now in the header
 ;;;
