@@ -1,0 +1,9 @@
+-lowerf 133.3334
+-upperf 6855.4976
+-nfilt 40
+-ncep 13
+-transform legacy
+-round_filters yes
+-unit_area yes
+-remove_dc no
+-feat 1s_c_d_dd
