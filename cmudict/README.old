@@ -2,10 +2,6 @@ cmudict Notes
 -------------
 [20060203] (air)
 
-*** NOTE: Derivative dictionaries are made and kept in ../lexdata/
-
-
-This collection contains all major versions of the cmudict.
 
 cmudict.0.6d was the last publicly released version of the
 dictionary. It is used in the lmtool service.
@@ -19,9 +15,9 @@ cmudict.0.7a and cmudict.0.6e are modifed versions of the above
 dictionaries. The modifications are as follows:
 
 1) Entries appearing in both 0.6d and 0.7 that had different
-pronunciations were examined and the better version was inserted in
-both dictionaries. Notionally this meant taking a corrected entry from
-0.7 and putting it into 0.6d.
+pronunciations were examined and the appropriate version inserted in
+both dictionaries. Notionally this meant taking a corrected entry 
+from 0.7 and putting it into 0.6d.
 
 2) 0.7 was examined for variant errors. Specifically words that had >6
 variants had improbably variants removed. (This should be redone
@@ -49,4 +45,8 @@ switched the pronunciation order for AND to make reduced form first.
 
 [20071029] (air)
 removed some variants
+
+[200803] (air)
+---- cmudict has been placed under version control in cmusphinx on Sourceforge. ----
+---- Subsequent changes are documented there.                                   ----
 

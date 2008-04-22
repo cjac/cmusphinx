@@ -36,12 +36,13 @@
 #
 #
 
-
 # do a sanity check on a dictionary (# of tabs, duplicates)
-# [21oct98] (air) created
+#
+# [21oct98] (air) Created
 # [30oct98] (air) expanded functionality: check for phonetic symbols
 # [03feb99] (air) bug fix; added noise symbols to check
 # [20010623] (air) added cmd-line flags; word/pron bound now \s+
+# [20080422] (air) fixed for DOS eol's, also noisefile now properly optional
 
 #
 # correct dictionary format is:   ^WORD\tW ER DD\n$
@@ -62,15 +63,19 @@ $dictfile = $ARGV[0];
 
 # get the legal symbol set
 open(PH,$phonefile) || die("can't open $phonefile!\n");
-while (<PH>) { chomp; $phone{$_} = 1; } close(PH);
-open(PH,$noisefile) || die("can't open $noisefile!\n");
-while (<PH>) { chomp; $phone{$_} = 1; } close(PH);
+while (<PH>) { s/[\r\n]*//g; $phone{$_} = 1; } close(PH);
+if ( defined $noisefile ) {
+  open(PH,$noisefile) || die("can't open $noisefile!\n");
+  while (<PH>) { s/[\r\n]*//g; $phone{$_} = 1; } close(PH);
+}
 open(DICT,$dictfile) ||die("$dictfile not found!\n");
 
 # go through dict, do tests
 %dict = (); $last = ""; my ($lead, $trail); $word_cnt = 0;
 while (<DICT>) {
     chomp;  #    s/^\s*(.+?)\s*$/$1/;
+    s/[\r\n]*//g;
+    if ( /^;;;/ ) { next; }
     $line = $_;
     ($word,$pron) = split (/\s+/,$line,2);  # BIG assumption about no leading junk...
     $dict{$word}++;

@@ -39,9 +39,10 @@
 # ====================================================================
 #
 
-# [20050309] (air)
+# [20050309] (air) Created.
 # strip out stress marks from a cmudict, producing a "SphinxPhones_40" dictionary
 # [20080420] (air) Changed to pass comments.
+#                  Fixed output collation sequence; DOS eol's
 #
 
 
@@ -67,7 +68,7 @@ foreach $w (sort keys %dict) {
       print  OUT "$w\t$p\n";
       $var++;
     }  else {
-      print  OUT "$w($var)\t$p\n";
+      print  OUT "$w\t$p\n";
       $var++;
     }
   }
@@ -85,7 +86,7 @@ sub get_dict {
   my $target = shift;  # input file
 
   while (<$target>) {
-    chomp;
+    s/[\r\n]+$//g;  # DOS-robust chomp;
 
     # process comments; blank lines ignored
     # presume that ";;; #" will be collected and emitted at the top
@@ -104,9 +105,11 @@ sub get_dict {
     $pron = &strip_stress($pron);
     if ($dict->{$root}{$pron}) {  # remove duplicate entries
       print STDERR "duplicate entry: $root ($variant) $pron\n";
+    } elsif ( $variant eq 0 ) {
+      $dict->{$root}{$pron} = $variant;
     } else {
-      $dict->{$root}{$pron} = $variant; # note the variant index
-    }
+      $dict->{$root."($variant)"}{$pron} = $variant; # note the variant index
+      }
     $histo{$variant}++;
   }
 }
