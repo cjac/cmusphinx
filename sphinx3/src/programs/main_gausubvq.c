@@ -126,7 +126,11 @@ parse_subvecs(char *str)
                         strp - str);
 
             for (; n <= n2; n++) {
-                if (glist_chkdup_int32(dimlist, n))
+		gnode_t *gn;
+		for (gn = dimlist; gn; gn = gnode_next(gn))
+		    if (gnode_int32(gn) == n)
+			break;
+		if (gn != NULL)
                     E_FATAL("'%s': Duplicate dimension ending @pos %d\n",
                             str, strp - str);
 

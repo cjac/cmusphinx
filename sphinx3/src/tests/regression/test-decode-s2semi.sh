@@ -6,7 +6,7 @@ tmpout="test-decode-s2semi.out"
 echo "DECODE SPHINX2 TEST"
 echo "YOU SHOULD SEE THE RECOGNITION RESULT 'E I T G S B U R G H' (don't panic!)"
 
-margs="-mdef $hmmdir/RM1_cd_semi/RM1.1000.mdef \
+margs="\
 -fdict $an4lm/filler.dict \
 -dict $an4lm/an4.dict \
 -hmm $hmmdir/RM1_cd_semi \

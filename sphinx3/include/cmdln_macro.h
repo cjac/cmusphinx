@@ -106,6 +106,7 @@
  */
 
 #include <fe.h>
+#include <feat.h>
 
 /* Note by ARCHAN at 20050717 
    
@@ -362,36 +363,6 @@ us a better architecture.
       "1s_c_d_dd",
       "Feature stream: s2_4x / s3_1x39 / cep_dcep[,%d] / cep[,%d] / %d,%d,...,%d" },
 #endif
-
-#define cepstral_to_feature_command_line_macro() \
-   { "-feat", \
-      ARG_STRING, \
-      "1s_c_d_dd", \
-      "Feature type: Must be s3_1x39 / 1s_c_d_dd/ s2_4x ."}, \
-   { "-ceplen", \
-      ARG_INT32, \
-      "13", \
-     "Number of components in the input feature vector" }, \
-    { "-cmn", \
-      ARG_STRING, \
-      "current", \
-      "Cepstral mean normalization scheme ('current', 'prior', or 'none'); (current: Cep -= mean-over-current-sentence(Cep), prior: estimate mean based on prior data)" }, \
-    { "-varnorm", \
-      ARG_BOOLEAN, \
-      "no", \
-      "Variance normalize each utterance (yes/no; only applicable if CMN is also performed)" }, \
-    { "-agc", \
-      ARG_STRING, \
-      "none", \
-      "Automatic gain control for c0 ('max', 'emax', 'noise', or 'none'); (max: c0 -= max-over-current-sentence(c0), emax: estimated max based on prior data, noise: use noise threshold)" }, \
-    { "-lda", \
-      ARG_STRING, \
-      NULL, \
-      "File containing transformation matrix to be applied to features" }, \
-    { "-ldadim", \
-      ARG_INT32, \
-      "0", \
-      "Dimensionality of output of feature transformation (0 to use entire matrix)" },
 
 
 #define speaker_adaptation_command_line_macro() \

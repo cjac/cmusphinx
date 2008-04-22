@@ -7,13 +7,9 @@ tmpmatch="test-decode-mode2.match"
 echo "DECODE FSG TEST"
 
 margs=" \
--mdef  $hmmdir/tidigits/wd_dependent_phone.500.mdef \
 -dict $hmmdir/tidigits/dictionary \
 -fdict  $hmmdir/tidigits/fillerdict \
--mean  $hmmdir/tidigits/wd_dependent_phone.cd_continuous_8gau/means \
--var   $hmmdir/tidigits/wd_dependent_phone.cd_continuous_8gau/variances \
--mixw  $hmmdir/tidigits/wd_dependent_phone.cd_continuous_8gau/mixture_weights \
--tmat  $hmmdir/tidigits/wd_dependent_phone.cd_continuous_8gau/transition_matrices \
+-hmm  $hmmdir/tidigits/wd_dependent_phone.cd_continuous_8gau/ \
 -cepdir $hmmdir/tidigits/cepstra/ \
 -hyp $tmpmatch \
 -agc none \

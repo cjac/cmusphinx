@@ -409,7 +409,7 @@ New_kbcore()
 /* Feature and front-end parameters that may be in feat.params */
 static const arg_t feat_defn[] = {
     waveform_to_cepstral_command_line_macro(),
-    cepstral_to_feature_command_line_macro()
+    cepstral_to_feature_command_line_macro(),
     { NULL, 0, NULL, NULL }
 };
 

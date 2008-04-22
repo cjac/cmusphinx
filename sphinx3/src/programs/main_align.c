@@ -239,7 +239,9 @@
 */
 
 static arg_t defn[] = {
-    cepstral_to_feature_command_line_macro()
+	cepstral_to_feature_command_line_macro(),
+
+    /* BOGUS! Where are the commas? */
         log_table_command_line_macro()
         acoustic_model_command_line_macro()
         speaker_adaptation_command_line_macro()

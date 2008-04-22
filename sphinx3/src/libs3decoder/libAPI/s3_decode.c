@@ -160,7 +160,9 @@ date: 2004/08/06 15:07:39;  author: yitao;  state: Exp;
 
 arg_t S3_DECODE_ARG_DEFS[] = {
     waveform_to_cepstral_command_line_macro(),
-    cepstral_to_feature_command_line_macro()
+    cepstral_to_feature_command_line_macro(),
+
+    /* BOGUS!  Where are the commas? */
     acoustic_model_command_line_macro()
     speaker_adaptation_command_line_macro()
     

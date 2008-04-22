@@ -628,8 +628,11 @@ lextree_build(kbcore_t * kbc, wordprob_t * wordprob, int32 n_word,
 
                     /* Parents beyond k have not been checked; add if not present */
                     for (j = k + 1; j < np; j++) {
-                        if (!glist_chkdup_ptr
-                            (parent[j]->children, (void *) ln))
+                        gnode_t *gn;
+                        for (gn = parent[j]->children; gn; gn = gnode_next(gn))
+                            if (gnode_ptr(gn) == ln)
+                                break;
+                        if (gn == NULL)
                             parent[j]->children =
                                 glist_add_ptr(parent[j]->children,
                                               (void *) ln);

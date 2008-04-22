@@ -122,8 +122,12 @@ ldiph_comsseq(mdef_t * mdef,                /**< a model definition*/
                           (s3cipid_t) r, WORD_POSN_BEGIN);
 
         if (IS_S3PID(p)) {
+            gnode_t *gn;
             ssid = mdef_pid2ssid(mdef, p);
-            if (!glist_chkdup_int32(g, ssid))
+            for (gn = g; gn; gn = gnode_next(gn))
+                if (gnode_int32(gn) == ssid)
+                    break;
+            if (gn == NULL)
                 g = glist_add_int32(g, ssid);
         }
     }
@@ -151,8 +155,12 @@ rdiph_comsseq(mdef_t * mdef, int32 b, int32 l)
                           (s3cipid_t) r, WORD_POSN_END);
 
         if (IS_S3PID(p)) {
+            gnode_t *gn;
             ssid = mdef_pid2ssid(mdef, p);
-            if (!glist_chkdup_int32(g, ssid))
+            for (gn = g; gn; gn = gnode_next(gn))
+                if (gnode_int32(gn) == ssid)
+                    break;
+            if (gn == NULL)
                 g = glist_add_int32(g, ssid);
         }
     }
@@ -181,8 +189,12 @@ single_comsseq(mdef_t * mdef, int32 b)
                               (s3cipid_t) r, WORD_POSN_SINGLE);
 
             if (IS_S3PID(p)) {
+                gnode_t *gn;
                 ssid = mdef_pid2ssid(mdef, p);
-                if (!glist_chkdup_int32(g, ssid))
+                for (gn = g; gn; gn = gnode_next(gn))
+                    if (gnode_int32(gn) == ssid)
+                        break;
+                if (gn == NULL)
                     g = glist_add_int32(g, ssid);
             }
         }
@@ -211,8 +223,12 @@ single_lc_comsseq(mdef_t * mdef, int32 b, int32 l)
                           (s3cipid_t) r, WORD_POSN_SINGLE);
 
         if (IS_S3PID(p)) {
+            gnode_t *gn;
             ssid = mdef_pid2ssid(mdef, p);
-            if (!glist_chkdup_int32(g, ssid))
+            for (gn = g; gn; gn = gnode_next(gn))
+                if (gnode_int32(gn) == ssid)
+                    break;
+            if (gn == NULL)
                 g = glist_add_int32(g, ssid);
         }
     }
@@ -243,8 +259,12 @@ single_rc_comsseq(mdef_t * mdef, int32 b, int32 r)
                           (s3cipid_t) r, WORD_POSN_SINGLE);
 
         if (IS_S3PID(p)) {
+            gnode_t *gn;
             ssid = mdef_pid2ssid(mdef, p);
-            if (!glist_chkdup_int32(g, ssid))
+            for (gn = g; gn; gn = gnode_next(gn))
+                if (gnode_int32(gn) == ssid)
+                    break;
+            if (gn == NULL)
                 g = glist_add_int32(g, ssid);
         }
     }
