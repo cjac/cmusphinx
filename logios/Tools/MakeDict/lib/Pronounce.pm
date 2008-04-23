@@ -3,7 +3,8 @@
 # for a given input word list, generate corresponding pronunciations
 # Originally developed by Thomas Harris
 
-# [20080324] (air) reorganized as a perl module; integrated into Logios platform
+# [20071011] (air) factored out from makelm.pl
+# [20080324] (air) reorganized as a perl module; integrated into logios platform
 #                  supports both local and web-based resolution (due to licensed LtoS sw)
 #                  new interface to pronounce
 #
@@ -23,12 +24,10 @@ my ($LEXDATA, $LEXILIB, $LEXICON, $OUTDIR);
 my ($wordfile, $handdict, $outfile, $logfile);
 
 
-# [20071011] (air) factored out from makelm.pl
-# DEPENDS ON THE MakeDict FOLDER STRUCTURE
-BEGIN {
-  if ( ($^O =~ /win32/i) or ($^O =~ /cygwin/) ) {$pron_bin = "x86-nt/pronounce.exe";}
-  else { $pron_bin = "x86-linux/pronounce"; }  # assume we're going to be on linux
-}
+
+if ( ($^O =~ /win32/i) or ($^O =~ /cygwin/) ) {$pron_bin = "x86-nt/pronounce.exe";}
+else { $pron_bin = "x86-linux/pronounce"; }  # otherwise we're on linux
+
 
 
 #########  create pronouncing dictionary from vocab list  ##########
@@ -49,8 +48,7 @@ sub make_dict {
   $outfile = File::Spec->catfile($OUTDIR,$outfn);
   $logfile = File::Spec->catfile($OUTDIR,$logfn);
 
-  &LogiosLog::info("Pronounce::make_dict(): generating pronunciation dict");
-# print STDERR ">>> $handdict, $wordfile, $outfile, $logfile <<<";
+  # print STDERR ">>> $handdict, $wordfile, $outfile, $logfile <<<";
   &do_pronounce( $handdict, $wordfile, $outfile, $logfile );
 
   return;
@@ -82,7 +80,7 @@ sub get_dic_loc {
 		       );
   push (@pronounce_args, '-H', $handdf) if -e $handdf;
 
- print STDERR "\n$PRONOUNCE ", join " ", @pronounce_args,"\n";
+  print STDERR "\n$PRONOUNCE ", join " ", @pronounce_args,"\n";
   return system("$PRONOUNCE",@pronounce_args);
 }
 
