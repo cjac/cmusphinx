@@ -1,4 +1,5 @@
 #!/usr/local/bin/perl
+
 # compile a grammar into forms and nets files
 # produce a "final" version of the grammar (after resolution)
 # 'extended' grammar incorporates all class members and is used for parser
@@ -55,14 +56,6 @@ my $outgra = "$instance.gra";
 print STDERR "compile_gra:  ingra->$ingra  outgra->$outgra\n";
 print STDERR "class-> ",join(" ",@classf),"\n";
 
-# check if a robot names file is available, copy into class file (note DOS)
-# HARDWIRED!! This should really be driven through a config file.
-# if ( $classflag and -e 'TeamTalkRobots' ) {
-#  open(IN,"TeamTalkRobots") or die "compile_gra: can't open TeamTalkRobots!\n";
-#  open(OUT,">GRAMMAR/DynamicRobotName.class")
-#    or die "compile_gra: can't open DynamicRobotName.class!\n";
-#  while (<IN>) { chomp; print OUT "\t($_)\n"; }
-#}
 
 # see if any ad-hoc class definitions are provided; put copies of the files into GRAMMAR/
 foreach $cf (@classf) {

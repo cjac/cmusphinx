@@ -63,8 +63,15 @@ fail("PROJECT and INSTANCE have to be different!")
 open(LOG, ">$RESOURCES/$LOGFILE") if $LOGFILE ne "";  #open log file
 
 # done with the first set of preliminaries
-&say('make_language', "$/project => $PROJECT$/resource dir => $RESOURCES$/sample"
-     ."size => $SAMPSIZE$/source => $SOURCE$/instance => $INSTANCE$/");
+&say( "MAKE_LANGUAGE",
+      "$/"
+     ."\ttools => $LOGIOS$/"
+     ."\tresources => $RESOURCES$/"
+     ."\tproject => $PROJECT$/"
+     ."\tinstance => $INSTANCE$/"
+     ."\tsample size => $SAMPSIZE$/"
+     ."\tsource => $SOURCE$/"
+    );
 
 
 # compile Domain grammar into Project grammar, in Phoenix and corpus versions
@@ -144,7 +151,7 @@ my $DICT = File::Spec->catfile($INSTANCE.'.dict');
 system("perl $MAKEDICT \
        -tools $TOOLS -resources $DICTDIR -words $INSTANCE.token -handdict $HAND_DICT -dict $DICT");
 system('chdir');
-&say('compile', "done\n");
+&say("$/MAKE_LANGUAGE", "done\n");
 close(LOG) if $LOGFILE;
 
 exit;

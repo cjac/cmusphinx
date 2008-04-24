@@ -1,0 +1,231 @@
+###################################################################
+#
+# M E E T I N G L I N E   T A S K   G R A M M A R
+#
+# HISTORY: -------------------------------------------------------
+#
+# [2006-03-23] (dbohus):  started working on this grammar
+# [2008-04-21] (air) modified for use as an example in logios
+#                    see in-line Notes on features
+#
+###################################################################
+
+
+###################################################################
+# AUXILIARIES
+###################################################################
+
+# NOTES: ---------------------------------------------------------------------------
+# left-flushed items in square brackets are called "nets"
+# those that constitute entry points into the grammar are listed in the .forms file
+# the _'s are not meaningful: it's a convention for noting internal nets
+# a net consists of a collection of phrases, one to a line, with leadning whitespace
+# the entire thing is terminated with a ";" flush-fet by itself
+[__datetime_junk]
+	(next)
+	(this)
+	(an)
+;
+
+[_was]
+  (was)
+  (were)
+;
+
+###################################################################
+# MEETING REFERENTS
+###################################################################
+
+# NOTES: ---------------------------------------------------------------------------
+# '*' prepended denotes optional items (i.e. 0 or 1 occurences)
+# '+' denotes sequences of one or more items
+[_meeting]
+  (*group meeting)
+  (one)
+;
+
+# NOTES: ---------------------------------------------------------------------------
+# net items can themselves contain mentions to other nets
+[last_meeting]
+  (the last [_meeting])
+  (my last [_meeting])
+;
+  
+[previous_meeting]
+  (the previous [_meeting])
+  (my previous [_meeting])
+  (*the [_meeting] before *that)
+;
+
+[that_meeting]
+  (that [_meeting])
+  (it)
+;
+
+# NOTES: ---------------------------------------------------------------------------
+# The relative distribution of language forms can be affected by
+# specifying a probability for each phrase subsumed by a net, as
+# in the following example:
+
+[MeetingReferent]
+  ([last_meeting])     #%%0.5%%
+  ([previous_meeting]) #%%0.2%%
+  ([that_meeting])     #%%0.1%%
+  (*the [_meeting])    #%%0.2%%
+;
+
+# NOTES: ---------------------------------------------------------------------------
+# Note that this will affect the language model n-gram probabilities.
+# In general it is not considered wise to set arbitrary probabilities
+# in the grammar; you should compute these from a corpus.
+
+###################################################################
+# STATEMENTS
+###################################################################
+
+# NOTES: ---------------------------------------------------------------------------
+# the following net references a class ('usernames') that is stored
+# in a separate file ('usernames.class'). The contents of that file
+# will be compiled into the knowledge that the parser uses; the class
+# (and tokens) will end up in the language model configuration.
+
+[user_name]
+	(%[usernames]%)
+;
+
+[UserPIN]
+	([user_name])
+;
+
+###################################################################
+# QUERIES
+###################################################################
+
+[QueryWhenAndWho]
+  ([QueryWhen] *and [QueryWho])
+;
+
+[QueryWhoAndAgenda]
+  ([QueryWho] *and [QueryAgenda])
+;
+
+# NOTES: ---------------------------------------------------------------------------
+# for conciseness and readability you can use macros (uppercase items)
+# these need to be included in the definition of the net (i.e., prior to the ';')
+[QueryWhen]
+  (WHEN was [MeetingReferent] *held)
+  (WHEN did [MeetingReferent] HAPPEN)
+WHEN
+  (when)
+  (at what time)
+  (on which day)
+HAPPEN
+  (happed)
+  (take place)
+;
+
+[QueryWho]
+  (who ATTENDED *IN_MEETING)
+  (HOW_MANY *PEOPLE ATTENDED *IN_MEETING)
+HOW_MANY
+  (how many)
+  (which)
+PEOPLE  
+  (people)
+  (participants)
+ATTENDED
+  ([_was])
+  (attended)
+  (participated)
+  (went to)
+  (met)
+  (were the participants)
+  (were the attendees)
+IN_MEETING
+  (*at [MeetingReferent])
+  (in [MeetingReferent])
+  (*in there)
+;
+
+[QueryAgenda]
+  (what [_was] THE_AGENDA *IN_MEETING)
+  (what WAS_TALKED *IN_MEETING)
+THE_AGENDA
+  (the agenda *items)
+WAS_TALKED
+  (was talked about)
+  (did we talk about)
+  (did they talk about)
+  (was discussed)
+  (did we discuss)
+  (did they discuss)
+IN_MEETING
+  (*at [MeetingReferent])
+  (in [MeetingReferent])
+  (for [MeetingReferent])
+  (*in there)
+;
+
+[QueryActionItems]
+  (what [_was] the ACTION_ITEM)
+  (what HAS_BEEN DECIDED *TO_DO *IN_MEETING)
+  (DOES [user_name] have *any *action items)
+  ([_was] *there ANYTHING DECIDED *IN_MEETING)
+  ([_was] *there ANYTHING ASSIGNED_TO [user_name] *IN_MEETING)
+  (DID_WE_ASSIGN ANYTHING to [user_name] *IN_MEETING)
+  (DID_WE_ASSIGN [user_name] ANYTHING *IN_MEETING)
+  (what *ACTION_ITEM DID_WE_ASSIGN to [user_name] *IN_MEETING)
+  (what ACTION_ITEM did [user_name] GET *IN_MEETING)
+  (what [_was] *the ACTION_ITEM for [user_name] *IN_MEETING)
+  (what [_was] ASSIGNED_TO [user_name] *IN_MEETING)
+DECIDED
+  (decided)
+  (decide)
+  (assigned)
+  (assign)
+TO_DO
+  (to do)
+HAS_BEEN
+  ([_was])
+  (has been)
+  (did we)
+  (did they)
+DOES
+  (do)
+  (does)
+ANYTHING
+  (*any ACTION_ITEM)
+  (anything)
+  (something)
+ACTION_ITEM
+  (*action items)
+  (*action item)
+  (tasks)
+  (decisions)
+  (to do items)
+  (to do list)
+ASSIGNED_TO
+  (assigned to)
+  (for)
+IN_MEETING
+  (in [MeetingReferent])
+  (*at [MeetingReferent])
+DID_WE_ASSIGN
+  (were assigned)
+  (did we assign)
+  (did we give)
+  (did they give)
+  (did they assign)
+GET
+  (get)
+  (have)
+;
+
+###################################################################
+# COMMANDS
+###################################################################
+
+[ReadNotes]
+  (*please read *me the notes)
+;
+

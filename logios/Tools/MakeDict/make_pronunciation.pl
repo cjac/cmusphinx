@@ -27,7 +27,7 @@ GetOptions( "words:s", \$words,
 	  );
 if (scalar @ARGV gt 0) { die "$usage\n"; }
 
-my $lib = File::Spec->catfile('lib','Pronounce.pm');
+my $lib = File::Spec->catfile($toolsdir,'MakeDict','lib','Pronounce.pm');
 require $lib;
 &Pronounce::make_dict($toolsdir,$resources,$words,$handdict,$dict,"pronunciation.log");
 

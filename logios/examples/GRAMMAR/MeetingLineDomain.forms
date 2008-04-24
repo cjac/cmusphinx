@@ -1,0 +1,46 @@
+###################################################################
+#
+# MEETINGLINE Grammar
+# 
+# Written by: Dan Bohus, October 2002
+#
+# This is the forms file corresponding to the phoenix grammar for 
+# the MeetingLine system
+#
+#
+# HISTORY -------------------------------------------------------
+#
+# [2006-03-23] (dbohus):     started working on this
+# [2008-04-21] (air) modified for use as an example in logios tool
+#
+###################################################################
+
+FUNCTION: Statements  %%0.1%%
+    NETS: 
+	[UserPIN]
+;
+
+FUNCTION: Queries %%0.4%%  
+    NETS:
+	[QueryWhen]
+	[QueryWho]
+	[QueryAgenda]
+	[QueryActionItems]
+;
+
+FUNCTION: MeetingRef  %%0.3%%
+    NETS: 
+  [MeetingReferent]
+;
+
+FUNCTION: Commands
+    NETS:
+  [ReadNotes]
+;
+
+# these auxiliaries are defined in order to capture some parses like
+# next, this that, which o/w would parse as date-time
+FUNCTION: Auxiliaries
+    NETS:
+	[__datetime_junk]
+;
