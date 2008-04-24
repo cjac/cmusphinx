@@ -50,7 +50,7 @@ if (not GetOptions( "class" => \@classf,
 		  ) )
   { die "usage: compile_gra -tools <path> [-class <file> ...] [-project <project> -instance <instance> -ingra <.gra> -outgra <.gra> -absgra <_abs.gra>\n"; }
 
-#require "$tools/lib/LogiosLog.pm";
+require "$tools/lib/LogiosLog.pm";
 my $outgra = "$instance.gra";
 print STDERR "compile_gra:  ingra->$ingra  outgra->$outgra\n";
 print STDERR "class-> ",join(" ",@classf),"\n";
