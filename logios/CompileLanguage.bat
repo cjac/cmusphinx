@@ -1,16 +1,20 @@
 :: recompile language without going through the entire build process
 :: [20080220] (air)
-:: should be run in the dialog project folder
 
-:: Change these labels as per the project
-SET PROJECT=TeamTalk
-SET INSTANCE=TreasureHunt
+::::::  SPECIFY LOGIOS ROOT  ( assume that script is run in expected location)  ::::::
+SET LOGIOS_ROOT=%CD%
 
-:: Run MakeLanguage
-:: will compile language knowledge bases from the grammar
+::::::  CHANGE THESE LABELS AS PER YOUR PROJECT   ::::::
+:: INSTANCE will be the base name for all generated files
+SET PROJECT=MeetingLineDomain
+SET INSTANCE=MeetingLine
+
+:: Compile language knowledge bases from the grammar
 echo Executing MakeLanguage
 cd Resources
-perl ..\Tools\MakeLanguage\make_language.pl --project %PROJECT% --instance %INSTANCE% --logfile logfile
+perl %LOGIOS_ROOT%\Tools\MakeLanguage\make_language.pl --logios %LOGIOS_ROOT% --project %PROJECT% --instance %INSTANCE% --logfile %INSTANCE%.log
 cd ..
 
+:: give user a chance to examine the trace
+pause
 ::

@@ -15,49 +15,66 @@
 #
 # [200710] (air) - based on cmp.pl
 # [200801] (air) untangled Tools and Resources, removed all cygwin dependencies
-
-BEGIN { push @INC, "../lib"; }
+# [20080422] (air) fixed win/linux differentiation
 
 use strict;
 use Getopt::Long;
 use File::Spec;
+
+my ($bindir, $exten);
+if ( ($^O =~ /win32/i) or ($^O =~ /cygwin/) ) {$bindir = "bin/x86-nt"; $exten = ".exe"; }
+else { $bindir = "bin/x86-linux"; $exten = ""; }  # otherwise assume we're on linux
 
 # all MakeGra executables are supposed to be in a known place (rel to the current script)
 my ($drive,$dirs,$exec) = File::Spec->splitpath($0);
 my $EXEDIR = File::Spec->catpath($drive,$dirs,"");
 
 # some defaults
+my $tools = "";
 my $project = "";
 my $instance = "";
-my $classflag = 0;
+my @classd = ();
+my @classf = ();
+my $cf;
 my $ingra = "";
 my $outgra = "";
 my $absgra = "";
 
-if (not GetOptions( "class" => \$classflag,
+if (not GetOptions( "class" => \@classf,
 		    "project:s" => \$project,
 		    "instance:s" => \$instance,
 		    "ingra:s" => \$ingra,
 		    "outgra:s" => \$outgra,
 		    "absgra:s" => \$absgra,
+		    "tools:s" => \$tools,
 		  ) )
-  { die "usage: compile_gra [-class] [-project <project> -instance <instance> -ingra <.gra> -outgra <.gra> -absgra <_abs.gra>\n"; }
+  { die "usage: compile_gra -tools <path> [-class <file> ...] [-project <project> -instance <instance> -ingra <.gra> -outgra <.gra> -absgra <_abs.gra>\n"; }
 
-
+#require "$tools/lib/LogiosLog.pm";
 my $outgra = "$instance.gra";
-print STDERR "compile_gra: class->$classflag  ingra->$ingra  outgra->$outgra\n";
+print STDERR "compile_gra:  ingra->$ingra  outgra->$outgra\n";
+print STDERR "class-> ",join(" ",@classf),"\n";
 
 # check if a robot names file is available, copy into class file (note DOS)
 # HARDWIRED!! This should really be driven through a config file.
-if ( $classflag and -e 'TeamTalkRobots' ) {
-  open(IN,"TeamTalkRobots") or die "compile_gra: can't open TeamTalkRobots!\n";
-  open(OUT,">GRAMMAR/DynamicRobotName.class")
-    or die "compile_gra: can't open DynamicRobotName.class!\n";
-  while (<IN>) { chomp; print OUT "\t($_)\n"; }
+# if ( $classflag and -e 'TeamTalkRobots' ) {
+#  open(IN,"TeamTalkRobots") or die "compile_gra: can't open TeamTalkRobots!\n";
+#  open(OUT,">GRAMMAR/DynamicRobotName.class")
+#    or die "compile_gra: can't open DynamicRobotName.class!\n";
+#  while (<IN>) { chomp; print OUT "\t($_)\n"; }
+#}
+
+# see if any ad-hoc class definitions are provided; put copies of the files into GRAMMAR/
+foreach $cf (@classf) {
+  open(IN,$cf) or die "can't open class file: $cf\n";
+  my ($v,$p,$f) = File::Spec->splitpath($cf);
+  open(OUT,">GRAMMAR/$f") or die "can't open GRAMMAR/$f for writing!";
+  while (<IN>) { s/[\n\r]+//g; print OUT "\t($_)\n"; }
+  push @classd, $f;
 }
 
 # resolve classes to make "extended" and "abstracted" grammars
-&fail("resolve.pl can't complete!") if
+LogiosLog::fail("resolve.pl can't complete!") if
   system("perl $EXEDIR/resolve.pl -i $ingra -e $outgra -a $absgra");
 
 # fish out the net names
@@ -76,31 +93,23 @@ print FORMS <TTFORMS>;
 close TTFORMS; close FORMS;
 
 # compile Phoenix grammar
-&fail("Phoenix compilation!") if not defined
-  open(COMPILE, File::Spec->catfile($EXEDIR,"bin","compile.exe")." -g . -f $instance |");
+my $COMPILE = File::Spec->catfile($EXEDIR,$bindir,"compile").$exten;
+LogiosLog::fail("Phoenix compilation!") if not defined open(COMPILE, "$COMPILE -g . -f $instance |");
 open(LOG, ">log"); print LOG <COMPILE>; close LOG;
 close COMPILE;
 
-&fail("Phoenix concept_leaf!") if
-  system(File::Spec->catfile($EXEDIR,"bin","concept_leaf")." -grammar $instance.net");
+my $CONCEPT_LEAF = File::Spec->catfile($EXEDIR,$bindir,"concept_leaf").$exten;
+# print STDERR $CONCEPT_LEAF,"\n";
+LogiosLog::fail("Phoenix concept_leaf!") if system("$CONCEPT_LEAF -grammar $instance.net");
 
 
 # finally, generate the class-grammar files
 #  .ctl and .prodef class files for decoder; .token for pronunciation; .words for lm
-&fail("tokenize.pl!") if
+LogiosLog::fail("tokenize.pl!") if
   system("perl ".File::Spec->catfile($EXEDIR,"tokenize.pl")." -g $absgra -p $instance");
 
 
+# finally, remove any dynamic class files (to avoid littering with stealth classes)
+foreach $cf (@classd) { unlink("GRAMMAR/$cf"); }
 
-##  utilities  ########################################
-sub say {
-    my ($system, $txt) = @_;
-    print STDERR "$system: $txt$/";
-    #print LOG "$system: $txt$/" if $LOGFILE;
-}
-
-sub fail { my $reason = shift; &say('fail', $reason); die; }
-
-
-# exit 1;
 #

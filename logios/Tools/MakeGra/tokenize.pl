@@ -21,7 +21,7 @@ if (scalar @ARGV eq 0
 $probdefile = "$project.probdef";
 $tokenfile = "$project.token";
 $wordfile = "$project.words";
-print STDERR "tokenize: grammar->$grafile; project->$project; wordfile->$wordfile\n";
+print STDERR "tokenize: \n > grammar->$grafile  project->$project  wordfile->$wordfile\n";
 my $classcount = 0;
 
 my $epsilon = 0.0001;  # slop factor for probability distribution (10^-4)

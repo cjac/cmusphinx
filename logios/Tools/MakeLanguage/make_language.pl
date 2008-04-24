@@ -22,6 +22,14 @@ $ENV{'LC_ALL'} = 'C';
 use locale;
 use strict;
 
+my ($bindir, $exten);
+if ( ($^O =~ /win32/i) or ($^O =~ /cygwin/) ) {
+    $bindir = File::Spec->catdir("bin","x86-nt");
+    $exten = ".exe";
+  } else {   # otherwise assume we're on linux
+    $bindir = File::Spec->catdir("bin","x86-linux");
+    $exten = "";
+  }
 
 #setup default variables
 my $RESOURCES = File::Spec->rel2abs(File::Spec->curdir);  # MUST be running in Resources
@@ -34,7 +42,7 @@ my $LOGIOS = "";  # root of the Logios tools
 
 sub usage {
   return "usage: $0 [--resources <abspath>] [--samplesize <n>] [--source {local|web}]"
-                   ." --project <dname> --instance <pname> [--logfile]$/";
+                   ." --project <dname> --instance <pname> [--logfile <fname>] --logios <root>$/";
 }
 #process command line
 GetOptions("resources=s", \$RESOURCES,  # needs to be an abs path
@@ -51,12 +59,8 @@ fail("You must specify both the PROJECT and the INSTANCE for this language!")
 fail("PROJECT and INSTANCE have to be different!")
   if $PROJECT eq $INSTANCE;  # don't overwrite!
 
-# create some useful paths and files
-chdir($RESOURCES); system('chdir');
-my $PROJECTROOT = File::Spec->rel2abs(File::Spec->updir());
-my $TOOLS = File::Spec->catdir($LOGIOS,'Tools');
-
-open(LOG, ">$LOGFILE") if $LOGFILE ne "";  #open log file
+# chdir($RESOURCES); system('chdir');
+open(LOG, ">$RESOURCES/$LOGFILE") if $LOGFILE ne "";  #open log file
 
 # done with the first set of preliminaries
 &say('make_language', "$/project => $PROJECT$/resource dir => $RESOURCES$/sample"
@@ -64,9 +68,9 @@ open(LOG, ">$LOGFILE") if $LOGFILE ne "";  #open log file
 
 
 # compile Domain grammar into Project grammar, in Phoenix and corpus versions
+my $TOOLS = File::Spec->catdir($LOGIOS,'Tools');
 my $MAKEGRA = File::Spec->catdir($TOOLS,'MakeGra');
 my $GRAMMAR = File::Spec->catdir($RESOURCES, 'Grammar');
-my $PHOENIX = File::Spec->catfile($TOOLS, 'MakeGra','bin','compile.exe');
 my $GRAMMARFILE = File::Spec->catfile($GRAMMAR, $INSTANCE.'.gra');
 my $BASEDIC = File::Spec->catfile($GRAMMAR, 'base.dic');
 my $TOKENLIST = File::Spec->catfile($GRAMMAR, $INSTANCE.'.token');
@@ -81,13 +85,15 @@ my $ABSDIC = File::Spec->catfile($GRAMMAR, $INSTANCE.'.words');  # words for lm
 my $TOKENS = File::Spec->catfile($GRAMMAR, $INSTANCE.'.token');  # words for dic
 my $DICTDIR = File::Spec->catdir($DECODERCONFIG, 'Dictionary');  # where final dict goes
 
-&say('make_language', 'compiling grammar...');
+&say("\nmake_language", 'COMPILING GRAMMAR...');
 chdir($GRAMMAR); system('chdir');
 &say(" > executing in: ",File::Spec->rel2abs(File::Spec->curdir));
 &fail("compile_gra.pl") if
-  system("perl ".File::Spec->catfile($MAKEGRA,"compile_gra.pl").
-	 " -p $PROJECT -instance $INSTANCE -class ".
-	 "-ingra $PROJECT.gra -outgra $INSTANCE.gra -absgra $GRABSFILE"
+  system("perl ".File::Spec->catfile($MAKEGRA,"compile_gra.pl")
+	 ." --tools $TOOLS"
+	 ." --project $PROJECT -instance $INSTANCE "
+	 ." --ingra $PROJECT.gra --outgra $INSTANCE.gra --absgra $GRABSFILE"
+	 # ." --class "
       );
 # the following files should have been created inside compile_gra.pl:
 #  .ctl and .prodef class files for decoder; .token for pronunciation; .words for lm
@@ -95,24 +101,25 @@ chdir($GRAMMAR); system('chdir');
 # move some of these over to lm space
 my $LMDIR = File::Spec->catfile($DECODERCONFIG, 'LanguageModel');
 my $LMTEMP = File::Spec->catdir($LMDIR,'TEMP');
+if ( not -e $LMTEMP ) { mkdir($LMTEMP); }
 copy("$INSTANCE.ctl", $LMDIR);
 copy("$INSTANCE.probdef", $LMDIR);
 
 # make word tokens available for MakeDict
 copy("$INSTANCE.token",$DICTDIR);
+chdir($RESOURCES); system('chdir');
 
 # language model
 my $MAKELM = File::Spec->catdir($TOOLS,'MakeLM');
-my $TEXT2IDNGRAM = File::Spec->catfile($MAKELM,'cmucuslmtk', 'bin', 'text2idngram');
-my $IDNGRAM2LM = File::Spec->catfile($MAKELM,'cmucuslmtk', 'bin', 'idngram2lm');
+my $TEXT2IDNGRAM = File::Spec->catfile($MAKELM, $bindir, 'text2idngram'.$exten);
+my $IDNGRAM2LM = File::Spec->catfile($MAKELM, $bindir , 'idngram2lm'.$exten);
 my $RANDOMSAMPS = File::Spec->catfile($MAKELM,'generate_random_samples.pl');
 my $IDNGRAM =  File::Spec->catfile($LMTEMP,$INSTANCE.'.idngram');
 my $CCS = File::Spec->catfile($LMTEMP,"$INSTANCE.ccs");
 my $VOCAB = File::Spec->catfile($LMTEMP,'vocab');
 my $LM = File::Spec->catfile($LMDIR, $INSTANCE.'.arpa');
 
-&say('make_language', 'COMPILING LANGUAGE MODEL...');
-chdir($MAKELM); system('chdir');
+&say("\nmake_language", 'COMPILING LANGUAGE MODEL...');
 &say('make_language', 'generating corpus...');
 &get_corpus($GRABSFILE,$CORPUSFILE);
 &say('make_language', 'getting vocabulary...');
@@ -133,10 +140,10 @@ my $WORDLIST = File::Spec->catfile($INSTANCE,'.token');
 my $HAND_DICT = 'hand.dict';
 my $DICT = File::Spec->catfile($INSTANCE.'.dict');
 
-&say('make_language', 'compiling dictionary...');
-chdir($MAKEDICT); system('chdir');
+&say("\nmake_language", 'COMPILING DICTIONARY...');
 system("perl $MAKEDICT \
        -tools $TOOLS -resources $DICTDIR -words $INSTANCE.token -handdict $HAND_DICT -dict $DICT");
+system('chdir');
 &say('compile', "done\n");
 close(LOG) if $LOGFILE;
 
