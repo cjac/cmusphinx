@@ -267,8 +267,8 @@ kb_init_r(kb_t * kb, cmd_ln_t *config)
 
     /* Initialize the front end if -adcin is specified */
     if (cmd_ln_exists_r(config, "-adcin") && cmd_ln_boolean_r(config, "-adcin")) {
-	if ((kb->fe = fe_init_auto()) == NULL) {
-	    E_FATAL("fe_init_auto() failed\n");
+	if ((kb->fe = fe_init_auto_r(config)) == NULL) {
+	    E_FATAL("fe_init_auto_r() failed\n");
 	}
     }
     /* STRUCTURE INITIALIZATION : The feature vector */
