@@ -233,12 +233,12 @@ main(int argc, char **argv)
         return -1;
     }
 
-    fe = fe_init_auto(); 
-
     if (s3_decode_init(&decoder)) {
         printf("Initialization failed.\n");
         return -1;
     }
+
+    fe = fe_init_auto(); 
 
     if (s3_decode_begin_utt(&decoder, 0)) {
         printf("Cannot start decoding\n");
