@@ -419,13 +419,37 @@ kbcore_init(void)
     return kbcore_init_r(cmd_ln_get());
 }
 
+void
+set_cmninit(feat_t *fcb, char const *cmninit)
+{
+    char *c, *cc, *vallist;
+    int32 nvals;
+
+    if (cmninit == NULL)
+	return;
+    vallist = ckd_salloc(cmninit);
+    c = vallist;
+    nvals = 0;
+    while (nvals < fcb->cmn_struct->veclen
+	   && (cc = strchr(c, ',')) != NULL) {
+	*cc = '\0';
+	fcb->cmn_struct->cmn_mean[nvals] = atof(c);
+	c = cc + 1;
+	++nvals;
+    }
+    if (nvals < fcb->cmn_struct->veclen && *c != '\0') {
+	fcb->cmn_struct->cmn_mean[nvals] = atof(c);
+    }
+    ckd_free(vallist);
+}
+
 kbcore_t *
 kbcore_init_r(cmd_ln_t *config)
 {
     kbcore_t *kb;
     int i;
     s3cipid_t sil;
-    char *str;
+    char const *str;
 
     E_INFO("Begin Initialization of Core Models:\n");
 
@@ -444,11 +468,12 @@ kbcore_init_r(cmd_ln_t *config)
     /* Look for a feat.params very early on, because it influences
      * everything below. */
     if (cmd_ln_str_r(config, "-hmm")) {
-	str = string_join(cmd_ln_str_r(config, "-hmm"), "/feat.params", NULL);
-	if (cmd_ln_parse_file_r(config, feat_defn, str, FALSE) == 0) {
-	    E_INFO("Parsed model-specific feature parameters from %s\n", str);
+	char *pfile;
+	pfile = string_join(cmd_ln_str_r(config, "-hmm"), "/feat.params", NULL);
+	if (cmd_ln_parse_file_r(config, feat_defn, pfile, FALSE) == 0) {
+	    E_INFO("Parsed model-specific feature parameters from %s\n", pfile);
 	}
-	ckd_free(str);
+	ckd_free(pfile);
     }
 
     if (!logs3_init(cmd_ln_float32_r(config, "-logbase"),
@@ -468,6 +493,10 @@ kbcore_init_r(cmd_ln_t *config)
 		       agc_type_from_str(cmd_ln_str_r(config, "-agc")),
                        REPORT_KBCORE, cmd_ln_int32_r(config, "-ceplen"))) == NULL)
             E_FATAL("feat_init(%s) failed\n", str);
+
+	if (cmd_ln_exists_r(config, "-cmninit")) {
+	    set_cmninit(kb->fcb, cmd_ln_str_r(config, "-cmninit"));
+	}
 
 	str = cmd_ln_str_r(config, "-senmgau");
         E_INFO("%s\n", str);
@@ -505,9 +534,9 @@ kbcore_init_r(cmd_ln_t *config)
     assert(kb->mdef != NULL);
 
     if ((str = cmd_ln_str_r(config, "-dict"))) {
-	char *compsep = cmd_ln_exists_r(config, "-compsep")
+	char const *compsep = cmd_ln_exists_r(config, "-compsep")
 	    ? cmd_ln_str_r(config, "-compsep") : NULL;
-	char *fdictfile = cmd_ln_str_r(config, "-fdict");
+	char const *fdictfile = cmd_ln_str_r(config, "-fdict");
 
         if (!compsep)
             compsep = "";
@@ -533,8 +562,8 @@ kbcore_init_r(cmd_ln_t *config)
     }
 
     if (kb->mgau) {
-	char *subvqfile = cmd_ln_str_r(config, "-subvq");
-	char *gsfile = cmd_ln_str_r(config, "-gs");
+	char const *subvqfile = cmd_ln_str_r(config, "-subvq");
+	char const *gsfile = cmd_ln_str_r(config, "-gs");
         if (subvqfile && gsfile) {
             E_FATAL
                 ("Currently there is no combination scheme of gs and svq in Gaussian Selection\n");
