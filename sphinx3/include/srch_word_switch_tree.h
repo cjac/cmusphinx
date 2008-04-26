@@ -79,6 +79,9 @@
  *             Started. Word condition tree search. Aka lexical tree copies. 
  */
 
+#ifndef _SRCH_WST_H_
+#define _SRCH_WST_H_
+
 /** \file srch_word_switch_tree.h
     \brief Implementation of word-switching tree search. 
 */
@@ -193,3 +196,4 @@ int srch_WST_bestpath_impl(void * srch_struct /**< A void pointer to a search st
 }
 #endif
 
+#endif /* _SRCH_WST_H_ */

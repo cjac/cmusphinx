@@ -68,6 +68,9 @@
  *
  */
 
+#ifndef _GMM_WRAP_H_
+#define _GMM_WRAP_H_
+
 /** \file gmm_wrap.h
  *  \brief Function pointer wrapper of GMM computation. 
  */
@@ -169,3 +172,4 @@ int32 s3_cd_gmm_compute_sen(
 }
 #endif
 
+#endif /* _GMM_WRAP_H_ */

@@ -40,6 +40,9 @@
  * 
  */
 
+#ifndef _SRCH_DO_NOTHING_H_
+#define _SRCH_DO_NOTHING_H_
+
 #include "s3types.h"
 #include "kb.h"
 
@@ -72,3 +75,4 @@ int srch_do_nothing_decode(void *srch);
 }
 #endif
 
+#endif /* _SRCH_DO_NOTHING_H_ */

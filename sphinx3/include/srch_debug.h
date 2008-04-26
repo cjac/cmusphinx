@@ -66,6 +66,9 @@
  *             Started. Time switching tree implementation. 
  */
 
+#ifndef _SRCH_DEBUG_H_
+#define _SRCH_DEBUG_H_
+
 #include "s3types.h"
 #include "kb.h"
 
@@ -137,3 +140,4 @@ int32 srch_debug_dag_dump(void *srch_struct, dag_t *dag);
 }
 #endif
 
+#endif /* _SRCH_DEBUG_H_ */

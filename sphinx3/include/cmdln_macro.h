@@ -105,6 +105,9 @@
  *
  */
 
+#ifndef _CMDLN_MACRO_H_
+#define _CMDLN_MACRO_H_
+
 #include <fe.h>
 #include <feat.h>
 
@@ -686,3 +689,5 @@ us a better architecture.
 #define control_lm_mllr_file_command_line_macro() \
     control_lm_file_command_line_macro() \
     control_mllr_file_command_line_macro() 
+
+#endif /* _CMDLN_MACRO_H_ */
