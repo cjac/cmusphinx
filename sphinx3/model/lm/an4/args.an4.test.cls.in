@@ -1,10 +1,6 @@
--mdef @top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mdef 
+-hmm @top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd
 -fdict @top_srcdir@/model/lm/an4/filler.dict 
 -dict @top_srcdir@/model/lm/an4/an4.dict 
--mean @top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/means 
--var @top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/variances
--mixw @top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mixture_weights 
--tmat @top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/transition_matrices 
 -input_endian little
 -upperf	6855.49756
 -lowerf	133.33334
@@ -17,7 +13,8 @@
 -ctl @top_srcdir@/model/lm/an4/an4.ctl 
 -agc none 
 -varnorm no 
--cmn current 
+-cmn prior 
+-cmninit 12.0
 -subvqbeam 1e-02 
 -epl 4 
 -fillprob 0.02 
