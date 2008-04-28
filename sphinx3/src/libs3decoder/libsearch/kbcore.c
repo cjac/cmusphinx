@@ -202,6 +202,48 @@ linksilences(lm_t * l, kbcore_t * kbc, dict_t * d)
 
 }
 
+/* I'm not sure what the portable way to do this is. */
+static int
+file_exists(const char *path)
+{
+    FILE *tmp;
+
+    tmp = fopen(path, "rb");
+    if (tmp) fclose(tmp);
+    return (tmp != NULL);
+}
+
+/* Borrowed from PocketSphinx. */
+static void
+s3_add_file(cmd_ln_t *config, const char *arg,
+            const char *hmmdir, const char *file)
+{
+    char *tmp = string_join(hmmdir, "/", file, NULL);
+
+    if (cmd_ln_str_r(config, arg) == NULL && file_exists(tmp))
+        cmd_ln_set_str_r(config, arg, tmp);
+    ckd_free(tmp);
+}
+
+static void
+s3_init_defaults(cmd_ln_t *config)
+{
+    char const *hmmdir;
+
+    /* Get acoustic model filenames and add them to the command-line */
+    if ((hmmdir = cmd_ln_str_r(config, "-hmm")) != NULL) {
+        s3_add_file(config, "-mdef", hmmdir, "mdef");
+        s3_add_file(config, "-mean", hmmdir, "means");
+        s3_add_file(config, "-var", hmmdir, "variances");
+        s3_add_file(config, "-tmat", hmmdir, "transition_matrices");
+        s3_add_file(config, "-mixw", hmmdir, "mixture_weights");
+        s3_add_file(config, "-kdtree", hmmdir, "kdtrees");
+        s3_add_file(config, "-lda", hmmdir, "feature_transform");
+        s3_add_file(config, "-fdict", hmmdir, "noisedict");
+        s3_add_file(config, "-featparams", hmmdir, "feat.params");
+    }
+}
+
 /**
  * Initialize sphinx 3 single stream hmm (use cont_mgau). This
  * function is duplicated with ms_s3_am_init. 
@@ -209,102 +251,48 @@ linksilences(lm_t * l, kbcore_t * kbc, dict_t * d)
 void
 s3_am_init(kbcore_t * kbc)
 {
-    char *mdeffn, *meanfn, *varfn, *mixwfn, *tmatfn, *kdtreefn, *ldafn;
-    const char *hmmdir, *senmgau;
-
-    assert(kbc);
+    char const *fn;
+    cmd_ln_t *config = kbcore_config(kbc);
 
     kbc->mgau = NULL;
     kbc->ms_mgau = NULL;
 
-    mdeffn = meanfn = varfn = mixwfn = tmatfn = kdtreefn = ldafn = NULL;
-    if ((hmmdir = cmd_ln_str_r(kbcore_config(kbc), "-hmm")) != NULL) {
-        FILE *tmp;
+    s3_init_defaults(config);
 
-        mdeffn = string_join(hmmdir, "/mdef", NULL);
-        meanfn = string_join(hmmdir, "/means", NULL);
-        varfn = string_join(hmmdir, "/variances", NULL);
-        mixwfn = string_join(hmmdir, "/mixture_weights", NULL);
-        tmatfn = string_join(hmmdir, "/transition_matrices", NULL);
-        kdtreefn = string_join(hmmdir, "/kdtrees", NULL);
-        if ((tmp = fopen(kdtreefn, "rb")) == NULL) {
-            ckd_free(kdtreefn);
-            kdtreefn = NULL;
-        }
-        else {
-            fclose(tmp);
-        }
-        ldafn = string_join(hmmdir, "/feature_transform", NULL);
-        if ((tmp = fopen(ldafn, "rb")) == NULL) {
-            ckd_free(ldafn);
-            ldafn = NULL;
-        }
-        else {
-            fclose(tmp);
-        }
-    }
-    /* Allow overrides from the command line */
-    if (cmd_ln_str_r(kbcore_config(kbc), "-mdef")) {
-        ckd_free(mdeffn);
-        mdeffn = ckd_salloc(cmd_ln_str_r(kbcore_config(kbc), "-mdef"));
-    }
-    if (cmd_ln_str_r(kbcore_config(kbc), "-mean")) {
-        ckd_free(meanfn);
-        meanfn = ckd_salloc(cmd_ln_str_r(kbcore_config(kbc), "-mean"));
-    }
-    if (cmd_ln_str_r(kbcore_config(kbc), "-var")) {
-        ckd_free(varfn);
-        varfn = ckd_salloc(cmd_ln_str_r(kbcore_config(kbc), "-var"));
-    }
-    if (cmd_ln_str_r(kbcore_config(kbc), "-mixw")) {
-        ckd_free(mixwfn);
-        mixwfn = ckd_salloc(cmd_ln_str_r(kbcore_config(kbc), "-mixw"));
-    }
-    if (cmd_ln_str_r(kbcore_config(kbc), "-tmat")) {
-        ckd_free(tmatfn);
-        tmatfn = ckd_salloc(cmd_ln_str_r(kbcore_config(kbc), "-tmat"));
-    }
-    if (cmd_ln_str_r(kbcore_config(kbc), "-kdtree")) {
-        ckd_free(kdtreefn);
-        kdtreefn = ckd_salloc(cmd_ln_str_r(kbcore_config(kbc), "-kdtree"));
-    }
-    if (cmd_ln_str_r(kbcore_config(kbc), "-lda")) {
-	ckd_free(ldafn);
-        ldafn = ckd_salloc(cmd_ln_str_r(kbcore_config(kbc), "-lda"));
-    }
-
-    if (ldafn) {
-	E_INFO_NOFN("Reading Feature Space Transform from: %s\n", ldafn);
-	if (feat_read_lda(kbcore_fcb(kbc), ldafn,
-			  cmd_ln_int32_r(kbcore_config(kbc), "-ldadim")) < 0)
+    if ((fn = cmd_ln_str_r(config, "-lda"))) {
+	E_INFO_NOFN("Reading Feature Space Transform from: %s\n", fn);
+	if (feat_read_lda(kbcore_fcb(kbc), fn,
+			  cmd_ln_int32_r(config, "-ldadim")) < 0)
 	    E_FATAL("LDA initialization failed.\n");
     }
 
     E_INFO_NOFN("Reading HMM in Sphinx 3 Model format\n");
-    E_INFO_NOFN("Model Definition File: %s\n", mdeffn);
-    E_INFO_NOFN("Mean File: %s\n", meanfn);
-    E_INFO_NOFN("Variance File: %s\n", varfn);
-    E_INFO_NOFN("Mixture Weight File: %s\n", mixwfn);
-    E_INFO_NOFN("Transition Matrices File: %s\n", tmatfn);
+    E_INFO_NOFN("Model Definition File: %s\n", cmd_ln_str_r(config, "-mdef"));
+    E_INFO_NOFN("Mean File: %s\n", cmd_ln_str_r(config, "-mean"));
+    E_INFO_NOFN("Variance File: %s\n", cmd_ln_str_r(config, "-var"));
+    E_INFO_NOFN("Mixture Weight File: %s\n", cmd_ln_str_r(config, "-mixw"));
+    E_INFO_NOFN("Transition Matrices File: %s\n", cmd_ln_str_r(config, "-tmat"));
 
-    if ((kbc->mdef = mdef_init(mdeffn, REPORT_KBCORE)) == NULL)
-        E_FATAL("mdef_init(%s) failed\n", mdeffn);
+    if ((kbc->mdef = mdef_init(cmd_ln_str_r(config, "-mdef"),
+			       REPORT_KBCORE)) == NULL)
+        E_FATAL("mdef_init(%s) failed\n", cmd_ln_str_r(config, "-mdef"));
 
     if (REPORT_KBCORE) {
         mdef_report(kbc->mdef);
     }
 
-    senmgau = cmd_ln_str_r(kbcore_config(kbc), "-senmgau");
-    if (strcmp(senmgau, ".cont.") == 0) {
+    fn = cmd_ln_str_r(kbcore_config(kbc), "-senmgau");
+    if (strcmp(fn, ".cont.") == 0) {
         /* Single stream optmized GMM computation Initialization */
         E_INFO
             ("Using optimized GMM computation for Continuous HMM, -topn will be ignored\n");
-        kbc->mgau = mgau_init(meanfn, varfn,
-			      cmd_ln_float32_r(kbcore_config(kbc), "-varfloor"),
-			      mixwfn,
-			      cmd_ln_float32_r(kbcore_config(kbc), "-mixwfloor"),
+        kbc->mgau = mgau_init(cmd_ln_str_r(config, "-mean"),
+			      cmd_ln_str_r(config, "-var"),
+			      cmd_ln_float32_r(config, "-varfloor"),
+			      cmd_ln_str_r(config, "-mixw"),
+			      cmd_ln_float32_r(config, "-mixwfloor"),
 			      TRUE,      /* Do precomputation */
-			      (char *)senmgau,
+			      (char *)fn,
 			      MIX_INT_FLOAT_COMP);     /*Use hybrid integer and float routine */
 
         if (kbc->mdef && kbc->mgau) {
@@ -315,14 +303,15 @@ s3_am_init(kbcore_t * kbc)
         }
 
     }
-    else if (strcmp(senmgau, ".s2semi.") == 0) {
+    else if (strcmp(fn, ".s2semi.") == 0) {
         /* SC_VQ initialization. */
         E_INFO("Using Sphinx2 multi-stream GMM computation\n");
-        kbc->s2_mgau = s2_semi_mgau_init(meanfn,
-                                         varfn, cmd_ln_float32_r(kbcore_config(kbc), "-varfloor"),
-                                         mixwfn,
-					 cmd_ln_float32_r(kbcore_config(kbc), "-mixwfloor"),
-					 cmd_ln_int32_r(kbcore_config(kbc), "-topn"));
+        kbc->s2_mgau = s2_semi_mgau_init(cmd_ln_str_r(config, "-mean"),
+                                         cmd_ln_str_r(config, "-var"),
+					 cmd_ln_float32_r(config, "-varfloor"),
+					 cmd_ln_str_r(config, "-mixw"),
+					 cmd_ln_float32_r(config, "-mixwfloor"),
+					 cmd_ln_int32_r(config, "-topn"));
         if (kbc->mdef && kbc->s2_mgau) {
             /* Verify senone parameters against model definition parameters */
             if (kbc->mdef->n_sen != kbc->s2_mgau->CdWdPDFMod)
@@ -331,48 +320,46 @@ s3_am_init(kbcore_t * kbc)
         }
         /* FIXME: This should probably move as soon as we support kd-trees
          * for other model types. */
-        if (kdtreefn) {
+        if ((fn = cmd_ln_str_r(config, "-kdtree"))) {
             if (s2_semi_mgau_load_kdtree(kbc->s2_mgau,
-					 kdtreefn,
-                                         cmd_ln_int32_r(kbcore_config(kbc), "-kdmaxdepth"),
-                                         cmd_ln_int32_r(kbcore_config(kbc), "-kdmaxbbi")) < 0) {
-                E_FATAL("Failed to load kdtrees from %s\n",
-                        cmd_ln_str_r(kbcore_config(kbc), "-kdtree"));
+					 fn,
+                                         cmd_ln_int32_r(config, "-kdmaxdepth"),
+                                         cmd_ln_int32_r(config, "-kdmaxbbi")) < 0) {
+                E_FATAL("Failed to load kdtrees from %s\n", fn);
             }
         }
     }
-    else if (strcmp(senmgau, ".semi.") == 0
-             || strcmp(senmgau, ".s3cont.") == 0) {
-
+    else if (strcmp(fn, ".semi.") == 0 || strcmp(fn, ".s3cont.") == 0) {
         senone_t *sen;
         /* Multiple stream Gaussian mixture Initialization */
         E_INFO("Using multi-stream GMM computation\n");
-        kbc->ms_mgau = ms_mgau_init(meanfn, varfn,
-				    cmd_ln_float32_r(kbcore_config(kbc), "-varfloor"),
-				    mixwfn,
-				    cmd_ln_float32_r(kbcore_config(kbc), "-mixwfloor"),
+        kbc->ms_mgau = ms_mgau_init(cmd_ln_str_r(config, "-mean"),
+				    cmd_ln_str_r(config, "-var"),
+				    cmd_ln_float32_r(config, "-varfloor"),
+				    cmd_ln_str_r(config, "-mixw"),
+				    cmd_ln_float32_r(config, "-mixwfloor"),
 				    TRUE,        /*Do precomputation */
-                                    (char *)senmgau,
-				    cmd_ln_exists_r(kbcore_config(kbc), "-lambda")
-				    ? cmd_ln_str_r(kbcore_config(kbc), "-lambda") : NULL,
-                                    cmd_ln_int32_r(kbcore_config(kbc), "-topn"));
-
+                                    (char *)fn,
+				    cmd_ln_exists_r(config, "-lambda")
+				    ? cmd_ln_str_r(config, "-lambda") : NULL,
+                                    cmd_ln_int32_r(config, "-topn"));
         sen = ms_mgau_senone(kbc->ms_mgau);
-
         /* Verify senone parameters against model definition parameters */
         if (kbc->mdef->n_sen != sen->n_sen)
             E_FATAL("Model definition has %d senones; but #senone= %d\n",
                     kbc->mdef->n_sen, sen->n_sen);
     }
     else {
-        E_FATAL("Feature should be either .semi. or .cont., is %s\n",
-                senmgau);
+        E_FATAL("Feature should be either .semi. or .cont., is %s\n", fn);
     }
 
 
     /* STRUCTURE: Initialize the transition matrices */
-    if ((kbc->tmat = tmat_init(tmatfn, cmd_ln_float32_r(kbcore_config(kbc), "-tmatfloor"), REPORT_KBCORE)) == NULL)
-        E_FATAL("tmat_init (%s, %e) failed\n", tmatfn, cmd_ln_float32_r(kbcore_config(kbc), "-tmatfloor"));
+    if ((kbc->tmat = tmat_init(cmd_ln_str_r(config, "-tmat"),
+			       cmd_ln_float32_r(config, "-tmatfloor"),
+			       REPORT_KBCORE)) == NULL)
+        E_FATAL("tmat_init (%s, %e) failed\n", cmd_ln_str_r(config, "-tmat"),
+		cmd_ln_float32_r(config, "-tmatfloor"));
 
     if (REPORT_KBCORE) {
         tmat_report(kbc->tmat);
@@ -387,14 +374,6 @@ s3_am_init(kbcore_t * kbc)
             E_FATAL("Mdef #states(%d) != tmat #states(%d)\n",
                     kbc->mdef->n_emit_state, kbc->tmat->n_state);
     }
-
-    ckd_free(mdeffn);
-    ckd_free(meanfn);
-    ckd_free(varfn);
-    ckd_free(mixwfn);
-    ckd_free(tmatfn);
-    ckd_free(kdtreefn);
-    ckd_free(ldafn);
 }
 
 kbcore_t *
