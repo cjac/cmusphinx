@@ -71,8 +71,8 @@
 
 
 #include <stdio.h>
-#include "libs/general.h"
-#include "libs/sih.h"
+#include "general.h"  // from libs
+#include "sih.h"  // from libs
 #include "ngram.h"
 #include "evallm.h"
 #include <string.h>
