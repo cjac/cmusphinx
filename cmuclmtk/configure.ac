@@ -1,10 +1,10 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.61)
+AC_PREREQ(2.58)
 AC_INIT([cmucuslmtk], [1.0], [air+logios@cs.cmu.edu])
-AM_INIT_AUTOMAKE([-Wall -Werror])
 AM_INIT_AUTOMAKE([cmucuslmtk],[1.0])
+AM_INIT_AUTOMAKE([-Wall -Werror])
 AC_CONFIG_SRCDIR([src/liblmest/disc_meth.h])
 AC_CONFIG_HEADER([config.h])
 
