@@ -54,11 +54,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../liblmest/toolkit.h"
-#include "../libs/general.h"
-#include "../libs/pc_general.h"
-#include "../libs/ac_hash.h"
-#include "../libs/ac_lmfunc_impl.h"
+#include "toolkit.h"  
+#include "pc_general.h"
+#include "general.h" 
+#include "ac_hash.h"
+#include "ac_lmfunc_impl.h"
 
 #define DEFAULT_HASH 1000000
 
