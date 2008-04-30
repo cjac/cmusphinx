@@ -1,0 +1,45 @@
+cmucmslmtk v3
+-------------
+
+USE INSTRUCTIONS
+----------------
+If you simply want to use this tool you can download the executables
+located either in bin/x86-nt/ or in bin/x86-linux/. Note that both
+sets have been compiled for 32bit operation, meaning that vocabularies
+sizes of 2^32-1 can be accomodated. In practical terms this means you
+can compile language models with vocabularies of more than 2^16-1
+words.
+
+The Windows version tool has been compiled for native execution.
+
+We *strongly* recommend that you use only the ASCII file
+formats. There is no longer any benefit to the binary format and we do
+not intend to actuvely support it.
+
+
+DEVELOPER INSTRUCTIONS
+----------------------
+The software is organized using the Gnu Autobuild environment, so you
+should be able to compile for other architectures or purposes. For
+example, if you need the old version of the tool, you need to
+recompile. The following should do it:
+
+./configure
+make install
+
+If you are on a Windows machine you will also need to have Cygwin
+installed (with the developer components).
+
+configure supports two tool-specific options:
+
+--enable-32bits	
+>> the default is 16bit compilation
+
+--enable-mingw 
+>> on Windows only, does a native compilation; otherwise you will be 
+   compiling for cygwin only.
+
+
+
+----------------
+[20080429] (air)
