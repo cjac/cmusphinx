@@ -906,10 +906,26 @@ int main(int argc,char** argv)
 	}
 	
 	lmfile1 = salloc(pc_stringarg(&argc, argv,"-lm1",""));
+	if (0 == strcmp(lmfile1, "")) {
+		fprintf(stderr, "ERROR: Please specify a first input file with -lm1.\n");
+		help_message();
+	}
 	lmfile2 = salloc(pc_stringarg(&argc, argv,"-lm2",""));
+	if (0 == strcmp(lmfile2, "")) {
+		fprintf(stderr, "ERROR: Please specify a second input file with -lm2.\n");
+		help_message();
+	}
 	newlmfile = salloc(pc_stringarg(&argc, argv,"-lm",""));
+	if (0 == strcmp(newlmfile, "")) {
+		fprintf(stderr, "ERROR: Please specify a destination file with -lm.\n");
+		help_message();
+	}
 	fb_list_filename = salloc(pc_stringarg(&argc, argv,"-forced_backoff",""));
 	wtfile= salloc(pc_stringarg(&argc, argv,"-weight",""));
+	if (0 == strcmp(wtfile, "")) {
+		fprintf(stderr, "ERROR: Please specify a weights file with -weight.\n");
+		help_message();
+	}
 	ccs_filename= salloc(pc_stringarg(&argc, argv,"-context",""));
 
 	backoff_from_unk_inc = pc_flagarg(&argc,argv,"-backoff_from_unk_inc");
