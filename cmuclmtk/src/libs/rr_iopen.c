@@ -55,7 +55,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "general.h"
-#include "../win32/compat.h"
+#include "compat.h" // in win32
 char  RRi_is_Z[100];
 
 FILE *rr_iopen(char *path)

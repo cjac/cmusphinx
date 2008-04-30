@@ -1,19 +1,39 @@
 /* GENERAL.H  */
-/*=====================================================================
-                =======   COPYRIGHT NOTICE   =======
-Copyright (C) 1994, Carnegie Mellon University and Ronald Rosenfeld.
-All rights reserved.
-
-This software is made available for research purposes only.  It may be
-redistributed freely for this purpose, in full or in part, provided
-that this entire copyright notice is included on any copies of this
-software and applications and derivations thereof.
-
-This software is provided on an "as is" basis, without warranty of any
-kind, either expressed or implied, as to any matter including, but not
-limited to warranty of fitness of purpose, or merchantability, or
-results obtained from use of this software.
-======================================================================*/
+/* ====================================================================
+ * Copyright (c) 1999-2006 Carnegie Mellon University 
+ * and Ronald Rosenfeld.  All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer. 
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
+ *
+ * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
+ * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
+ * NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ====================================================================
+ *
+ */
 
 #ifndef _GENERAL_H_
 #define _GENERAL_H_
@@ -24,7 +44,7 @@ results obtained from use of this software.
 #include <string.h>
 #include <assert.h>
 
-#include "../win32/compat.h"
+#include "compat.h" // in win32/
 
 #define CMU_SLM_VERSION  "CMU-Cambridge SLM Toolkit, Version 3 alpha"
 

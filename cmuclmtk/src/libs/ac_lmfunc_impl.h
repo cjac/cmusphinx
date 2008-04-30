@@ -38,9 +38,9 @@
 #define _AC_LMFUNC_IMPL_H_
 
 #include "ac_hash.h"
-#include "../liblmest/toolkit.h"
-#include "../libs/general.h"
-#include "../libs/pc_general.h"
+#include "toolkit.h"
+#include "general.h"
+#include "pc_general.h"
 
 
 int text2wfreq_impl(FILE* infp, FILE* outfp, int init_nwords, int verbosity);

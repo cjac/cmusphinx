@@ -37,7 +37,7 @@
 #include "ac_lmfunc_impl.h"
 #include "ac_hash.h"
 #include "ac_parsetext.h"
-#include "../liblmest/idngram2lm.h"
+#include "idngram2lm.h"  // in liblmest/
 
 /* Start Implementation of text2wfreq */
 
