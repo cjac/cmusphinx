@@ -40,7 +40,7 @@
 
 #include <string.h>
 #include <stdio.h>
-#include "libs/general.h"
+#include "general.h"   // from libs
 
 void parse_comline(char *input_line,
 		   int *num_of_args,

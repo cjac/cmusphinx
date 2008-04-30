@@ -39,7 +39,7 @@
 
 #include <stdio.h>
 #include <stdarg.h>
-#include "libs/general.h"
+#include "general.h"   // from libs
 #include "ngram.h"
 
 /** 

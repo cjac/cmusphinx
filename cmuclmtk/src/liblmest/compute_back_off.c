@@ -38,11 +38,11 @@
 /* Compute the back off alphas for table n */
 /* ie if called with n=2, then compute the bigram alphas */
 
+#include <stdlib.h>
 #include "ngram.h"
 #include "idngram2lm.h"
 #include "disc_meth.h"
-#include "libs/pc_general.h"
-#include <stdlib.h>
+#include "pc_general.h"   // from libs
 
 void compute_back_off(ng_t *ng,int n, int verbosity) {
 

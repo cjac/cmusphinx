@@ -72,7 +72,7 @@
 
 */
 
-#include "libs/general.h"
+#include "general.h"
 #include "ngram.h"
 
 index__t new_index(ngram_sz_t   full_index,

@@ -58,11 +58,11 @@
  *
  */
 
-#include "../liblmest/ngram.h"
-#include "../liblmest/disc_meth_good_turing.h"
-#include "../liblmest/disc_meth_absolute.h"
-#include "../liblmest/disc_meth_linear.h"
-#include "../liblmest/disc_meth_witten_bell.h"
+#include "ngram.h"
+#include "disc_meth_good_turing.h"
+#include "disc_meth_absolute.h"
+#include "disc_meth_linear.h"
+#include "disc_meth_witten_bell.h"
 /**
    \type disc_meth_t
    An object for discounting method. 

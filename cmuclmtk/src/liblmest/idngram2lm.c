@@ -45,8 +45,8 @@
  *
  */
 
-#include "../libs/pc_general.h"
-#include "../libs/general.h"
+#include "pc_general.h"   // from libs
+#include "general.h"   // from libs
 
 void show_idngram_nlines(int nlines, int verbosity)
 {

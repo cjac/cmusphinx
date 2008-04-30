@@ -77,7 +77,7 @@ note: UNK is hardwired to id=0, here and elsewhere.
 #include <stdio.h>
 #include "ngram.h"
 #include "idngram2lm.h"
-#include "libs/pc_general.h"
+#include "pc_general.h"   // from libs
 
 void compute_unigram(ng_t *ng,int verbosity) {
 

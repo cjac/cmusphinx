@@ -38,9 +38,9 @@
    ARCHAN 20060331: Oh my gosh.
 */
 
-#include "libs/general.h"
+#include "general.h"   // from libs
 #include "ngram.h"
-#include "libs/pc_general.h"
+#include "pc_general.h"   // from libs
 
 void compute_gt_discount(int n,
 			 fof_t *freq_of_freq,

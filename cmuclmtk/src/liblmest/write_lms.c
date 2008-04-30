@@ -39,10 +39,10 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
-#include "libs/pc_general.h"
+#include "pc_general.h"
 #include "idngram2lm.h"
-#include "libs/mips_swap.h"
-#include "libs/general.h"
+#include "mips_swap.h"
+#include "general.h"
 #include "ngram.h"
 #include "disc_meth.h"
 #include "stats.h"

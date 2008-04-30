@@ -40,8 +40,8 @@
 #ifndef _NGRAM_H_
 #define _NGRAM_H_
 
-#include "../libs/sih.h"
-#include "../libs/general.h"
+#include "sih.h"
+#include "general.h"
 
 #include "toolkit.h"
 

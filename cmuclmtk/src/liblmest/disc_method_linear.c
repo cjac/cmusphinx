@@ -52,7 +52,9 @@
  *
  */
 
-void dump_disc_metho_good_turing_info(ng_t* ng)
+#include "ngram.h"
+
+void dump_disc_metho_good_turing_info(ng_t *ng)
 {
 }
 

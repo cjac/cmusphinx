@@ -39,8 +39,8 @@
 #ifndef _EVALLM_PROTS_
 #define _EVALLM_PROTS_
 
-#include "../libs/pc_general.h"
-#include "../libs/general.h"
+#include "pc_general.h"
+#include "general.h"
 #include "ngram.h"
 #include "toolkit.h"
 

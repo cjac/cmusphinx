@@ -42,7 +42,7 @@
 
 
 #include <stdio.h>
-#include "libs/general.h"
+#include "general.h"  // from libs
 #include "ngram.h"
 #include "idngram2lm.h"
 

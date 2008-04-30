@@ -40,10 +40,10 @@
    indicating whether or not there should be forced backing off from
    the vocab item, and returns a pointer to it. */
 
-#include "evallm.h"
 #include <stdio.h>
 #include <string.h>
-#include "libs/ac_parsetext.h"
+#include "ac_parsetext.h"   // from libs
+#include "evallm.h"
 
 fb_info *gen_fb_list(sih_t *vocab_ht,
 		     vocab_sz_t vocab_size,

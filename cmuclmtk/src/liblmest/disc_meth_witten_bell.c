@@ -58,7 +58,7 @@
  *
  */
 
-#include "libs/pc_general.h"
+#include "pc_general.h"   // from libs
 #include "disc_meth_witten_bell.h"
 #include "idngram2lm.h"
 

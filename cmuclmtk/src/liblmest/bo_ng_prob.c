@@ -38,14 +38,14 @@
 /* Return the probability of the (context_length+1)-gram stored in
    sought_ngram */
 
-#include "libs/pc_general.h"
-#include "libs/general.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+#include "pc_general.h"  // from libs
+#include "general.h"    // from libs
 #include "ngram.h"
 #include "idngram2lm.h"
 #include "disc_meth.h"
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
 
 void warn_prob_error(id__t *sought_ngram, unsigned short context_length, double prob)
 {

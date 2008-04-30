@@ -43,8 +43,8 @@ STD_MEM. This is far from optimal, but is at least robust. */
 #include <stdio.h>
 #include "toolkit.h"
 #include "ngram.h"
-#include "libs/general.h"
-#include "libs/pc_general.h"
+#include "general.h"   // from libs
+#include "pc_general.h"   // from libs
 
 void guess_mem(int total_mem,
 	       int middle_size,   /* Size of 2,3,(n-1)-gram records */
