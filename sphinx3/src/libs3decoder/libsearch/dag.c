@@ -367,7 +367,11 @@ dag_param_read(FILE * fp, char *param, int32 * lineno)
 
 
 /*
- * Recursive step in dag_search:  best backward path from src to root beginning with l.
+ * Recursive step in dag_search: best backward path from src to root
+ * beginning with l.
+ *
+ * FIXME: Why is this implemented recursively like this?
+ *
  * Return value: 0 if successful, -1 otherwise.
  */
 int32
@@ -415,38 +419,35 @@ dag_bestpath(dag_t * dagp,      /* A pointer of the dag */
            d->wid,
            dict2lmwid[dict_basewid(dict,src->wid)],
            src->wid); */
+        score = pl->pscr + l->ascr;
+        if (score > l->pscr) {      /* rkm: Added 20-Nov-1996 */
+            /* FIXME: This scales the wip implicitly */
+            if (pd)
+                lscr = lwf * lm_tg_score(lm,
+                                         dict2lmwid[dict_basewid
+                                                    (dict, pd->wid)],
+                                         dict2lmwid[dict_basewid
+                                                    (dict, d->wid)],
+                                         dict2lmwid[dict_basewid
+                                                    (dict, src->wid)],
+                                         dict_basewid(dict, src->wid));
+            else
+                lscr = lwf * lm_bg_score(lm,
+                                         dict2lmwid[dict_basewid
+                                                    (dict, d->wid)],
+                                         dict2lmwid[dict_basewid
+                                                    (dict, src->wid)],
+                                         dict_basewid(dict, src->wid));
+            score += lscr;
 
-        if (pl->pscr > (int32) 0x80000000) {
-            score = pl->pscr + l->ascr;
-            if (score > l->pscr) {      /* rkm: Added 20-Nov-1996 */
-                /* FIXME: This scales the wip implicitly */
-                if (pd)
-                    lscr = lwf * lm_tg_score(lm,
-                                             dict2lmwid[dict_basewid
-                                                        (dict, pd->wid)],
-                                             dict2lmwid[dict_basewid
-                                                        (dict, d->wid)],
-                                             dict2lmwid[dict_basewid
-                                                        (dict, src->wid)],
-                                             dict_basewid(dict, src->wid));
-                else
-                    lscr = lwf * lm_bg_score(lm,
-                                             dict2lmwid[dict_basewid
-                                                        (dict, d->wid)],
-                                             dict2lmwid[dict_basewid
-                                                        (dict, src->wid)],
-                                             dict_basewid(dict, src->wid));
-                score += lscr;
+            if (dagp->lmop++ >= dagp->maxlmop)
+                return -1;
 
-                if (dagp->lmop++ >= dagp->maxlmop)
-                    return -1;
-
-                /* Update best path and score beginning with l */
-                if (score > l->pscr) {
-                    l->lscr = lscr;
-                    l->pscr = score;
-                    l->history = pl;
-                }
+            /* Update best path and score beginning with l */
+            if (score > l->pscr) {
+                l->lscr = lscr;
+                l->pscr = score;
+                l->history = pl;
             }
         }
     }
