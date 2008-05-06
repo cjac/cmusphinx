@@ -214,6 +214,7 @@ utt_decode(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
         if (kb->mfcc) {
             ckd_free_2d((void **)kb->mfcc);
         }
+        fe_start_utt(kb->fe);
         if (fe_process_utt(kb->fe, adcdata, nsamps, &kb->mfcc, &total_frame) < 0) {
             E_FATAL("MFCC calculation failed\n", ur->uttfile);
         }
