@@ -28,7 +28,7 @@ private:
   int N;
   
 public:
-  friend struct row {
+  struct row {
     int i;
     Chart& c;
     row(int x, Chart& y): i(x), c(y) {}
@@ -122,7 +122,7 @@ public:
   void writeVocab(ostream& out) const;
   vector<bool> reachable() const; 
   void reachable(int from, vector<bool>& already) const;
-  setence generateSample() const;
+  sentence generateSample() const;
   corpus generateSamples(unsigned int n) const;
   
 protected:

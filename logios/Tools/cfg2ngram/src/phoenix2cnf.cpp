@@ -1,7 +1,7 @@
 
 #include <iostream>
 
-#include "PCFG.hpp"
+#include "PCFG.h"
 
 int main(int argc, char* argv[]) {
   if(argc < 1) {

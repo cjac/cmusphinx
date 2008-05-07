@@ -1,7 +1,7 @@
 
 //#include <limits>
 //numeric_limits is not defined in my implementation
-#include <strstream>
+#include <sstream>
 #include <stack>
 #include <list>
 #include <cmath>
