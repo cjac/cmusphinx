@@ -1,6 +1,7 @@
 
 //#include <limits>
 //numeric_limits is not defined in my implementation
+#include <cassert>
 #include <sstream>
 #include <stack>
 #include <list>
