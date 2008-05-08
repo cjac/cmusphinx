@@ -152,12 +152,13 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
+PCRE_DIR = ../pcre
 phoenix2cnf_SOURCES = phoenix2cnf.cpp PCFG.cpp
-phoenix2cnf_CPPFLAGS = -I../include
-phoenix2cnf_LDADD = -L../pcre/lib -lpcre
+phoenix2cnf_CPPFLAGS = -I$(PCRE_DIR)/include
+phoenix2cnf_LDADD = -L$(PCRE_DIR)/lib -lpcre
 cnf2corpus_SOURCES = cnf2corpus.cpp PCFG.cpp
-cnf2corpus_CPPFLAGS = -O3 -I../include
-cnf2corpus_LDADD = -L../pcre/lib -lpcre
+cnf2corpus_CPPFLAGS = -O3 -I$(PCRE_DIR)/include
+cnf2corpus_LDADD = -L$(PCRE_DIR)/lib -lpcre
 all: all-am
 
 .SUFFIXES:
