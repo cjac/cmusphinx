@@ -8,5 +8,5 @@ int main(int argc, char* argv[]) {
   cerr << "reading cnf grammar..." << endl;
   PCFG aPCFG;
   cin >> aPCFG;
-  cout << aPCFG.generateCorpus(10);
+  cout << aPCFG.generateSamples(10);
 }

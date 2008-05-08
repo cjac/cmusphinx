@@ -9,11 +9,9 @@
 #include <locale>
 #include <algorithm>
 
-extern "C" {
 #include <pcre.h>
-}
 
-#include "PCFG.hpp"
+#include "PCFG.h"
 
 PCFG::PCFG() {}
 
@@ -112,16 +110,16 @@ PCFG PCFG::readPhoenixGrammar(istream& pGrammar, const string& headname) {
 	if(leaf.at(0) == '*') {
 	  //this leaf is optional, generate an anonymous production
 	  leaf.erase(0,1);
-	  ostrstream anonName;
-	  anonName << "Anon" << anoncount++ << ends;
+	  ostringstream anonName;
+	  anonName << "Anon" << anoncount++;
 	  tempLHS = new LHS(anonName.str());
 	  tempLHS->rule.push_back(RHS()); //epsilon production
 	  tempRHS = new RHS(); //realization production
 	} else if(leaf.at(0) == '+') {
 	  //this leaf is repeated one or more times
 	  leaf.erase(0,1);
-	  ostrstream anonName;
-	  anonName << "Anon" << anoncount++ << ends;
+	  ostringstream anonName;
+	  anonName << "Anon" << anoncount++;
 	  tempLHS = new LHS(anonName.str());
 	  RHS doubling; //doubling production
 	  RHSe doublinge(anonName.str(), false);
@@ -197,8 +195,8 @@ PCFG PCFG::readPhoenixGrammar(istream& pGrammar, const string& headname) {
 	  int index;
 	  map<string, int>::const_iterator l = aGCFG.ntmap.find(k->word);
 	  if(l == aGCFG.ntmap.end()) {
-	    ostrstream o;
-	    o << "Can't find " << k->word << ends;
+	    ostringstream o;
+	    o << "Can't find " << k->word;
 	    cerr << o.str() << endl;
 	    throw o.str();
 	  } else {
@@ -256,8 +254,8 @@ PCFG PCFG::CNF(const PCFG& g) {
 	    k++) {
 	  if(k->terminal) {
 	    mod=true;
-	    ostrstream newrule;
-	    newrule << "R" << ret.grammar.size() << ends;
+	    ostringstream newrule;
+	    newrule << "R" << ret.grammar.size();
 	    LHS newlhs(newrule.str());
 	    RHS newrhs;
 	    RHSe newrhse(k->word);
@@ -299,8 +297,8 @@ PCFG PCFG::CNF(const PCFG& g) {
 	    break;
 	  }
 	  int i = ret.grammar.size();
-	  ostrstream newlname;
-	  newlname << "R" << i << ends;
+	  ostringstream newlname;
+	  newlname << "R" << i;
 	  j->element.push_back(RHSe(i, newlname.str(), false));
 	  //now we just need to add the new nt and process it's rhs
 	 
@@ -431,8 +429,8 @@ PCFG::RHSe PCFG::shorten(const vector<RHSe>& r, int index) {
 
   //add new lhs
   int i = grammar.size();
-  ostrstream newlname;
-  newlname << "R" << i << ends;
+  ostringstream newlname;
+  newlname << "R" << i;
   addNonTerm(LHS(newlname.str()));
   RHS newrhs;
   newrhs.element.push_back(r[index]);
@@ -928,32 +926,32 @@ void PCFG::writeVocab(ostream& out) const {
 }
 
 string PCFG::printrule(int x, vector<RHS>::const_iterator y) const {
-  ostrstream ret;
+  ostringstream ret;
   ret << grammar[x].name << ' ';
   for(vector<PCFG::RHSe>::const_iterator i = y->element.begin(); 
       i != y->element.end(); 
       i++) {
     ret << (i->terminal?"t ":"nt ") << i->word << ' ';
   }
-  ret << "p " << y->probability << ends;
+  ret << "p " << y->probability;
   return ret.str();
 }
   
 string PCFG::printrule(vector<LHS>::const_iterator x, 
 		       vector<RHS>::const_iterator y) {
-  ostrstream ret;
+  ostringstream ret;
   ret << x->name << ' ';
   for(vector<PCFG::RHSe>::const_iterator i = y->element.begin(); 
       i != y->element.end(); 
       i++) {
     ret << (i->terminal?"t ":"nt ") << i->word << ' ';
   }
-  ret << "p " << y->probability << ends;
+  ret << "p " << y->probability;
   return ret.str();
 }
   
 string PCFG::printrule(int x, int y) const {
-  ostrstream ret;
+  ostringstream ret;
   ret << grammar[x].name << ' ';
   for(vector<PCFG::RHSe>::const_iterator i = 
 	grammar[x].rule[y].element.begin(); 
@@ -961,7 +959,7 @@ string PCFG::printrule(int x, int y) const {
       i++) {
     ret << (i->terminal?"t ":"nt ") << i->word << ' ';
   }
-  ret << "p " << grammar[x].rule[y].probability << ends;
+  ret << "p " << grammar[x].rule[y].probability;
   return ret.str();
 }
   
@@ -973,7 +971,7 @@ istream& operator>>(istream& in, PCFG& x) {
   in.getline(line,255);
   while(in.getline(line,255)) {
     string word;
-    istrstream iline(line,strlen(line));
+    istringstream iline(line);
     string name;
     iline >> word;
     int index;
@@ -1007,8 +1005,8 @@ istream& operator>>(istream& in, PCFG& x) {
 	if(!k->terminal) {
 	  map<string, int>::const_iterator l = x.ntmap.find(k->word);
 	  if(l == x.ntmap.end()) {
-	    ostrstream o;
-	    o << "Couldn't find " << k->word << " of " << i->name << ends;
+	    ostringstream o;
+	    o << "Couldn't find " << k->word << " of " << i->name;
 	    throw o.str();
 	  } else k->index = l->second;
 	}
@@ -1083,22 +1081,22 @@ sentence PCFG::generateSample() const {
   list<RHSe> u;
   u.push_front(RHSe(head, grammar[head].name));
 
-  for(RHSe::iterator i = u.begin(); i != u.end();) {
+  for(list<RHSe>::iterator i = u.begin(); i != u.end();) {
     if(i->terminal) {
       s.push_back(i->word);
       i++;
     } else {
       //find lhs rule
-      LSH lhs = grammar[i->index];
+      LHS lhs = grammar[i->index];
 
       //pick a rhs
       double p = ((double)rand() / ((double)(RAND_MAX)+1.0L) );
       vector<RHS>::iterator j;
       double r = 0;
-      for(j = lhs.rule.begin(); j != lhs.end(); j++) {
+      for(j = lhs.rule.begin(); j != lhs.rule.end(); j++) {
 	if((r += j->probability) > p) break;
       }
-      assert(j != lhs.end());
+      assert(j != lhs.rule.end());
       vector<RHSe> e = j->element;
 
       //insert it in place
@@ -1110,3 +1108,10 @@ sentence PCFG::generateSample() const {
   return s;
 }
   
+corpus PCFG::generateSamples(unsigned int n) const {
+  corpus c;
+  for(int i=0; i<n; i++) {
+    c.push_back(generateSample());
+  }
+  return c;
+}
