@@ -1049,6 +1049,8 @@ lm_read_clm(char const *filename,
     /* bo_wt(</s>) = MIN_PROB_F */
     for (i = 0; (i < model->ucount) && (strcmp(word_str[i], end_sym) != 0);
          i++);
+    if (i == model->ucount)
+        E_FATAL("End symbol </s> not found in language model!");
     E_INFO("bo_wt(%s) changed from %.4f to %.4f\n", word_str[i],
            model->unigrams[i].bo_wt1.f, MIN_PROB_F);
     model->unigrams[i].bo_wt1.f = MIN_PROB_F;
@@ -1057,6 +1059,8 @@ lm_read_clm(char const *filename,
     for (i = 0;
          (i < model->ucount) && (strcmp(word_str[i], start_sym) != 0);
          i++);
+    if (i == model->ucount)
+        E_FATAL("Start symbol <s> not found in language model!");
     E_INFO("prob(%s) changed from %.4f to %.4f\n", word_str[i],
            model->unigrams[i].prob1.f, MIN_PROB_F);
     model->unigrams[i].prob1.f = MIN_PROB_F;
