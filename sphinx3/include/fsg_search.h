@@ -226,7 +226,7 @@ word_fsg_t *fsg_search_fsgname_to_fsg (fsg_search_t *, char *name);
  * The name of the new FSG must not match any of the existing ones.  If so,
  * FALSE is returned.  If successfully added, TRUE is returned.
  */
-boolean fsg_search_add_fsg (fsg_search_t *, word_fsg_t *);
+int fsg_search_add_fsg (fsg_search_t *, word_fsg_t *);
 
 
 /*
@@ -234,11 +234,11 @@ boolean fsg_search_add_fsg (fsg_search_t *, word_fsg_t *);
  * and if it was the currently active FSG, also free the associated search
  * structures and leave the current FSG undefined.
  */
-boolean fsg_search_del_fsg (fsg_search_t *, word_fsg_t *);
+int fsg_search_del_fsg (fsg_search_t *, word_fsg_t *);
 
 
 /* Like fsg_search_del_fsg(), but identifies the FSG by its name */
-boolean fsg_search_del_fsg_byname (fsg_search_t *, char *name);
+int fsg_search_del_fsg_byname (fsg_search_t *, char *name);
 
 
 /*
@@ -246,7 +246,7 @@ boolean fsg_search_del_fsg_byname (fsg_search_t *, char *name);
  * when search is busy (ie, in the midst of an utterance.  That's an error
  * and FALSE is returned.  If successful, returns TRUE.
  */
-boolean fsg_search_set_current_fsg (fsg_search_t *, char *);
+int fsg_search_set_current_fsg (fsg_search_t *, char *);
 
 
 /*
@@ -285,7 +285,7 @@ void fsg_search_frame_fwd (fsg_search_t *);
  * used for partial results).
  */
 void fsg_search_history_backtrace (fsg_search_t *search,
-				   boolean check_fsg_final_state);
+				   int check_fsg_final_state);
 
 /*
  * Return the start (or final) state of the currently active FSG, if any.

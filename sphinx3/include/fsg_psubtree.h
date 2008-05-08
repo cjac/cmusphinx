@@ -206,7 +206,7 @@ typedef struct fsg_pnode_s {
   
     uint8 ci_ext;		/* This node's CIphone as viewed externally (context) */
     uint8 ppos;		/* Phoneme position in pronunciation */
-    boolean leaf;		/* Whether this is a leaf node */
+    uint8 leaf;		/* Whether this is a leaf node */
   
     /* HMM-state-level stuff here */
     hmm_t hmm;
@@ -277,10 +277,10 @@ void fsg_psubtree_dump (fsg_pnode_t *alloc_head, FILE *fp,
  * FALSE if it was already activated for that frame (whether the incoming
  * transition was successful or not).
  */
-boolean fsg_psubtree_pnode_enter (fsg_pnode_t *pnode,
-				  int32 score,
-				  int32 frame,
-				  int32 bpidx);
+int fsg_psubtree_pnode_enter (fsg_pnode_t *pnode,
+                              int32 score,
+                              int32 frame,
+                              int32 bpidx);
 
 
 /*

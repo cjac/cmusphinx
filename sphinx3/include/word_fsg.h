@@ -186,9 +186,9 @@ typedef struct word_fsg_s {
     int32 n_state;	/* #states in FSG */
     int32 start_state;	/* Must be in the range [0..n_state-1] */
     int32 final_state;	/* Must be in the range [0..n_state-1] */
-    boolean use_altpron;	/* Whether transitions for alternative pronunciations
+    uint8 use_altpron;	/* Whether transitions for alternative pronunciations
 				   have been added to the FSG */
-    boolean use_filler;	/* Whether silence and noise filler-word transitions
+    uint8 use_filler;	/* Whether silence and noise filler-word transitions
                            have been added at each state */
     float32 lw;		/* Language weight that's been applied to transition
                            logprobs */
@@ -291,7 +291,7 @@ typedef struct word_fsg_s {
  * read, NULL otherwise.
  */
 word_fsg_t *word_fsg_readfile (const char *file,
-			       boolean use_altpron, boolean use_filler,
+			       int use_altpron, int use_filler,
                                kbcore_t *kbc);
 
 
@@ -299,7 +299,7 @@ word_fsg_t *word_fsg_readfile (const char *file,
  * Like word_fsg_readfile(), but from an already open stream.
  */
 word_fsg_t *word_fsg_read (FILE *fp,
-			   boolean use_altpron, boolean use_filler,
+			   int use_altpron, int use_filler,
                            kbcore_t *kbc);
 
 
@@ -307,7 +307,7 @@ word_fsg_t *word_fsg_read (FILE *fp,
  * Like word_fsg_read(), but from an in-memory structure.
  */
 word_fsg_t *word_fsg_load (s2_fsg_t *s2_fsg,
-			   boolean use_altpron, boolean use_filler,
+			   int use_altpron, int use_filler,
                            kbcore_t *kbc);
 
 

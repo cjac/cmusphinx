@@ -288,7 +288,7 @@ fsg_search_fsgname_to_fsg(fsg_search_t * search, char *name)
 }
 
 
-boolean
+int
 fsg_search_add_fsg(fsg_search_t * search, word_fsg_t * fsg)
 {
     word_fsg_t *oldfsg;
@@ -311,7 +311,7 @@ fsg_search_add_fsg(fsg_search_t * search, word_fsg_t * fsg)
 }
 
 
-boolean
+int
 fsg_search_del_fsg(fsg_search_t * search, word_fsg_t * fsg)
 {
     gnode_t *gn, *prev, *next;
@@ -360,7 +360,7 @@ fsg_search_del_fsg(fsg_search_t * search, word_fsg_t * fsg)
 }
 
 
-boolean
+int
 fsg_search_del_fsg_byname(fsg_search_t * search, char *name)
 {
     word_fsg_t *fsg;
@@ -375,7 +375,7 @@ fsg_search_del_fsg_byname(fsg_search_t * search, char *name)
 }
 
 
-boolean
+int
 fsg_search_set_current_fsg(fsg_search_t * search, char *name)
 {
     word_fsg_t *fsg;
@@ -906,7 +906,7 @@ fsg_search_hyp_dump(fsg_search_t * search, FILE * fp)
 
 void
 fsg_search_history_backtrace(fsg_search_t * search,
-                             boolean check_fsg_final_state)
+                             int check_fsg_final_state)
 {
     word_fsg_t *fsg;
     fsg_hist_entry_t *hist_entry;

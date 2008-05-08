@@ -287,7 +287,7 @@ static glist_t
 word_fsg_null_trans_closure(word_fsg_t * fsg, glist_t nulls)
 {
     gnode_t *gn1, *gn2;
-    boolean updated;
+    int updated;
     word_fsglink_t *tl1, *tl2;
     int32 k, n;
 
@@ -519,7 +519,7 @@ word_fsg_lc_rc(word_fsg_t * fsg)
 
 word_fsg_t *
 word_fsg_load(s2_fsg_t * fsg,
-              boolean use_altpron, boolean use_filler,
+              int use_altpron, int use_filler,
 	      kbcore_t *kbc)
 {
     float32 silprob = kbc->fillpen->silprob;
@@ -723,7 +723,7 @@ nextline_str2words(FILE * fp, int32 * lineno,
 
 word_fsg_t *
 word_fsg_read(FILE * fp,
-              boolean use_altpron, boolean use_filler,
+              int use_altpron, int use_filler,
 	      kbcore_t *kbc)
 {
     s2_fsg_t *fsg;              /* "External" FSG structure */
@@ -879,7 +879,7 @@ word_fsg_read(FILE * fp,
 
 word_fsg_t *
 word_fsg_readfile(const char *file,
-                  boolean use_altpron, boolean use_filler,
+                  int use_altpron, int use_filler,
 		  kbcore_t *kbc)
 {
     FILE *fp;

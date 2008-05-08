@@ -610,11 +610,11 @@ fsg_psubtree_dump(fsg_pnode_t * head, FILE * fp, dict_t * dict,
 }
 
 
-boolean
+int
 fsg_psubtree_pnode_enter(fsg_pnode_t * pnode,
                          int32 score, int32 frame, int32 bpidx)
 {
-    boolean activate;
+    int activate;
 
     assert(hmm_frame(&pnode->hmm) <= frame);
 
