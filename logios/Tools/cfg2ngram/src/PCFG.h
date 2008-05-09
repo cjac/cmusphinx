@@ -80,7 +80,6 @@ public:
     double count;
     vector<RHS> rule;
     LHS(const string& x): name(x) {}
-    LHS(const PCFG& x);
     bool operator==(const LHS& x) const {return x.rule == rule;}
   };
   
@@ -97,8 +96,8 @@ public:
   PCFG();
 
   /*** Factories/Adapters **********************************/
-  static PCFG readFormsFile(istream& pGrammar, istream& pForms);
-  static PCFG readPhoenixGrammar(istream& pGgrammar, const string& headname);
+  static PCFG readPhoenixGrammar(istream& pGgrammar, const string headname=string());
+  static PCFG readPhoenixGrammarAndForms(istream& pGrammar, istream& pForms);
   static PCFG CNF(const PCFG& g);
   static PCFG removeEpsilons(const PCFG& g);
   static PCFG removeUnitProductions(const PCFG& g);
@@ -106,8 +105,8 @@ public:
 
   /*** Mutators ********************************************/
   int addNonTerm(const LHS& x);
-  int addNonTerm(const PCFG& x);
   int addTerm(const string& x);
+  int merge(const PCFG& x);
   int train(const corpus& traingData, double threshhold = defaultTH);
   void smooth(double amount);
 

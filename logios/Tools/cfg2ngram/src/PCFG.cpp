@@ -22,7 +22,17 @@ int PCFG::addNonTerm(const PCFG::LHS& x) {
   return index; //index to item
 }
 
-int PCFG::addNonTerm(const PCFG& x) {
+int PCFG::addTerm(const string& x) {
+  map<string, int>::iterator i = tmap.find(x);
+  if(i == tmap.end()) {
+    int index = tmap[x] = terminal.size();
+    terminal.push_back(x);
+    return index; //index to new item
+  }
+  return i->second; //index to existing item
+}
+
+int PCFG::merge(const PCFG& x) {
   //merge grammars
   int oldSize = grammar.size();
   vector<int> newIndex;
@@ -46,16 +56,6 @@ int PCFG::addNonTerm(const PCFG& x) {
   return newIndex[x.head];
 }
 
-int PCFG::addTerm(const string& x) {
-  map<string, int>::iterator i = tmap.find(x);
-  if(i == tmap.end()) {
-    int index = tmap[x] = terminal.size();
-    terminal.push_back(x);
-    return index; //index to new item
-  }
-  return i->second; //index to existing item
-}
-
 void PCFG::redoTMap() {
   cerr << "was " << tmap.size() << ' ' << terminal.size() << ' ';
   tmap.clear();
@@ -69,15 +69,7 @@ void PCFG::redoTMap() {
   cerr << "now " << tmap.size() << ' ' << terminal.size() << ' ';
 }
 
-PCFG PCFG::readFormsFile(istream& pGrammar, istream& forms) {
-  //idea is that every form in the forms file is a separate grammar
-  //collect them all and then combine them
-
-  PCFG aPCFG;
-  return aPCFG;
-}
-
-PCFG PCFG::readPhoenixGrammar(istream& pGrammar, const string& headname) {
+PCFG PCFG::readPhoenixGrammar(istream& pGrammar, const string headname) {
   char line[255];
   PCFG aGCFG;
   pcre *net, *leaf, *macro;
@@ -237,6 +229,54 @@ PCFG PCFG::readPhoenixGrammar(istream& pGrammar, const string& headname) {
 	  }
 	}
   return aGCFG;
+}
+
+PCFG PCFG::readPhoenixGrammarAndForms(istream& pGrammar, istream& forms) {
+  //first go ahead and get the phoenix grammar
+  PCFG aPCFG(readPhoenixGrammar(pGrammar));
+
+  //construct an implied head
+  aPCFG.head = aPCFG.addNonTerm(LHS("FORMS_IMPLIED_HEAD"));
+
+  //now we need to read the forms file and put it on top
+  const char* error = new char[255];
+  int erroroffset;
+  int ovector[90];
+  pcre *net = pcre_compile("^\\[([A-Za-z0-9_='/-]*)\\]", 
+			   0, 
+			   &error, 
+			   &erroroffset,
+			   NULL);
+  if(net == NULL) {
+    cerr << "net compilation failed at "
+	 << erroroffset << ": " << error << endl;
+    exit(1);
+  }
+  pcre *function = pcre_compile("^FUNCTION:\\s*([A-Za-z0-9_='/-]+)(\\s*%%(0\\.\\d*)%%)?",
+				0,
+				&error,
+				&erroroffset,
+				NULL);
+  if(net == NULL) {
+    cerr << "function compilation failed at "
+	 << erroroffset << ": " << error << endl;
+    exit(1);
+  }
+
+  int currentFunction = -1;
+  LHS *currentNet = NULL;
+  char line[255];
+  while(forms.getline(line, 255)) {
+    if(pcre_exec(function, NULL, line, strlen(line), 0, 0, ovector, 90) >=0) {
+      string functionName(line+ovector[2], ovector[3] - ovector[2]);
+      currentFunction = aPCFG.addNonTerm(LHS(functionName));
+      RHS functionRule;
+      functionRule.element.push_back(RHSe(currentFunction, functionName));
+      aPCFG.grammar[aPCFG.head].rule.push_back(functionRule);
+    }
+  }
+
+  return aPCFG;
 }
 
 void PCFG::writePhoenixGrammar(ostream& pGrammar) const {
