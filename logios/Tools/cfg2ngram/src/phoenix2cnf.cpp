@@ -1,11 +1,12 @@
 
+#include <unistd.h>
 #include <iostream>
 
 #include "PCFG.h"
 
 int main(int argc, char* argv[]) {
-  if(argc < 1) {
-    cerr << "need root node" << endl;
+  if(argc+1 < 1) {
+    cerr << "need a forms file" << endl;
     exit(1);
   }
 

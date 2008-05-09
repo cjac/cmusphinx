@@ -22,6 +22,30 @@ int PCFG::addNonTerm(const PCFG::LHS& x) {
   return index; //index to item
 }
 
+int PCFG::addNonTerm(const PCFG& x) {
+  //merge grammars
+  int oldSize = grammar.size();
+  vector<int> newIndex;
+  for(vector<LHS>::const_iterator i = x.grammar.begin(); i != x.grammar.end(); i++) {
+    map<string, int>::const_iterator j = ntmap.find(i->name);
+    if(j == ntmap.end()) { //this is new to me
+      newIndex.push_back(grammar.size());
+      grammar.push_back(*i);
+    } else {
+      newIndex.push_back(j->second);
+    }
+  }
+
+  //reindex
+  for(int i = 0; i < newIndex.size(); i++)
+    for(vector<RHS>::iterator j = grammar[oldSize+i].rule.begin(); j != grammar[oldSize+i].rule.end(); j++)
+      for(vector<RHSe>::iterator k = j->element.begin(); k != j->element.end(); k++)
+	if(!k->terminal) k->index = newIndex[k->index];
+  rebuild_indexes();
+
+  return newIndex[x.head];
+}
+
 int PCFG::addTerm(const string& x) {
   map<string, int>::iterator i = tmap.find(x);
   if(i == tmap.end()) {
@@ -43,6 +67,14 @@ void PCFG::redoTMap() {
 	  k++)
 	if(k->terminal) k->index = addTerm(k->word);
   cerr << "now " << tmap.size() << ' ' << terminal.size() << ' ';
+}
+
+PCFG PCFG::readFormsFile(istream& pGrammar, istream& forms) {
+  //idea is that every form in the forms file is a separate grammar
+  //collect them all and then combine them
+
+  PCFG aPCFG;
+  return aPCFG;
 }
 
 PCFG PCFG::readPhoenixGrammar(istream& pGrammar, const string& headname) {

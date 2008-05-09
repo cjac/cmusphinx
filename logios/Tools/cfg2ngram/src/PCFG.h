@@ -64,12 +64,6 @@ public:
       : terminal(t), word(y), index(x) {}
     bool operator==(const RHSe& x) const {
       return terminal == x.terminal && index == x.index;
-      /*
-      if(terminal)
-	return x.terminal && (x.word == word);
-      else
-	return !x.terminal && (x.index == index);
-      */
     }
   };
   
@@ -86,6 +80,7 @@ public:
     double count;
     vector<RHS> rule;
     LHS(const string& x): name(x) {}
+    LHS(const PCFG& x);
     bool operator==(const LHS& x) const {return x.rule == rule;}
   };
   
@@ -102,6 +97,7 @@ public:
   PCFG();
 
   /*** Factories/Adapters **********************************/
+  static PCFG readFormsFile(istream& pGrammar, istream& pForms);
   static PCFG readPhoenixGrammar(istream& pGgrammar, const string& headname);
   static PCFG CNF(const PCFG& g);
   static PCFG removeEpsilons(const PCFG& g);
@@ -110,6 +106,7 @@ public:
 
   /*** Mutators ********************************************/
   int addNonTerm(const LHS& x);
+  int addNonTerm(const PCFG& x);
   int addTerm(const string& x);
   int train(const corpus& traingData, double threshhold = defaultTH);
   void smooth(double amount);
