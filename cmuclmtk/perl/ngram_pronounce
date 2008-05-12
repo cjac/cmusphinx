@@ -58,6 +58,8 @@ GetOptions(\%opts,
 	   'phoneset=s',
 	   'bindir=s',
 	   'allwords',
+	   'upper',
+	   'lower',
 	   'help|h')
     or pod2usage(-verbose => 1, -exitval => 1);
 pod2usage(-verbose => 1) if $opts{help};
@@ -116,6 +118,7 @@ if ($opts{indef}) {
 }
 
 # Get input dictionary
+# FIXME: We assume here that it is case insensitive
 my %indict;
 if (defined($opts{indict})) {
     my $fh = IO::File->new($opts{indict}, "r")
@@ -124,16 +127,24 @@ if (defined($opts{indict})) {
 	chomp;
 	my ($word, @phones) = split;
 	if ($word =~ s/\((\d+)\)$//) {
-	    unless (ref $indict{$word}) {
-		$indict{$word} = [ $indict{$word} ];
+	    unless (ref $indict{uc$word}) {
+		$indict{uc$word} = [ $indict{uc$word} ];
 	    }
-	    $indict{$word}[$1-1] = "@phones";
+	    $indict{uc$word}[$1-1] = "@phones";
 	}
 	else {
-	    $indict{$word} = "@phones";
+	    $indict{uc$word} = "@phones";
 	}
 	# Add this to the 1-grams if --allwords
-	$unigram{$word} = undef if $opts{allwords};
+	if ($opts{allwords}) {
+	    if ($opts{upper}) {
+		$word = uc $word;
+	    }
+	    elsif ($opts{lower}) {
+		$word = lc $word;
+	    }
+	    $unigram{$word} = undef;
+	}
     }
 }
 
@@ -168,17 +179,17 @@ foreach (sort keys %unigram) {
     s/^[[:punct:]]+//; # Remove leading punctuation
 
     # Try to find this in the input dictionary
-    if (exists $indict{$_}) {
-	$unigram{$orig} = $indict{$_};
+    if (exists $indict{uc$_}) {
+	$unigram{$orig} = $indict{uc$_};
 	next;
     }
 
     # Deal with acronyms
-    if (/^((?:[A-Z](?:_|$)){2,})(.*)$/) {
+    if (/^((?:[A-Za-z](?:_|$)){2,})(.*)$/) {
 	my $expand = $1;
 	my $rest = $2;
 	$expand =~ s/_/. /g;
-	$expand =~ s/([A-Z])$/$1./g;
+	$expand =~ s/([A-Za-z])$/$1./g;
 	$_ = $expand . lc$rest;
     }
     else {
@@ -377,6 +388,16 @@ pronunciation.  This may be required if you use --lexicon.
 
 Include all words from the input dictionary (specified with
 B<--indict>) in the output.
+
+=item B<--upper>
+
+Force words from the input dictionary (specified with
+B<--indict>) to be upper-case in the output.
+
+=item B<--lower>
+
+Force words from the input dictionary (specified with
+B<--indict>) to be lower-case in the output.
 
 =back
 
