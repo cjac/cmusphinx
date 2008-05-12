@@ -86,6 +86,11 @@ sub normalize_utt {
     # FIXME: We should standardize uttids in a way which makes sclite happy
     my $uttid = "$self->{utt_file}_${start}-${end}";
 
+    # This appears somewhere
+    if ($text =~ /#+\s+stopped checking\s+#+/) {
+	return;
+    }
+
     # Separate fillers from words
     my $fillermap = $self->{FillerMap};
     if (keys %$fillermap) {
@@ -98,6 +103,12 @@ sub normalize_utt {
 	$text =~ s,(#[^# ]+#), $1 ,g;
 	$text =~ s,(/[^/ ]+/), $1 ,g;
     }
+
+    # Fix broken fillers
+    $text =~ s{/((?:[^/\s]+\s+)+)([^/\s]+)/}
+	{ my ($f, $l) = ($1, $2);
+	  $f =~ s:\s+:/ /:g;
+	  "/$f$l/" }ge;
 
     # Delete #marked# sections #marked# unless otherwise requested
     my $opts = $self->{opts};
@@ -144,7 +155,10 @@ sub normalize_utt {
 	$text =~ s/\[\s*([^(]+?)\s*\(([^)]+)\)\s*\]/$2/g;
     }
 
-    # Normalize compound words
+    # Sometimes there are [words] left
+    $text =~ tr/[]//d;
+
+    # Normalize compound words (from FOO.BAR to FOO_BAR)
     $text =~ s/~([A-Za-z]+)/ join '_', split '', $1 /ge;
     $text =~ s/([A-Za-z])\.(?=[A-Za-z])/$1_/g;
     $text =~ s/_\b//g;
