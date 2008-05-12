@@ -545,6 +545,14 @@ ngram_zero(ngram_model_t *model)
 }
 
 int32
+ngram_model_get_size(ngram_model_t *model)
+{
+  if (model != NULL)
+    return model->n;
+  return 0;
+}
+
+int32
 ngram_wid(ngram_model_t *model, const char *word)
 {
     int32 val;
@@ -922,7 +930,7 @@ read_classdef_file(hash_table_t *classes, const char *file_name)
                 float32 fprob;
 
                 if (n_words == 2)
-                    fprob = (float32)atof(wptr[1]);
+                    fprob = (float32)atof_c(wptr[1]);
                 else
                     fprob = 1.0f;
                 /* Add it to the list of words for this class. */
