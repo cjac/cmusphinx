@@ -76,8 +76,6 @@ sub process_transcript {
 	    s/_\d+$//;
 	    # Remove "neologism" marker
 	    tr/{}//d;
-	    # Uppercase
-	    $_=uc$_;
 	    push @newwords, $_;
 	}
 	$self->output_sentence(\@newwords, $uttid, $fileid, $start, $end);

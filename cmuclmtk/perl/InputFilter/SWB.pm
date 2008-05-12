@@ -97,8 +97,6 @@ sub normalize_text{
     @tokens=split(/\s+/,$line);
     $line=join(' ',@tokens[1...$#tokens]);
 
-    $line =~tr/[a-z]/[A-Z]/;   #uppercase
-
     $line=~s/[\"\?\.\:\!]//g;    #remove punctuation
     $line=~s/\#//g;            #remove marker for simultaneous talking
     $line=~s/3//g;             #accent marker
@@ -122,7 +120,7 @@ sub normalize_text{
     if($line=~/ /){
 	my @words=split(' ',$line);
 	# Try to get individual letters as A. B. C. etc
-	if ($words[0] =~ /^[B-HJ-Z]$/
+	if ($words[0] =~ /^[^AIai]$/
 	    and ($#words == 0 or $words[1] !~/^[A-Z]$/)) {
 	    $line=$words[0].".";
 	}
@@ -132,12 +130,12 @@ sub normalize_text{
 	my $i;
 	for($i=1;$i<=$#words;$i++){
 	    # Join letter sequences to make acronyms (not necessarily a good idea, but...)
-	    if($words[$i-1]=~/^[A-Z]$/ && $words[$i]=~/^[A-Z]$/){
+	    if($words[$i-1]=~/^[A-Za-z]$/ && $words[$i]=~/^[A-Za-z]$/){
 		$line=$line."_".$words[$i];
 	    }
 	    # Try to get individual letters too
-	    elsif ($words[$i] =~ /^[B-HJ-Z]$/
-		   and ($i == $#words or $words[$i+1] !~/^[A-Z]$/)) {
+	    elsif ($words[$i] =~ /^[^AIai]$/
+		   and ($i == $#words or $words[$i+1] !~/^[A-Za-z]$/)) {
 		$line=$line." ".$words[$i].".";
 	    }
 	    else{

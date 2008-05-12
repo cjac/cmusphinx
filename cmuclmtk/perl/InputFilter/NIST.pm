@@ -55,9 +55,8 @@ sub process_transcript {
 	my $uttid="${meeting}-${speaker}-$start-$end";
 
 	# Normalize text
-	$sent = uc $sent;
 	$sent =~ tr/"?,.;//d; #remove " ? , . ;
-	$sent =~ s!~([A-Z])(\W|$)!$1.$2!g;
+	$sent =~ s!~([A-Za-z])(\W|$)!$1.$2!g;
 	$sent =~ s!~(\w+)!join('_', split('', $1))!ge; # ~DC -> D_C
 	$sent =~ s!\^(\w+)!$1!g; # remove ^
 

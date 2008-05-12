@@ -7,7 +7,7 @@ use IO::File;
 use Test::Simple tests => 14;
 
 my $vocab = Vocabulary->new(transcript => "t/cmu.test.lsn");
-ok(my $ng = NGramModel->new(vocabulary => $vocab, n => 3, bindir => "../src"));
+ok(my $ng = NGramModel->new(vocabulary => $vocab, n => 3, bindir => "../bin"));
 ok($ng->add_transcript("t/cmu.test.lsn"));
 ok($ng->estimate());
 ok($ng->save("t/cmu.test.arpa"));

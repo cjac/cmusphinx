@@ -1,6 +1,7 @@
 <NGramModel name="t/cmu.test">
   <Transcripts name="cmu.files">
-    <InputFilter::CMU name="cmu.files" list="t/cmu.files" fillermap="t/cmu.test.fillermap"/>
+    <InputFilter::CMU name="cmu.files" list="t/cmu.files"
+		      fillermap="t/cmu.test.fillermap" upper="1"/>
   </Transcripts>
   <Vocabulary cutoff="1">
     <Transcripts ref="cmu.files"/>

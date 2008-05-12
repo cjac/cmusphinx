@@ -22,7 +22,7 @@
     <Vocabulary ref="cmu1"/>
   </NGramModel>
   <Interpolation>
-    <InputFilter::CMU fillermap="t/cmu.test.fillermap">
+    <InputFilter::CMU fillermap="t/cmu.test.fillermap" upper="1">
       t/cmu3.test.trs
     </InputFilter::CMU>
     <NGramModel ref="cmu.test"/>

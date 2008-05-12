@@ -472,6 +472,17 @@ sub output_sentence {
 	return unless defined $word;
     }
 
+    # Upper or lowercase if requested
+    if ($self->{opts}{upper}) {
+	foreach my $w (@words) {
+	    $w = uc $w;
+	}
+    }
+    if ($self->{opts}{lower}) {
+	foreach my $w (@words) {
+	    $w = lc $w;
+	}
+    }
 
     # Construct string from words
     my $text = "@words";

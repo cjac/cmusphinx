@@ -303,10 +303,6 @@ sub NormalizeWord{
     if($word eq "<sil>" || $word =~ /\+\+/){
 	return "" unless $opts->{fillers};
     }
-    else {
-	#Capitalize letter.
-	$word = uc $word;
-    }
     #Get rid of comma, footstop, question mark and exclamation point.
     #Also '{' and '}'
     $word =~ s/,//g;
@@ -325,8 +321,8 @@ sub NormalizeWord{
     }
 
     # ICSI has X_ for single letters which we claim is bogus
-    if ($word =~ /^([A-Z])_$/) {
-	$word = "$1.";
+    if ($word =~ /^([A-Za-z])_$/) {
+	$word = $1;
     }
 
     return $word;

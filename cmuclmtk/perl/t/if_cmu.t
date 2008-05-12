@@ -5,6 +5,7 @@ use InputFilter::CMU;
 
 ok(my $cmu = InputFilter::CMU->new(fillermap => 't/cmu.test.fillermap',
 				   partials => 1,
+				   upper => 1,
 				   feed => 1,
 				   falsestarts => 1,
 				   crosstalk => 1,

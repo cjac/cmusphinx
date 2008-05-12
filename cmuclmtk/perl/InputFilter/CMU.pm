@@ -144,8 +144,10 @@ sub normalize_utt {
 	$text =~ s/\[\s*([^(]+?)\s*\(([^)]+)\)\s*\]/$2/g;
     }
 
-    # Normalize compound words (from FOO.BAR to FOO_BAR)
+    # Normalize compound words
+    $text =~ s/~([A-Za-z]+)/ join '_', split '', $1 /ge;
     $text =~ s/([A-Za-z])\.(?=[A-Za-z])/$1_/g;
+    $text =~ s/_\b//g;
 
     # Now do filler mapping
     my @words = split ' ', $text;
@@ -159,7 +161,7 @@ sub normalize_utt {
 	    my $outword = $fillermap->{$word};
 
 	    # For LM don't bother with ++FILLERS++
-	    push @outwords, uc$outword
+	    push @outwords, $outword
 		unless $outword =~ /^\+\+.*\+\+$/ and !$opts->{fillers};
 	}
 	elsif ($word =~ m,^/.*/$, or $word =~ /^#.*#$/) {
@@ -169,13 +171,10 @@ sub normalize_utt {
 	    # Special case ... skip these
 	}
 	else {
-	    $word = uc $word;
-	    # Remove unexpected characters
-	    $word =~ tr/-A-Z_'//cd;
+	    # Remove unexpected characters (FIXME: what about non-ASCII...) */
+	    $word =~ tr/-A-Za-z_'//cd;
 	    # Correct bogus A_ B_ C_ things
-	    $word =~ s/^(.)_$/$1./;
-	    # Change single letters to A. B. C. (except A and I - best we can do...)
-	    $word =~ s/^([^AI])$/$1./;
+	    $word =~ s/^(.)_$/$./;
 	    push @outwords, $word;
 	}
     }

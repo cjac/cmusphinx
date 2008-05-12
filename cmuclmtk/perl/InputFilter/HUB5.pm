@@ -184,27 +184,22 @@ sub process_transcript {
 	    my @words;
 	    foreach (split) {
 		# Special case for single letters
-		if (/^[&~]([A-Z])$/) {
+		if (/^[&~]([A-Za-z])$/) {
 		    push @words, "$1.";
 		}
 		# SWB Cellular has these acronyms (argh)
 		elsif (/^~/) {
-		    $_ = uc $_;
 		    # Letters pronounced individually
 		    push @words, join '_', split //;
 		}
 		# Fisher sometimes has acronyms like d._v._d. (will it never end)
 		elsif (/.+\._.+/) {
-		    $_ = uc $_;
 		    $_ =~ tr/.//d;
 		    push @words, $_;
 		}
 		else {
 		    # Deal with proper/place name/acronym/neologism markings
 		    tr/&^@*//d;
-
-		    # Uppercase
-		    $_ = uc $_;
 
 		    # Add it to the list
 		    push @words, $_;

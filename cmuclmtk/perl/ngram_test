@@ -142,7 +142,7 @@ ngram_test - Test an N-gram language model
 
 =head1 SYNOPSIS
 
-B<ngram_train> [I<OPTIONS>] I<ARPABO> I<TRANSCRIPTS>
+B<ngram_test> [I<OPTIONS>] I<ARPABO> I<TRANSCRIPTS>
 
 =head1 DESCRIPTION
 

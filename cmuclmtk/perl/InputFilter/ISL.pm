@@ -108,18 +108,6 @@ sub process_transcript {
 		    $_ = join "_", split //, $_;
 		}
 
-		# Try to guess single letters
-		if (/^[B-HJ-Z]$/) {
-		    $_ = "$_.";
-		}
-		elsif (/^[AI]$/
-		       and
-		       ($i == $#tokens # At the end of the sentence
-			or $tokens[$i+1] =~ /^[?!.;:]$/ # Before punctuation
-			or $tokens[$i+1] =~ /^[A-Z]$/)) { # In an acronym
-		    $_ = "$_.";
-		}
-
 		# Convert filler words
 		if (exists $fillermap->{$_}) {
 		    $_ = $fillermap->{$_};
@@ -129,9 +117,6 @@ sub process_transcript {
 		unless ((!($opts->{falsestarts}) and ($false_start))
 			or (!($opts->{uttered}) and ($correction))
 			or /^\+\+.*\+\+$/ or /^$/) {
-		    # Uppercase it
-		    $_ = uc$_;
-
 		    push @outtokens, $_;
 		}
 

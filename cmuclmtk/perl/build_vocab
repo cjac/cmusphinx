@@ -46,6 +46,8 @@ my %opts;
 GetOptions(\%opts,
 	   "help|h",
 	   "closure|c=s",
+	   "upper",
+	   "lower",
 	   "inputfilter|i=s",
 	   "fillermap|f=s",
 	   "replacelist|r=s",
@@ -225,6 +227,14 @@ a list of words and their replacements, separated by ':'.  You can
 also replace regular expression pattersn in the text by prefixing the
 source with a '+'.  This doesn't always exactly do what you want
 because it applies to the output of the input filter.  That's a bug.
+
+=item B<--upper>
+
+Force all words to upper case.
+
+=item B<--lower>
+
+Force all words to lower case.
 
 =item B<--split>
 
