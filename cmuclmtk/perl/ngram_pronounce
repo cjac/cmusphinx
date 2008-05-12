@@ -57,6 +57,7 @@ GetOptions(\%opts,
 	   'lexicon=s',
 	   'phoneset=s',
 	   'bindir=s',
+	   'allwords',
 	   'help|h')
     or pod2usage(-verbose => 1, -exitval => 1);
 pod2usage(-verbose => 1) if $opts{help};
@@ -131,6 +132,8 @@ if (defined($opts{indict})) {
 	else {
 	    $indict{$word} = "@phones";
 	}
+	# Add this to the 1-grams if --allwords
+	$unigram{$word} = undef if $opts{allwords};
     }
 }
 
@@ -319,7 +322,10 @@ B<ngram_pronounce> [I<OPTIONS>] I<ARPALM> [I<ARPALM>...]
 =item B<--indict> | B<-i> I<DICTFILE>
 
 File to take default pronunciations from.  New pronunciations will
-only be generated if not present in this dictionary.
+only be generated if not present in this dictionary.  If B<--allwords>
+is given, then all words from this dictionary will be included in the
+output.  Otherwise, only words actually present in the vocabulary will
+be included.
 
 =item B<--outdict> | B<-o> I<DICTFILE>
 
@@ -366,6 +372,11 @@ The name of the (predefined) Festival lexicon to use for pronunciation.
 
 The name of the (predefined) Festival phoneset to use for
 pronunciation.  This may be required if you use --lexicon.
+
+=item B<--allwords>
+
+Include all words from the input dictionary (specified with
+B<--indict>) in the output.
 
 =back
 
