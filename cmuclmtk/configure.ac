@@ -12,7 +12,7 @@ AC_CONFIG_HEADER([config.h])
 prefix=`pwd`
 
 dnl Optionally add support to 32 bits LM
-dnl May be better to make this as default and do a --enable-16bits for small systemes
+dnl May be better to make this as default and do a --enable-16bits for small systems
 AC_ARG_ENABLE(32bits,
            [  --enable-32bits         Enable 32 bit LM support],
            [CFLAGS="$CFLAGS -DTHIRTYTWOBITS"]
