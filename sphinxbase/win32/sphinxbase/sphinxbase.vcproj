@@ -434,10 +434,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\src\libsphinxbase\util\dtoa.c"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\libsphinxbase\util\err.c"
 				>
 				<FileConfiguration

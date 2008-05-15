@@ -32,6 +32,22 @@ case $host in
      ;;
 esac     
 
+AC_DEFUN([AC_C_THREAD_TLS],[
+use_tls=false
+AC_MSG_CHECKING([for __thread storage class])
+AC_TRY_COMPILE([
+__thread int thread_local_variable;
+],[],[
+  use_tls=true
+  AC_MSG_RESULT(yes)
+  AC_DEFINE(SPHINXBASE_TLS, [__thread], [Thread Local Storage attribute])
+],[
+  use_tls=true
+  AC_DEFINE(SPHINXBASE_TLS, [], [Thread Local Storage attribute])
+  AC_MSG_RESULT(no)
+])
+])
+
 AC_ISC_POSIX
 AC_PROG_CC
 AM_PROG_CC_STDC
@@ -75,20 +91,42 @@ AM_CONDITIONAL(USE_LAPACK, test x$use_lapack = xtrue)
 dnl
 dnl Enable thread-safe versions of some internal functions
 dnl
-threadsafe=true
+threadsafe=auto
 AC_ARG_ENABLE(threads,
 	AC_HELP_STRING([--disable-threads],
-		       [Disable thread-safe versions of memory allocation functions]),[
-if test x$enableval = xno; then
-   threadsafe=false
+		       [Disable thread-safe versions of memory allocation functions (default: check)]),[
+if test x$enableval != x; then
+   threadsafe=$enableval
 fi
 ])
-if test x$threadsafe = xtrue; then
-   AC_CHECK_HEADERS([pthread.h])
-   AC_CHECK_LIB(pthread, pthread_mutex_lock)
-   AC_DEFINE(ENABLE_THREADS, [], [Enable thread safety])
+if test x$threadsafe != xno; then
+   threads=false
+   dnl
+   dnl Can't seem to check for Windows API functions, but that's okay
+   dnl because we know they will be there...
+   dnl
+   case $host in
+     *cygwin*|*mingw*|*wince*)
+	# GCC always uses __thread, even on Windows, so check for it below
+	threads=true
+     ;;
+     *)
+        AC_CHECK_HEADERS([pthread.h], [threads=true])
+	AC_CHECK_LIB(pthread, pthread_create)
+     ;;
+   esac
+   if test x$threads = xtrue; then
+     AC_DEFINE(ENABLE_THREADS, [], [Enable thread safety])
+     AC_C_THREAD_TLS()
+     threadsafe=yes
+   elif test x$threadsafe = xyes; then
+     AC_MSG_ERROR(--enable-threads was given but test for thread functions failed!)
+   else
+     threadsafe=no
+   fi
 fi
-AM_CONDITIONAL(USE_THREADS, test x$threadsafe = xtrue)
+AM_CONDITIONAL(USE_THREADS, test x$threadsafe = xyes)
+AM_CONDITIONAL(USE_TLS, test x$use_tls = xtrue)
 
 dnl
 dnl Allow compilation for fixed or floating-point MFCC and GMM computation
@@ -203,6 +241,7 @@ AC_SUBST(ad_backend)
 AC_SUBST(PERL)
 AC_SUBST(CSH)
 
+AC_LIBTOOL_WIN32_DLL
 AM_PROG_LIBTOOL
 
 dnl
