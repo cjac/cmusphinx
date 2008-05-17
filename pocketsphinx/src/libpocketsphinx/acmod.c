@@ -140,6 +140,15 @@ acmod_init_feat(acmod_t *acmod)
     if (acmod->fcb == NULL)
         return -1;
 
+    if (cmd_ln_str_r(acmod->config, "-lda")) {
+        E_INFO("Reading linear feature transformation from %s\n",
+               cmd_ln_str_r(acmod->config, "-lda"));
+        if (feat_read_lda(acmod->fcb,
+                          cmd_ln_str_r(acmod->config, "-lda"),
+                          cmd_ln_int32_r(acmod->config, "-ldadim")) < 0)
+            return -1;
+    }
+
     if (cmd_ln_exists_r(acmod->config, "-agcthresh")
         && 0 != strcmp(cmd_ln_str_r(acmod->config, "-agc"), "none")) {
         agc_set_threshold(acmod->fcb->agc_struct,
@@ -264,17 +273,22 @@ acmod_free(acmod_t *acmod)
     if (acmod->retain_fe)
         fe_close(acmod->fe);
 
-    ckd_free_2d((void **)acmod->mfc_buf);
-    feat_array_free(acmod->feat_buf);
+    if (acmod->mfc_buf)
+        ckd_free_2d((void **)acmod->mfc_buf);
+    if (acmod->feat_buf)
+        feat_array_free(acmod->feat_buf);
 
     ckd_free(acmod->senone_scores);
     ckd_free(acmod->senone_active_vec);
     ckd_free(acmod->senone_active);
 
-    bin_mdef_free(acmod->mdef);
-    tmat_free(acmod->tmat);
+    if (acmod->mdef)
+        bin_mdef_free(acmod->mdef);
+    if (acmod->tmat)
+        tmat_free(acmod->tmat);
 
-    (*acmod->mgau_free)(acmod->mgau);
+    if (acmod->mgau_free)
+        (*acmod->mgau_free)(acmod->mgau);
     
     ckd_free(acmod);
 }

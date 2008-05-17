@@ -38,14 +38,17 @@ class bogus_uninstall(distutils.command.install.install):
                     pass
                 d = os.path.dirname(d)
 
-setup(name = 'SphinxBase',
+setup(name = 'PocketSphinx',
       ext_modules = [
-        Extension('sphinxbase',
-                   sources=['sphinxbase.c'],
-                   libraries=['sphinxbase'],
+        Extension('pocketsphinx',
+                   sources=['pocketsphinx.c'],
+                   libraries=['pocketsphinx', 'sphinxbase'],
                    include_dirs=['@top_builddir@/include',
-                                 '@top_srcdir@/include'],
-                   library_dirs=['@top_builddir@/src/libsphinxbase/.libs'])
+                                 '@top_srcdir@/include',
+                                 '@sphinxbasebuild@/include',
+                                 '@sphinxbase@/include'],
+                   library_dirs=['@top_builddir@/src/libpocketsphinx/.libs',
+                                 '@sphinxbasebuild@/src/libsphinxbase/.libs'])
         ],
       cmdclass = {'build_ext' : build_ext,
                   'bogus_uninstall' : bogus_uninstall}

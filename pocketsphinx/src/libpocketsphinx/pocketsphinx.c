@@ -100,6 +100,7 @@ ps_init_defaults(ps_decoder_t *ps)
         ps_add_file(ps, "-sendump", hmmdir, "sendump");
         ps_add_file(ps, "-kdtree", hmmdir, "kdtrees");
         ps_add_file(ps, "-fdict", hmmdir, "noisedict");
+        ps_add_file(ps, "-lda", hmmdir, "feature_transform");
         ps_add_file(ps, "-featparams", hmmdir, "feat.params");
     }
 }
@@ -214,10 +215,14 @@ ps_free(ps_decoder_t *ps)
     for (gn = ps->searches; gn; gn = gnode_next(gn))
         ps_search_free(gnode_ptr(gn));
     glist_free(ps->searches);
-    dict_free(ps->dict);
-    acmod_free(ps->acmod);
-    logmath_free(ps->lmath);
-    cmd_ln_free_r(ps->config);
+    if (ps->dict)
+        dict_free(ps->dict);
+    if (ps->acmod)
+        acmod_free(ps->acmod);
+    if (ps->lmath)
+        logmath_free(ps->lmath);
+    if (ps->config)
+        cmd_ln_free_r(ps->config);
     for (gn = ps->strings; gn; gn = gnode_next(gn))
         ckd_free(gnode_ptr(gn));
     glist_free(ps->strings);

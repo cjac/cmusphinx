@@ -95,6 +95,30 @@ AC_CHECK_PROG(HAVE_DOXYGEN, doxygen, yes, no)
 AM_CONDITIONAL(BUILD_DOXYGEN, test "x$HAVE_DOXYGEN" = "xyes")
 
 dnl
+dnl Check for Python, and build python module if present
+dnl
+use_python=true
+AC_ARG_WITH(python,
+	AC_HELP_STRING([--without-python],
+		       [Disable Python extension]),[
+if test x$withval = xno; then
+   use_python=false
+fi
+])
+if test x$use_python = xtrue; then
+   AC_CHECK_PROG(HAVE_PYTHON, python, yes, no)
+fi
+AM_CONDITIONAL(BUILD_PYTHON, test "x$HAVE_PYTHON" = "xyes")
+
+dnl
+dnl Check for Pyrex, and rebuild python module if present
+dnl
+if test x$HAVE_PYTHON = xyes; then
+   AC_CHECK_PROG(HAVE_PYREX, pyrexc, yes, no)
+fi
+AM_CONDITIONAL(BUILD_PYREX, test "x$HAVE_PYREX" = "xyes")
+
+dnl
 dnl Now check for GStreamer, and build the plugin if it's available
 dnl
 GST_MAJORMINOR=0.10
@@ -175,10 +199,6 @@ Use the --with-sphinxbase-build option to `configure' to specify
 the build directory for SphinxBase.  Run $0 --help for more information.]))
 fi
 
-AC_PATH_PROG(PERL,perl)
-AC_PATH_PROG(CSH,csh)
-AC_SUBST(PERL)
-AC_SUBST(CSH)
 AC_SUBST(sphinxbase)
 AC_SUBST(sphinxbasebuild)
 
@@ -186,6 +206,8 @@ AC_OUTPUT([
 pocketsphinx.pc
 Makefile
 include/Makefile
+python/Makefile
+python/setup.py
 src/Makefile
 src/libpocketsphinx/Makefile
 src/programs/Makefile
