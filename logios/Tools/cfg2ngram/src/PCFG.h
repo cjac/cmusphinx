@@ -72,6 +72,7 @@ public:
     double count;
     double ctheta;
     vector<RHSe> element;
+    RHS() : probability(0) {}
     bool operator==(const RHS& x) const {return x.element == element;}
   };  
   
@@ -116,21 +117,25 @@ public:
   static string printrule(vector<LHS>::const_iterator x, 
 			  vector<RHS>::const_iterator y);
   void writeVocab(ostream& out) const;
-  vector<bool> reachable() const; 
-  void reachable(int from, vector<bool>& already) const;
+  vector<bool> reachableNT() const; 
+  vector<bool> reachableT() const;
+  void reachable(int from, vector<bool>& already, vector<bool>& alreadyT) const;
   sentence generateSample() const;
   corpus generateSamples(unsigned int n) const;
+  string stats() const; //returns statistics like grammar size, etc.
   
 protected:
   void redoTMap();
   void rebuild_indexes();
   void reduce();
+  void removeUnreachables();
   void printChart(Chart<map<int, double> >& c) const;
   string printrule(int i, int j) const;
   string printrule(int x, vector<RHS>::const_iterator y) const;
   RHSe shorten(const vector<RHSe>& r, int index=0);
   void initialize_counts();
   void initialize();
+  void normalize(); //clean up and propagate probability from hand-written
 };
 
 ostream& operator<<(ostream& out, const sentence& x);

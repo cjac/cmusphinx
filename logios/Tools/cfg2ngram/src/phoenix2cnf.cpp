@@ -12,5 +12,6 @@ int main(int argc, char* argv[]) {
 
   cerr << "reading phoenix and converting to CNF..." << endl;
   ifstream forms(argv[1]);
-  cout << PCFG::CNF(PCFG::readPhoenixGrammarAndForms(cin, forms));
+  PCFG g(PCFG::readPhoenixGrammarAndForms(cin, forms));
+  cout << PCFG::CNF(g);
 }

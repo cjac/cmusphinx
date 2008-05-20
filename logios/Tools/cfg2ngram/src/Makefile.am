@@ -1,4 +1,8 @@
-bin_PROGRAMS = phoenix2cnf cnf2corpus
+bin_PROGRAMS = phoenix2pcfg phoenix2cnf cnf2corpus
+
+phoenix2pcfg_SOURCES = phoenix2pcfg.cpp PCFG.cpp debug.cpp
+phoenix2pcfg_CPPFLAGS = -gstabs+
+phoenix2pcfg_LDADD = -lpcre
 
 phoenix2cnf_SOURCES = phoenix2cnf.cpp PCFG.cpp
 phoenix2cnf_CPPFLAGS = -gstabs+

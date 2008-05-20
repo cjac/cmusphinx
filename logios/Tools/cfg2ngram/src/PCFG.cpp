@@ -9,10 +9,12 @@
 #include <exception>
 #include <locale>
 #include <algorithm>
+#include <functional>
 
 #include <pcre.h>
 
 #include "PCFG.h"
+#include "debug.h"
 
 PCFG::PCFG() {}
 
@@ -57,7 +59,6 @@ int PCFG::merge(const PCFG& x) {
 }
 
 void PCFG::redoTMap() {
-  cerr << "was " << tmap.size() << ' ' << terminal.size() << ' ';
   tmap.clear();
   terminal.clear();
   for(vector<LHS>::iterator i=grammar.begin(); i!=grammar.end(); i++)
@@ -66,7 +67,6 @@ void PCFG::redoTMap() {
 	  k!=j->element.end(); 
 	  k++)
 	if(k->terminal) k->index = addTerm(k->word);
-  cerr << "now " << tmap.size() << ' ' << terminal.size() << ' ';
 }
 
 PCFG PCFG::readPhoenixGrammar(istream& pGrammar, const string headname) {
@@ -76,15 +76,19 @@ PCFG PCFG::readPhoenixGrammar(istream& pGrammar, const string headname) {
   const char *error = new char[255];
   int erroroffset;
   int ovector[90];
+  
+  debug << "reading grammar, using head=" << headname << endl;
+
   net = pcre_compile("^\\[([A-Za-z0-9_='/-]*)\\]", 
 		     0, 
 		     &error, 
 		     &erroroffset,
 		     NULL);
   if(net == NULL) {
-    cerr << "net compilation failed at "
-	 << erroroffset << ": " << error << endl;
-    exit(1);
+    ostringstream o;
+    o << "net compilation failed at "
+      << erroroffset << ": " << error << endl;
+    throw o.str();
   }
   leaf = pcre_compile("^\\s+\\(\\s*(\\S+)(\\s+(\\S+))?(\\s+(\\S+))?(\\s+(\\S+))?(\\s+(\\S+))?(\\s+(\\S+))?(\\s+(\\S+))?(\\s+(\\S+))?(\\s+(\\S+))?(\\s+(\\S+))?(\\s+(\\S+))?(\\s+(\\S+))?(\\s+(\\S+))?(\\s+(\\S+))?(\\s+(\\S+))?\\s*\\)", 
 		      0, 
@@ -92,9 +96,10 @@ PCFG PCFG::readPhoenixGrammar(istream& pGrammar, const string headname) {
 		      &erroroffset,
 		      NULL);
   if(leaf == NULL) {
-    cerr << "leaf compilation failed at "
-	 << erroroffset << ": " << error << endl;
-    exit(1);
+    ostringstream o;
+    o << "leaf compilation failed at "
+      << erroroffset << ": " << error << endl;
+    throw o.str();
   }
   macro = pcre_compile("^[A-Z][0-9A-Z_='-]*", 
 		       0, 
@@ -102,10 +107,12 @@ PCFG PCFG::readPhoenixGrammar(istream& pGrammar, const string headname) {
 		       &erroroffset,
 		       NULL);
   if(macro == NULL) {
-    cerr << "macro compilation failed at "
-	 << erroroffset << ": " << error << endl;
-    exit(1);
+    ostringstream o;
+    o << "macro compilation failed at "
+      << erroroffset << ": " << error << endl;
+    throw o.str();
   }
+  aGCFG.head = 0;
   LHS *currentNet = NULL;
   LHS *currentMacro = NULL;
   int anoncount = 0;
@@ -228,6 +235,8 @@ PCFG PCFG::readPhoenixGrammar(istream& pGrammar, const string headname) {
 	    k->index = l->second;
 	  }
 	}
+
+  debug << aGCFG.stats();
   return aGCFG;
 }
 
@@ -236,21 +245,25 @@ PCFG PCFG::readPhoenixGrammarAndForms(istream& pGrammar, istream& forms) {
   PCFG aPCFG(readPhoenixGrammar(pGrammar));
 
   //construct an implied head
+  debug << "Adding new head for forms file" << endl;
   aPCFG.head = aPCFG.addNonTerm(LHS("FORMS_IMPLIED_HEAD"));
+  debug << aPCFG.stats() << endl;
 
+  debug << "Reading forms file" << endl;
   //now we need to read the forms file and put it on top
   const char* error = new char[255];
   int erroroffset;
   int ovector[90];
-  pcre *net = pcre_compile("^\\[([A-Za-z0-9_='/-]*)\\]", 
+  pcre *net = pcre_compile("^\\s*\\[([A-Za-z0-9_='/-]*)\\]", 
 			   0, 
 			   &error, 
 			   &erroroffset,
 			   NULL);
   if(net == NULL) {
-    cerr << "net compilation failed at "
-	 << erroroffset << ": " << error << endl;
-    exit(1);
+    ostringstream o;
+    o << "net compilation failed at "
+      << erroroffset << ": " << error << endl;
+    throw o.str();
   }
   pcre *function = pcre_compile("^FUNCTION:\\s*([A-Za-z0-9_='/-]+)(\\s*%%(0\\.\\d*)%%)?",
 				0,
@@ -258,24 +271,40 @@ PCFG PCFG::readPhoenixGrammarAndForms(istream& pGrammar, istream& forms) {
 				&erroroffset,
 				NULL);
   if(net == NULL) {
-    cerr << "function compilation failed at "
-	 << erroroffset << ": " << error << endl;
-    exit(1);
+    ostringstream o;
+    o << "function compilation failed at "
+      << erroroffset << ": " << error << endl;
+    throw o.str();
   }
 
   int currentFunction = -1;
-  LHS *currentNet = NULL;
   char line[255];
   while(forms.getline(line, 255)) {
-    if(pcre_exec(function, NULL, line, strlen(line), 0, 0, ovector, 90) >=0) {
+    int matches;
+    if((matches = pcre_exec(function, NULL, line, strlen(line), 0, 0, ovector, 90)) >=0) {
       string functionName(line+ovector[2], ovector[3] - ovector[2]);
       currentFunction = aPCFG.addNonTerm(LHS(functionName));
-      RHS functionRule;
-      functionRule.element.push_back(RHSe(currentFunction, functionName));
-      aPCFG.grammar[aPCFG.head].rule.push_back(functionRule);
+      RHS rootFunctionRule;
+      if(matches == 4)
+	istringstream(string(line+ovector[6], ovector[7] - ovector[6])) >> rootFunctionRule.probability;
+      rootFunctionRule.element.push_back(RHSe(currentFunction, functionName));
+      aPCFG.grammar[aPCFG.head].rule.push_back(rootFunctionRule);
+      debug << "Added FUNCTION: " << functionName << ' ' << rootFunctionRule.probability << endl;
+    } else if(pcre_exec(net, NULL, line, strlen(line), 0, 0, ovector, 90) >=0) {
+      string netName(line+ovector[2], ovector[3]-ovector[2]);
+      map<string, int>::const_iterator i = aPCFG.ntmap.find(netName);
+      if(i == aPCFG.ntmap.end()) {
+	warn << "net: " << netName << " in forms file not found in grammar file." << endl;
+	continue;
+      } 
+      RHS functionNetRule;
+      functionNetRule.element.push_back(RHSe(i->second, netName));
+      aPCFG.grammar[currentFunction].rule.push_back(functionNetRule);
     }
   }
+  aPCFG.normalize();
 
+  debug << aPCFG.stats() << endl;
   return aPCFG;
 }
 
@@ -312,14 +341,43 @@ void PCFG::writePhoenixGrammar(ostream& pGrammar) const {
   pGrammar << ';' << endl;
 }
 
+/* 
+ * Given a well-formed stocastic context-free grammar, return a grammar in Chomsky Normal form. The
+ * stocastic characterization of the returned CNF grammar is preserved.
+ * 
+ * In Chomsky normal form, each rule is either of the form:
+ * A -> BC or
+ * A -> x
+ * where A, B, and C are non-terminals, and x is a terminal.
+ *
+ * Technique is to:
+ * 1) remove all unit productions (i.e. rules of the form A -> B), by bubbling up
+ * 2) in productions with a length > 1, replace terminals with non-terminals, e.g.:
+ *       A -> x y z
+ *       becomes
+ *       A -> B C D
+ *       B -> x
+ *       C -> y
+ *       D -> z
+ * 3) itereatively shorten productions with new productions, e.g.:
+ *       A -> B C D E
+ *       becomes
+ *       A -> B F
+ *       F -> C G
+ *       G -> D E
+ */
 PCFG PCFG::CNF(const PCFG& g) {
   PCFG ret = removeUnitProductions(g);
-  //cout << ret << "--endunit" << endl;
+  cout << ret << "--endunit" << endl;
+
+  cerr << "about to replace terminals in long rules" << endl;
+  cerr << ret.stats() << endl;
+
   //step 1: replace terminals with nt for productions of length > 1
   int oldsize = ret.grammar.size();
   for(int i = 0; i < oldsize; i++) {
     for(vector<RHS>::iterator j = ret.grammar[i].rule.begin(); 
-	j != ret.grammar[i].rule.end();) {
+	j != ret.grammar[i].rule.end();) { //for each rule
       bool mod=false;
       if(j->element.size() > 1) {
 	for(vector<RHSe>::iterator k = j->element.begin();
@@ -331,8 +389,7 @@ PCFG PCFG::CNF(const PCFG& g) {
 	    newrule << "R" << ret.grammar.size();
 	    LHS newlhs(newrule.str());
 	    RHS newrhs;
-	    RHSe newrhse(k->word);
-	    newrhs.element.push_back(newrhse);
+	    newrhs.element.push_back(RHSe(k->word));
 	    newlhs.rule.push_back(newrhs);
 	    k->terminal = false;
 	    k->word = newrule.str();
@@ -348,21 +405,21 @@ PCFG PCFG::CNF(const PCFG& g) {
 	j++;
     }
   }
-  //cout << ret << "--end1" << endl;
+  ret.redoTMap();
+
+  cerr << "done replacing terminals with nt" << endl;
+  cerr << ret.stats() << endl;
+
   //step 2: shorten productions with new productions
   oldsize = ret.grammar.size();
   for(int i=0; i<oldsize; i++) {
-    //cerr << ret.grammar[i].name << endl;
     for(vector<RHS>::iterator j=ret.grammar[i].rule.begin(); 
 	j!=ret.grammar[i].rule.end();) {
       bool mod = false;
       if(j->element.size() > 2) {
 	mod = true;
-	//cerr << "r " << j->element[0].word << endl;
-	//vector<RHSe> appendix(j->element.begin()+1, j->element.end());
 	vector<RHSe> appendix(j->element);
 	j->element.clear();
-	//j->element.push_back(ret.shorten(appendix));
 	for(int index=0; index<appendix.size()-1; index++) {
 	  j->element.push_back(appendix[index]);
 	  if(index+2 == appendix.size()) {
@@ -386,6 +443,8 @@ PCFG PCFG::CNF(const PCFG& g) {
 
   ret.redoTMap();
   //cout << ret << "--end" << endl;
+  cerr << "about to reduce..." << endl;
+  cerr << ret.stats() << endl;
   ret.reduce();
   ret.initialize();
   return ret;
@@ -393,7 +452,6 @@ PCFG PCFG::CNF(const PCFG& g) {
 
 void PCFG::reduce() {
   cerr << "reducing grammar size..." << endl;
-  cerr << "head: " << head << ' ' << grammar[head].name << endl;
   //iteratively remove identical productions
   int size;
   //operate on a list to facilitate erasures
@@ -470,12 +528,19 @@ void PCFG::reduce() {
   head = ntmap[grammar[head].name];
   grammar.clear();
   grammar.assign(G.begin(), G.end());
+
+  cerr << "done with reduction" << endl;
+  cerr << stats() << endl;
 }
 
 void PCFG::rebuild_indexes() {
   ntmap.clear();
   for(int i=0; i<grammar.size(); i++) {
-    ntmap[grammar[i].name] = i;
+    string& name = grammar[i].name;
+    map<string, int>::const_iterator j = ntmap.find(name);
+    if(j != ntmap.end())
+      cerr << "We seem to have '" << name << "' = " << i << " = " << j->second << endl;
+    ntmap[name] = i;
   }
   for(int i=0; i<grammar.size(); i++) {
     for(vector<RHS>::iterator j = grammar[i].rule.begin();
@@ -490,13 +555,13 @@ void PCFG::rebuild_indexes() {
   }
 }
 
+
 PCFG::RHSe PCFG::shorten(const vector<RHSe>& r, int index) {
   //take a string of nodes and return a single node to represent it
 
   RHSe answer(r[index]);
 
   //if there's only one just return it
-  //cerr << "size: " << r.size() << " index: " << index << endl;
   if(r.size()-index == 1)
     return answer;
 
@@ -516,6 +581,9 @@ PCFG::RHSe PCFG::shorten(const vector<RHSe>& r, int index) {
 }
 
 PCFG PCFG::removeEpsilons(const PCFG& g) {
+  cerr << "about to remove Epsilons..." << endl;
+  cerr << g.stats() << endl;
+
   //first, find all nullable nt
   bool foundNullable;
   vector<bool> nullable(g.grammar.size(),false);
@@ -555,7 +623,7 @@ PCFG PCFG::removeEpsilons(const PCFG& g) {
     LHS aLHSprime(g.grammar[i].name);
     for(vector<RHS>::const_iterator j = g.grammar[i].rule.begin(); 
 	j != g.grammar[i].rule.end(); 
-	j++) {
+	j++) { //for each rule of the old grammar
       stack< pair<list<RHSe>,int> > flat;
       pair<list<RHSe>,int> 
 	w(list<RHSe>(j->element.begin(),j->element.end()),0);
@@ -586,11 +654,19 @@ PCFG PCFG::removeEpsilons(const PCFG& g) {
     }
     gprime.addNonTerm(aLHSprime);
   }
+
+  gprime.redoTMap();
+
+  cerr << "removed Epsilons" << endl;
+  cerr << gprime.stats() << endl;
   return gprime;
 }
 
 PCFG PCFG::removeUnitProductions(const PCFG& g) {
   PCFG ret = removeEpsilons(g);
+  cerr << "about to remove unit productions..." << endl;
+  cerr << ret.stats() << endl;
+
   bool foundUnit;
   do {
     PCFG temp = ret;
@@ -648,63 +724,30 @@ PCFG PCFG::removeUnitProductions(const PCFG& g) {
     }
   } while(foundUnit);
 
-  //find unreachable nt
-  vector<bool> r = ret.reachable();
+  ret.removeUnreachables();
 
-  //compute shift amt
-  vector<int> shiftamt(ret.grammar.size());
-  int amt=0;
-  for(int i=0; i<ret.grammar.size(); i++) {
-    shiftamt[i]=amt;
-    if(!r[i]) 
-      amt--;
-  }
-  
-  //shift head marker
-  ret.head += shiftamt[ret.head];
-
-  //redo ntmap
-  for(map<string,int>::iterator i = ret.ntmap.begin(); i != ret.ntmap.end();) {
-    if(!r[i->second]) {
-      ret.ntmap.erase(i);
-      i = ret.ntmap.begin();
-    } else {
-      i->second += shiftamt[i->second];
-      i++;
-    }
-  }
-
-  //remove unreachables
-  for(int i=0; i < ret.grammar.size(); i++) {
-    if(!r[i])
-      continue;
-    //redo ntindex
-    for(vector<RHS>::iterator j = ret.grammar[i].rule.begin();
-	j != ret.grammar[i].rule.end();
-	j++)
-      for(vector<RHSe>::iterator k = j->element.begin(); 
-	  k != j->element.end();
-	  k++)
-	if(!k->terminal)
-	  k->index += shiftamt[k->index];
-    //shift
-    if(shiftamt[i] != 0)
-      ret.grammar[i+shiftamt[i]] = ret.grammar[i];
-  }
-  ret.grammar.erase(ret.grammar.begin() + 
-		    ret.grammar.size()+shiftamt[shiftamt.size()-1],
-		    ret.grammar.end());
-      
+  cerr << "removed unit productions..." << endl;
+  cerr << ret.stats() << endl;
   return ret;
 }
 
-vector<bool> PCFG::reachable() const {
+vector<bool> PCFG::reachableNT() const {
   vector<bool> ret(grammar.size(), false);
-  reachable(head, ret);
+  vector<bool> t(terminal.size(), false);
+  reachable(head, ret, t);
   return ret;
 }
 
-void PCFG::reachable(int from, vector<bool>& already) const {
+vector<bool> PCFG::reachableT() const {
+  vector<bool> nt(grammar.size(), false);
+  vector<bool> t(terminal.size(), false);
+  reachable(head, nt, t);
+  return t;
+}
+
+void PCFG::reachable(int from, 
+		     vector<bool>& already, 
+		     vector<bool>& alreadyT) const {
   if(already[from])
     return;
   already[from] = true;
@@ -714,9 +757,59 @@ void PCFG::reachable(int from, vector<bool>& already) const {
     for(vector<RHSe>::const_iterator j = i->element.begin(); 
 	j != i->element.end();
 	j++)
-      if(!j->terminal)
-	reachable(j->index, already);
+      if(!j->terminal) {
+	if(j->index >= grammar.size()) cerr << "nt index out of bounds" << endl;
+	reachable(j->index, already, alreadyT);
+      } else {
+	if(j->index >= terminal.size()) cerr << "t index out of bounds" << endl;
+	alreadyT[j->index] = true;
+      }
   return;
+}
+
+void PCFG::removeUnreachables() {
+  cerr << "about to remove unreachables" << endl;
+  cerr << stats() << endl;
+
+  //find unreachable nt
+  vector<bool> r = reachableNT();
+
+  //compute shift amt
+  vector<int> shiftamt(grammar.size());
+  int amt=0;
+  for(int i=0; i<grammar.size(); i++) {
+    shiftamt[i]=amt;
+    if(!r[i]) --amt;
+  }
+
+  //shift head marker
+  head += shiftamt[head];
+
+  //remove unreachables
+  for(int i=0; i < grammar.size(); i++) {
+    if(!r[i]) continue;
+    //redo ntindex
+    /*
+    for(vector<RHS>::iterator j = grammar[i].rule.begin();
+	j != grammar[i].rule.end();
+	j++)
+      for(vector<RHSe>::iterator k = j->element.begin(); 
+	  k != j->element.end();
+	  k++)
+	if(!k->terminal)
+	  k->index += shiftamt[k->index];
+    */
+    //shift
+    if(shiftamt[i] != 0) grammar[i+shiftamt[i]] = grammar[i];
+  }
+  grammar.erase(grammar.begin() + grammar.size()+amt,
+		grammar.end());
+
+  rebuild_indexes();
+  redoTMap();
+
+  cerr << "done removing unreachables" << endl;
+  cerr << stats() << endl;
 }
 
 int PCFG::train(const corpus& data, double threshhold) {
@@ -749,8 +842,6 @@ int PCFG::train(const corpus& data, double threshhold) {
 		alpha[ai][ai][lhsi] = grammar[lhsi].rule[rhsi].probability;
 	      else
 		alpha[ai][ai][lhsi] += grammar[lhsi].rule[rhsi].probability;
-	      //cerr << ai << ' ' << ai << ' ' << grammar[lhsi].name << ' '
-	      //   << grammar[lhsi].rule[rhsi].probability << endl;
 	    } 
 	  }
       }
@@ -783,10 +874,7 @@ int PCFG::train(const corpus& data, double threshhold) {
 		  continue;
 		double prob = 
 		  (ri->probability)*(leftprob->second)*(rightprob->second);
-		//cerr << "setting " << printrule(A, ri) << endl;
 		map<int,double>::iterator insideprob = alpha[ai][aj].find(A);
-		//cerr << ai << ' ' << aj << ' ' << grammar[A].name << ' '
-		//    << prob << endl;
 		if(insideprob == alpha[ai][aj].end())
 		  alpha[ai][aj][A] = prob;
 		else
@@ -1136,6 +1224,20 @@ void PCFG::initialize() {
   }
 }
 
+void PCFG::normalize() {
+  for(vector<LHS>::iterator j = grammar.begin(); j != grammar.end(); j++) {
+    double assigned_total = 0;
+    if(j->rule.empty()) throw "empty rule";
+    for(vector<RHS>::const_iterator i = j->rule.begin(); i != j->rule.end(); i++) {
+      assigned_total += i->probability;
+    }
+    if(assigned_total > 1) throw "assigned rule probability total exceeds 1";
+    for(vector<RHS>::iterator i = j->rule.begin(); i != j->rule.end(); i++) {
+      i->probability += (1-assigned_total)/j->rule.size();
+    }
+  }
+}
+
 sentence PCFG::generateSample() const {
   /* 
    * Algorithm: 
@@ -1187,4 +1289,24 @@ corpus PCFG::generateSamples(unsigned int n) const {
     c.push_back(generateSample());
   }
   return c;
+}
+
+string PCFG::stats() const {
+  ostringstream s;
+  if(grammar.size() != ntmap.size()) 
+    s << "inconsistent nt map! |ntmap| = " << ntmap.size() << endl;
+  if(terminal.size() != tmap.size())
+    s << "inconsistent t map! |tmap| = " << tmap.size() << endl;
+  int rules = 0;
+  for(vector<LHS>::const_iterator i = grammar.begin(); i != grammar.end(); i++)
+    rules += i->rule.size();
+  s << "Head Rule: " << grammar[head].name << '[' << head << ']' << endl;
+  vector<bool> rnt_vec = reachableNT();
+  int num_unreachable = count_if(rnt_vec.begin(), rnt_vec.end(), logical_not<bool>());
+  vector<bool> rt_vec = reachableT();
+  int num_unreachableT = count_if(rt_vec.begin(), rt_vec.end(), logical_not<bool>());
+  s << "#NT: " << grammar.size() << " (" << num_unreachable << " unreachable)" << endl
+    << "#T: " << terminal.size() << " (" << num_unreachableT << " unreachable)" << endl
+    << "#rules: " << rules;
+  return s.str();
 }

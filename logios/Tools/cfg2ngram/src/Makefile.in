@@ -109,7 +109,11 @@ sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
-bin_PROGRAMS = phoenix2cnf cnf2corpus
+bin_PROGRAMS = phoenix2pcfg phoenix2cnf cnf2corpus
+
+phoenix2pcfg_SOURCES = phoenix2pcfg.cpp PCFG.cpp debug.cpp
+phoenix2pcfg_CPPFLAGS = -gstabs+
+phoenix2pcfg_LDADD = -lpcre
 
 phoenix2cnf_SOURCES = phoenix2cnf.cpp PCFG.cpp
 phoenix2cnf_CPPFLAGS = -gstabs+
@@ -123,7 +127,8 @@ ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
-bin_PROGRAMS = phoenix2cnf$(EXEEXT) cnf2corpus$(EXEEXT)
+bin_PROGRAMS = phoenix2pcfg$(EXEEXT) phoenix2cnf$(EXEEXT) \
+	cnf2corpus$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS)
 
 am_cnf2corpus_OBJECTS = cnf2corpus-cnf2corpus.$(OBJEXT) \
@@ -136,6 +141,11 @@ am_phoenix2cnf_OBJECTS = phoenix2cnf-phoenix2cnf.$(OBJEXT) \
 phoenix2cnf_OBJECTS = $(am_phoenix2cnf_OBJECTS)
 phoenix2cnf_DEPENDENCIES =
 phoenix2cnf_LDFLAGS =
+am_phoenix2pcfg_OBJECTS = phoenix2pcfg-phoenix2pcfg.$(OBJEXT) \
+	phoenix2pcfg-PCFG.$(OBJEXT) phoenix2pcfg-debug.$(OBJEXT)
+phoenix2pcfg_OBJECTS = $(am_phoenix2pcfg_OBJECTS)
+phoenix2pcfg_DEPENDENCIES =
+phoenix2pcfg_LDFLAGS =
 
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -143,15 +153,19 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/cnf2corpus-PCFG.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/cnf2corpus-cnf2corpus.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/phoenix2cnf-PCFG.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/phoenix2cnf-phoenix2cnf.Po
+@AMDEP_TRUE@	./$(DEPDIR)/phoenix2cnf-phoenix2cnf.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/phoenix2pcfg-PCFG.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/phoenix2pcfg-debug.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/phoenix2pcfg-phoenix2pcfg.Po
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
 CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
-DIST_SOURCES = $(cnf2corpus_SOURCES) $(phoenix2cnf_SOURCES)
+DIST_SOURCES = $(cnf2corpus_SOURCES) $(phoenix2cnf_SOURCES) \
+	$(phoenix2pcfg_SOURCES)
 DIST_COMMON = $(srcdir)/Makefile.in Makefile.am
-SOURCES = $(cnf2corpus_SOURCES) $(phoenix2cnf_SOURCES)
+SOURCES = $(cnf2corpus_SOURCES) $(phoenix2cnf_SOURCES) $(phoenix2pcfg_SOURCES)
 
 all: all-am
 
@@ -192,6 +206,9 @@ cnf2corpus$(EXEEXT): $(cnf2corpus_OBJECTS) $(cnf2corpus_DEPENDENCIES)
 phoenix2cnf$(EXEEXT): $(phoenix2cnf_OBJECTS) $(phoenix2cnf_DEPENDENCIES) 
 	@rm -f phoenix2cnf$(EXEEXT)
 	$(CXXLINK) $(phoenix2cnf_LDFLAGS) $(phoenix2cnf_OBJECTS) $(phoenix2cnf_LDADD) $(LIBS)
+phoenix2pcfg$(EXEEXT): $(phoenix2pcfg_OBJECTS) $(phoenix2pcfg_DEPENDENCIES) 
+	@rm -f phoenix2pcfg$(EXEEXT)
+	$(CXXLINK) $(phoenix2pcfg_LDFLAGS) $(phoenix2pcfg_OBJECTS) $(phoenix2pcfg_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT) core *.core
@@ -203,6 +220,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cnf2corpus-cnf2corpus.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/phoenix2cnf-PCFG.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/phoenix2cnf-phoenix2cnf.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/phoenix2pcfg-PCFG.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/phoenix2pcfg-debug.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/phoenix2pcfg-phoenix2pcfg.Po@am__quote@
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	if $(CXXCOMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" \
@@ -313,6 +333,72 @@ phoenix2cnf-PCFG.obj: PCFG.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	depfile='$(DEPDIR)/phoenix2cnf-PCFG.Po' tmpdepfile='$(DEPDIR)/phoenix2cnf-PCFG.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(phoenix2cnf_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o phoenix2cnf-PCFG.obj `if test -f 'PCFG.cpp'; then $(CYGPATH_W) 'PCFG.cpp'; else $(CYGPATH_W) '$(srcdir)/PCFG.cpp'; fi`
+
+phoenix2pcfg-phoenix2pcfg.o: phoenix2pcfg.cpp
+@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(phoenix2pcfg_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT phoenix2pcfg-phoenix2pcfg.o -MD -MP -MF "$(DEPDIR)/phoenix2pcfg-phoenix2pcfg.Tpo" \
+@am__fastdepCXX_TRUE@	  -c -o phoenix2pcfg-phoenix2pcfg.o `test -f 'phoenix2pcfg.cpp' || echo '$(srcdir)/'`phoenix2pcfg.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/phoenix2pcfg-phoenix2pcfg.Tpo" "$(DEPDIR)/phoenix2pcfg-phoenix2pcfg.Po"; \
+@am__fastdepCXX_TRUE@	else rm -f "$(DEPDIR)/phoenix2pcfg-phoenix2pcfg.Tpo"; exit 1; \
+@am__fastdepCXX_TRUE@	fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='phoenix2pcfg.cpp' object='phoenix2pcfg-phoenix2pcfg.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	depfile='$(DEPDIR)/phoenix2pcfg-phoenix2pcfg.Po' tmpdepfile='$(DEPDIR)/phoenix2pcfg-phoenix2pcfg.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(phoenix2pcfg_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o phoenix2pcfg-phoenix2pcfg.o `test -f 'phoenix2pcfg.cpp' || echo '$(srcdir)/'`phoenix2pcfg.cpp
+
+phoenix2pcfg-phoenix2pcfg.obj: phoenix2pcfg.cpp
+@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(phoenix2pcfg_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT phoenix2pcfg-phoenix2pcfg.obj -MD -MP -MF "$(DEPDIR)/phoenix2pcfg-phoenix2pcfg.Tpo" \
+@am__fastdepCXX_TRUE@	  -c -o phoenix2pcfg-phoenix2pcfg.obj `if test -f 'phoenix2pcfg.cpp'; then $(CYGPATH_W) 'phoenix2pcfg.cpp'; else $(CYGPATH_W) '$(srcdir)/phoenix2pcfg.cpp'; fi`; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/phoenix2pcfg-phoenix2pcfg.Tpo" "$(DEPDIR)/phoenix2pcfg-phoenix2pcfg.Po"; \
+@am__fastdepCXX_TRUE@	else rm -f "$(DEPDIR)/phoenix2pcfg-phoenix2pcfg.Tpo"; exit 1; \
+@am__fastdepCXX_TRUE@	fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='phoenix2pcfg.cpp' object='phoenix2pcfg-phoenix2pcfg.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	depfile='$(DEPDIR)/phoenix2pcfg-phoenix2pcfg.Po' tmpdepfile='$(DEPDIR)/phoenix2pcfg-phoenix2pcfg.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(phoenix2pcfg_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o phoenix2pcfg-phoenix2pcfg.obj `if test -f 'phoenix2pcfg.cpp'; then $(CYGPATH_W) 'phoenix2pcfg.cpp'; else $(CYGPATH_W) '$(srcdir)/phoenix2pcfg.cpp'; fi`
+
+phoenix2pcfg-PCFG.o: PCFG.cpp
+@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(phoenix2pcfg_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT phoenix2pcfg-PCFG.o -MD -MP -MF "$(DEPDIR)/phoenix2pcfg-PCFG.Tpo" \
+@am__fastdepCXX_TRUE@	  -c -o phoenix2pcfg-PCFG.o `test -f 'PCFG.cpp' || echo '$(srcdir)/'`PCFG.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/phoenix2pcfg-PCFG.Tpo" "$(DEPDIR)/phoenix2pcfg-PCFG.Po"; \
+@am__fastdepCXX_TRUE@	else rm -f "$(DEPDIR)/phoenix2pcfg-PCFG.Tpo"; exit 1; \
+@am__fastdepCXX_TRUE@	fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='PCFG.cpp' object='phoenix2pcfg-PCFG.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	depfile='$(DEPDIR)/phoenix2pcfg-PCFG.Po' tmpdepfile='$(DEPDIR)/phoenix2pcfg-PCFG.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(phoenix2pcfg_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o phoenix2pcfg-PCFG.o `test -f 'PCFG.cpp' || echo '$(srcdir)/'`PCFG.cpp
+
+phoenix2pcfg-PCFG.obj: PCFG.cpp
+@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(phoenix2pcfg_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT phoenix2pcfg-PCFG.obj -MD -MP -MF "$(DEPDIR)/phoenix2pcfg-PCFG.Tpo" \
+@am__fastdepCXX_TRUE@	  -c -o phoenix2pcfg-PCFG.obj `if test -f 'PCFG.cpp'; then $(CYGPATH_W) 'PCFG.cpp'; else $(CYGPATH_W) '$(srcdir)/PCFG.cpp'; fi`; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/phoenix2pcfg-PCFG.Tpo" "$(DEPDIR)/phoenix2pcfg-PCFG.Po"; \
+@am__fastdepCXX_TRUE@	else rm -f "$(DEPDIR)/phoenix2pcfg-PCFG.Tpo"; exit 1; \
+@am__fastdepCXX_TRUE@	fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='PCFG.cpp' object='phoenix2pcfg-PCFG.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	depfile='$(DEPDIR)/phoenix2pcfg-PCFG.Po' tmpdepfile='$(DEPDIR)/phoenix2pcfg-PCFG.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(phoenix2pcfg_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o phoenix2pcfg-PCFG.obj `if test -f 'PCFG.cpp'; then $(CYGPATH_W) 'PCFG.cpp'; else $(CYGPATH_W) '$(srcdir)/PCFG.cpp'; fi`
+
+phoenix2pcfg-debug.o: debug.cpp
+@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(phoenix2pcfg_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT phoenix2pcfg-debug.o -MD -MP -MF "$(DEPDIR)/phoenix2pcfg-debug.Tpo" \
+@am__fastdepCXX_TRUE@	  -c -o phoenix2pcfg-debug.o `test -f 'debug.cpp' || echo '$(srcdir)/'`debug.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/phoenix2pcfg-debug.Tpo" "$(DEPDIR)/phoenix2pcfg-debug.Po"; \
+@am__fastdepCXX_TRUE@	else rm -f "$(DEPDIR)/phoenix2pcfg-debug.Tpo"; exit 1; \
+@am__fastdepCXX_TRUE@	fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='debug.cpp' object='phoenix2pcfg-debug.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	depfile='$(DEPDIR)/phoenix2pcfg-debug.Po' tmpdepfile='$(DEPDIR)/phoenix2pcfg-debug.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(phoenix2pcfg_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o phoenix2pcfg-debug.o `test -f 'debug.cpp' || echo '$(srcdir)/'`debug.cpp
+
+phoenix2pcfg-debug.obj: debug.cpp
+@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(phoenix2pcfg_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT phoenix2pcfg-debug.obj -MD -MP -MF "$(DEPDIR)/phoenix2pcfg-debug.Tpo" \
+@am__fastdepCXX_TRUE@	  -c -o phoenix2pcfg-debug.obj `if test -f 'debug.cpp'; then $(CYGPATH_W) 'debug.cpp'; else $(CYGPATH_W) '$(srcdir)/debug.cpp'; fi`; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/phoenix2pcfg-debug.Tpo" "$(DEPDIR)/phoenix2pcfg-debug.Po"; \
+@am__fastdepCXX_TRUE@	else rm -f "$(DEPDIR)/phoenix2pcfg-debug.Tpo"; exit 1; \
+@am__fastdepCXX_TRUE@	fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='debug.cpp' object='phoenix2pcfg-debug.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	depfile='$(DEPDIR)/phoenix2pcfg-debug.Po' tmpdepfile='$(DEPDIR)/phoenix2pcfg-debug.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(phoenix2pcfg_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o phoenix2pcfg-debug.obj `if test -f 'debug.cpp'; then $(CYGPATH_W) 'debug.cpp'; else $(CYGPATH_W) '$(srcdir)/debug.cpp'; fi`
 uninstall-info-am:
 
 ETAGS = etags
