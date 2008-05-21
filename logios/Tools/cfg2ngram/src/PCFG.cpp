@@ -1253,36 +1253,34 @@ sentence PCFG::generateSample() const {
   sentence s;
 
   //start with the head
-  list<RHSe> u;
-  u.push_front(RHSe(head, grammar[head].name));
+  stack<RHSe> u;
+  u.push(RHSe(head, grammar[head].name));
 
-  for(list<RHSe>::iterator i = u.begin(); i != u.end();) {
-    debug << "resolving generation: " << printrule(u.begin(), u.end()) << endl;
-    //debug << "resolving generation: " << endl;
-    if(i->terminal) {
-      s.push_back(i->word);
-      i++;
+  while(!u.empty()) {
+    RHSe top(u.top()); u.pop();
+    if(top.terminal) {
+      if(top.word != "<s>" && top.word != "</s>")
+	s.push_back(top.word);
     } else {
       //find lhs rule
-      LHS lhs = grammar[i->index];
+      LHS lhs = grammar[top.index];
 
-      //pick a rhs
+      //pick a rhs, j
       double p = ((double)rand() / ((double)(RAND_MAX)+1.0L) );
-      debug << "p=" << p << endl;
       vector<RHS>::iterator j;
       double r = 0;
       for(j = lhs.rule.begin(); j != lhs.rule.end(); j++) {
 	if((r += j->probability) > p) break;
       }
-      assert(j != lhs.rule.end());
-      vector<RHSe> e = j->element;
 
-      //insert it in place
-      list<RHSe>::iterator where = i++;
-      u.insert(i, e.begin(), e.end());
-      i = u.erase(where);
+      //push the rhs
+      assert(j != lhs.rule.end());
+      for(vector<RHSe>::const_reverse_iterator i = j->element.rbegin(); i != j->element.rend(); i++)
+	u.push(*i);
     }
   }
+
+  //post-processing to remove <s> construct
 
   return s;
 }
