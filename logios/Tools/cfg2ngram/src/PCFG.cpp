@@ -10,6 +10,7 @@
 #include <locale>
 #include <algorithm>
 #include <functional>
+#include <iostream>
 
 #include <pcre.h>
 
@@ -1246,17 +1247,18 @@ sentence PCFG::generateSample() const {
    *    in accordance with the distribution
    * 3. do 2 until there are no more nt
    *
-   * This is slower than it needs 
+   * This is slower than it needs to be.
    */
 
   sentence s;
-  srand((unsigned)time(0)); 
 
   //start with the head
   list<RHSe> u;
   u.push_front(RHSe(head, grammar[head].name));
 
   for(list<RHSe>::iterator i = u.begin(); i != u.end();) {
+    debug << "resolving generation: " << printrule(u.begin(), u.end()) << endl;
+    //debug << "resolving generation: " << endl;
     if(i->terminal) {
       s.push_back(i->word);
       i++;
@@ -1266,6 +1268,7 @@ sentence PCFG::generateSample() const {
 
       //pick a rhs
       double p = ((double)rand() / ((double)(RAND_MAX)+1.0L) );
+      debug << "p=" << p << endl;
       vector<RHS>::iterator j;
       double r = 0;
       for(j = lhs.rule.begin(); j != lhs.rule.end(); j++) {
@@ -1275,8 +1278,9 @@ sentence PCFG::generateSample() const {
       vector<RHSe> e = j->element;
 
       //insert it in place
-      i = u.erase(i);
+      list<RHSe>::iterator where = i++;
       u.insert(i, e.begin(), e.end());
+      i = u.erase(where);
     }
   }
 

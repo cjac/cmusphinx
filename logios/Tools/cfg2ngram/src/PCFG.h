@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <sstream>
 
 using namespace std;
 
@@ -67,6 +68,8 @@ public:
     }
   };
   
+  typedef iterator<input_iterator_tag, RHSe> rhs_iterator;
+
   struct RHS {
     double probability;
     double count;
@@ -130,6 +133,16 @@ protected:
   void reduce();
   void removeUnreachables();
   void printChart(Chart<map<int, double> >& c) const;
+  template<class InIt>
+    string printrule(InIt a,InIt b) const {
+    ostringstream o;
+    for(InIt i = a; i != b; i++) {
+      o << (i->terminal? "t ": "nt ") << i->word << ' ';
+    }
+    return o.str();
+  }
+
+  //string printrule(rhs_iterator a, rhs_iterator b) const;
   string printrule(int i, int j) const;
   string printrule(int x, vector<RHS>::const_iterator y) const;
   RHSe shorten(const vector<RHSe>& r, int index=0);
