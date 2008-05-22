@@ -4,6 +4,7 @@
 AC_PREREQ(2.58)
 AC_INIT(FULL-PACKAGE-NAME, VERSION, BUG-REPORT-ADDRESS)
 AM_INIT_AUTOMAKE
+AC_PROG_RANLIB
 AC_CONFIG_SRCDIR([src/cfg2wngram.cpp])
 AC_CONFIG_HEADER([config.h])
 
@@ -30,4 +31,4 @@ AC_C_CONST
 # Checks for library functions.
 AC_HEADER_STDC
 
-AC_OUTPUT([Makefile src/Makefile])
+AC_OUTPUT([Makefile src/Makefile src/pcfgsrc/Makefile])

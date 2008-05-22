@@ -1,0 +1,7 @@
+#!/bin/sh -x
+
+# if [ ! -f ./libtool ] ; then libtoolize --copy ; fi
+
+aclocal && autoheader && automake --add-missing --copy && autoconf && ./configure CFLAGS="-Wall -O2" CXXFLAGS="-Wall -O2"
+
+exit 0
