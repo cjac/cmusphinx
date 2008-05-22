@@ -79,6 +79,13 @@ my $TOOLS = File::Spec->catdir($LOGIOS,'Tools');
 my $MAKEGRA = File::Spec->catdir($TOOLS,'MakeGra');
 my $GRAMMAR = File::Spec->catdir($RESOURCES, 'Grammar');
 my $GRAMMARFILE = File::Spec->catfile($GRAMMAR, $INSTANCE.'.gra');
+my $CLASSDIR = File::Spec->catdir($GRAMMAR, 'Classes');
+my @CLASSFILES;
+opendir(CDIR, $CLASSDIR);
+@CLASSFILES = map(File::Spec->catfile($CLASSDIR, $_), 
+		  grep(/\.class$/, readdir(CDIR)));
+closedir(CDIR);
+print STDERR "map: ". join(' ',map("--class $_", @CLASSFILES)), $/;
 my $BASEDIC = File::Spec->catfile($GRAMMAR, 'base.dic');
 my $TOKENLIST = File::Spec->catfile($GRAMMAR, $INSTANCE.'.token');
 
@@ -95,13 +102,12 @@ my $DICTDIR = File::Spec->catdir($DECODERCONFIG, 'Dictionary');  # where final d
 &say("\nmake_language", 'COMPILING GRAMMAR...');
 chdir($GRAMMAR); system('chdir');
 &say(" > executing in: ",File::Spec->rel2abs(File::Spec->curdir));
-&fail("compile_gra.pl") if
-  system("perl ".File::Spec->catfile($MAKEGRA,"compile_gra.pl")
-	 ." --tools $TOOLS"
-	 ." --project $PROJECT -instance $INSTANCE "
-	 ." --ingra $PROJECT.gra --outgra $INSTANCE.gra --absgra $GRABSFILE"
-	 # ." --class "
-      );
+my $cmd = "perl ".File::Spec->catfile($MAKEGRA,"compile_gra.pl")
+    ." --tools $TOOLS"
+    ." --project $PROJECT -instance $INSTANCE "
+    ." --ingra $PROJECT.gra --outgra $INSTANCE.gra --absgra $GRABSFILE"
+    .' '.join(' ',map("--class $_", @CLASSFILES));
+&fail("$cmd") if system($cmd);
 # the following files should have been created inside compile_gra.pl:
 #  .ctl and .prodef class files for decoder; .token for pronunciation; .words for lm
 
@@ -148,8 +154,13 @@ my $HAND_DICT = 'hand.dict';
 my $DICT = File::Spec->catfile($INSTANCE.'.dict');
 
 &say("\nmake_language", 'COMPILING DICTIONARY...');
-system("perl $MAKEDICT \
-       -tools $TOOLS -resources $DICTDIR -words $INSTANCE.token -handdict $HAND_DICT -dict $DICT");
+$cmd = "perl $MAKEDICT "
+    ." -tools $TOOLS"
+    ." -resources $DICTDIR"
+    ." -words $INSTANCE.token"
+    ." -handdict $HAND_DICT"
+    ." -dict $DICT";
+&fail($cmd) if system($cmd);
 system('chdir');
 &say("$/MAKE_LANGUAGE", "done\n");
 close(LOG) if $LOGFILE;

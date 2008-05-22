@@ -18,7 +18,7 @@ if ( scalar @ARGV eq 0 or
 		    ) ) { die $usage; }
 print STDERR "resolve: \n > infile-> $infile  graex-> $expfile  grabs-> $absfile\n";
 print STDERR " > executing in: ",File::Spec->rel2abs(File::Spec->curdir),"\n";
-open(IN,"GRAMMAR/$infile") or die "resolve: can't open infile: $infile!\n";
+open(IN,"$infile") or die "resolve: can't open infile: $infile!\n";
 open(OUT,">$expfile") or die "resolve: can't open expgra: $expfile!\n";
 open(ABS,">$absfile") or die "resolve: can't open absgra: $absfile!\n";
 
@@ -51,7 +51,7 @@ while (<IN>) {
   } else { print OUT "$_\n"; print ABS "$_\n";  next; }
   if ( not defined $classnet{$file} ) {
     print STDERR "resolve: defining $file\n";
-    open(CLASS,"GRAMMAR/$file.class") or die "resolve: missing .class file: $file\n";
+    open(CLASS,"$file.class") or die "resolve: missing .class file: $file\n";
     my $classset = "\n[$file]\n";
     while (<CLASS>) {
       chomp;

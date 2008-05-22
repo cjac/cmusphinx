@@ -31,5 +31,3 @@ my $lib = File::Spec->catfile($toolsdir,'MakeDict','lib','Pronounce.pm');
 require $lib;
 &Pronounce::make_dict($toolsdir,$resources,$words,$handdict,$dict,"pronunciation.log");
 
-exit 1;
-#

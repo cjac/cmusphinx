@@ -63,7 +63,7 @@ open(PROB,">$probdefile") or die "tokenize: can't open $probdefile";
 foreach $classfil (sort keys %classes) {
   $classid = $classes{$classfil};
   $classfil =~ s/\[(.+?)\]/$1/;  # strip []'s
-  open(CLASS,"GRAMMAR/$classfil.class") or die "tokenize: class file $classfil not found";
+  open(CLASS,"$classfil.class") or die "tokenize: class file $classfil not found";
   ($classname,$dirn,$suffix) = fileparse($classfil,qr/\.[^.]*/);
   my %lexset = ();
   while (<CLASS>) {
