@@ -1,0 +1,99 @@
+###################################################################
+#
+# MEETINGLINE Grammar
+# 
+# Written by: Dan Bohus, October 2002
+#
+# This is the forms file corresponding to the phoenix grammar for 
+# the MeetingLine system
+#
+#
+# HISTORY -------------------------------------------------------
+#
+# [2006-03-23] (dbohus):     started working on this
+#
+###################################################################
+
+FUNCTION: Statements  %%0.1%%
+    NETS: 
+	[UserPIN]
+;
+
+FUNCTION: Queries %%0.4%%  
+    NETS:
+	[QueryWhen]
+	[QueryWho]
+	[QueryAgenda]
+	[QueryActionItems]
+;
+
+FUNCTION: MeetingRef  %%0.3%%
+    NETS: 
+  [MeetingReferent]
+;
+
+FUNCTION: Commands
+    NETS:
+  [ReadNotes]
+;
+
+# these auxiliaries are defined in order to capture some parses like
+# next, this that, which o/w would parse as date-time
+FUNCTION: Auxiliaries
+    NETS:
+	[__datetime_junk]
+;
+###################################################################
+# GENERIC, TASK-INDEPENDENT SLOTS
+# 
+# Written by: Dan Bohus, May 2002
+# Checked/Updated by: Tina Bennett, May 2002
+#
+# This is the forms file corresponding to the phoenix grammar for 
+# common task-independ constructs (Generic.gra) that we are likely 
+# to use in most of the future developed spoken dialog systems. 
+#
+# HISTORY -------------------------------------------------------
+#
+# [2002-12-03] (dbohus):    set DateTime as non top-level slot,
+#                           renamed date_time (so it no longer
+#                           appears in the forms)
+# [2002-11-26] (antoine):   set TimeRange and Date as non-top level
+#			    slots renamed time_range and date
+# [2002-10-14] (dbohus):    Added [Number], by taking it from 
+#                           Communicator (erased the old one)
+# [2002-09-11] (dbohus):    added [Digit] and [Number], but will 
+#                           need to update with all the number
+#                           grammar from Communicator
+#
+###################################################################
+
+FUNCTION: Social    %%0.0010%%
+    NETS: 
+        [_i_want]
+	[_greeting]
+	[_can_you]	
+	[_lets]
+	[_courtesy]
+	[_emphatic]
+	[_tentative]
+;
+
+FUNCTION: GenericDialogMechanisms
+    NETS:
+	[Help]
+	[Repeat]
+	[Suspend]
+	[Resume]
+	[StartOver]
+	[EstablishContext]
+	[GoodEnough]
+	[Quit]
+;
+
+FUNCTION: YesNo
+    NETS:
+	[Neither]
+	[Yes]
+	[No]
+;
