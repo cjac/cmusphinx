@@ -2,6 +2,6 @@
 
 # if [ ! -f ./libtool ] ; then libtoolize --copy ; fi
 
-aclocal && autoheader && automake --add-missing --copy && autoconf && ./configure CFLAGS="-Wall -O2" CXXFLAGS="-Wall -O2"
+aclocal && autoheader && automake --add-missing --copy && autoconf && ./configure CFLAGS="-O2" CXXFLAGS="-O2"
 
 exit 0

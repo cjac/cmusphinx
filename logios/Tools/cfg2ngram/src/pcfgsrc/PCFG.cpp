@@ -140,6 +140,7 @@ PCFG PCFG::readPhoenixGrammar(istream& pGrammar, const string headname) {
 	RHS *tempRHS = NULL;
 	LHS *tempLHS = NULL;
 	string leaf(line+ovector[2*i], ovector[2*i+1] - ovector[2*i]);
+	if(leaf.at(0) == '<') continue; //ignore <s> construct
 	if(leaf.at(0) == '*') {
 	  //this leaf is optional, generate an anonymous production
 	  leaf.erase(0,1);
@@ -1259,8 +1260,7 @@ sentence PCFG::generateSample() const {
   while(!u.empty()) {
     RHSe top(u.top()); u.pop();
     if(top.terminal) {
-      if(top.word != "<s>" && top.word != "</s>")
-	s.push_back(top.word);
+      s.push_back(top.word);
     } else {
       //find lhs rule
       LHS lhs = grammar[top.index];
