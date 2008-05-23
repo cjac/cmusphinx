@@ -1266,15 +1266,23 @@ sentence PCFG::generateSample() const {
       LHS lhs = grammar[top.index];
 
       //pick a rhs, j
-      double p = ((double)rand() / ((double)(RAND_MAX)+1.0L) );
-      vector<RHS>::iterator j;
+      /*
+       * OK, so we need MY_RAND_MAX because gcc -mno-cygwin has an inconsistent
+       * view of rand_max, i.e. Windiws rand() is 16 bit and gcc RAND_MAX 
+       * is 15 bit. Ultimately I think this is a bug in the cygwin-mingw 
+       * headers. Using the lower 15 bits of randomness should work regardless,
+       * and is plenty for this application.
+       */
+      const unsigned int MY_RAND_MAX = 0x7FFFU; 
+      double p = ((double)(rand()%MY_RAND_MAX) / ((double)(MY_RAND_MAX)+1.0L) );
+      vector<RHS>::const_iterator j;
       double r = 0;
       for(j = lhs.rule.begin(); j != lhs.rule.end(); j++) {
 	if((r += j->probability) > p) break;
       }
 
       //push the rhs
-      assert(j != lhs.rule.end());
+      //assert(j != lhs.rule.end());
       for(vector<RHSe>::const_reverse_iterator i = j->element.rbegin(); i != j->element.rend(); i++)
 	u.push(*i);
     }
