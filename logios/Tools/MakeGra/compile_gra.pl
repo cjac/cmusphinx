@@ -61,7 +61,7 @@ print STDERR "class-> ",join(" ",@classf),"\n";
 foreach $cf (@classf) {
   open(IN,$cf) or die "can't open class file: $cf\n";
   my ($v,$p,$f) = File::Spec->splitpath($cf);
-  open(OUT,">Classes/$f") or die "can't open GRAMMAR/$f for writing!";
+  open(OUT,">$f") or die "can't open GRAMMAR/$f for writing!";
   while (<IN>) { s/[\n\r]+//g; print OUT "\t($_)\n"; }
   push @classd, $f;
 }

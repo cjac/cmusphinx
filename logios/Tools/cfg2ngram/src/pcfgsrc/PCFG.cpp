@@ -1274,7 +1274,7 @@ sentence PCFG::generateSample() const {
        * and is plenty for this application.
        */
       const unsigned int MY_RAND_MAX = 0x7FFFU; 
-      double p = ((double)(rand()%MY_RAND_MAX) / ((double)(MY_RAND_MAX)+1.0L) );
+      double p = ((double)(rand()%MY_RAND_MAX) / ((double)(MY_RAND_MAX)+1.0L));
       vector<RHS>::const_iterator j;
       double r = 0;
       for(j = lhs.rule.begin(); j != lhs.rule.end(); j++) {
