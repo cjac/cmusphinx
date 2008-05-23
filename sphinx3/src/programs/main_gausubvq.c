@@ -246,8 +246,12 @@ main(int32 argc, char *argv[])
     /* Parse subvector spec argument; subvec is null terminated; subvec[x] is -1 terminated */
     subvec = parse_subvecs(cmd_ln_str("-svspec"));
 
-    if (cmd_ln_str("-subvq"))
-        fpout = myfopen(cmd_ln_str("-subvq"), "w");
+    if (cmd_ln_str("-subvq")) {
+	    if ((fpout = fopen(cmd_ln_str("-subvq"), "w")) == NULL) {
+		    E_ERROR_SYSTEM("Failed to open output file '%s'", fpout);
+		    return 1;
+	    }
+    }
     else
         fpout = stdout;
 

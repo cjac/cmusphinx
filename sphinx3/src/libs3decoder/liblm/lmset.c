@@ -351,16 +351,17 @@ lmset_read_ctl(const char *ctlfile,
     lmset_t *lms = NULL;
     tmp = NULL;
 
-    lmclass_set = lmclass_newset();
+    E_INFO("Reading LM control file '%s'\n", ctlfile);
+    if ((ctlfp = fopen(ctlfile, "r")) == NULL) {
+	    E_ERROR_SYSTEM("Failed to open LM control file");
+	    return NULL;
+    }
 
+    lmclass_set = lmclass_newset();
 
     lms = (lmset_t *) ckd_calloc(1, sizeof(lmset_t));
     lms->n_lm = 0;
     lms->n_alloc_lm = 0;
-
-    E_INFO("Reading LM control file '%s'\n", ctlfile);
-
-    ctlfp = myfopen(ctlfile, "r");
 
     if (fscanf(ctlfp, "%s", str) == 1) {
         if (strcmp(str, "{") == 0) {
@@ -378,12 +379,6 @@ lmset_read_ctl(const char *ctlfile,
     }
     else
         str[0] = '\0';
-
-#if 0
-    tmp = myfopen("./tmp", "w");
-    lmclass_set_dump(lmclass_set, tmp);
-    fclose(tmp);
-#endif
 
     /* Fill in dictionary word id information for each LMclass word */
     for (cl = lmclass_firstclass(lmclass_set);

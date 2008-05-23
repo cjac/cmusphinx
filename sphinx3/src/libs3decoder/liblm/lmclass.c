@@ -164,8 +164,10 @@ lmclass_loadfile(lmclass_set_t *lmclass_set, char *file)
     assert(lmclass_set != NULL);
 
     E_INFO("Reading LM Class file '%s'\n", file);
-    fp = myfopen(file, "r");
-    /*(FILE *) CM_fopen(file, "r"); */
+    if ((fp = fopen(file, "r")) == NULL) {
+	    E_ERROR_SYSTEM("Failed to open LM class file");
+	    return NULL;
+    }
 
     lineno = 0;
     for (;;) {                  /* Read successive LM classes in this file */

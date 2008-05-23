@@ -364,8 +364,6 @@ get_frame_classes(s3_endpointer_t *_ep,
     int votes[NUM_CLASSES];
     int *voters;
 
-    static count = 0;
-    
     assert(_ep != NULL);
     assert(_classes != NULL);
 

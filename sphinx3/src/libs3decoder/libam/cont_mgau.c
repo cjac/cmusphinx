@@ -160,7 +160,10 @@ mgau_file_read(mgau_model_t * g, char *file_name, int32 type)
     if (g->verbose)
         E_INFO("Reading mixture gaussian file '%s'\n", file_name);
 
-    fp = myfopen(file_name, "rb");
+    if ((fp = fopen(file_name, "rb")) == NULL) {
+        E_ERROR_SYSTEM("Failed to open mixture gaussian file");
+        return -1;
+    }
 
     /* Read header, including argument-value info and 32-bit byteorder magic */
     if (bio_readhdr(fp, &argname, &argval, &byteswap) < 0)
@@ -504,7 +507,10 @@ mgau_mixw_read(mgau_model_t * g, char *file_name, float64 mixwfloor)
     if (g->verbose)
         E_INFO("Reading mixture weights file '%s'\n", file_name);
 
-    fp = myfopen(file_name, "rb");
+    if ((fp = fopen(file_name, "rb")) == NULL) {
+        E_ERROR_SYSTEM("Failed to open mixture weights file");
+        return -1;
+    }
 
     /* Read header, including argument-value info and 32-bit byteorder magic */
     if (bio_readhdr(fp, &argname, &argval, &byteswap) < 0)
