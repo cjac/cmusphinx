@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 
 use File::Spec;
+use File::Path;
 use Getopt::Long;
 
 use strict;
@@ -25,14 +26,14 @@ exit;
 
 sub clean {
     print STDERR "Cleaning up Resources$/";
-    unlink 
-	glob(File::Spec->catfile($DICTIONARYDIR, '*')),
-	glob(File::Spec->catfile($LMDIR, '*')),
-	map(File::Spec->catfile($GRAMMARDIR, $_),
-	    'forms', 'frames', 'log', 'logios.log', 'nets',
-	    map("$INSTANCE$_", 
-		'.corpus', '.ctl', '.gra', '.probdef', '.token', '.words', 
-		'_abs.gra', '_flat.gra'));
+    my @deltargets = (glob(File::Spec->catfile($DICTIONARYDIR, '*')),
+		      glob(File::Spec->catfile($LMDIR, '*')),
+		      map(File::Spec->catfile($GRAMMARDIR, $_),
+			  'forms', 'frames', 'log', 'logios.log', 'nets',
+			  map("$INSTANCE$_", 
+			      '.corpus', '.ctl', '.gra', '.probdef', '.token', '.words', 
+			      '_abs.gra', '_flat.gra')));
+    rmtree(\@deltargets, 1, 1);
 }
 
 sub build {

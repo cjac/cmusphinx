@@ -91,7 +91,8 @@ close TTFORMS; close FORMS; close FRAMES;
 
 # compile Phoenix grammar
 my $COMPILE = File::Spec->catfile($EXEDIR,$bindir,"compile_grammar").$exten;
-LogiosLog::fail("Phoenix compilation!") if not defined open(COMPILE, "$COMPILE -g . -f $instance |");
+my $cmd = "$COMPILE -g . -f $instance";
+LogiosLog::fail("Phoenix compilation!: cmd='$cmd'") if not defined open(COMPILE, "$cmd|");
 open(LOG, ">log"); print LOG <COMPILE>; close LOG;
 close COMPILE;
 

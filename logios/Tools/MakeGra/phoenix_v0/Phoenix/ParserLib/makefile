@@ -1,7 +1,8 @@
 CFLAGS= -g -Wall
 PHOENIX_OBS=  parse.o match.o grammar.o dict.o pconf.o  print_structs.o 
+TARGETS = libparse.a compile_grammar concept_leaf parse_text nfa_to_dfa
 
-all: libparse.a compile_grammar concept_leaf parse_text nfa_to_dfa
+all: $(TARGETS)
 
 libparse.a:  $(PHOENIX_OBS)
 	ar rv $@ $?
@@ -52,6 +53,8 @@ parse_text.o:   parse_text.c parse.h
 nfa_to_dfa:  nfa_to_dfa.o libparse.a
 	gcc $(CFLAGS)  -o nfa_to_dfa nfa_to_dfa.o libparse.a
 
-nfa_to_dfa.o:   nfa_to_dfa.c parse.h
+nfa_to_dfa.o: nfa_to_dfa.c parse.h
 	gcc $(CFLAGS) -c nfa_to_dfa.c 
 
+clean:
+	rm -f *.o $(TARGETS) *.exe
