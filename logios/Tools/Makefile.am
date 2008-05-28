@@ -1,1 +1,1 @@
-SUBDIRS = cfg2ngram
+SUBDIRS = cfg2ngram MakeGra
