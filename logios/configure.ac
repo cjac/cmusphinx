@@ -35,4 +35,7 @@ AC_OUTPUT([Makefile \
            Tools/Makefile \
 	   Tools/cfg2ngram/Makefile \
            Tools/cfg2ngram/src/Makefile \
-           Tools/cfg2ngram/src/pcfgsrc/Makefile])
+           Tools/cfg2ngram/src/pcfgsrc/Makefile \
+           Tools/MakeGra/Makefile \
+           Tools/MakeGra/phoenix_v0/Makefile \
+           Tools/MakeGra/phoenix_v0/ParserLib/Makefile])
