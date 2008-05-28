@@ -5,7 +5,7 @@ AC_PREREQ(2.58)
 AC_INIT(FULL-PACKAGE-NAME, VERSION, BUG-REPORT-ADDRESS)
 AM_INIT_AUTOMAKE
 AC_PROG_RANLIB
-AC_CONFIG_SRCDIR([src/cfg2wngram.cpp])
+AC_CONFIG_SRCDIR([Tools/cfg2ngram/src/cfg2wngram.cpp])
 AC_CONFIG_HEADER([config.h])
 
 # Native Windows compilation
@@ -31,4 +31,8 @@ AC_C_CONST
 # Checks for library functions.
 AC_HEADER_STDC
 
-AC_OUTPUT([Makefile src/Makefile src/pcfgsrc/Makefile])
+AC_OUTPUT([Makefile \
+           Tools/Makefile \
+	   Tools/cfg2ngram/Makefile \
+           Tools/cfg2ngram/src/Makefile \
+           Tools/cfg2ngram/src/pcfgsrc/Makefile])
