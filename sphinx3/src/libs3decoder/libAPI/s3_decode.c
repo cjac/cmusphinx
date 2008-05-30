@@ -368,13 +368,17 @@ s3_decode_process(s3_decode_t * _decode,
 					    FALSE,
 					    _decode->kb.feat);
         _decode->num_frames_entered += _num_frames;
-    }
 
-    if (num_features > 0)
-        utt_decode_block(_decode->kb.feat,
-                         num_features,
-                         &_decode->num_frames_decoded,
-			 &_decode->kb);
+        if (num_features > 0) {
+            if (_decode->num_frames_entered >= S3_MAX_FRAMES)
+                return S3_DECODE_ERROR_OUT_OF_MEMORY;
+
+            utt_decode_block(_decode->kb.feat,
+                             num_features,
+                             &_decode->num_frames_decoded,
+                             &_decode->kb);
+        }
+    }
 
     return S3_DECODE_SUCCESS;
 }
