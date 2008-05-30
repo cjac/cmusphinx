@@ -236,15 +236,14 @@ s3_decode_free_hyps(s3_decode_t * _decode);
 int
 s3_decode_init(s3_decode_t * _decode)
 {
-	return s3_decode_init_r(_decode, cmd_ln_get());
+    return s3_decode_init_r(_decode, cmd_ln_get());
 }
 
 int
 s3_decode_init_r(s3_decode_t * _decode, cmd_ln_t *_config)
 {
-    int rv = S3_DECODE_SUCCESS;
-
-    assert(_decode != NULL);
+    if (_decode == NULL)
+        return S3_DECODE_ERROR_NULL_POINTER;
 
     /* capture decoder parameters */
     kb_init_r(&_decode->kb, _config);
@@ -281,7 +280,8 @@ s3_decode_init_r(s3_decode_t * _decode, cmd_ln_t *_config)
 void
 s3_decode_close(s3_decode_t * _decode)
 {
-    assert(_decode != NULL);
+    if (_decode == NULL)
+        return;
 
     kb_free(&_decode->kb);
     s3_decode_free_hyps(_decode);
@@ -295,7 +295,8 @@ s3_decode_close(s3_decode_t * _decode)
 int
 s3_decode_begin_utt(s3_decode_t * _decode, char *_uttid)
 {
-    assert(_decode != NULL);
+    if (_decode == NULL)
+        return S3_DECODE_ERROR_NULL_POINTER;
 
     if (_decode->state != S3_DECODE_STATE_IDLE) {
         E_WARN("Cannot begin new utterance in current decoder state.\n");
@@ -319,7 +320,9 @@ void
 s3_decode_end_utt(s3_decode_t * _decode)
 {
     int32 num_features;
-    assert(_decode != NULL);
+
+    if (_decode == NULL)
+        return;
 
     if (_decode->state != S3_DECODE_STATE_DECODING) {
         E_WARN("Cannot end utterance in current decoder state.\n");
@@ -342,7 +345,7 @@ s3_decode_end_utt(s3_decode_t * _decode)
     _decode->state = S3_DECODE_STATE_IDLE;
 }
 
-void
+int
 s3_decode_process(s3_decode_t * _decode,
 		  float32 ** _cep_frames,
 		  int32 _num_frames)
@@ -350,8 +353,12 @@ s3_decode_process(s3_decode_t * _decode,
     int32 num_features = 0;
     int32 begin_utt = _decode->num_frames_entered == 0;
 
-    assert(_decode != NULL);
-    assert(_num_frames < S3_MAX_FRAMES);
+    if (_decode == NULL)
+        return S3_DECODE_ERROR_NULL_POINTER;
+
+    if (_num_frames >= S3_MAX_FRAMES)
+        return S3_DECODE_ERROR_OUT_OF_MEMORY;
+
 
     if (_num_frames > 0) {
         num_features = feat_s2mfc2feat_live(kbcore_fcb(_decode->kbcore),
@@ -368,6 +375,8 @@ s3_decode_process(s3_decode_t * _decode,
                          num_features,
                          &_decode->num_frames_decoded,
 			 &_decode->kb);
+
+    return S3_DECODE_SUCCESS;
 }
 
 int
@@ -376,7 +385,8 @@ s3_decode_hypothesis(s3_decode_t * _decode, char **_uttid, char **_hyp_str,
 {
     int rv = S3_DECODE_SUCCESS;
 
-    assert(_decode != NULL);
+    if (_decode == NULL)
+        return S3_DECODE_ERROR_NULL_POINTER;
 
     /* re-record the hypothesis if there is a frame number mismatch */
     if (_decode->num_frames_decoded != _decode->hyp_frame_num)
@@ -460,7 +470,8 @@ s3_decode_set_uttid(s3_decode_t * _decode, char *_uttid)
     struct tm *times;
     time_t t;
 
-    assert(_decode != NULL);
+    if (_decode == NULL)
+        return S3_DECODE_ERROR_NULL_POINTER;
 
     if (_decode->uttid != NULL) {
         ckd_free(_decode->uttid);
@@ -512,7 +523,8 @@ s3_decode_record_hyps(s3_decode_t * _decode, int _end_utt)
     dict_t *dict;
     int rv;
 
-    assert(_decode != NULL);
+    if (_decode == NULL)
+        return S3_DECODE_ERROR_NULL_POINTER;
 
     s3_decode_free_hyps(_decode);
 
@@ -590,6 +602,7 @@ s3_decode_record_hyps(s3_decode_t * _decode, int _end_utt)
                 ckd_free(hyp);
             }
         }
+        glist_free(hyp_list);
     }
 
     return rv;
@@ -599,6 +612,9 @@ void
 s3_decode_free_hyps(s3_decode_t * _decode)
 {
     srch_hyp_t **h;
+
+    if (_decode == NULL)
+        return;
 
   /** set the reference frame number to something invalid */
     _decode->hyp_frame_num = -1;

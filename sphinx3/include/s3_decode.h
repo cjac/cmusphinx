@@ -319,9 +319,9 @@ void s3_decode_end_utt(s3_decode_t *_decode);
     @see s3_decode_process_ceps
 */
 S3DECODER_EXPORT
-void s3_decode_process(s3_decode_t *_decode, 
-                       float32 **_frames,
-                       int32 _num_frames);
+int s3_decode_process(s3_decode_t *_decode, 
+                      float32 **_frames,
+                      int32 _num_frames);
 
 /** Retrieve partial or final decoding results (hypothesis).  Any
     hypothesis retrieved prior to the end of the utterance is called a 
