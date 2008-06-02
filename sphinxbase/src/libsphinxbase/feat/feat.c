@@ -164,185 +164,6 @@ feat_print_dbg(feat_t *fcb, mfcc_t ***feat, int32 nfr, const char *text)
 #define feat_print_dbg(fcb,mfc,nfr,text)
 #endif
 
-int32
-feat_readfile(feat_t * fcb, char *file, int32 sf, int32 ef,
-              mfcc_t *** feat, int32 maxfr)
-{
-    FILE *fp;
-    int32 i, l, k, nfr;
-    int32 byteswap, chksum_present;
-    uint32 chksum;
-    char **argname, **argval;
-    float32 *float_feat;
-
-    E_INFO("Reading feature file: '%s'[%d..%d]\n", file, sf, ef);
-    assert(fcb);
-
-    if (ef <= sf) {
-        E_ERROR("%s: End frame (%d) <= Start frame (%d)\n", file, ef, sf);
-        return -1;
-    }
-
-    if ((fp = fopen(file, "rb")) == NULL) {
-        E_ERROR("fopen(%s,rb) failed\n", file);
-        return -1;
-    }
-
-    /* Read header */
-    if (bio_readhdr(fp, &argname, &argval, &byteswap) < 0) {
-        E_ERROR("bio_readhdr(%s) failed\n", file);
-        fclose(fp);
-        return -1;
-    }
-
-    /* Parse header info (although nothing much is done with it) */
-    chksum_present = 0;
-    for (i = 0; argname[i]; i++) {
-        if (strcmp(argname[i], "version") == 0) {
-            if (strcmp(argval[i], FEAT_VERSION) != 0)
-                E_WARN("%s: Version mismatch: %s, expecting %s\n",
-                       file, argval[i], FEAT_VERSION);
-        }
-        else if (strcmp(argname[i], "chksum0") == 0) {
-            chksum_present = 1; /* Ignore the associated value */
-        }
-    }
-
-    bio_hdrarg_free(argname, argval);
-    argname = argval = NULL;
-
-    chksum = 0;
-
-    /* #Frames */
-    if (bio_fread(&nfr, sizeof(int32), 1, fp, byteswap, &chksum) != 1) {
-        E_ERROR("%s: fread(#frames) failed\n", file);
-        fclose(fp);
-        return -1;
-    }
-
-    /* #Feature streams */
-    if ((bio_fread(&l, sizeof(int32), 1, fp, byteswap, &chksum) != 1) ||
-        (l != feat_n_stream(fcb))) {
-        E_ERROR("%s: Missing or bad #feature streams\n", file);
-        fclose(fp);
-        return -1;
-    }
-
-    /* Feature stream lengths */
-    k = 0;
-    for (i = 0; i < feat_n_stream(fcb); i++) {
-        if ((bio_fread(&l, sizeof(int32), 1, fp, byteswap, &chksum) != 1)
-            || (l != feat_stream_len(fcb, i))) {
-            E_ERROR("%s: Missing or bad feature stream size\n", file);
-            fclose(fp);
-            return -1;
-        }
-        k += l;
-    }
-
-    /* Check sf/ef specified */
-    if (sf > 0) {
-        if (sf >= nfr) {
-            E_ERROR("%s: Start frame (%d) beyond file size (%d)\n", file,
-                    sf, nfr);
-            fclose(fp);
-            return -1;
-        }
-        nfr -= sf;
-    }
-
-    /* Limit nfr as indicated by [sf..ef] */
-    if ((ef - sf + 1) < nfr)
-        nfr = (ef - sf + 1);
-    if (nfr > maxfr) {
-        E_ERROR
-            ("%s: Feature buffer size(%d frames) < actual #frames(%d)\n",
-             file, maxfr, nfr);
-        fclose(fp);
-        return -1;
-    }
-
-    /* Position at desired start frame and read feature data */
-#ifdef FIXED_POINT
-    float_feat = ckd_calloc(nfr * k, sizeof(float32));
-#else
-    float_feat = feat[0][0];
-#endif
-    if (sf > 0)
-        fseek(fp, sf * k * sizeof(float32), SEEK_CUR);
-    if (bio_fread
-        (float_feat, sizeof(float32), nfr * k, fp, byteswap,
-         &chksum) != nfr * k) {
-        E_ERROR("%s: fread(%dx%d) (feature data) failed\n", file, nfr, k);
-        fclose(fp);
-        return -1;
-    }
-#ifdef FIXED_POINT
-    for (i = 0; i < nfr * k; ++i) {
-        feat[0][0][i] = FLOAT2MFCC(float_feat[i]);
-    }
-    ckd_free(float_feat);
-#endif
-
-    fclose(fp);                 /* NOTE: checksum NOT verified; we might read only part of file */
-
-    return nfr;
-}
-
-
-int32
-feat_writefile(feat_t * fcb, char *file, mfcc_t *** feat, int32 nfr)
-{
-    FILE *fp;
-    int32 i, k;
-    float32 *float_feat;
-
-    E_INFO("Writing feature file: '%s'\n", file);
-    assert(fcb);
-
-    if ((fp = fopen(file, "wb")) == NULL) {
-        E_ERROR("fopen(%s,wb) failed\n", file);
-        return -1;
-    }
-
-    /* Write header */
-    bio_writehdr_version(fp, FEAT_VERSION);
-
-    fwrite(&nfr, sizeof(int32), 1, fp);
-    fwrite(&(fcb->n_stream), sizeof(int32), 1, fp);
-    k = 0;
-    for (i = 0; i < feat_n_stream(fcb); i++) {
-        fwrite(&(fcb->stream_len[i]), sizeof(int32), 1, fp);
-        k += feat_stream_len(fcb, i);
-    }
-
-#ifdef FIXED_POINT
-    float_feat = ckd_calloc(nfr * k, sizeof(float32));
-    for (i = 0; i < nfr * k; ++i) {
-        float_feat[i] = MFCC2FLOAT(feat[0][0][i]);
-    }
-#else
-    float_feat = feat[0][0];
-#endif
-
-    /* Feature data is assumed to be in a single block, starting at feat[0][0][0] */
-    if ((int32) fwrite(float_feat, sizeof(float32), nfr * k, fp) !=
-        nfr * k) {
-        E_ERROR("%s: fwrite(%dx%d feature data) failed\n", file, nfr, k);
-        fclose(fp);
-        return -1;
-    }
-
-#ifdef FIXED_POINT
-    ckd_free(float_feat);
-#endif
-
-    fclose(fp);
-
-    return 0;
-}
-
-
 /*
  * Read specified segment [sf-win..ef+win] of Sphinx-II format mfc file read and return
  * #frames read.  Return -1 if error.
@@ -350,7 +171,7 @@ feat_writefile(feat_t * fcb, char *file, mfcc_t *** feat, int32 nfr)
 int32
 feat_s2mfc_read(char *file, int32 win,
                 int32 sf, int32 ef,
-                mfcc_t *** out_mfc,
+                mfcc_t ***out_mfc,
                 int32 maxfr,
                 int32 cepsize)
 {
@@ -505,51 +326,6 @@ feat_s2mfc_read(char *file, int32 win,
     return n + start_pad + end_pad;
 }
 
-
-static int32
-feat_stream_len_sum(feat_t * fcb)
-{
-    int32 i, k;
-
-    k = 0;
-    for (i = 0; i < feat_n_stream(fcb); i++)
-        k += feat_stream_len(fcb, i);
-    return k;
-}
-
-
-mfcc_t **
-feat_vector_alloc(feat_t * fcb)
-{
-    int32 i, k;
-    mfcc_t *data, **feat;
-
-    assert(fcb);
-
-    if ((k = feat_stream_len_sum(fcb)) <= 0) {
-        E_ERROR("Sum(feature stream lengths) = %d\n", k);
-        return NULL;
-    }
-
-    /* Allocate feature data array so that data is in one block from feat[0][0] */
-    feat = (mfcc_t **) ckd_calloc(feat_n_stream(fcb), sizeof(mfcc_t *));
-    data = (mfcc_t *) ckd_calloc(k, sizeof(mfcc_t));
-
-    for (i = 0; i < feat_n_stream(fcb); i++) {
-        feat[i] = data;
-        data += feat_stream_len(fcb, i);
-    }
-
-    return feat;
-}
-
-void
-feat_vector_free(mfcc_t **feat)
-{
-    ckd_free(feat[0]);
-    ckd_free(feat);
-}
-
 mfcc_t ***
 feat_array_alloc(feat_t * fcb, int32 nfr)
 {
@@ -558,22 +334,18 @@ feat_array_alloc(feat_t * fcb, int32 nfr)
 
     assert(fcb);
     assert(nfr > 0);
-
-    if ((k = feat_stream_len_sum(fcb)) <= 0) {
-        E_ERROR("Sum(feature stream lengths) = %d\n", k);
-        return NULL;
-    }
+    assert(feat_dimension(fcb) > 0);
 
     /* Allocate feature data array so that data is in one block from feat[0][0][0] */
+    k = feat_dimension(fcb);
     feat =
-        (mfcc_t ***) ckd_calloc_2d(nfr, feat_n_stream(fcb),
-                                    sizeof(mfcc_t *));
+        (mfcc_t ***) ckd_calloc_2d(nfr, feat_dimension1(fcb), sizeof(mfcc_t *));
     data = (mfcc_t *) ckd_calloc(nfr * k, sizeof(mfcc_t));
 
     for (i = 0; i < nfr; i++) {
-        for (j = 0; j < feat_n_stream(fcb); j++) {
+        for (j = 0; j < feat_dimension1(fcb); j++) {
             feat[i][j] = data;
-            data += feat_stream_len(fcb, j);
+            data += feat_dimension2(fcb, j);
         }
     }
 
@@ -598,7 +370,6 @@ feat_s2_4x_cep2feat(feat_t * fcb, mfcc_t ** mfc, mfcc_t ** feat)
 
     assert(fcb);
     assert(feat_cepsize(fcb) == 13);
-    assert(feat_cepsize_used(fcb) == 13);
     assert(feat_n_stream(fcb) == 4);
     assert(feat_stream_len(fcb, 0) == 12);
     assert(feat_stream_len(fcb, 1) == 24);
@@ -662,7 +433,6 @@ feat_s3_1x39_cep2feat(feat_t * fcb, mfcc_t ** mfc, mfcc_t ** feat)
 
     assert(fcb);
     assert(feat_cepsize(fcb) == 13);
-    assert(feat_cepsize_used(fcb) == 13);
     assert(feat_n_stream(fcb) == 1);
     assert(feat_stream_len(fcb, 0) == 39);
     assert(feat_window_size(fcb) == 3);
@@ -710,14 +480,11 @@ static void
 feat_s3_cep(feat_t * fcb, mfcc_t ** mfc, mfcc_t ** feat)
 {
     assert(fcb);
-    assert((feat_cepsize_used(fcb) <= feat_cepsize(fcb))
-           && (feat_cepsize_used(fcb) > 0));
     assert(feat_n_stream(fcb) == 1);
-    assert(feat_stream_len(fcb, 0) == feat_cepsize_used(fcb));
     assert(feat_window_size(fcb) == 0);
 
     /* CEP */
-    memcpy(feat[0], mfc[0], feat_cepsize_used(fcb) * sizeof(mfcc_t));
+    memcpy(feat[0], mfc[0], feat_cepsize(fcb) * sizeof(mfcc_t));
 }
 
 
@@ -729,23 +496,21 @@ feat_s3_cep_dcep(feat_t * fcb, mfcc_t ** mfc, mfcc_t ** feat)
     int32 i;
 
     assert(fcb);
-    assert((feat_cepsize_used(fcb) <= feat_cepsize(fcb))
-           && (feat_cepsize_used(fcb) > 0));
     assert(feat_n_stream(fcb) == 1);
-    assert(feat_stream_len(fcb, 0) == (feat_cepsize_used(fcb) * 2));
+    assert(feat_stream_len(fcb, 0) == feat_cepsize(fcb) * 2);
     assert(feat_window_size(fcb) == 2);
 
     /* CEP */
-    memcpy(feat[0], mfc[0], feat_cepsize_used(fcb) * sizeof(mfcc_t));
+    memcpy(feat[0], mfc[0], feat_cepsize(fcb) * sizeof(mfcc_t));
 
     /*
      * DCEP: mfc[2] - mfc[-2];
      */
-    f = feat[0] + feat_cepsize_used(fcb);
+    f = feat[0] + feat_cepsize(fcb);
     w = mfc[2];
     _w = mfc[-2];
 
-    for (i = 0; i < feat_cepsize_used(fcb); i++)
+    for (i = 0; i < feat_cepsize(fcb); i++)
         f[i] = w[i] - _w[i];
 }
 
@@ -759,23 +524,21 @@ feat_1s_c_d_dd_cep2feat(feat_t * fcb, mfcc_t ** mfc, mfcc_t ** feat)
     int32 i;
 
     assert(fcb);
-    assert((feat_cepsize_used(fcb) <= feat_cepsize(fcb))
-           && (feat_cepsize_used(fcb) > 0));
     assert(feat_n_stream(fcb) == 1);
-    assert(feat_stream_len(fcb, 0) == feat_cepsize_used(fcb) * 3);
+    assert(feat_stream_len(fcb, 0) == feat_cepsize(fcb) * 3);
     assert(feat_window_size(fcb) == FEAT_DCEP_WIN + 1);
 
     /* CEP */
-    memcpy(feat[0], mfc[0], feat_cepsize_used(fcb) * sizeof(mfcc_t));
+    memcpy(feat[0], mfc[0], feat_cepsize(fcb) * sizeof(mfcc_t));
 
     /*
      * DCEP: mfc[w] - mfc[-w], where w = FEAT_DCEP_WIN;
      */
-    f = feat[0] + feat_cepsize_used(fcb);
+    f = feat[0] + feat_cepsize(fcb);
     w = mfc[FEAT_DCEP_WIN];
     _w = mfc[-FEAT_DCEP_WIN];
 
-    for (i = 0; i < feat_cepsize_used(fcb); i++)
+    for (i = 0; i < feat_cepsize(fcb); i++)
         f[i] = w[i] - _w[i];
 
     /* 
@@ -789,7 +552,7 @@ feat_1s_c_d_dd_cep2feat(feat_t * fcb, mfcc_t ** mfc, mfcc_t ** feat)
     w_1 = mfc[FEAT_DCEP_WIN - 1];
     _w_1 = mfc[-FEAT_DCEP_WIN - 1];
 
-    for (i = 0; i < feat_cepsize_used(fcb); i++) {
+    for (i = 0; i < feat_cepsize(fcb); i++) {
         d1 = w1[i] - _w1[i];
         d2 = w_1[i] - _w_1[i];
 
@@ -848,7 +611,6 @@ feat_init(char const *type, cmn_type_t cmn, int32 varnorm,
             return NULL;
         }
         fcb->cepsize = 13;
-        fcb->cepsize_used = 13;
         fcb->n_stream = 4;
         fcb->stream_len = (int32 *) ckd_calloc(4, sizeof(int32));
         fcb->stream_len[0] = 12;
@@ -867,7 +629,6 @@ feat_init(char const *type, cmn_type_t cmn, int32 varnorm,
             return NULL;
         }
         fcb->cepsize = 13;
-        fcb->cepsize_used = 13;
         fcb->n_stream = 1;
         fcb->stream_len = (int32 *) ckd_calloc(1, sizeof(int32));
         fcb->stream_len[0] = 39;
@@ -877,15 +638,6 @@ feat_init(char const *type, cmn_type_t cmn, int32 varnorm,
     }
     else if (strncmp(type, "1s_c_d_dd", 9) == 0) {
         fcb->cepsize = cepsize;
-        /* Check if using only a portion of cep dimensions */
-        if (type[9] == ',') {
-            if ((sscanf(type + 10, "%d%n", &(fcb->cepsize_used), &l) != 1)
-                || (type[l + 10] != '\0') || (feat_cepsize_used(fcb) <= 0)
-                || (feat_cepsize_used(fcb) > feat_cepsize(fcb)))
-                E_FATAL("Bad feature type argument: '%s'\n", type);
-        }
-        else
-            fcb->cepsize_used = cepsize;
         fcb->n_stream = 1;
         fcb->stream_len = (int32 *) ckd_calloc(1, sizeof(int32));
         fcb->stream_len[0] = cepsize * 3;
@@ -896,18 +648,9 @@ feat_init(char const *type, cmn_type_t cmn, int32 varnorm,
     else if (strncmp(type, "cep_dcep", 8) == 0 || strncmp(type, "1s_c_d", 6) == 0) {
         /* 1-stream cep/dcep */
         fcb->cepsize = cepsize;
-        /* Check if using only a portion of cep dimensions */
-        if (type[8] == ',') {
-            if ((sscanf(type + 9, "%d%n", &(fcb->cepsize_used), &l) != 1)
-                || (type[l + 9] != '\0') || (feat_cepsize_used(fcb) <= 0)
-                || (feat_cepsize_used(fcb) > feat_cepsize(fcb)))
-                E_FATAL("Bad feature type argument: '%s'\n", type);
-        }
-        else
-            fcb->cepsize_used = cepsize;
         fcb->n_stream = 1;
         fcb->stream_len = (int32 *) ckd_calloc(1, sizeof(int32));
-        fcb->stream_len[0] = feat_cepsize_used(fcb) * 2;
+        fcb->stream_len[0] = feat_cepsize(fcb) * 2;
         fcb->out_dim = fcb->stream_len[0];
         fcb->window_size = 2;
         fcb->compute_feat = feat_s3_cep_dcep;
@@ -915,18 +658,9 @@ feat_init(char const *type, cmn_type_t cmn, int32 varnorm,
     else if (strncmp(type, "cep", 3) == 0 || strncmp(type, "1s_c", 4) == 0) {
         /* 1-stream cep */
         fcb->cepsize = cepsize;
-        /* Check if using only a portion of cep dimensions */
-        if (type[3] == ',') {
-            if ((sscanf(type + 4, "%d%n", &(fcb->cepsize_used), &l) != 1)
-                || (type[l + 4] != '\0') || (feat_cepsize_used(fcb) <= 0)
-                || (feat_cepsize_used(fcb) > feat_cepsize(fcb)))
-                E_FATAL("Bad feature type argument: '%s'\n", type);
-        }
-        else
-            fcb->cepsize_used = cepsize;
         fcb->n_stream = 1;
         fcb->stream_len = (int32 *) ckd_calloc(1, sizeof(int32));
-        fcb->stream_len[0] = feat_cepsize_used(fcb);
+        fcb->stream_len[0] = feat_cepsize(fcb);
         fcb->out_dim = fcb->stream_len[0];
         fcb->window_size = 0;
         fcb->compute_feat = feat_s3_cep;
@@ -962,7 +696,6 @@ feat_init(char const *type, cmn_type_t cmn, int32 varnorm,
         i = 0;
         fcb->out_dim = 0;
         fcb->cepsize = 0;
-        fcb->cepsize_used = 0;
         while (sscanf(strp, "%s%n", wd, &l) == 1) {
             strp += l;
             if ((i >= fcb->n_stream)
@@ -971,7 +704,6 @@ feat_init(char const *type, cmn_type_t cmn, int32 varnorm,
                 E_FATAL("Bad feature type argument\n");
             /* Input size before windowing */
             fcb->cepsize += fcb->stream_len[i];
-            fcb->cepsize_used += fcb->stream_len[i];
             if (fcb->window_size > 0)
                 fcb->stream_len[i] *= (fcb->window_size * 2 + 1);
             /* Output size after windowing */
@@ -1020,10 +752,10 @@ feat_print(feat_t * fcb, mfcc_t *** feat, int32 nfr, FILE * fp)
     for (i = 0; i < nfr; i++) {
         fprintf(fp, "%8d:", i);
 
-        for (j = 0; j < feat_n_stream(fcb); j++) {
+        for (j = 0; j < feat_dimension1(fcb); j++) {
             fprintf(fp, "\t%2d:", j);
 
-            for (k = 0; k < feat_stream_len(fcb, j); k++)
+            for (k = 0; k < feat_dimension2(fcb, j); k++)
                 fprintf(fp, " %8.4f", MFCC2FLOAT(feat[i][j][k]));
             fprintf(fp, "\n");
         }
@@ -1336,13 +1068,16 @@ feat_free(feat_t * f)
         if (f->name) {
             ckd_free((void *) f->name);
         }
-        ckd_free((void *) f->stream_len);
+
+        if (f->lda)
+            ckd_free_3d((void ***) f->lda);
+
+        ckd_free(f->stream_len);
 
         cmn_free(f->cmn_struct);
         agc_free(f->agc_struct);
 
         ckd_free((void *) f);
-
     }
 
 }
@@ -1353,16 +1088,15 @@ feat_report(feat_t * f)
 {
     int i;
     E_INFO_NOFN("Initialization of feat_t, report:\n");
-    E_INFO_NOFN("Feature type        = %s\n", f->name);
-    E_INFO_NOFN("Cepstral size       = %d\n", f->cepsize);
-    E_INFO_NOFN("Cepstral size Used  = %d\n", f->cepsize_used);
-    E_INFO_NOFN("Number of stream    = %d\n", f->n_stream);
+    E_INFO_NOFN("Feature type         = %s\n", f->name);
+    E_INFO_NOFN("Cepstral size        = %d\n", f->cepsize);
+    E_INFO_NOFN("Number of streams    = %d\n", f->n_stream);
     for (i = 0; i < f->n_stream; i++) {
         E_INFO_NOFN("Vector size of stream[%d]: %d\n", i,
                     f->stream_len[i]);
     }
-    E_INFO_NOFN("Whether CMN is used = %d\n", f->cmn);
-    E_INFO_NOFN("Whether AGC is used = %d\n", f->agc);
+    E_INFO_NOFN("Whether CMN is used  = %d\n", f->cmn);
+    E_INFO_NOFN("Whether AGC is used  = %d\n", f->agc);
     E_INFO_NOFN("Whether variance is normalized = %d\n", f->varnorm);
     E_INFO_NOFN("\n");
 }

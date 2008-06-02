@@ -104,14 +104,14 @@ extern "C" {
 #define S3_MAX_FRAMES		15000    /* RAH, I believe this is still too large, but better than before */
 
 #define cepstral_to_feature_command_line_macro()                        \
-{ "-feat",                                                                      \
-      ARG_STRING,                                                               \
-      "1s_c_d_dd",                                                              \
-      "Feature stream type, depends on the acoustic model" },                   \
-{ "-ceplen",                                                                    \
-      ARG_INT32,                                                                \
-      "13",                                                                     \
-     "Number of components in the input feature vector" },			\
+{ "-feat",                                                              \
+      ARG_STRING,                                                       \
+      "1s_c_d_dd",                                                      \
+      "Feature stream type, depends on the acoustic model" },           \
+{ "-ceplen",                                                            \
+      ARG_INT32,                                                        \
+      "13",                                                             \
+     "Number of components in the input feature vector" },              \
 { "-cmn",                                                               \
       ARG_STRING,                                                       \
       "current",                                                        \
@@ -149,9 +149,8 @@ extern "C" {
  * MFC cepstra) into this type of feature vectors.
  */
 typedef struct feat_s {
-    char *name;		/**<  Printable name for this feature type */
+    char *name;		/**< Printable name for this feature type */
     int32 cepsize;	/**< Size of input speech vector (typically, a cepstrum vector) */
-    int32 cepsize_used;	/**< No. of cepstrum vector dimensions actually used (0 onwards) */
     int32 n_stream;	/**< Number of feature streams; e.g., 4 in Sphinx-II */
     int32 *stream_len;	/**< Vector length of each feature stream */
     int32 window_size;	/**< Number of extra frames around given input frame needed to compute
@@ -190,56 +189,42 @@ typedef struct feat_s {
     uint32 out_dim; /**< Output dimensionality */
 } feat_t;
 
-/** Access macros */
+/**
+ * Name of feature type.
+ */
 #define feat_name(f)		((f)->name)
+/**
+ * Input dimensionality of feature.
+ */
 #define feat_cepsize(f)		((f)->cepsize)
-#define feat_cepsize_used(f)	((f)->cepsize_used)
-#define feat_n_stream(f)	((f)->n_stream)
-#define feat_stream_len(f,i)	((f)->stream_len[i])
+/**
+ * Size of dynamic feature window.
+ */
 #define feat_window_size(f)	((f)->window_size)
+/**
+ * Number of feature streams.
+ *
+ * @deprecated Do not use this, use feat_dimension1() instead.
+ */
+#define feat_n_stream(f)	((f)->n_stream)
+/**
+ * Length of feature stream i.
+ *
+ * @deprecated Do not use this, use feat_dimension2() instead.
+ */
+#define feat_stream_len(f,i)	((f)->stream_len[i])
+/**
+ * Number of streams or subvectors in feature output.
+ */
+#define feat_dimension1(f)	((f)->n_stream)
+/**
+ * Dimensionality of stream/subvector i in feature output.
+ */
+#define feat_dimension2(f,i)	((f)->stream_len[i])
+/**
+ * Total dimensionality of feature output.
+ */
 #define feat_dimension(f)	((f)->out_dim)
-
-
-/**
- * Read feature vectors from the given file.  Feature file format:
- *
- * - Line containing the single word: s3
- * - File header including any argument value pairs/line and other text (e.g.,
- * 	'chksum0 yes', 'version 1.0', as in other S3 format binary files)
- * - Header ended by line containing the single word: endhdr
- * - (int32) Byte-order magic number (0x11223344)
- * - (int32) No. of frames in file (N)
- * - (int32) No. of feature streams (S)
- * - (int32 x S) Width or dimensionality of each feature stream (sum = L)
- * - (mfcc_t) Feature vector data (NxL mfcc_t items).
- * - (uint32) Checksum (if present).
- *
- * (Note that this routine does NOT verify the checksum.)
- *
- * @return # frames read if successful, -1 if error.
- */
-SPHINXBASE_EXPORT
-int32 feat_readfile(feat_t *fcb,	/** In: Control block from feat_init() */
-                    char *file,		/** In: File to read */
-                    int32 sf,		/** In: Start/end frames (range) to be read from
-					    file; use 0, 0x7ffffff0 to read entire file */
-                    int32 ef,
-                    mfcc_t ***feat,	/** Out: Data structure to be filled with read
-					    data; allocate using feat_array_alloc() */
-		    int32 maxfrq	/** In: Number of frames allocated for feat above; error if
-					    attempt to read more than this amount. */
-    );
-/**
- * Counterpart to feat_readfile.  Feature data is assumed to be in a contiguous block
- * starting from feat[0][0][0].  (NOTE: No checksum is written.)
- * @return # frames read if successful, -1 if error.
- */
-SPHINXBASE_EXPORT
-int32 feat_writefile(feat_t *fcb,	/** In: Control block from feat_init() */
-		     char *file,	/** In: File to write */
-		     mfcc_t ***feat,	/** In: Feature data to be written */
-		     int32 nfr		/** In: Number of frames to be written */
-    );
 
 /**
  * Read Sphinx-II format mfc file (s2mfc = Sphinx-II format MFC data).
@@ -282,30 +267,17 @@ mfcc_t ***feat_array_alloc(feat_t *fcb,	/**< In: Descriptor from feat_init(), us
 					   to obtain number of streams and stream sizes */
                            int32 nfr	/**< In: Number of frames for which to allocate */
     );
-/**
- * Like feat_array_alloc except that only a single frame is allocated.  Hence, one
- * dimension less.
- */
-SPHINXBASE_EXPORT
-mfcc_t **feat_vector_alloc(feat_t *fcb  /**< In: Descriptor from feat_init(),
-                                           used to obtain number of streams and 
-                                           stream sizes */
-    );
+
 /**
  * Free a buffer allocated with feat_array_alloc()
  */
 SPHINXBASE_EXPORT
 void feat_array_free(mfcc_t ***feat);
-/**
- * Free a buffer allocated with feat_vector_alloc()
- */
-SPHINXBASE_EXPORT
-void feat_vector_free(mfcc_t **feat);
 
 
 /**
  * Initialize feature module to use the selected type of feature stream.  
- * One-time only * initialization at the beginning of the program.  Input type 
+ * One-time only initialization at the beginning of the program.  Input type 
  * is a string defining the  kind of input->feature conversion desired:
  *
  * - "s2_4x":     s2mfc->Sphinx-II 4-feature stream,

@@ -592,9 +592,9 @@ acmod_process_feat(acmod_t *acmod,
     }
 
     inptr = (acmod->feat_outidx + acmod->n_feat_frame) % acmod->n_feat_alloc;
-    for (i = 0; i < feat_n_stream(acmod->fcb); ++i)
+    for (i = 0; i < feat_dimension1(acmod->fcb); ++i)
         memcpy(acmod->feat_buf[inptr][i],
-               feat[i], feat_stream_len(acmod->fcb, i) * sizeof(**feat));
+               feat[i], feat_dimension2(acmod->fcb, i) * sizeof(**feat));
     ++acmod->n_feat_frame;
 
     return 1;
