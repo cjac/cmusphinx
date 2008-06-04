@@ -563,7 +563,17 @@ ngram_compute_seg_scores(ngram_search_t *ngs, float32 lwf)
             ps_search_dict(ngs)->rcFwdPermTable[p_bpe->r_diph] : ngs->zeroPermTab;
         start_score =
             ngs->bscore_stack[p_bpe->s_idx + rcpermtab[de->ci_phone_ids[0]]];
+        /* FIXME: WORST_SCORE shouldn't propagate, but sometimes it
+           does.  We cannot allow it to go any further because that
+           will result in positive acoustic scores.  Tracing the
+           source of this may be a bit involved. */
+        if (start_score == WORST_SCORE)
+            start_score = 0;
 
+        /* FIXME: These result in positive acoustic scores when filler
+           words have non-filler pronunciations.  That whole business
+           is still pretty much broken but at least it doesn't
+           segfault. */
         if (bpe->wid == ps_search_silence_wid(ngs)) {
             bpe->lscr = ngs->silpen;
         }
@@ -657,7 +667,8 @@ ngram_search_hyp(ps_search_t *search, int32 *out_score)
         ngram_compute_seg_scores(ngs,
                                  ngs->fwdflat
                                  ? ngs->fwdflat_fwdtree_lw_ratio : 1.0);
-        ngram_search_lattice(search);
+        if (ngram_search_lattice(search) == NULL)
+            return NULL;
         link = ps_lattice_bestpath(ps_search_dag(ngs), ngs->lmset,
                                    ngs->bestpath_fwdtree_lw_ratio,
                                    ngs->ascale);
@@ -774,6 +785,10 @@ ngram_search_bp_iter(ngram_search_t *ngs, int bpidx, float32 lwf)
         bp = be->bp;
         ++itor->n_bpidx;
     }
+    if (itor->n_bpidx == 0) {
+        ckd_free(itor);
+        return NULL;
+    }
     itor->bpidx = ckd_calloc(itor->n_bpidx, sizeof(*itor->bpidx));
     cur = itor->n_bpidx - 1;
     bp = bpidx;
@@ -800,7 +815,8 @@ ngram_search_seg_iter(ps_search_t *search, int32 *out_score)
         latlink_t *last;
 
         /* FIXME: Probably we don't need to recompute this whole DAG. */
-        ngram_search_lattice(search);
+        if (ngram_search_lattice(search) == NULL)
+            return NULL;
         last = ps_lattice_bestpath(ps_search_dag(ngs), ngs->lmset,
                                    ngs->bestpath_fwdtree_lw_ratio,
                                    ngs->ascale);
@@ -947,6 +963,7 @@ find_end_node(ngram_search_t *ngs, ps_lattice_t *dag, float32 lwf)
             return node;
     }
 
+    /* FIXME: This seems to happen a lot! */
     E_ERROR("Failed to find DAG node corresponding to %s\n",
            dict_base_str(ps_search_dict(ngs), ngs->bp_table[bestbp].wid));
     return NULL;
@@ -1031,7 +1048,16 @@ ngram_search_lattice(ps_search_t *search)
             score =
                 (ngs->bscore_stack[bp_ptr->s_idx + bss_offset] - bp_ptr->score) +
                 bp_ptr->ascr;
-            if (score > WORST_SCORE) {
+            if (score > 0) {
+                /* Scores must be negative, or Bad Things will happen.
+                   In general, they are, except in corner cases
+                   involving filler words.  We don't want to throw any
+                   links away so we'll keep these, but with some
+                   arbitrarily improbable but recognizable score. */
+                ps_lattice_link(dag, from, to, -424242, bp_ptr->frame);
+                from->reachable = TRUE;
+            }
+            else if (score > WORST_SCORE) {
                 ps_lattice_link(dag, from, to, score, bp_ptr->frame);
                 from->reachable = TRUE;
             }
