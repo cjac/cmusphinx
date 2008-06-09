@@ -124,7 +124,7 @@ typedef struct {
  */
 S3DECODER_EXPORT
 fillpen_t *fillpen_init (dict_t *dict,		/**< In: Dictionary containing filler words */
-			 char *file,		/**< In: Filler word probabilities file, if any */
+			 const char *file,	/**< In: Filler word probabilities file, if any */
 			 float64 silprob,	/**< In: Default probability for silence word */
 			 float64 fillprob,	/**< In: Default probability for non-silence filler
 						   words */

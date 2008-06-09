@@ -97,8 +97,8 @@ int encoding_str2ind(const char *enc /**< In: Input encoding */
    @return whether the two encoding could be resolved. 
 */
 S3DECODER_EXPORT
-int encoding_resolve(char* inputenc,  /**< In: Input encoding */
-		     char *outputenc  /**< In: Input encoding */
+int encoding_resolve(const char* inputenc,  /**< In: Input encoding */
+		     const char *outputenc  /**< In: Input encoding */
     );
 
 /**
@@ -108,7 +108,7 @@ void hextocode(char* src /**< In/Out: Input and output string where
 			    in-place conversion took place */
     );
 
-int ishex(char* str);
+int ishex(const char* str);
 
 #ifdef __cplusplus
 }

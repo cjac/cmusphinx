@@ -375,7 +375,7 @@ gauden_dist_precompute(gauden_t * g, float32 varfloor)
 
 
 gauden_t *
-gauden_init(char *meanfile, char *varfile, float32 varfloor,
+gauden_init(const char *meanfile, const char *varfile, float32 varfloor,
             int32 precompute)
 {
     int32 i, m, f, d, *flen;
@@ -429,7 +429,7 @@ gauden_free(gauden_t * g)
 }
 
 int32
-gauden_mean_reload(gauden_t * g, char *meanfile)
+gauden_mean_reload(gauden_t * g, const char *meanfile)
 {
     int32 i, m, f, d, *flen;
 

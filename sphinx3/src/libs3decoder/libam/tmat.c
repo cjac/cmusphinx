@@ -150,7 +150,7 @@ tmat_chk_1skip(tmat_t * tmat)
 
 
 tmat_t *
-tmat_init(char *file_name, float64 tpfloor, int32 breport)
+tmat_init(const char *file_name, float64 tpfloor, int32 breport)
 {
     char tmp;
     int32 n_src, n_dst;

@@ -280,17 +280,17 @@ typedef struct {
  */
 S3DECODER_EXPORT
 mgau_model_t *
-mgau_init (char *meanfile,	/**< In: File containing means of mixture gaussians */
-	   char *varfile,	/**< In: File containing variances of mixture gaussians */
-	   float64 varfloor,	/**< In: Floor value applied to variances; e.g., 0.0001 */
-	   char *mixwfile,	/**< In: File containing mixture weights */
-	   float64 mixwfloor,	/**< In: Floor value for mixture weights; e.g., 0.0000001 */
-	   int32 precomp,       /**< In: If TRUE, create and precompute mgau_t.lrd and also
-				   transform each var value to 1/(2*var).  (If FALSE, one
-				   cannot use the evaluation routines provided here.) */
-	   char* senmgau,	/**< In: type of the gaussians distribution, .cont. or .semi. FIX 
-				   me! This is confusing!*/
-	   int32 comp_type);    /**< In: Type of computation in this set of gaussian mixtures. */
+mgau_init (const char *meanfile,	/**< In: File containing means of mixture gaussians */
+	   const char *varfile,		/**< In: File containing variances of mixture gaussians */
+	   float64 varfloor,		/**< In: Floor value applied to variances; e.g., 0.0001 */
+	   const char *mixwfile,	/**< In: File containing mixture weights */
+	   float64 mixwfloor,		/**< In: Floor value for mixture weights; e.g., 0.0000001 */
+	   int32 precomp,		/**< In: If TRUE, create and precompute mgau_t.lrd and also
+						   transform each var value to 1/(2*var).  (If FALSE, one
+						   cannot use the evaluation routines provided here.) */
+	   const char* senmgau,		/**< In: type of the gaussians distribution, .cont. or .semi. FIX 
+						   me! This is confusing!*/
+	   int32 comp_type);		/**< In: Type of computation in this set of gaussian mixtures. */
 				
 
 /**
@@ -356,7 +356,7 @@ void mgau_free (mgau_model_t *g /**< In: A set of model to free */
  */
 S3DECODER_EXPORT
 int32 mgau_mean_reload(mgau_model_t *g,  /**< In/Out : The mean which will be resetted*/
-		       char* mean_file_name /**< In: The mean files */
+		       const char* mean_file_name /**< In: The mean files */
     );
 
 #if 0

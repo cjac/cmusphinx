@@ -159,7 +159,7 @@
 
 /* 20050321 Duplicated function. can also be io.c. Clean it up later. */
 FILE *
-file_open(char *filepath)
+file_open(const char *filepath)
 {
     FILE *fp;
     fp = NULL;
@@ -319,7 +319,7 @@ kb_init_r(kb_t * kb, cmd_ln_t *config)
 }
 
 void
-kb_set_uttid(char *_uttid, char *_uttfile, kb_t * _kb)
+kb_set_uttid(const char *_uttid, const char *_uttfile, kb_t * _kb)
 {
     assert(_kb != NULL);
     assert(_uttid != NULL);
@@ -335,7 +335,7 @@ kb_set_uttid(char *_uttid, char *_uttfile, kb_t * _kb)
 }
 
 void
-kb_setmllr(char *mllrname, char *cb2mllrname,
+kb_setmllr(const char *mllrname, const char *cb2mllrname,
                                    /** < In: The filename of the MLLR class map */
            kb_t * kb)
 {

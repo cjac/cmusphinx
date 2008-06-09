@@ -145,10 +145,10 @@ model_set_mllr_r(ms_mgau_model_t * msg, const char *mllrfile,
 }
 
 ms_mgau_model_t *
-ms_mgau_init(char *meanfile,
-             char *varfile, float64 varfloor,
-             char *mixwfile, float64 mixwfloor,
-             int32 precomp, char *senmgau, char *lambdafile, int32 _topn)
+ms_mgau_init(const char *meanfile,
+             const char *varfile, float64 varfloor,
+             const char *mixwfile, float64 mixwfloor,
+             int32 precomp, const char *senmgau, const char *lambdafile, int32 _topn)
 {
     /* Codebooks */
     int32 i;

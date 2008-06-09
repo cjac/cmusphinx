@@ -239,7 +239,7 @@ static dict_t *dict;            /* The dictionary       */
 static fillpen_t *fpen;         /* The filler penalty structure. */
 static lmset_t *lmset;          /* The lmset.           */
 
-char *nbestdir;
+static const char *nbestdir;
 
 /*
  * Command line arguments.
@@ -336,7 +336,7 @@ models_init(void)
  * uttid is the last component of ctlspec.
  */
 static void
-build_output_uttfile(char *buf, char *dir, char *uttid, char *ctlspec)
+build_output_uttfile(char *buf, const char *dir, const char *uttid, const char *ctlspec)
 {
     int32 k;
 
@@ -362,7 +362,9 @@ static void
 utt_astar(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
 {
     char dagfile[1024], nbestfile[1024];
-    char *latdir, *latext, *nbestext;
+    const char *latdir;
+    const char *latext;
+    const char *nbestext;
     dag_t *dag;
     int32 nfrm;
 

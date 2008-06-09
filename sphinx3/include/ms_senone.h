@@ -162,10 +162,10 @@ typedef struct {
  * PDF values to logs3 domain and quantize to 8-bits.
  * @return pointer to senone structure created.  Caller MUST NOT change its contents.
  */
-senone_t *senone_init (char *mixwfile,		/**< In: mixing weights file */
-		       char *mgau_mapfile,	/**< In: file specifying mapping from each
-						   senone to mixture gaussian codebook.
-						   If NULL all senones map to codebook 0 */
+senone_t *senone_init (const char *mixwfile,		/**< In: mixing weights file */
+		       const char *mgau_mapfile,	/**< In: file specifying mapping from each
+			        			   senone to mixture gaussian codebook.
+				        		   If NULL all senones map to codebook 0 */
 		       float32 mixwfloor	/**< In: Floor value for senone weights */
     );
 

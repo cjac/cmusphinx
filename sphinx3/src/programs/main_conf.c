@@ -222,8 +222,9 @@ confidence_utt(char *uttid, FILE * _confmatchsegfp)
     seg_hyp_line_t s_hypline;
     char line[16384];
     char dagfile[16384];
-    char *fmt;
-    char *latdir, *latext;
+    const char *fmt;
+    const char *latdir;
+    const char *latext;
     E_INFO("Processing %s\n", uttid);
     if (fgets(line, sizeof(line), _confmatchsegfp) == NULL)
         E_FATAL("Fail to read a line in the matchsegfp for uttid %s\n",

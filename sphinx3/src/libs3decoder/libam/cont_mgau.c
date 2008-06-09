@@ -142,7 +142,7 @@
  * \warning You can only read the variance after reading the mean.  
  */
 static int32
-mgau_file_read(mgau_model_t * g, char *file_name, int32 type)
+mgau_file_read(mgau_model_t * g, const char *file_name, int32 type)
 {
     char tmp;
     FILE *fp;
@@ -430,7 +430,7 @@ mgau_file_read(mgau_model_t * g, char *file_name, int32 type)
 
 int32
 mgau_mean_reload(mgau_model_t * g,      /**< In/Out: The GMM */
-                 char *mean_file_name       /**< In: file name for the mean file. */
+                 const char *mean_file_name       /**< In: file name for the mean file. */
     )
 {
     assert(g->mgau != NULL);
@@ -488,7 +488,7 @@ mgau_dump(mgau_model_t * g, int32 type)
 }
 
 static int32
-mgau_mixw_read(mgau_model_t * g, char *file_name, float64 mixwfloor)
+mgau_mixw_read(mgau_model_t * g, const char *file_name, float64 mixwfloor)
 {
     char **argname, **argval;
     char eofchk;
@@ -883,10 +883,10 @@ mgau_precomp(mgau_model_t * g)
 */
 
 mgau_model_t *
-mgau_init(char *meanfile,
-          char *varfile, float64 varfloor,
-          char *mixwfile, float64 mixwfloor,
-          int32 precomp, char *senmgau, int32 comp_type)
+mgau_init(const char *meanfile,
+          const char *varfile, float64 varfloor,
+          const char *mixwfile, float64 mixwfloor,
+          int32 precomp, const char *senmgau, int32 comp_type)
 {
     mgau_model_t *g;
 

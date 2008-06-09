@@ -132,7 +132,7 @@ report_utt_res(utt_res_t * ur)
 }
 
 corpus_t *
-corpus_load_headid(char *file,
+corpus_load_headid(const char *file,
                    int32(*validate) (char *str),
                    int32(*dup_resolve) (char *s1, char *s2))
 {
@@ -250,7 +250,7 @@ sep_tailid(char *line, char *uttid)
 
 
 corpus_t *
-corpus_load_tailid(char *file,
+corpus_load_tailid(const char *file,
                    int32(*validate) (char *str),
                    int32(*dup_resolve) (char *s1, char *s2))
 {
@@ -336,7 +336,7 @@ corpus_load_tailid(char *file,
 
 
 char *
-corpus_lookup(corpus_t * corp, char *id)
+corpus_lookup(corpus_t * corp, const char *id)
 {
     void *val;
     int32 n;
@@ -520,7 +520,7 @@ ctl_process(char *ctlfile, char *ctlmllrfile, int32 nskip, int32 count,
 #endif
 
 ptmr_t
-ctl_process(char *ctlfile, char *ctllmfile, char *ctlmllrfile, int32 nskip,
+ctl_process(const char *ctlfile, const char *ctllmfile, const char *ctlmllrfile, int32 nskip,
             int32 count, void (*func) (void *kb, utt_res_t * ur, int32 sf,
                                        int32 ef, char *uttid), void *kb)
 {
@@ -668,7 +668,7 @@ ctl_process(char *ctlfile, char *ctllmfile, char *ctlmllrfile, int32 nskip,
 
 
 ptmr_t
-ctl_process_utt(char *uttfile, int32 count,
+ctl_process_utt(const char *uttfile, int32 count,
                 void (*func) (void *kb, utt_res_t * ur, int32 sf, int32 ef,
                               char *uttid), void *kb)
 {
@@ -733,7 +733,7 @@ ctl_process_utt(char *uttfile, int32 count,
 
 
 void
-ctl_infile(char *file, char *dir, char *ext, char *utt)
+ctl_infile(char *file, const char *dir, const char *ext, const char *utt)
 {
     int32 l1, l2;
 
@@ -764,7 +764,7 @@ ctl_infile(char *file, char *dir, char *ext, char *utt)
 
 
 void
-ctl_outfile(char *file, char *dir, char *ext, char *utt, char *uttid)
+ctl_outfile(char *file, const char *dir, const char *ext, const char *utt, const char *uttid)
 {
     int32 k;
 

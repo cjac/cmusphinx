@@ -164,7 +164,7 @@ typedef struct {
  *   End
  *   @return initialized sub-vq
  */
-subvq_t *subvq_init (char *file,	/**< In: Subvector model file */
+subvq_t *subvq_init (const char *file,	/**< In: Subvector model file */
 		     float64 varfloor,	/**< In: Floor to be applied to variance values */
 		     int32 max_sv,	/**< In: Use the first so many subvectors instead of all;
 					   if <0, use all */
@@ -177,7 +177,7 @@ subvq_t *subvq_init (char *file,	/**< In: Subvector model file */
 /**
  * Re-entrant version of subvq_init().
  */
-subvq_t *subvq_init_r(char *file,	/**< In: Subvector model file */
+subvq_t *subvq_init_r(const char *file,	/**< In: Subvector model file */
                       float64 varfloor,	/**< In: Floor to be applied to variance values */
                       int32 max_sv,	/**< In: Use the first so many subvectors instead of all;
 					   if <0, use all */

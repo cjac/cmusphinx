@@ -43,12 +43,12 @@ typedef struct {
 
 S3DECODER_EXPORT
 void s3_endpointer_init(s3_endpointer_t *_ep,
-			char *_means_file,
-			char *_vars_file,
+			const char *_means_file,
+			const char *_vars_file,
 			float64 _var_floor,
-			char *_mix_weights_file,
+			const char *_mix_weights_file,
 			float64 _mix_weight_floor,
-			char *_gm_type,
+			const char *_gm_type,
 			int _post_classify,
 			int _begin_window,
 			int _begin_threshold,

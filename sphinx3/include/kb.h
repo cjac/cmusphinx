@@ -215,16 +215,16 @@ void kb_free (kb_t *kb
   
 /** Set MLLR */
 S3DECODER_EXPORT
-void kb_setmllr(char* mllrname, /**< In: The name of the mllr model */
-		char* cb2mllrname, /**< In: The filename of the MLLR class map */
-		kb_t *kb
+void kb_setmllr(const char* mllrname, /**< In: The name of the mllr model */
+                const char* cb2mllrname, /**< In: The filename of the MLLR class map */
+                kb_t *kb
     );    /* ARCHAN 20040724 */
 
 /** Set Utterance ID to uttid */
 S3DECODER_EXPORT
-void kb_set_uttid(char *uttid, /**< In: the new utt id */
-                  char *uttfile, /**< In: the new utt filename */
-		  kb_t *kb
+void kb_set_uttid(const char *uttid, /**< In: the new utt id */
+                  const char *uttfile, /**< In: the new utt filename */
+                  kb_t *kb
     );   /* ARCHAN 20041111 */
 
 

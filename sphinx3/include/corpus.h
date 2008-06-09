@@ -197,14 +197,14 @@ typedef struct {
  * 
  * Return value: Ptr to corpus if successful.
  */
-corpus_t *corpus_load_headid (char *file,	/**< Input file name, the file must be seekable and rewindable */
+corpus_t *corpus_load_headid (const char *file,	/**< Input file name, the file must be seekable and rewindable */
 			      int32 (*validate)(char *str),
 			      int32 (*dup_resolve)(char *s1, char *s2));
 
 /**
  * Similar to corpus_load_headid, but the ID is at the END of each line, in parentheses.
  */
-corpus_t *corpus_load_tailid (char *file,	/**< Input file name, the file must be seekable and rewindable */
+corpus_t *corpus_load_tailid (const char *file,	/**< Input file name, the file must be seekable and rewindable */
 			      int32 (*validate)(char *str),
 			      int32 (*dup_resolve)(char *s1, char *s2));
 
@@ -212,7 +212,7 @@ corpus_t *corpus_load_tailid (char *file,	/**< Input file name, the file must be
  * Lookup the given corpus for the given ID and return the associated string.
  * Return NULL if ID not found.
  */
-char *corpus_lookup (corpus_t *corp, char *id);
+char *corpus_lookup (corpus_t *corp, const char *id);
 
 
 /**
@@ -244,9 +244,9 @@ int32 ctl_read_entry (FILE *fp,         /**< In: an input file pointer */
  * Return value: ptmr_t structure containing cpu/elapsed time stats for the run.
  */
 S3DECODER_EXPORT
-ptmr_t ctl_process (char *ctlfile,	/**< In: Control file to read; use stdin if NULL */
-		    char *ctllmfile,     /**< In: Control file that specify the lm used for the corresponding utterance */
-		    char *ctlmllrfile,   /**< In: Contorl file that specify the mllr used for the corresponding utterance */
+ptmr_t ctl_process (const char *ctlfile,	/**< In: Control file to read; use stdin if NULL */
+		    const char *ctllmfile,     /**< In: Control file that specify the lm used for the corresponding utterance */
+		    const char *ctlmllrfile,   /**< In: Contorl file that specify the mllr used for the corresponding utterance */
 		    int32 nskip,	/**< In: No. of entries to skip at the head */
 		    int32 count,	/**< In: No. of entries to process after nskip */
 		    void (*func) (void *kb, utt_res_t *ur, int32 sf, int32 ef, char *uttid),
@@ -266,7 +266,7 @@ ptmr_t ctl_process (char *ctlfile,	/**< In: Control file to read; use stdin if N
  * @return: ptmr_t structure containing cpu/elapsed time stats for the run.
  */
 S3DECODER_EXPORT
-ptmr_t ctl_process_utt (char *uttfile,	/**< In: Filename to be process (in its entirety) */
+ptmr_t ctl_process_utt (const char *uttfile,	/**< In: Filename to be process (in its entirety) */
 			int32 count,	/**< In: No. of iterations to process uttfile */
 			void (*func) (void *kb, utt_res_t *ur, int32 sf, int32 ef, char *uttid),/**< A function pointer that do the actual processing */
 
@@ -279,12 +279,12 @@ ptmr_t ctl_process_utt (char *uttfile,	/**< In: Filename to be process (in its e
  * 	append .ext to filename.
  */
 void ctl_infile (char *file,	/**< Out: Generated filename (allocated by caller) */
-		 char *dir,	/**< In: Optional directory spec if relative utt specified */
-		 char *ext,	/**< In: File extension to be appended to utt to generate
-				   complete filename */
-		 char *utt	/**< In: Utterance file pathname, absolute or relative,
-				   with or without file extension.  This is usually the
-				   first field in a control file */
+		 const char *dir,	/**< In: Optional directory spec if relative utt specified */
+		 const char *ext,	/**< In: File extension to be appended to utt to generate
+					   complete filename */
+		 const char *utt	/**< In: Utterance file pathname, absolute or relative,
+					   with or without file extension.  This is usually the
+					   first field in a control file */
     );
 
 /**
@@ -295,13 +295,13 @@ void ctl_infile (char *file,	/**< Out: Generated filename (allocated by caller) 
  * If a non-empty ext specified append .ext to generated filename.
  */
 void ctl_outfile (char *file,	/**< Out: Generated filename (allocated by caller) */
-		  char *dir,	/**< In: Directory for the generated filename; see comment
-				   for special handling of ,CTL suffix */
-		  char *ext,	/**< In: File-extension applied to the generated filename */
-		  char *utt,	/**< In: Utterance file pathname, absolute or relative,
-				   with or without extension.  This is usually the first
-				   field in a control file. */
-		  char *uttid	/**< In: Utterance ID (derived from the control file */
+		  const char *dir,	/**< In: Directory for the generated filename; see comment
+					   for special handling of ,CTL suffix */
+		  const char *ext,	/**< In: File-extension applied to the generated filename */
+		  const char *utt,	/**< In: Utterance file pathname, absolute or relative,
+					   with or without extension.  This is usually the first
+					   field in a control file. */
+		  const char *uttid	/**< In: Utterance ID (derived from the control file */
     );
 
 #if 0

@@ -79,7 +79,7 @@
 
 
 fillpen_t *
-fillpen_init(dict_t * dict, char *file, float64 silprob, float64 fillprob,
+fillpen_init(dict_t * dict, const char *file, float64 silprob, float64 fillprob,
              float64 lw, float64 wip)
 {
     s3wid_t w, bw;

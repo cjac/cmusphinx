@@ -167,7 +167,7 @@ mdef_hmm_cmp(mdef_t * m, s3pid_t p1, s3pid_t p2)
 
 
 static void
-ciphone_add(mdef_t * m, char *ci, s3pid_t p)
+ciphone_add(mdef_t * m, const char *ci, s3pid_t p)
 {
     assert(p < m->n_ciphone);
 
@@ -240,7 +240,7 @@ triphone_add(mdef_t * m,
 
 
 s3cipid_t
-mdef_ciphone_id(mdef_t * m, char *ci)
+mdef_ciphone_id(mdef_t * m, const char *ci)
 {
     void *id;
 
@@ -426,10 +426,11 @@ mdef_is_cisenone(mdef_t * m, s3senid_t s)
 
 /* Parse tmat and state->senone mappings for phone p and fill in structure */
 static void
-parse_tmat_senmap(mdef_t * m, char *line, int32 off, s3pid_t p)
+parse_tmat_senmap(mdef_t * m, const char *line, int32 off, s3pid_t p)
 {
     int32 wlen, n, s;
-    char word[1024], *lp;
+    char word[1024];
+    const char *lp;
 
     lp = line + off;
 
@@ -474,10 +475,11 @@ parse_tmat_senmap(mdef_t * m, char *line, int32 off, s3pid_t p)
 
 
 static void
-parse_base_line(mdef_t * m, char *line, s3pid_t p)
+parse_base_line(mdef_t * m, const char *line, s3pid_t p)
 {
     int32 wlen, n;
-    char word[1024], *lp;
+    char word[1024];
+    const char *lp;
     s3cipid_t ci;
 
     lp = line;
@@ -523,10 +525,11 @@ parse_base_line(mdef_t * m, char *line, s3pid_t p)
 
 
 static void
-parse_tri_line(mdef_t * m, char *line, s3pid_t p)
+parse_tri_line(mdef_t * m, const char *line, s3pid_t p)
 {
     int32 wlen;
-    char word[1024], *lp;
+    char word[1024];
+    const char *lp;
     s3cipid_t ci, lc, rc;
     word_posn_t wpos = WORD_POSN_BEGIN;
 
@@ -660,7 +663,7 @@ noncomment_line(char *line, int32 size, FILE * fp)
  * Initialize phones (ci and triphones) and state->senone mappings from .mdef file.
  */
 mdef_t *
-mdef_init(char *mdeffile, int32 breport)
+mdef_init(const char *mdeffile, int32 breport)
 {
     FILE *fp;
     int32 n_ci, n_tri, n_map, n;

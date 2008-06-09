@@ -126,10 +126,13 @@ static arg_t arg[] = {
 int
 main(int argc, char *argv[])
 {
-    char *inputfn, *outputfn;
-    char *inputfmt, *outputfmt;
-    char *inputenc, *outputenc;
-    char *outputdir;
+    const char *inputfn;
+    const char *outputfn;
+    const char *inputfmt;
+    const char *outputfmt;
+    const char *inputenc;
+    const char *outputenc;
+    const char *outputdir;
     char *outputpath;
 
     lm_t *lm;

@@ -120,7 +120,7 @@ typedef struct {
  * contents.
  * @return an initialized interp_t structure 
  */
-interp_t *interp_init (char *interpfile	/* In: interpolation weights file */
+interp_t *interp_init (const char *interpfile	/* In: interpolation weights file */
     );
 
 /**

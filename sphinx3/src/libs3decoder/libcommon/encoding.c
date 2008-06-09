@@ -96,7 +96,7 @@ i\o 0 1 2
  */
 
 int
-encoding_resolve(char *inputenc, char *outputenc)
+encoding_resolve(const char *inputenc, const char *outputenc)
 {
     int32 inputidx, outputidx;
     inputidx = encoding_str2ind(inputenc);
@@ -154,7 +154,7 @@ hextoval(char c)
 }
 
 int
-ishex(char *str)
+ishex(const char *str)
 {
     int i;
     for (i = 0; str[i] != '\0'; i++) {

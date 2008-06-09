@@ -536,7 +536,7 @@ phmm_trans(allphone_t *allp)
 }
 
 static void
-write_phseg(srch_t *s, char *dir, char *uttid, phseg_t * phseg)
+write_phseg(srch_t *s, const char *dir, const char *uttid, phseg_t * phseg)
 {
     char str[1024];
     FILE *fp = (FILE *) 0;

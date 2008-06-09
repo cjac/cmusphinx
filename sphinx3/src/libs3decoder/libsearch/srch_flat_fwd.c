@@ -96,7 +96,7 @@ fwd_timing_dump(srch_FLAT_FWD_graph_t * fwg)
 static fwd_dbg_t *
 init_fwd_dbg(srch_FLAT_FWD_graph_t * fwg)
 {
-    char *tmpstr;
+    const char *tmpstr;
     fwd_dbg_t *fd;
 
     fd = (fwd_dbg_t *) ckd_calloc(1, sizeof(fwd_dbg_t));

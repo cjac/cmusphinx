@@ -172,9 +172,9 @@ typedef struct {
 S3DECODER_EXPORT
 dict_t *dict_init (mdef_t *mdef,	/**< For looking up CI phone IDs; NULL if none,
 					   in which case CI phones kept internally */
-		   char *dictfile,	/**< Main dictionary file */
-		   char *fillerfile,	/**< Filler dictionary file */
-		   char comp_sep,	/**< Compound word separator character, or 0 if
+		   const char *dictfile,	/**< Main dictionary file */
+		   const char *fillerfile,	/**< Filler dictionary file */
+		   const char comp_sep,	/**< Compound word separator character, or 0 if
 					   no compound words */
 		   int useLTS,          /**< Whether to use letter-to-sound rules */
 		   int breport          /**< Whether we should report the progress */
@@ -182,7 +182,7 @@ dict_t *dict_init (mdef_t *mdef,	/**< For looking up CI phone IDs; NULL if none,
 
 /** Return word id for given word string if present.  Otherwise return BAD_S3WID */
 S3DECODER_EXPORT
-s3wid_t dict_wordid (dict_t *d, char *word);
+s3wid_t dict_wordid (dict_t *d, const char *word);
 
 /**
  * Return 1 if w is a filler word, 0 if not.  A filler word is one that was read in from the

@@ -146,15 +146,15 @@ typedef struct {
 #define ms_mgau_mgau2sen(msg) (msg->mgau2sen)
 #define ms_mgau_topn(msg) (msg->topn)
 
-ms_mgau_model_t* ms_mgau_init (char *meanfile,	/**< In: File containing means of mixture gaussians */
-			       char *varfile,	/**< In: File containing variances of mixture gaussians */
+ms_mgau_model_t* ms_mgau_init (const char *meanfile,	/**< In: File containing means of mixture gaussians */
+			       const char *varfile,	/**< In: File containing variances of mixture gaussians */
 			       float64 varfloor,	/**< In: Floor value applied to variances; e.g., 0.0001 */
-			       char *mixwfile,	/**< In: File containing mixture weights */
+			       const char *mixwfile,	/**< In: File containing mixture weights */
 			       float64 mixwfloor,	/**< In: Floor value for mixture weights; e.g., 0.0000001 */
 			       int32 precomp,
-			       char* senmgau,	/**< In: type of the gaussians distribution, .cont. or .semi. FIX 
-						   me! This is confusing!*/
-			       char* lambdafile, /**< In: Interplation file */
+			       const char* senmgau,	/**< In: type of the gaussians distribution, .cont. or .semi. FIX 
+							   me! This is confusing!*/
+			       const char* lambdafile, /**< In: Interplation file */
 			       int32 topn        /**< In: Top-n gaussian will be computed */
     );
 

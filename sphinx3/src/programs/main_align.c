@@ -324,10 +324,10 @@ static int32 *senscale;         /* ALL senone scores scaled by senscale[i] in fr
 
 static int32 ctloffset;
 
-static char *outsentfile;
+static const char *outsentfile;
 static FILE *outsentfp = NULL;
 
-static char *sentfile;
+static const char *sentfile;
 static FILE *sentfp = NULL;
 
 static char *s2stsegdir = NULL;
@@ -944,7 +944,8 @@ utt_align(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
 {
     int32 nfr;
     int k, i;
-    char *cepdir, *cepext;
+    const char *cepdir;
+    const char *cepext;
     char sent[16384];
 
     cepdir = cmd_ln_str("-cepdir");

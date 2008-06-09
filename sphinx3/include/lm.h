@@ -753,11 +753,11 @@ typedef struct {
  *
  */
 S3DECODER_EXPORT
-lmset_t* lmset_init(char* lmfile,  /**< The lm file name, lmfile and lmctlfile are mutally exclusive */
-		    char* lmctlfile, /**< The file that specified multiple LMs and class information, lmfile and lmctlfile are mutually exclusive */
-		    char* ctl_lm,    /**< The control file that describes which lm to use for a particular utterance*/
-		    char* lmname,    /**< The LM name to use if ctl_lm is not specified  */
-		    char* lmdumpdir, /**< Currently not used */
+lmset_t* lmset_init(const char* lmfile,  /**< The lm file name, lmfile and lmctlfile are mutally exclusive */
+		    const char* lmctlfile, /**< The file that specified multiple LMs and class information, lmfile and lmctlfile are mutually exclusive */
+		    const char* ctl_lm,    /**< The control file that describes which lm to use for a particular utterance*/
+		    const char* lmname,    /**< The LM name to use if ctl_lm is not specified  */
+		    const char* lmdumpdir, /**< Currently not used */
 		    float32 lw,      /**< Language model weight */
 		    float32 wip,     /**< Word insertion penalty */
 		    float32 uw,      /**< Unigram weight */
@@ -791,7 +791,7 @@ lmset_t* lmset_read_ctl(const char * ctlfile,/**< Control file name */
 			float64 lw,	/**< In: Language weight */
 			float64 wip,	/**< In: Word insertion penalty */
 			float64 uw,    /**< In: Unigram weight */
-			char* lmdumpdir /**< In: LMdumpdir */
+			const char* lmdumpdir /**< In: LMdumpdir */
     );	
 
 /**
@@ -918,7 +918,7 @@ int32 lm_bg_wordprob(lm_t *lm,		/**< In: LM being queried */
 #endif
 
 /* Return LM word ID for the given string, or BAD_LMWID(lm) if not available */
-s3lmwid32_t lm_wid (lm_t *lm, char *wd);
+s3lmwid32_t lm_wid (lm_t *lm, const char *wd);
 
 /**
    Set all pointers to NULL in the lm
@@ -1094,7 +1094,7 @@ lm_t *lm_read_advance (const char *file,	/**< In: LM file being read */
 		       int32 ndict,    /**< In: Number of dictionary entry.  We need that because
 					  class-based LM is addressed in dictionary word ID space. 
 				       */  
-		       char* fmt,       /**< In: file format of the LM, it is
+		       const char* fmt,       /**< In: file format of the LM, it is
 					   now either "TXT", "DMP" and NULL,
 					   if NULL, file format is
 					   automaticaly determined */
@@ -1111,7 +1111,7 @@ lm_t *lm_read_advance2(const char *file,	/**< In: LM file being read */
 		       int32 ndict,    /**< In: Number of dictionary entry.  We need that because
 					  class-based LM is addressed in dictionary word ID space. 
 				       */  
-		       char* fmt,       /**< In: file format of the LM, it is
+		       const char* fmt,       /**< In: file format of the LM, it is
 					   now either "TXT", "DMP" and NULL,
 					   if NULL, file format is
 					   automaticaly determined */
@@ -1128,7 +1128,7 @@ S3DECODER_EXPORT
 int32 lm_write(lm_t *model, /** In: the pointer LM we want to output */
 	       const char *outputfile, /**< In: the output file name */
 	       const char *filename, /**< In: the LM file name  */
-	       char *fmt   /**< In: LM file format, it is now either "TXT" or "DMP" */
+	       const char *fmt   /**< In: LM file format, it is now either "TXT" or "DMP" */
     );
   
 /**
@@ -1165,8 +1165,8 @@ int32 lm_write(lm_t *model, /** In: the pointer LM we want to output */
 int32 lm_write_advance(lm_t *model, /**< In: the pointer LM we want to output */
 		       const char *outputfile, /**< In: the output file name */
 		       const char *filename, /**< In: the LM file name  */
-		       char *fmt,   /**< In: LM file format, it is now either "TXT", "DMP", "FST" */
-		       char* inputenc, /**< In: Input encoding type */
+		       const char *fmt,   /**< In: LM file format, it is now either "TXT", "DMP", "FST" */
+		       const char* inputenc, /**< In: Input encoding type */
 		       char* outputenc /**< Out: Output encoding type */
     );
 
@@ -1196,7 +1196,7 @@ int32 lm_add_wordlist(lm_t *lm, /**< In/Out: a modified LM structure */
 		      dict_t *dict, /**< In: an initialized dictionary structure 
 				       Used to update 
 				    */
-		      char* filename /**< In: a file that contains a
+		      const char* filename /**< In: a file that contains a
 					list of word one wants to
 					add*/
     );
@@ -1217,13 +1217,13 @@ int32 lm_add_word_to_ug(lm_t *lm, /**< In/Out: a modified LM structure */
 			dict_t *dict, /**< In: an initialized dictionary structure 
 					 Used to update lmwid2dictid mapping. 
 				      */
-			char* newword /**<In: a pointer of a new word */
+			const char* newword /**<In: a pointer of a new word */
     );
 /** 
     Get class ID given a LM. 
 */
 int32 lm_get_classid (lm_t *model, /**< In: LM file being queried*/
-		      char *name   /**< In: The name of the class */
+		      const char *name   /**< In: The name of the class */
     );
 
 /**

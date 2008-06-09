@@ -151,7 +151,7 @@ gs_display(char *file, gs_t * gs)
 }
 
 gs_t *
-gs_read(char *file)
+gs_read(const char *file)
 {
 
     int32 code_id;

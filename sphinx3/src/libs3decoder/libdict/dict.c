@@ -108,7 +108,7 @@
 
 extern const char *const cmu6_lts_phone_table[];
 static s3cipid_t
-dict_ciphone_id(dict_t * d, char *str)
+dict_ciphone_id(dict_t * d, const char *str)
 {
     if (d->mdef)
         return mdef_ciphone_id(d->mdef, str);
@@ -333,7 +333,7 @@ dict_comp_head(dict_t * d)
  * Return value: #compound words found in dictionary.
  */
 static int32
-dict_build_comp(dict_t * d, char sep)
+dict_build_comp(dict_t * d, const char sep)
 {                               /* Separator character */
     char wd[4096];
     int32 w, cwid;
@@ -395,7 +395,7 @@ dict_build_comp(dict_t * d, char sep)
 
 
 dict_t *
-dict_init(mdef_t * mdef, char *dictfile, char *fillerfile, char comp_sep,
+dict_init(mdef_t * mdef, const char *dictfile, const char *fillerfile, const char comp_sep,
           int useLTS, int breport)
 {
     FILE *fp, *fp2;
@@ -525,7 +525,7 @@ dict_init(mdef_t * mdef, char *dictfile, char *fillerfile, char comp_sep,
 
 
 s3wid_t
-dict_wordid(dict_t * d, char *word)
+dict_wordid(dict_t * d, const char *word)
 {
     void *w;
 

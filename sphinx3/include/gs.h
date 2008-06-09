@@ -139,7 +139,7 @@ int32 gs_display(char *file, /**< file to display*/
     );
 
 /** Read the Gaussian selector */
-gs_t* gs_read(char *file /**< a file to display */
+gs_t* gs_read(const char *file /**< a file to display */
     );
 
 /** Choose the closet Gaussian codebook to use */

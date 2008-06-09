@@ -95,11 +95,11 @@ lm_build_lmclass_info(lm_t * lm, float64 lw, float64 uw, float64 wip,
 }
 
 lmset_t *
-lmset_init(char *lmfile,
-           char *lmctlfile,
-           char *ctl_lm,
-           char *lmname,
-           char *lmdumpdir,
+lmset_init(const char *lmfile,
+           const char *lmctlfile,
+           const char *ctl_lm,
+           const char *lmname,
+           const char *lmdumpdir,
            float32 lw, float32 wip, float32 uw, dict_t * dict)
 {
     lmset_t *lms;
@@ -139,7 +139,7 @@ lmset_init(char *lmfile,
     }
 
     if (lms && ctl_lm == NULL) {
-        char *name;
+        const char *name;
 
         if (lmname == NULL)
             name = lms->lmarray[0]->name;
@@ -337,7 +337,7 @@ lmset_read_lm(const char *lmfile, dict_t * dict, const char *lmname,
 lmset_t *
 lmset_read_ctl(const char *ctlfile,
                dict_t * dict,
-               float64 lw, float64 wip, float64 uw, char *lmdumpdir)
+               float64 lw, float64 wip, float64 uw, const char *lmdumpdir)
 {
     FILE *ctlfp;
     FILE *tmp;

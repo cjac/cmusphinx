@@ -25,8 +25,8 @@ static arg_t defn[] = {
 int
 main(int _argc, char **_argv)
 {
-  char *cfg_file;
-  char *fsg_file;
+  const char *cfg_file;
+  const char *fsg_file;
   int max_expansion;
 
   s3_cfg_t *cfg;

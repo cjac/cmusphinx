@@ -561,7 +561,9 @@ hypline2wds(char *line, int32 * wid, int32 * sf, int32 oldfmt)
 int
 main(int32 argc, char *argv[])
 {
-    char line[32768], *reffile, *hypfile;
+    char line[32768];
+    const char *reffile;
+    const char *hypfile;
     int32 ref[MAX_HYP_LEN], hyp[MAX_HYP_LEN], nref, nhyp,
         hyp_sf[MAX_HYP_LEN];
     int32 tot_err, tot_corr, tot_ref, tot_hyp, tot_sub, tot_ins, tot_del;

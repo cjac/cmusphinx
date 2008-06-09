@@ -118,14 +118,14 @@ static arg_t defn[] = {
 };
 
 void
- get_filename_base(char *_fn, char *_base);
+ get_filename_base(const char *_fn, char *_base);
 
 int
 main(int _argc, char **_argv)
 {
     s3_endpointer_t ep;
     char *cfg_fn;
-    char *mfcc_fn;
+    const char *mfcc_fn;
     char base_fn[1024];
     FILE *in;
     float32 **frames;
@@ -232,7 +232,7 @@ main(int _argc, char **_argv)
 #endif /* PATHSEP */
 
 void
-get_filename_base(char *_fn, char *_base)
+get_filename_base(const char *_fn, char *_base)
 {
     char *dot, *slash;
 

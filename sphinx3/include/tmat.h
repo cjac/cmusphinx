@@ -118,9 +118,9 @@ typedef struct {
 
 /** Initialize transition matrix */
 
-tmat_t *tmat_init (char *tmatfile,	/**< In: input file */
-		   float64 tpfloor,	/**< In: floor value for each non-zero transition probability */
-		   int32 breport      /**< In: whether reporting the process of tmat_t  */
+tmat_t *tmat_init (const char *tmatfile,	/**< In: input file */
+		   float64 tpfloor,		/**< In: floor value for each non-zero transition probability */
+		   int32 breport		/**< In: whether reporting the process of tmat_t  */
     );
 					    
 

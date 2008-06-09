@@ -235,8 +235,8 @@ typedef struct {
  * @return pointer to the phone structure created.
  */
 S3DECODER_EXPORT
-mdef_t *mdef_init (char *mdeffile, /**< In: Model definition file */
-		   int32 breport   /**< In: whether to report the progress or not */
+mdef_t *mdef_init (const char *mdeffile, /**< In: Model definition file */
+		   int32 breport         /**< In: whether to report the progress or not */
     );
 
 
@@ -245,7 +245,7 @@ mdef_t *mdef_init (char *mdeffile, /**< In: Model definition file */
     @return ciphone id for the given ciphone string name 
 */
 s3cipid_t mdef_ciphone_id (mdef_t *m,		/**< In: Model structure being queried */
-			   char *ciphone	/**< In: ciphone for which id wanted */
+			   const char *ciphone	/**< In: ciphone for which id wanted */
     );
 
 /** 

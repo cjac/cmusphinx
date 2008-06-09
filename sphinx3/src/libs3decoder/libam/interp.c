@@ -75,7 +75,7 @@
 
 
 static int32
-interp_read(interp_t * ip, char *file_name)
+interp_read(interp_t * ip, const char *file_name)
 {
     FILE *fp;
     int32 byteswap, chksum_present;
@@ -147,7 +147,7 @@ interp_read(interp_t * ip, char *file_name)
 
 
 interp_t *
-interp_init(char *file)
+interp_init(const char *file)
 {
     interp_t *ip;
 

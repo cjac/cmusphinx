@@ -162,10 +162,10 @@ typedef struct {
  * (See Sphinx3 model file-format documentation.)
  */
 gauden_t *
-gauden_init (char *meanfile,	/**< Input: File containing means of mixture gaussians */
-	     char *varfile,	/**< Input: File containing variances of mixture gaussians */
-	     float32 varfloor,	/**< Input: Floor value to be applied to variances */
-	     int32 precompute   /**< Input: Whether we should precompute */  
+gauden_init (const char *meanfile,	/**< Input: File containing means of mixture gaussians */
+	     const char *varfile,	/**< Input: File containing variances of mixture gaussians */
+	     float32 varfloor,		/**< Input: Floor value to be applied to variances */
+	     int32 precompute		/**< Input: Whether we should precompute */  
     );
 
 /** Release memory allocated by gauden_init. */
@@ -177,7 +177,7 @@ void gauden_free(gauden_t *g); /**< In: The gauden_t to free */
  * @return 0 if successful, -1 otherwise.
  */
 int32 gauden_mean_reload (gauden_t *g,		/**< In/Out: g->mean to be reloaded */
-			  char *meanfile	/**< In: File to reload means from */
+			  const char *meanfile	/**< In: File to reload means from */
     );
 
 /**

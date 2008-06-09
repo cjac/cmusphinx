@@ -242,7 +242,7 @@ lm_is32bits(lm_t * lm)
 
 
 int32
-lm_get_classid(lm_t * model, char *name)
+lm_get_classid(lm_t * model, const char *name)
 {
     int32 i;
 
@@ -387,7 +387,7 @@ lm_set_param(lm_t * lm, float64 lw, float64 wip)
 int32
 lm_add_wordlist(lm_t * lm,      /**< In/Out: a modified LM structure */
                 dict_t * dict,      /**< In: a dictionary */
-                char *filename       /**< In: a file that contains a
+                const char *filename       /**< In: a file that contains a
 					list of word one wants to
 					add*/
     )
@@ -430,7 +430,7 @@ lm_add_wordlist(lm_t * lm,      /**< In/Out: a modified LM structure */
 int32
 lm_add_word_to_ug(lm_t * lm,      /**<In/Out: a modified LM structure */
                   dict_t * dict,      /**< In: an initialized dictionary structure */
-                  char *newword       /**< In: a new word */
+                  const char *newword       /**< In: a new word */
     )
 {
     s3wid_t w;
@@ -578,7 +578,7 @@ lm_read_r(const char *file, const char *lmname, cmd_ln_t *config)
 
 lm_t *
 lm_read_advance(const char *file, const char *lmname, float64 lw,
-                float64 wip, float64 uw, int32 ndict, char *fmt,
+                float64 wip, float64 uw, int32 ndict, const char *fmt,
                 int32 applyWeight)
 {
     return lm_read_advance2(file, lmname, lw, wip, uw, ndict, fmt, applyWeight, 0);
@@ -586,7 +586,7 @@ lm_read_advance(const char *file, const char *lmname, float64 lw,
 
 lm_t *
 lm_read_advance2(const char *file, const char *lmname, float64 lw,
-                 float64 wip, float64 uw, int32 ndict, char *fmt,
+                 float64 wip, float64 uw, int32 ndict, const char *fmt,
                  int32 applyWeight, int lminmemory)
 {
     int32 i, u;
@@ -764,7 +764,7 @@ lm_convert_encoding(lm_t * lmp)
 
 int32
 lm_write_advance(lm_t * lmp, const char *outputfn, const char *filename,
-                 char *fmt, char *inputenc, char *outputenc)
+                 const char *fmt, const char *inputenc, char *outputenc)
 {
     /* This might be duplicated with the caller checking but was done for extra safety. */
 
@@ -823,7 +823,7 @@ lm_write_advance(lm_t * lmp, const char *outputfn, const char *filename,
 }
 
 int32
-lm_write(lm_t * lmp, const char *outputfn, const char *filename, char *fmt)
+lm_write(lm_t * lmp, const char *outputfn, const char *filename, const char *fmt)
 {
     return lm_write_advance(lmp, outputfn, filename, fmt, "iso8859-1",
                             "iso8859-1");
@@ -1897,7 +1897,7 @@ lm_tg_exists(lm_t * lm, s3lmwid32_t lw1, s3lmwid32_t lw2, s3lmwid32_t lw3)
 
 
 s3lmwid32_t
-lm_wid(lm_t * lm, char *word)
+lm_wid(lm_t * lm, const char *word)
 {
     int32 i;
 
@@ -2192,7 +2192,7 @@ lm_convert_structure(lm_t * model, int32 is32bits)
 
 #if (_LM_TEST_)
 static int32
-sentence_lmscore(lm_t * lm, char *line)
+sentence_lmscore(lm_t * lm, const char *line)
 {
     char *word[1024];
     s3lmwid32_t w[1024];

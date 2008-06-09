@@ -247,7 +247,8 @@ static lmset_t *lmset;          /* The lmset. Replace lm */
 
 static ptmr_t tm_utt;
 static int32 tot_nfr;
-static char *matchfile, *matchsegfile;
+static const char *matchfile;
+static const char *matchsegfile;
 static FILE *matchfp, *matchsegfp;
 
 /*
@@ -381,7 +382,8 @@ decode_utt(char *uttid, FILE * _matchfp, FILE * _matchsegfp)
 {
     char dagfile[1024];
     srch_hyp_t *h, *hyp;
-    char *latdir, *latext;
+    const char *latdir;
+    const char *latext;
     int32 ascr, lscr;
 
     hyp = NULL;
