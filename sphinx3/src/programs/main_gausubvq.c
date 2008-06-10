@@ -69,6 +69,7 @@
 #include "cont_mgau.h"
 #include "logs3.h"
 #include "vector.h"
+#include "feat.h"
 #include "cmdln_macro.h"
 
 /** \file gausubvq.c 
@@ -269,6 +270,8 @@ main(int32 argc, char *argv[])
         ckd_free_2d((void **) data);
         ckd_free_2d((void **) vqmean);
     }
+
+    subvecs_free(subvec);
 
     fprintf(fpout, "End\n");
     fclose(fpout);
