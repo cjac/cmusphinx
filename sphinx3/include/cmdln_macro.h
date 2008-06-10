@@ -171,6 +171,10 @@ us a better architecture.
       ARG_STRING, \
       NULL, \
       "Directory for specifying Sphinx 3's hmm, the following files are assummed to be present, mdef, mean, var, mixw, tmat. If -mdef, -mean, -var, -mixw or -tmat are specified, they will override this command. "}, \
+    { "-featparams",                                                        \
+      ARG_STRING,                                                               \
+      NULL,                                                                     \
+      "File containing feature extraction parameters."},                        \
     { "-mdef", \
       ARG_STRING,\
       NULL,\
