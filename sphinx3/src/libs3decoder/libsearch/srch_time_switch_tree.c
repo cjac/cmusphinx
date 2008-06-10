@@ -164,6 +164,11 @@ srch_TST_init(kb_t * kb, void *srch)
 
     ptmr_init(&(tm_build));
 
+    if (kbc->lmset == NULL) {
+        E_ERROR("TST search requires a language model, please specify one with -lm or -lmctl\n");
+        return SRCH_FAILURE;
+    }
+
     /* Unlink silences */
     for (i = 0; i < kbc->lmset->n_lm; i++)
         unlinksilences(kbc->lmset->lmarray[i], kbc, kbc->dict);
