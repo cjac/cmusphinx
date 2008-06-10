@@ -153,11 +153,11 @@ typedef struct srch_FLAT_FWD_graph_s {
     /*
       FIXME! This should be used by the generic search as well. 
     */
-    char *word_cand_dir;	/**< Directory containing candidate words
+    char const *word_cand_dir;	/**< Directory containing candidate words
 				   files.  If NULL, full search performed for
 				   entire run */
   
-    char *latfile_ext;	/**< Complete word candidate filename for an utterance formed
+    char const *latfile_ext;	/**< Complete word candidate filename for an utterance formed
                            by word_cand_dir/<uttid>.latfile_ext */
     int32 word_cand_win;	/**< In frame f, candidate words in input lattice from frames
 				   [(f - word_cand_win) .. (f + word_cand_win)] will be

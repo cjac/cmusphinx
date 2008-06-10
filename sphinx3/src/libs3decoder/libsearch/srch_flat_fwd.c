@@ -331,8 +331,8 @@ srch_FLAT_FWD_begin(void *srch)
 
     /* If input lattice file containing word candidates to be searched specified; use it */
     if (fwg->word_cand_dir) {
-        sprintf(str, "%s/%s.%s", fwg->word_cand_dir, s->uttid,
-                fwg->latfile_ext);
+        ctl_outfile(str, fwg->word_cand_dir, fwg->latfile_ext,
+                    (s->uttfile ? s->uttfile : s->uttid), s->uttid);
         E_INFO("Reading input lattice: %s\n", str);
 
         if ((fp = fopen_compchk(str, &ispipe)) == NULL)
@@ -732,7 +732,9 @@ srch_FLAT_FWD_dag_dump(void *srch, dag_t *dag)
     fwg = (srch_FLAT_FWD_graph_t *) s->grh->graph_struct;
     assert(fwg->lathist);
 
-    ctl_outfile(str, cmd_ln_str_r(kbcore_config(fwg->kbcore), "-outlatdir"), cmd_ln_str_r(kbcore_config(fwg->kbcore), "-latext"),
+    ctl_outfile(str,
+                cmd_ln_str_r(kbcore_config(fwg->kbcore), "-outlatdir"),
+                cmd_ln_str_r(kbcore_config(fwg->kbcore), "-latext"),
                 (s->uttfile ? s->uttfile : s->uttid), s->uttid);
     E_INFO("Writing lattice file: %s\n", str);
     latticehist_dag_write(fwg->lathist,
