@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="sphinx3_gausubvq"
 	ProjectGUID="{2960E5DC-C7E3-48B7-8597-FD4ED7F0D3AF}"
+	RootNamespace="sphinx3_gausubvq"
 	>
 	<Platforms>
 		<Platform
@@ -166,7 +167,7 @@
 				OutputFile=".\..\..\..\..\bin\Release/sphinx3_gausubvq.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="..\..\..\..\..\sphinxbase\lib\Release"
+				AdditionalLibraryDirectories="..\..\..\..\..\sphinxbase\lib\release;&quot;..\..\..\..\..\sphinxbase\lib\Release;&quot;"
 				ProgramDatabaseFile=".\..\..\..\..\bin\Release/gausubvq.pdb"
 				SubSystem="1"
 				TargetMachine="1"
