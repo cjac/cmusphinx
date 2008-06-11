@@ -287,7 +287,7 @@ main(int argc, char **argv)
     }
 
     s3_decode_close(&decoder);
-    fe_close(fe);
+    fe_free(fe);
     cmd_ln_free();
 
     fclose(dump);

@@ -193,7 +193,7 @@ main(int _argc, char **_argv)
     stat_report_corpus(decoder.kb.stat);
 
     s3_decode_close(&decoder);
-    fe_close(fe);
+    fe_free(fe);
     cmd_ln_free();
 
     return 0;
