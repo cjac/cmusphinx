@@ -48,6 +48,8 @@
 #include <listelem_alloc.h>
 
 /* Local headers. */
+#include "pocketsphinx_internal.h"
+#include "ps_lattice_internal.h"
 #include "ngram_search.h"
 #include "ngram_search_fwdtree.h"
 #include "ngram_search_fwdflat.h"
@@ -144,7 +146,7 @@ ngram_search_init(cmd_ln_t *config,
                                    acmod->tmat->tp, NULL, acmod->mdef->sseq);
     ngs->chan_alloc = listelem_alloc_init(sizeof(chan_t));
     ngs->root_chan_alloc = listelem_alloc_init(sizeof(root_chan_t));
-    ngs->latnode_alloc = listelem_alloc_init(sizeof(latnode_t));
+    ngs->latnode_alloc = listelem_alloc_init(sizeof(ps_latnode_t));
 
     /* Calculate various beam widths and such. */
     ngram_search_calc_beams(ngs);
@@ -179,7 +181,7 @@ ngram_search_init(cmd_ln_t *config,
                                           sizeof(**ngs->active_word_list));
 
     /* Load language model(s) */
-    if ((path = cmd_ln_str_r(config, "-lmctlfn"))) {
+    if ((path = cmd_ln_str_r(config, "-lmctl"))) {
         ngs->lmset = ngram_model_set_read(config, path, acmod->lmath);
         if (ngs->lmset == NULL) {
             E_ERROR("Failed to read language model control file: %s\n",
@@ -408,8 +410,12 @@ ngram_search_find_exit(ngram_search_t *ngs, int frame_idx, int32 *out_best_score
     int best_exit, bp;
     int32 best_score;
 
-    if (frame_idx == -1)
-        frame_idx = acmod_frame_idx(ps_search_acmod(ngs));
+    /* No hypothesis means no exit node! */
+    if (ngs->n_frame == 0)
+        return NO_BP;
+
+    if (frame_idx == -1 || frame_idx >= ngs->n_frame)
+        frame_idx = ngs->n_frame - 1;
     end_bpidx = ngs->bp_table_idx[frame_idx];
 
     /* FIXME: WORST_SCORE has to go away and be replaced with a log-zero number. */
@@ -419,12 +425,12 @@ ngram_search_find_exit(ngram_search_t *ngs, int frame_idx, int32 *out_best_score
     /* Scan back to find a frame with some backpointers in it. */
     while (frame_idx >= 0 && ngs->bp_table_idx[frame_idx] == end_bpidx)
         --frame_idx;
-    if (frame_idx < 0) {
-        E_ERROR("ngram_search_find_exit() called with empty backpointer table\n");
+    /* This is NOT an error, it just means there is no hypothesis yet. */
+    if (frame_idx < 0)
         return NO_BP;
-    }
 
     /* Now find the entry for </s> OR the best scoring entry. */
+    assert(end_bpidx < ngs->bp_table_size);
     for (bp = ngs->bp_table_idx[frame_idx]; bp < end_bpidx; ++bp) {
         if (ngs->bp_table[bp].wid == ps_search_finish_wid(ngs)
             || ngs->bp_table[bp].score > best_score) {
@@ -661,7 +667,7 @@ ngram_search_hyp(ps_search_t *search, int32 *out_score)
 
     /* Only do bestpath search if the utterance is complete. */
     if (ngs->bestpath && ngs->done) {
-        latlink_t *link;
+        ps_latlink_t *link;
 
         /* Compute these such that they agree with the fwdtree language weight. */
         ngram_compute_seg_scores(ngs,
@@ -812,7 +818,7 @@ ngram_search_seg_iter(ps_search_t *search, int32 *out_score)
 
     /* Only do bestpath search if the utterance is done. */
     if (ngs->bestpath && ngs->done) {
-        latlink_t *last;
+        ps_latlink_t *last;
 
         /* FIXME: Probably we don't need to recompute this whole DAG. */
         if (ngram_search_lattice(search) == NULL)
@@ -848,7 +854,7 @@ create_dag_nodes(ngram_search_t *ngs, ps_lattice_t *dag)
 
     for (i = 0, bp_ptr = ngs->bp_table; i < ngs->bpidx; ++i, ++bp_ptr) {
         int32 sf, ef, wid;
-        latnode_t *node;
+        ps_latnode_t *node;
 
         if (!bp_ptr->valid)
             continue;
@@ -893,10 +899,10 @@ create_dag_nodes(ngram_search_t *ngs, ps_lattice_t *dag)
     }
 }
 
-static latnode_t *
+static ps_latnode_t *
 find_start_node(ngram_search_t *ngs, ps_lattice_t *dag)
 {
-    latnode_t *node;
+    ps_latnode_t *node;
 
     /* Find start node <s>.0 */
     for (node = dag->nodes; node; node = node->next) {
@@ -911,10 +917,10 @@ find_start_node(ngram_search_t *ngs, ps_lattice_t *dag)
     return node;
 }
 
-static latnode_t *
+static ps_latnode_t *
 find_end_node(ngram_search_t *ngs, ps_lattice_t *dag, float32 lwf)
 {
-    latnode_t *node;
+    ps_latnode_t *node;
     int32 ef, bestbp, bp, bestscore;
 
     /* Find final node </s>.last_frame; nothing can follow this node */
@@ -976,7 +982,7 @@ ps_lattice_t *
 ngram_search_lattice(ps_search_t *search)
 {
     int32 i, ef, lef, score, bss_offset;
-    latnode_t *node, *from, *to;
+    ps_latnode_t *node, *from, *to;
     ngram_search_t *ngs;
     ps_lattice_t *dag;
 
@@ -990,7 +996,7 @@ ngram_search_lattice(ps_search_t *search)
     /* Nope, create a new one. */
     ps_lattice_free(search->dag);
     search->dag = NULL;
-    dag = ps_lattice_init(search, ngs->n_frame);
+    dag = ps_lattice_init_search(search, ngs->n_frame);
     create_dag_nodes(ngs, dag);
     if ((dag->start = find_start_node(ngs, dag)) == NULL)
         goto error_out;

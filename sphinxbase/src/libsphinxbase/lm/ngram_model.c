@@ -158,12 +158,12 @@ ngram_model_init(ngram_model_t *base,
                  logmath_t *lmath,
                  int32 n, int32 n_unigram)
 {
+    base->refcount = 1;
     base->funcs = funcs;
     base->n = n;
     /* If this was previously initialized... */
     if (base->n_counts == NULL)
         base->n_counts = ckd_calloc(3, sizeof(*base->n_counts));
-    base->n_1g_alloc = base->n_words = n_unigram;
     /* Don't reset weights if logmath object hasn't changed. */
     if (base->lmath != lmath) {
         /* Set default values for weights. */
@@ -180,7 +180,7 @@ ngram_model_init(ngram_model_t *base,
         /* Free all previous word strings if they were allocated. */
         if (base->writable) {
             int32 i;
-            for (i = 0; i < base->n_1g_alloc; ++i) {
+            for (i = 0; i < base->n_words; ++i) {
                 ckd_free(base->word_str[i]);
                 base->word_str[i] = NULL;
             }
@@ -195,17 +195,27 @@ ngram_model_init(ngram_model_t *base,
         hash_table_empty(base->wid);
     else
         base->wid = hash_table_new(n_unigram, FALSE);
-    
+    base->n_1g_alloc = base->n_words = n_unigram;
+
     return 0;
 }
 
-void
+ngram_model_t *
+ngram_model_retain(ngram_model_t *model)
+{
+    ++model->refcount;
+    return model;
+}
+
+int
 ngram_model_free(ngram_model_t *model)
 {
     int i;
 
     if (model == NULL)
-        return;
+        return 0;
+    if (--model->refcount > 0)
+        return model->refcount;
     if (model->funcs && model->funcs->free)
         (*model->funcs->free)(model);
     if (model->writable) {
@@ -239,6 +249,7 @@ ngram_model_free(ngram_model_t *model)
     ckd_free(model->word_str);
     ckd_free(model->n_counts);
     ckd_free(model);
+    return 0;
 }
 
 
@@ -374,6 +385,16 @@ ngram_model_apply_weights(ngram_model_t *model,
 {
     return (*model->funcs->apply_weights)(model, lw, wip, uw);
 }
+
+float32
+ngram_model_get_weights(ngram_model_t *model, int32 *out_log_wip,
+                        int32 *out_log_uw)
+{
+    if (out_log_wip) *out_log_wip = model->log_wip;
+    if (out_log_uw) *out_log_uw = model->log_uw;
+    return model->lw;
+}
+
 
 int32
 ngram_ng_score(ngram_model_t *model, int32 wid, int32 *history,
@@ -550,6 +571,14 @@ ngram_model_get_size(ngram_model_t *model)
   if (model != NULL)
     return model->n;
   return 0;
+}
+
+int32 const *
+ngram_model_get_counts(ngram_model_t *model)
+{
+  if (model != NULL)
+    return model->n_counts;
+  return NULL;
 }
 
 int32

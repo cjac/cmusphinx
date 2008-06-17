@@ -50,7 +50,7 @@
 #include "ckd_alloc.h"
 
 FILE *
-fopen_comp(const char *file, char *mode, int32 * ispipe)
+fopen_comp(const char *file, const char *mode, int32 * ispipe)
 {
     FILE *fp;
 
@@ -163,7 +163,7 @@ fclose_comp(FILE * fp, int32 ispipe)
 
 
 FILE *
-fopen_compchk(char *file, int32 * ispipe)
+fopen_compchk(const char *file, int32 * ispipe)
 {
 #ifndef HAVE_POPEN
     *ispipe = 0; /* No popen() on WinCE */
@@ -229,6 +229,61 @@ fopen_compchk(char *file, int32 * ispipe)
 
     return (fopen_comp(tmpfile, "r", ispipe));
 #endif /* HAVE_POPEN */
+}
+
+lineiter_t *
+lineiter_start(FILE *fh)
+{
+    lineiter_t *li;
+
+    li = ckd_calloc(1, sizeof(*li));
+    li->buf = ckd_malloc(128);
+    li->buf[0] = '\0';
+    li->bsiz = 128;
+    li->len = 0;
+    li->fh = fh;
+
+    return lineiter_next(li);
+}
+
+lineiter_t *
+lineiter_next(lineiter_t *li)
+{
+    /* Read a line and check for EOF. */
+    if (fgets(li->buf, li->bsiz, li->fh) == NULL) {
+        lineiter_free(li);
+        return NULL;
+    }
+    /* If we managed to read the whole thing, then we are done
+     * (this will be by far the most common result). */
+    li->len = strlen(li->buf);
+    if (li->len < li->bsiz - 1 || li->buf[li->len - 1] == '\n')
+        return li;
+
+    /* Otherwise we have to reallocate and keep going. */
+    while (1) {
+        li->bsiz *= 2;
+        li->buf = ckd_realloc(li->buf, li->bsiz);
+        /* If we get an EOF, we are obviously done. */
+        if (fgets(li->buf + li->len, li->bsiz - li->len, li->fh) == NULL) {
+            li->len += strlen(li->buf + li->len);
+            return li;
+        }
+        li->len += strlen(li->buf + li->len);
+        /* If we managed to read the whole thing, then we are done. */
+        if (li->len < li->bsiz - 1 || li->buf[li->len - 1] == '\n')
+            return li;
+    }
+
+    /* Shouldn't get here. */
+    return li;
+}
+
+void
+lineiter_free(lineiter_t *li)
+{
+    ckd_free(li->buf);
+    ckd_free(li);
 }
 
 char *
@@ -308,7 +363,7 @@ fread_retry(void *pointer, int32 size, int32 num_items, FILE * stream)
 
 #ifdef _WIN32_WCE /* No stat() on WinCE */
 int32
-stat_retry(char *file, struct stat * statbuf)
+stat_retry(const char *file, struct stat * statbuf)
 {
     WIN32_FIND_DATA file_data;
     HANDLE *h;
@@ -333,7 +388,7 @@ stat_retry(char *file, struct stat * statbuf)
 
 
 int32
-stat_mtime(char *file)
+stat_mtime(const char *file)
 {
     struct stat statbuf;
 
@@ -345,7 +400,7 @@ stat_mtime(char *file)
 #else
 #define STAT_RETRY_COUNT	10
 int32
-stat_retry(char *file, struct stat * statbuf)
+stat_retry(const char *file, struct stat * statbuf)
 {
     int32 i;
 
@@ -380,7 +435,7 @@ stat_retry(char *file, struct stat * statbuf)
 }
 
 int32
-stat_mtime(char *file)
+stat_mtime(const char *file)
 {
     struct stat statbuf;
 

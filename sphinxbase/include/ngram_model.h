@@ -94,7 +94,11 @@ typedef enum ngram_file_type_e {
  *
  * @param file_name path to the file to read.
  * @param file_type type of the file, or NGRAM_AUTO to determine automatically.
- * @param lmath Log-math parameters to use for probability calculations.
+ * @param lmath Log-math parameters to use for probability
+ *              calculations.  Ownership of this object is assumed by
+ *              the newly created ngram_model_t, and you should not
+ *              attempt to free it manually.  If you wish to reuse it
+ *              elsewhere, you must retain it with logmath_retain().
  * @return newly created ngram_model_t.
  */
 SPHINXBASE_EXPORT
@@ -115,10 +119,20 @@ int ngram_model_write(ngram_model_t *model, const char *file_name,
 		      ngram_file_type_t format);
 
 /**
- * Release memory associated with an N-Gram model.
+ * Retain ownership of an N-Gram model.
+ *
+ * @return Pointer to retained model.
  */
 SPHINXBASE_EXPORT
-void ngram_model_free(ngram_model_t *model);
+ngram_model_t *ngram_model_retain(ngram_model_t *model);
+
+/**
+ * Release memory associated with an N-Gram model.
+ *
+ * @return new reference count (0 if freed completely)
+ */
+SPHINXBASE_EXPORT
+int ngram_model_free(ngram_model_t *model);
 
 /**
  * Re-encode word strings in an N-Gram model.
@@ -153,6 +167,18 @@ int ngram_model_recode(ngram_model_t *model, const char *from, const char *to);
 SPHINXBASE_EXPORT
 int ngram_model_apply_weights(ngram_model_t *model,
                               float32 lw, float32 wip, float32 uw);
+
+/**
+ * Get the current weights from a language model.
+ *
+ * @param model The model in question.
+ * @param out_wip Output: (optional) logarithm of word insertion penalty.
+ * @param out_uw Output: (optional) logarithm of unigram weight.
+ * @return language weight.
+ */
+SPHINXBASE_EXPORT
+float32 ngram_model_get_weights(ngram_model_t *model, int32 *out_log_wip,
+                                int32 *out_log_uw);
 
 /**
  * Get the score (scaled, interpolated log-probability) for a general
@@ -290,6 +316,13 @@ SPHINXBASE_EXPORT
 int32 ngram_model_get_size(ngram_model_t *model);
 
 /**
+ * Get the counts of the various N-grams in the model
+ */
+SPHINXBASE_EXPORT
+int32 const *ngram_model_get_counts(ngram_model_t *model);
+
+
+/**
  * Add a word (unigram) to the language model.
  *
  * @note The semantics of this are not particularly well-defined for
@@ -404,6 +437,15 @@ ngram_model_t *ngram_model_set_init(cmd_ln_t *config,
  * in and referred to by the trigram LMs.
  * 
  * No "comments" allowed in this file.
+ *
+ * @param config Configuration parameters.
+ * @param lmctlfile Path to the language model control file.
+ * @param lmath Log-math parameters to use for probability
+ *              calculations.  Ownership of this object is assumed by
+ *              the newly created ngram_model_t, and you should not
+ *              attempt to free it manually.  If you wish to reuse it
+ *              elsewhere, you must retain it with logmath_retain().
+ * @return newly created language model set.
  */
 SPHINXBASE_EXPORT
 ngram_model_t *ngram_model_set_read(cmd_ln_t *config,
@@ -415,6 +457,42 @@ ngram_model_t *ngram_model_set_read(cmd_ln_t *config,
  */
 SPHINXBASE_EXPORT
 int32 ngram_model_set_count(ngram_model_t *set);
+
+/**
+ * Iterator over language models in a set.
+ */
+typedef struct ngram_model_set_iter_s ngram_model_set_iter_t;
+
+/**
+ * Begin iterating over language models in a set.
+ *
+ * @return iterator pointing to the first language model, or NULL if no models remain.
+ */
+SPHINXBASE_EXPORT
+ngram_model_set_iter_t *ngram_model_set_iter(ngram_model_t *set);
+
+/**
+ * Move to the next language model in a set.
+ *
+ * @return iterator pointing to the next language model, or NULL if no models remain.
+ */
+SPHINXBASE_EXPORT
+ngram_model_set_iter_t *ngram_model_set_iter_next(ngram_model_set_iter_t *itor);
+
+/**
+ * Finish iteration over a langauge model set.
+ */
+void ngram_model_set_iter_free(ngram_model_set_iter_t *itor);
+
+/**
+ * Get language model and associated name from an iterator.
+ *
+ * @param lmname Output: string name associated with this language model.
+ * @return Language model pointed to by this iterator.
+ */
+SPHINXBASE_EXPORT
+ngram_model_t *ngram_model_set_iter_model(ngram_model_set_iter_t *itor,
+                                          char const **lmname);
 
 /**
  * Select a single language model from a set for scoring.

@@ -36,33 +36,11 @@
  */
 
 /**
- * @file ps_lattice.h Word graph search
+ * @file ps_lattice_internal.h Word graph search implementation
  */
 
-#ifndef __PS_LATTICE_H__
-#define __PS_LATTICE_H__
-
-/* SphinxBase headers. */
-
-/* Local headers. */
-#include "pocketsphinx_internal.h"
-
-/**
- * Links between DAG nodes.
- *
- * A link corresponds to a single hypothesized instance of a word with
- * a given start and end point.
- */
-typedef struct latlink_s {
-    struct latnode_s *from;	/**< From node */
-    struct latnode_s *to;	/**< To node */
-    struct latlink_s *best_prev;
-    int32 ascr;			/**< Score for from->wid (from->sf to this->ef) */
-    int32 path_scr;		/**< Best path score from root of DAG */
-    int32 ef;			/**< Ending frame of this word  */
-    int32 alpha;                /**< Forward probability of this link P(w,o_1^{ef}) */
-    int32 beta;                 /**< Backward probability of this link P(w|o_{ef+1}^T) */
-} latlink_t;
+#ifndef __PS_LATTICE_INTERNAL_H__
+#define __PS_LATTICE_INTERNAL_H__
 
 /**
  * Linked list of DAG link pointers.
@@ -73,45 +51,22 @@ typedef struct latlink_s {
  * here, but it wastes 4 bytes per entry on 32-bit machines.
  */
 typedef struct latlink_list_s {
-    latlink_t *link;
+    ps_latlink_t *link;
     struct latlink_list_s *next;
 } latlink_list_t;
-
-/**
- * DAG nodes.
- *
- * A node corresponds to a number of hypothesized instances of a word
- * which all share the same starting point.
- */
-typedef struct latnode_s {
-    int32 id;			/**< Unique id for this node */
-    int32 wid;			/**< Dictionary word id */
-    int32 basewid;		/**< Dictionary base word id */
-    /* FIXME: These are (ab)used to store backpointer indices, therefore they MUST be 32 bits. */
-    int32 fef;			/**< First end frame */
-    int32 lef;			/**< Last end frame */
-    int16 sf;			/**< Start frame */
-    int16 reachable;		/**< From </s> or <s> */
-    union {
-	int32 fanin;		/**< #nodes with links to this node */
-	int32 rem_score;	/**< Estimated best score from node.sf to end */
-	int32 best_exit;	/**< Best exit score (used for final nodes only) */
-    } info;
-    latlink_list_t *exits;      /**< Links out of this node */
-    latlink_list_t *entries;    /**< Links into this node */
-
-    struct latnode_s *next;	/**< Next node in DAG (no ordering implied) */
-} latnode_t;
 
 /**
  * Word graph structure used in bestpath/nbest search.
  */
 struct ps_lattice_s {
-    ps_search_t *search; /**< Search object which produced this DAG. */
+    int refcount;      /**< Reference count. */
 
-    latnode_t *nodes;  /**< List of all nodes. */
-    latnode_t *start;  /**< Starting node. */
-    latnode_t *end;    /**< Ending node. */
+    ps_search_t *search; /**< Search object which produced this DAG. */
+    logmath_t *lmath;    /**< Log-math object. */
+
+    ps_latnode_t *nodes;  /**< List of all nodes. */
+    ps_latnode_t *start;  /**< Starting node. */
+    ps_latnode_t *end;    /**< Ending node. */
 
     int32 n_frames;    /**< Number of frames for this utterance. */
     int32 final_node_ascr; /**< Acoustic score of implicit link exiting final node. */
@@ -128,11 +83,55 @@ struct ps_lattice_s {
 };
 
 /**
+ * Links between DAG nodes.
+ *
+ * A link corresponds to a single hypothesized instance of a word with
+ * a given start and end point.
+
+ */
+struct ps_latlink_s {
+    struct ps_latnode_s *from;	/**< From node */
+    struct ps_latnode_s *to;	/**< To node */
+    struct ps_latlink_s *best_prev;
+    int32 ascr;			/**< Score for from->wid (from->sf to this->ef) */
+    int32 path_scr;		/**< Best path score from root of DAG */
+    int32 ef;			/**< Ending frame of this word  */
+    int32 alpha;                /**< Forward probability of this link P(w,o_1^{ef}) */
+    int32 beta;                 /**< Backward probability of this link P(w|o_{ef+1}^T) */
+};
+
+/**
+ * DAG nodes.
+ *
+ * A node corresponds to a number of hypothesized instances of a word
+ * which all share the same starting point.
+ */
+struct ps_latnode_s {
+    int32 id;			/**< Unique id for this node */
+    int32 wid;			/**< Dictionary word id */
+    int32 basewid;		/**< Dictionary base word id */
+    /* FIXME: These are (ab)used to store backpointer indices, therefore they MUST be 32 bits. */
+    int32 fef;			/**< First end frame */
+    int32 lef;			/**< Last end frame */
+    int16 sf;			/**< Start frame */
+    int16 reachable;		/**< From </s> or <s> */
+    union {
+	int32 fanin;		/**< #nodes with links to this node */
+	int32 rem_score;	/**< Estimated best score from node.sf to end */
+	int32 best_exit;	/**< Best exit score (used for final nodes only) */
+    } info;
+    latlink_list_t *exits;      /**< Links out of this node */
+    latlink_list_t *entries;    /**< Links into this node */
+
+    struct ps_latnode_s *next;	/**< Next node in DAG (no ordering implied) */
+};
+
+/**
  * Segmentation "iterator" for backpointer table results.
  */
 typedef struct dag_seg_s {
     ps_seg_t base;       /**< Base structure. */
-    latlink_t **links;   /**< Array of lattice links. */
+    ps_latlink_t **links;   /**< Array of lattice links. */
     int32 norm;     /**< Normalizer for posterior probabilities. */
     int16 n_links;  /**< Number of lattice links. */
     int16 cur;      /**< Current position in bpidx. */
@@ -144,12 +143,12 @@ typedef struct dag_seg_s {
  * Each partial path (latpath_t) is constructed by extending another
  * partial path--parent--by one node.
  */
-typedef struct latpath_s {
-    latnode_t *node;            /**< Node ending this path. */
-    struct latpath_s *parent;   /**< Previous element in this path. */
-    struct latpath_s *next;     /**< Pointer to next path in list of paths. */
-    int32 score;                /**< Exact score from start node up to node->sf. */
-} latpath_t;
+typedef struct ps_latpath_s {
+    ps_latnode_t *node;            /**< Node ending this path. */
+    struct ps_latpath_s *parent;   /**< Previous element in this path. */
+    struct ps_latpath_s *next;     /**< Pointer to next path in list of paths. */
+    int32 score;                  /**< Exact score from start node up to node->sf. */
+} ps_latpath_t;
 
 /**
  * A* search structure.
@@ -170,30 +169,28 @@ typedef struct ps_astar_s {
     int32 insert_depth;
     int32 n_path;
 
-    latpath_t *path_list;
-    latpath_t *path_tail;
-    latpath_t *paths_done;
+    ps_latpath_t *path_list;
+    ps_latpath_t *path_tail;
+    ps_latpath_t *paths_done;
 
     glist_t hyps;	             /**< List of hypothesis strings. */
     listelem_alloc_t *latpath_alloc; /**< Path allocator for N-best search. */
 } ps_astar_t;
 
 /**
- * Construct an empty word graph.
+ * Segmentation "iterator" for A* search results.
  */
-ps_lattice_t *ps_lattice_init(ps_search_t *search, int n_frame);
+typedef struct astar_seg_s {
+    ps_seg_t base;
+    ps_latnode_t **nodes;
+    int n_nodes;
+    int cur;
+} astar_seg_t;
 
 /**
- * Destruct a word graph.
+ * Construct an empty word graph with reference to a search structure.
  */
-void ps_lattice_free(ps_lattice_t *dag);
-
-/**
- * Create a directed link between "from" and "to" nodes, but if a link already exists,
- * choose one with the best link_scr.
- */
-void ps_lattice_link(ps_lattice_t *dag, latnode_t *from, latnode_t *to,
-                     int32 score, int32 ef);
+ps_lattice_t *ps_lattice_init_search(ps_search_t *search, int n_frame);
 
 /**
  * Bypass filler words.
@@ -205,22 +202,15 @@ void ps_lattice_bypass_fillers(ps_lattice_t *dag, int32 silpen, int32 fillpen);
  */
 void ps_lattice_delete_unreachable(ps_lattice_t *dag);
 
-
-/**
- * Create a new lattice link element.
- */
-latlink_list_t *latlink_list_new(ps_lattice_t *dag, latlink_t *link,
-                                 latlink_list_t *next);
-
 /**
  * Add an edge to the traversal queue.
  */
-void ps_lattice_pushq(ps_lattice_t *dag, latlink_t *link);
+void ps_lattice_pushq(ps_lattice_t *dag, ps_latlink_t *link);
 
 /**
  * Remove an edge from the traversal queue.
  */
-latlink_t *ps_lattice_popq(ps_lattice_t *dag);
+ps_latlink_t *ps_lattice_popq(ps_lattice_t *dag);
 
 /**
  * Clear and reset the traversal queue.
@@ -228,55 +218,20 @@ latlink_t *ps_lattice_popq(ps_lattice_t *dag);
 void ps_lattice_delq(ps_lattice_t *dag);
 
 /**
- * Start a forward traversal of edges in a word graph.
+ * Create a new lattice link element.
  */
-latlink_t *ps_lattice_traverse_edges(ps_lattice_t *dag, latnode_t *start, latnode_t *end);
-
-/**
- * Get the next link in forward traversal.
- */
-latlink_t *ps_lattice_traverse_next(ps_lattice_t *dag, latnode_t *end);
-
-/**
- * Start a reverse traversal of edges in a word graph.
- */
-latlink_t *ps_lattice_reverse_edges(ps_lattice_t *dag, latnode_t *start, latnode_t *end);
-
-/**
- * Get the next link in forward traversal.
- */
-latlink_t *ps_lattice_reverse_next(ps_lattice_t *dag, latnode_t *start);
-
-/**
- * Do N-Gram based best-path search on a word graph.
- *
- * This function calculates both the best path as well as the forward
- * probability used in confidence estimation.
- *
- * @return Final link in best path, NULL on error.
- */
-latlink_t *ps_lattice_bestpath(ps_lattice_t *dag, ngram_model_t *lmset,
-                               float32 lwf, float32 ascale);
-
-/**
- * Calculate link posterior probabilities on a word graph.
- *
- * This function assumes that bestpath search has already been done.
- *
- * @return Posterior probability of the utterance as a whole.
- */
-int32 ps_lattice_posterior(ps_lattice_t *dag, ngram_model_t *lmset,
-                           float32 ascale);
+latlink_list_t *latlink_list_new(ps_lattice_t *dag, ps_latlink_t *link,
+                                 latlink_list_t *next);
 
 /**
  * Get hypothesis string after bestpath search.
  */
-char const *ps_lattice_hyp(ps_lattice_t *dag, latlink_t *link);
+char const *ps_lattice_hyp(ps_lattice_t *dag, ps_latlink_t *link);
 
 /**
  * Get hypothesis segmentation iterator after bestpath search.
  */
-ps_seg_t *ps_lattice_seg_iter(ps_lattice_t *dag, latlink_t *link,
+ps_seg_t *ps_lattice_seg_iter(ps_lattice_t *dag, ps_latlink_t *link,
                               float32 lwf);
 
 /**
@@ -299,16 +254,22 @@ ps_astar_t *ps_astar_start(ps_lattice_t *dag,
  *
  * @return a complete path, or NULL if no more hypotheses exist.
  */
-latpath_t *ps_astar_next(ps_astar_t *nbest);
-
-/**
- * Get hypothesis string from A* search.
- */
-char const *ps_astar_hyp(ps_astar_t *nbest, latpath_t *path);
+ps_latpath_t *ps_astar_next(ps_astar_t *nbest);
 
 /**
  * Finish N-best search, releasing resources associated with it.
  */
 void ps_astar_finish(ps_astar_t *nbest);
 
-#endif /* __PS_LATTICE_H__ */
+/**
+ * Get hypothesis string from A* search.
+ */
+char const *ps_astar_hyp(ps_astar_t *nbest, ps_latpath_t *path);
+
+/**
+ * Get hypothesis segmentation from A* search.
+ */
+ps_seg_t *ps_astar_seg_iter(ps_astar_t *astar, ps_latpath_t *path, float32 lwf);
+
+
+#endif /* __PS_LATTICE_INTERNAL_H__ */

@@ -8,11 +8,15 @@
 # Author: David Huggins-Daines <dhuggins@cs.cmu.edu>
 
 # C declarations
+ctypedef float float32
+ctypedef int int32
+ctypedef double float64
+
 cdef extern from "logmath.h":
-    ctypedef double float64
     ctypedef struct logmath_t
     logmath_t *logmath_init(float64 base, int shift, int use_table)
-    void logmath_free(logmath_t *lmath)
+    logmath_t *logmath_retain(logmath_t *lmath)
+    int logmath_free(logmath_t *lmath)
 
     int logmath_log(logmath_t *lmath, float64 p)
     float64 logmath_exp(logmath_t *lmath, int p)
@@ -33,6 +37,10 @@ cdef extern from "cmd_ln.h":
     cmd_ln_t *cmd_ln_parse_r(cmd_ln_t *inout_cmdln, arg_t * defn,
                              int argc, char **argv, int strict)
     void cmd_ln_free_r(cmd_ln_t *cmdln)
+    float32 cmd_ln_float32_r(cmd_ln_t *cmdln, char *key)
+    int32 cmd_ln_int32_r(cmd_ln_t *cmdln, char *key)
+    int cmd_ln_boolean_r(cmd_ln_t *cmdln, char *key)
+    char *cmd_ln_str_r(cmd_ln_t *cmdln, char *key)
 
 cdef extern from "ckd_alloc.h":
     void *ckd_calloc(int n, int size)
@@ -49,17 +57,17 @@ cdef extern from "ngram_model.h":
         NGRAM_DMP
         NGRAM_DMP32
     ctypedef struct ngram_model_t
-    ctypedef float float32
-    ctypedef int int32
-
     ngram_model_t *ngram_model_read(cmd_ln_t *config,
                                     char *file_name,
                                     ngram_file_type_t file_type,
                                     logmath_t *lmath)
-    void ngram_model_free(ngram_model_t *model)
+    ngram_model_t *ngram_model_retain(ngram_model_t *model)
+    int ngram_model_free(ngram_model_t *model)
 
     int ngram_model_apply_weights(ngram_model_t *model,
                                   float32 lw, float32 wip, float32 uw)
+    float32 ngram_model_get_weights(ngram_model_t *model, int32 *out_log_wip,
+                                    int32 *out_log_uw)
 
     int32 ngram_wid(ngram_model_t *model, char *word)
     char *ngram_word(ngram_model_t *model, int32 wid)
@@ -69,9 +77,14 @@ cdef extern from "ngram_model.h":
     int32 ngram_ng_prob(ngram_model_t *model, int32 wid,
                         int32 *history, int32 n_hist, int32 *n_used)
 
+    int32 ngram_model_get_size(ngram_model_t *model)
+    int32 *ngram_model_get_counts(ngram_model_t *model)
+
 # Extension classes
 cdef class NGramModel:
     cdef ngram_model_t *lm
     cdef logmath_t *lmath
     cdef readonly float lw, wip, uw
 
+    cdef set_lm(NGramModel self, ngram_model_t *lm)
+    cdef set_lmath(NGramModel self, logmath_t *lmath)

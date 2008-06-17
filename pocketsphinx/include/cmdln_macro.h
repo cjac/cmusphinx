@@ -104,6 +104,10 @@
       ARG_BOOLEAN,                                                                              \
       "yes",                                                                                    \
       "Run bestpath (Dijkstra) search over word lattice (3rd pass)" },                          \
+{ "-backtrace",                                                                                 \
+      ARG_BOOLEAN,                                                                              \
+      "no",                                                                                     \
+      "Print results and backtraces to log file." },                                            \
 { "-latsize",                                                                                   \
       ARG_INT32,                                                                                \
       "5000",                                                                                   \
@@ -158,14 +162,14 @@
       ARG_STRING,									\
       NULL,										\
       "Word trigram language model input file" },					\
-{ "-lmctlfn",										\
+{ "-lmctl",										\
       ARG_STRING,									\
       NULL,										\
       "Specify a set of language model\n"},						\
 { "-lmname",										\
       ARG_STRING,									\
       "default",									\
-      "Which language model in -lmctlfn to use by default"},				\
+      "Which language model in -lmctl to use by default"},				\
 { "-lw",										\
       ARG_FLOAT32,									\
       "6.5",										\

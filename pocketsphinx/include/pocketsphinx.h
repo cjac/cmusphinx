@@ -58,17 +58,13 @@ extern "C" {
 /* PocketSphinx headers (not many of them!) */
 #include <pocketsphinx_export.h>
 #include <cmdln_macro.h>
+#include <ps_lattice.h>
 #include <fsg_set.h>
 
 /**
  * PocketSphinx speech recognizer object.
  */
 typedef struct ps_decoder_s ps_decoder_t;
-
-/**
- * PocketSphinx word lattice object.
- */
-typedef struct ps_lattice_s ps_lattice_t;
 
 /**
  * PocketSphinx N-best hypothesis iterator object.
@@ -85,6 +81,7 @@ typedef struct ps_seg_s ps_seg_t;
  *
  * @note The decoder retains ownership of the pointer
  * <code>config</code>, so you must not attempt to free it manually.
+ * If you wish to reuse it elsewhere, call cmd_ln_retain() on it.
  *
  * @param config a command-line structure, as created by
  * cmd_ln_parse_r() or cmd_ln_parse_file_r().
@@ -98,6 +95,10 @@ ps_decoder_t *ps_init(cmd_ln_t *config);
  * This function allows you to switch the acoustic model, dictionary,
  * or other configuration without creating an entirely new decoding
  * object.
+ *
+ * @note The decoder retains ownership of the pointer
+ * <code>config</code>, so you must not attempt to free it manually.
+ * If you wish to reuse it elsewhere, call cmd_ln_retain() on it.
  *
  * @param ps Decoder.
  * @param config An optional new configuration to use.  If this is
@@ -118,6 +119,19 @@ POCKETSPHINX_EXPORT
 arg_t const *ps_args(void);
 
 /**
+ * Retain a pointer to the decoder.
+ *
+ * This increments the reference count on the decoder, allowing it to
+ * be shared between multiple parent objects.  In general you will not
+ * need to use this function, ever.  It is mainly here for the
+ * convenience of scripting language bindings.
+ *
+ * @return pointer to retained decoder.
+ */
+POCKETSPHINX_EXPORT
+ps_decoder_t *ps_retain(ps_decoder_t *ps);
+
+/**
  * Finalize the decoder.
  *
  * This releases all resources associated with the decoder, including
@@ -125,16 +139,18 @@ arg_t const *ps_args(void);
  * the initial configuration object passed to ps_init().
  *
  * @param ps Decoder to be freed.
+ * @return New reference count (0 if freed).
  */
 POCKETSPHINX_EXPORT
-void ps_free(ps_decoder_t *ps);
+int ps_free(ps_decoder_t *ps);
 
 /**
  * Get the configuration object for this decoder.
  *
  * @return The configuration object for this decoder.  The decoder
  *         retains ownership of this pointer, so you should not
- *         attempt to free it manually.
+ *         attempt to free it manually.  Use cmd_ln_retain() if you
+ *         wish to reuse it elsewhere.
  */
 POCKETSPHINX_EXPORT
 cmd_ln_t *ps_get_config(ps_decoder_t *ps);
@@ -142,9 +158,10 @@ cmd_ln_t *ps_get_config(ps_decoder_t *ps);
 /**
  * Get the log-math computation object for this decoder.
  *
- * @return The log-math object for this decoder.  The decoder
- *         retains ownership of this pointer, so you should not
- *         attempt to free it manually.
+ * @return The log-math object for this decoder.  The decoder retains
+ *         ownership of this pointer, so you should not attempt to
+ *         free it manually.  Use logmath_retain() if you wish to
+ *         reuse it elsewhere.
  */
 POCKETSPHINX_EXPORT
 logmath_t *ps_get_logmath(ps_decoder_t *ps);
@@ -157,7 +174,8 @@ logmath_t *ps_get_logmath(ps_decoder_t *ps);
  *
  * @return The language model set object for this decoder.  The
  *         decoder retains ownership of this pointer, so you should
- *         not attempt to free it manually.
+ *         not attempt to free it manually.  Use ngram_model_retain()
+ *         if you wish to reuse it elsewhere.
  */
 POCKETSPHINX_EXPORT
 ngram_model_t *ps_get_lmset(ps_decoder_t *ps);
@@ -170,14 +188,16 @@ ngram_model_t *ps_get_lmset(ps_decoder_t *ps);
  * data structures to reflect any changes made to the language model
  * set (e.g. switching language models, adding words, etc).
  *
- * FIXME: Is there any good reason why switching lmsets shouldn't
- * work?  We should probably allow it if it does.
- *
- * @return The current language model set object for this decoder, or
+ * @param lmset The new lmset to use, or NULL to update the existing
+ *              lmset.  The decoder retains ownership of this pointer,
+ *              so you should not attempt to free it manually.  Use
+ *              ngram_model_retain() if you wish to reuse it
+ *              elsewhere.
+ * @return The updated language model set object for this decoder, or
  *         NULL on failure.
  */
 POCKETSPHINX_EXPORT
-ngram_model_t *ps_update_lmset(ps_decoder_t *ps);
+ngram_model_t *ps_update_lmset(ps_decoder_t *ps, ngram_model_t *lmset);
 
 /**
  * Get the finite-state grammar set object for this decoder.
@@ -333,15 +353,11 @@ char const *ps_get_hyp(ps_decoder_t *ps, int32 *out_best_score,
  * @return Word lattice object containing all hypotheses so far.  NULL
  *         if no hypotheses are available.  This pointer is owned by
  *         the decoder and you should not attempt to free it manually.
+ *         It is only valid until the next utterance, unless you use
+ *         ps_lattice_retain() to retain it.
  */
 POCKETSPHINX_EXPORT
 ps_lattice_t *ps_get_lattice(ps_decoder_t *ps);
-
-/**
- * Write a lattice to disk.
- */
-POCKETSPHINX_EXPORT
-int32 ps_lattice_write(ps_lattice_t *dag, char const *filename);
 
 /**
  * Get an iterator over the word segmentation for the best hypothesis.

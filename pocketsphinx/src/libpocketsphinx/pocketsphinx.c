@@ -46,8 +46,9 @@
 #include <pio.h>
 
 /* Local headers. */
-#include "pocketsphinx_internal.h"
 #include "cmdln_macro.h"
+#include "pocketsphinx_internal.h"
+#include "ps_lattice_internal.h"
 #include "fsg_search_internal.h"
 #include "ngram_search.h"
 #include "ngram_search_fwdtree.h"
@@ -113,11 +114,7 @@ ps_reinit(ps_decoder_t *ps, cmd_ln_t *config)
     gnode_t *gn;
 
     if (config && config != ps->config) {
-        if (ps->config) {
-            for (gn = ps->strings; gn; gn = gnode_next(gn))
-                ckd_free(gnode_ptr(gn));
-            cmd_ln_free_r(ps->config);
-        }
+        cmd_ln_free_r(ps->config);
         ps->config = config;
     }
     /* Fill in some default arguments. */
@@ -168,7 +165,7 @@ ps_reinit(ps_decoder_t *ps, cmd_ln_t *config)
         ps->search = fsgs;
     }
     else if ((lmfile = cmd_ln_str_r(config, "-lm"))
-             || (lmctl = cmd_ln_str_r(config, "-lmctlfn"))) {
+             || (lmctl = cmd_ln_str_r(config, "-lmctl"))) {
         ps_search_t *ngs;
 
         if ((ngs = ngram_search_init(config, ps->acmod, ps->dict)) == NULL)
@@ -192,6 +189,7 @@ ps_init(cmd_ln_t *config)
     ps_decoder_t *ps;
 
     ps = ckd_calloc(1, sizeof(*ps));
+    ps->refcount = 1;
     if (ps_reinit(ps, config) < 0) {
         ps_free(ps);
         return NULL;
@@ -205,29 +203,32 @@ ps_args(void)
     return ps_args_def;
 }
 
-void
+ps_decoder_t *
+ps_retain(ps_decoder_t *ps)
+{
+    ++ps->refcount;
+    return ps;
+}
+
+int
 ps_free(ps_decoder_t *ps)
 {
     gnode_t *gn;
 
     if (ps == NULL)
-        return;
+        return 0;
+    if (--ps->refcount > 0)
+        return ps->refcount;
     for (gn = ps->searches; gn; gn = gnode_next(gn))
         ps_search_free(gnode_ptr(gn));
     glist_free(ps->searches);
-    if (ps->dict)
-        dict_free(ps->dict);
-    if (ps->acmod)
-        acmod_free(ps->acmod);
-    if (ps->lmath)
-        logmath_free(ps->lmath);
-    if (ps->config)
-        cmd_ln_free_r(ps->config);
-    for (gn = ps->strings; gn; gn = gnode_next(gn))
-        ckd_free(gnode_ptr(gn));
-    glist_free(ps->strings);
+    dict_free(ps->dict);
+    acmod_free(ps->acmod);
+    logmath_free(ps->lmath);
+    cmd_ln_free_r(ps->config);
     ckd_free(ps->uttid);
     ckd_free(ps);
+    return 0;
 }
 
 cmd_ln_t *
@@ -252,7 +253,7 @@ ps_get_lmset(ps_decoder_t *ps)
 }
 
 ngram_model_t *
-ps_update_lmset(ps_decoder_t *ps)
+ps_update_lmset(ps_decoder_t *ps, ngram_model_t *lmset)
 {
     ngram_search_t *ngs;
     gnode_t *gn;
@@ -271,8 +272,12 @@ ps_update_lmset(ps_decoder_t *ps)
         ps->searches = glist_add_ptr(ps->searches, ngs);
     }
     else {
-        /* Tell N-Gram search to update its view of the world. */
         ngs = gnode_ptr(gn);
+        /* Free any previous lmset if this is a new one. */
+        if (ngs->lmset != NULL && ngs->lmset != lmset)
+            ngram_model_free(ngs->lmset);
+        ngs->lmset = lmset;
+        /* Tell N-Gram search to update its view of the world. */
         if (ps_search_reinit(ps_search_base(ngs)) < 0)
             return NULL;
     }
@@ -643,7 +648,7 @@ ps_nbest_free(ps_nbest_t *nbest)
 ps_nbest_t *
 ps_nbest_next(ps_nbest_t *nbest)
 {
-    latpath_t *next;
+    ps_latpath_t *next;
 
     next = ps_astar_next(nbest);
     if (next == NULL) {
@@ -662,88 +667,13 @@ ps_nbest_hyp(ps_nbest_t *nbest, int32 *out_score)
     return ps_astar_hyp(nbest, nbest->paths_done);
 }
 
-typedef struct nbest_seg_s {
-    ps_seg_t base;
-    latnode_t **nodes;
-    int n_nodes;
-    int cur;
-} nbest_seg_t;
-
-static void
-ps_nbest_node2itor(nbest_seg_t *itor)
-{
-    ps_seg_t *seg = (ps_seg_t *)itor;
-    latnode_t *node;
-
-    assert(itor->cur < itor->n_nodes);
-    node = itor->nodes[itor->cur];
-    if (itor->cur == itor->n_nodes - 1)
-        seg->ef = node->lef;
-    else
-        seg->ef = itor->nodes[itor->cur + 1]->sf - 1;
-    seg->word = dict_word_str(ps_search_dict(seg->search), node->wid);
-    seg->sf = node->sf;
-    seg->prob = 0; /* FIXME: implement forward-backward */
-}
-
-static void
-ps_nbest_seg_free(ps_seg_t *seg)
-{
-    nbest_seg_t *itor = (nbest_seg_t *)seg;
-    ckd_free(itor->nodes);
-    ckd_free(itor);
-}
-
-static ps_seg_t *
-ps_nbest_seg_next(ps_seg_t *seg)
-{
-    nbest_seg_t *itor = (nbest_seg_t *)seg;
-
-    ++itor->cur;
-    if (itor->cur == itor->n_nodes) {
-        ps_nbest_seg_free(seg);
-        return NULL;
-    }
-    else {
-        ps_nbest_node2itor(itor);
-    }
-
-    return seg;
-}
-
-static ps_segfuncs_t ps_nbest_segfuncs = {
-    /* seg_next */ ps_nbest_seg_next,
-    /* seg_free */ ps_nbest_seg_free
-};
-
 ps_seg_t *
 ps_nbest_seg(ps_nbest_t *nbest, int32 *out_score)
 {
-    nbest_seg_t *itor;
-    latpath_t *p;
-    int cur;
-
     if (nbest->paths_done == NULL)
         return NULL;
     if (out_score) *out_score = nbest->paths_done->score;
-
-    /* Backtrace and make an iterator, this should look familiar by now. */
-    itor = ckd_calloc(1, sizeof(*itor));
-    itor->base.vt = &ps_nbest_segfuncs;
-    itor->base.search = nbest->dag->search;
-    itor->n_nodes = itor->cur = 0;
-    for (p = nbest->paths_done; p; p = p->parent) {
-        ++itor->n_nodes;
-    }
-    itor->nodes = ckd_calloc(itor->n_nodes, sizeof(*itor->nodes));
-    cur = itor->n_nodes - 1;
-    for (p = nbest->paths_done; p; p = p->parent) {
-        itor->nodes[cur] = p->node;
-        --cur;
-    }
-
-    ps_nbest_node2itor(itor);
-    return (ps_seg_t *)itor;
+    return ps_astar_seg_iter(nbest, nbest->paths_done, 1.0);
 }
 
 void

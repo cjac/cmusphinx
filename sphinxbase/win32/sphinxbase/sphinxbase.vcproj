@@ -434,6 +434,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\src\libsphinxbase\util\dtoa.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\libsphinxbase\util\err.c"
 				>
 				<FileConfiguration
@@ -957,28 +961,6 @@
 			</File>
 			<File
 				RelativePath="..\..\src\libsphinxad\rec_win32.c"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\src\libsphinxbase\util\s3_arraylist.c"
 				>
 				<FileConfiguration
 					Name="Release|Win32"

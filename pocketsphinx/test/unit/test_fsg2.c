@@ -5,7 +5,7 @@
 
 #include "pocketsphinx_internal.h"
 #include "fsg_search_internal.h"
-#include "ps_lattice.h"
+#include "ps_lattice_internal.h"
 #include "test_macros.h"
 
 int
@@ -18,7 +18,7 @@ main(int argc, char *argv[])
 	ps_lattice_t *dag;
 	ps_seg_t *seg;
 	int32 score;
-	latlink_t *link;
+	ps_latlink_t *link;
 
 	TEST_ASSERT(config =
 		    cmd_ln_init(NULL, ps_args(), TRUE,
@@ -81,7 +81,7 @@ main(int argc, char *argv[])
 	ps_lattice_posterior(dag, NULL, 1.0/15.0);
 	while (link) {
 		printf("%s %d P(w|o) = %d + %d - %d = %d = %f\n",
-		       dict_word_str(ps_search_dict(ps), link->from->wid),
+		       dict_word_str(ps->dict, link->from->wid),
 		       link->ef, link->alpha, link->beta, dag->norm,
 		       link->alpha + link->beta - dag->norm,
 		       logmath_exp(ps_get_logmath(ps),

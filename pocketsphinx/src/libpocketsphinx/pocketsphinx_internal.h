@@ -119,8 +119,8 @@ struct ps_search_s {
 
 /* FIXME: This code makes some irritating assumptions about the
  * ordering of the dictionary. */
-#define ISA_FILLER_WORD(s,x)	((x) >= ps_search_silence_wid(s))
-#define ISA_REAL_WORD(s,x)	((x) < ps_search_finish_wid(s))
+#define ISA_FILLER_WORD(s,x)	((x) ? (x) >= ps_search_silence_wid(s) : FALSE)
+#define ISA_REAL_WORD(s,x)	((x) ? (x) < ps_search_finish_wid(s) : TRUE)
 
 /**
  * Initialize base structure.
@@ -167,7 +167,7 @@ struct ps_seg_s {
 struct ps_decoder_s {
     /* Model parameters and such. */
     cmd_ln_t *config;  /**< Configuration. */
-    glist_t strings;   /**< Extra strings added to config. */
+    int refcount;      /**< Reference count. */
 
     /* Basic units of computation. */
     acmod_t *acmod;    /**< Acoustic model. */

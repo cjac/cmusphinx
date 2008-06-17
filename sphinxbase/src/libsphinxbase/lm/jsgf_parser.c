@@ -136,7 +136,7 @@ typedef union YYSTYPE
        jsgf_atom_t *atom;
 }
 /* Line 187 of yacc.c.  */
-#line 140 "../../../../src/libsphinxbase/lm/jsgf_parser.c"
+#line 140 "jsgf_parser.c"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
@@ -149,7 +149,7 @@ typedef union YYSTYPE
 
 
 /* Line 216 of yacc.c.  */
-#line 153 "../../../../src/libsphinxbase/lm/jsgf_parser.c"
+#line 153 "jsgf_parser.c"
 
 #ifdef short
 # undef short
@@ -1423,17 +1423,17 @@ yyreduce:
 
   case 13:
 #line 97 "jsgf_parser.y"
-    { jsgf_import_rule(jsgf, (yyvsp[(2) - (3)].name)); }
+    { jsgf_import_rule(jsgf, (yyvsp[(2) - (3)].name)); ckd_free((yyvsp[(2) - (3)].name)); }
     break;
 
   case 16:
 #line 104 "jsgf_parser.y"
-    { jsgf_define_rule(jsgf, (yyvsp[(1) - (4)].name), (yyvsp[(3) - (4)].rhs), 0); }
+    { jsgf_define_rule(jsgf, (yyvsp[(1) - (4)].name), (yyvsp[(3) - (4)].rhs), 0); ckd_free((yyvsp[(1) - (4)].name)); }
     break;
 
   case 17:
 #line 105 "jsgf_parser.y"
-    { jsgf_define_rule(jsgf, (yyvsp[(2) - (5)].name), (yyvsp[(4) - (5)].rhs), 1); }
+    { jsgf_define_rule(jsgf, (yyvsp[(2) - (5)].name), (yyvsp[(4) - (5)].rhs), 1); ckd_free((yyvsp[(2) - (5)].name)); }
     break;
 
   case 18:
@@ -1483,12 +1483,12 @@ yyreduce:
 
   case 28:
 #line 135 "jsgf_parser.y"
-    { (yyval.atom) = jsgf_atom_new((yyvsp[(1) - (1)].name), 1.0); }
+    { (yyval.atom) = jsgf_atom_new((yyvsp[(1) - (1)].name), 1.0); ckd_free((yyvsp[(1) - (1)].name)); }
     break;
 
   case 29:
 #line 136 "jsgf_parser.y"
-    { (yyval.atom) = jsgf_atom_new((yyvsp[(1) - (1)].name), 1.0); }
+    { (yyval.atom) = jsgf_atom_new((yyvsp[(1) - (1)].name), 1.0); ckd_free((yyvsp[(1) - (1)].name)); }
     break;
 
   case 30:
@@ -1513,7 +1513,7 @@ yyreduce:
 
 
 /* Line 1267 of yacc.c.  */
-#line 1517 "../../../../src/libsphinxbase/lm/jsgf_parser.c"
+#line 1517 "jsgf_parser.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);

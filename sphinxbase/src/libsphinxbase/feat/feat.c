@@ -164,6 +164,193 @@ feat_print_dbg(feat_t *fcb, mfcc_t ***feat, int32 nfr, const char *text)
 #define feat_print_dbg(fcb,mfc,nfr,text)
 #endif
 
+int32 **
+parse_subvecs(char const *str)
+{
+    char const *strp;
+    int32 n, n2, l;
+    glist_t dimlist;            /* List of dimensions in one subvector */
+    glist_t veclist;            /* List of dimlists (subvectors) */
+    int32 **subvec;
+    gnode_t *gn, *gn2;
+
+    veclist = NULL;
+
+    strp = str;
+    for (;;) {
+        dimlist = NULL;
+
+        for (;;) {
+            if (sscanf(strp, "%d%n", &n, &l) != 1)
+                E_FATAL("'%s': Couldn't read int32 @pos %d\n", str,
+                        strp - str);
+            strp += l;
+
+            if (*strp == '-') {
+                strp++;
+
+                if (sscanf(strp, "%d%n", &n2, &l) != 1)
+                    E_FATAL("'%s': Couldn't read int32 @pos %d\n", str,
+                            strp - str);
+                strp += l;
+            }
+            else
+                n2 = n;
+
+            if ((n < 0) || (n > n2))
+                E_FATAL("'%s': Bad subrange spec ending @pos %d\n", str,
+                        strp - str);
+
+            for (; n <= n2; n++) {
+		gnode_t *gn;
+		for (gn = dimlist; gn; gn = gnode_next(gn))
+		    if (gnode_int32(gn) == n)
+			break;
+		if (gn != NULL)
+                    E_FATAL("'%s': Duplicate dimension ending @pos %d\n",
+                            str, strp - str);
+
+                dimlist = glist_add_int32(dimlist, n);
+            }
+
+            if ((*strp == '\0') || (*strp == '/'))
+                break;
+
+            if (*strp != ',')
+                E_FATAL("'%s': Bad delimiter @pos %d\n", str, strp - str);
+
+            strp++;
+        }
+
+        veclist = glist_add_ptr(veclist, (void *) dimlist);
+
+        if (*strp == '\0')
+            break;
+
+        assert(*strp == '/');
+        strp++;
+    }
+
+    /* Convert the glists to arrays; remember the glists are in reverse order of the input! */
+    n = glist_count(veclist);   /* #Subvectors */
+    subvec = (int32 **) ckd_calloc(n + 1, sizeof(int32 *));     /* +1 for sentinel */
+    subvec[n] = NULL;           /* sentinel */
+
+    for (--n, gn = veclist; (n >= 0) && gn; gn = gnode_next(gn), --n) {
+        gn2 = (glist_t) gnode_ptr(gn);
+
+        n2 = glist_count(gn2);  /* Length of this subvector */
+        if (n2 <= 0)
+            E_FATAL("'%s': 0-length subvector\n", str);
+
+        subvec[n] = (int32 *) ckd_calloc(n2 + 1, sizeof(int32));        /* +1 for sentinel */
+        subvec[n][n2] = -1;     /* sentinel */
+
+        for (--n2; (n2 >= 0) && gn2; gn2 = gnode_next(gn2), --n2)
+            subvec[n][n2] = gnode_int32(gn2);
+        assert((n2 < 0) && (!gn2));
+    }
+    assert((n < 0) && (!gn));
+
+    /* Free the glists */
+    for (gn = veclist; gn; gn = gnode_next(gn)) {
+        gn2 = (glist_t) gnode_ptr(gn);
+        glist_free(gn2);
+    }
+    glist_free(veclist);
+
+    return subvec;
+}
+
+void
+subvecs_free(int32 **subvecs)
+{
+    int32 **sv;
+
+    for (sv = subvecs; sv && *sv; ++sv)
+        ckd_free(*sv);
+    ckd_free(subvecs);
+}
+
+int
+feat_set_subvecs(feat_t *fcb, int32 **subvecs)
+{
+    int32 **sv;
+    int32 n_sv, n_dim, i;
+
+    if (subvecs == NULL) {
+        subvecs_free(fcb->subvecs);
+        ckd_free(fcb->sv_buf);
+        ckd_free(fcb->sv_len);
+        fcb->n_sv = 0;
+        fcb->subvecs = NULL;
+        fcb->sv_len = NULL;
+        fcb->sv_buf = NULL;
+        fcb->sv_dim = 0;
+        return 0;
+    }
+
+    if (fcb->n_stream != 1) {
+        E_ERROR("Subvector specifications require single-stream features!");
+        return -1;
+    }
+
+    n_sv = 0;
+    n_dim = 0;
+    for (sv = subvecs; sv && *sv; ++sv) {
+        int32 *d;
+
+        for (d = *sv; d && *d != -1; ++d) {
+            ++n_dim;
+        }
+        ++n_sv;
+    }
+    if (n_dim > feat_dimension(fcb)) {
+        E_ERROR("Total dimensionality of subvector specification %d "
+                "> feature dimensionality %d\n", n_dim, feat_dimension(fcb));
+        return -1;
+    }
+
+    fcb->n_sv = n_sv;
+    fcb->subvecs = subvecs;
+    fcb->sv_len = ckd_calloc(n_sv, sizeof(*fcb->sv_len));
+    fcb->sv_buf = ckd_calloc(n_dim, sizeof(*fcb->sv_buf));
+    fcb->sv_dim = n_dim;
+    for (i = 0; i < n_sv; ++i) {
+        int32 *d;
+        for (d = subvecs[i]; d && *d != -1; ++d) {
+            ++fcb->sv_len[i];
+        }
+    }
+
+    return 0;
+}
+
+/**
+ * Project feature components to subvectors (if any).
+ */
+static void
+feat_subvec_project(feat_t *fcb, mfcc_t ***inout_feat, uint32 nfr)
+{
+    uint32 i;
+
+    if (fcb->subvecs == NULL)
+        return;
+    for (i = 0; i < nfr; ++i) {
+        mfcc_t *out;
+        int32 j;
+
+        out = fcb->sv_buf;
+        for (j = 0; j < fcb->n_sv; ++j) {
+            int32 *d;
+            for (d = fcb->subvecs[j]; d && *d != -1; ++d) {
+                *out++ = inout_feat[i][0][*d];
+            }
+        }
+        memcpy(inout_feat[i][0], fcb->sv_buf, fcb->sv_dim * sizeof(*fcb->sv_buf));
+    }
+}
+
 /*
  * Read specified segment [sf-win..ef+win] of Sphinx-II format mfc file read and return
  * #frames read.  Return -1 if error.
@@ -601,7 +788,7 @@ feat_init(char const *type, cmn_type_t cmn, int32 varnorm,
              type, cepsize, cmn_type_str[cmn], varnorm ? "yes" : "no", agc_type_str[agc]);
 
     fcb = (feat_t *) ckd_calloc(1, sizeof(feat_t));
-
+    fcb->refcount = 1;
     fcb->name = (char *) ckd_salloc(type);
     if (strcmp(type, "s2_4x") == 0) {
         /* Sphinx-II format 4-stream feature (Hack!! hardwired constants below) */
@@ -835,6 +1022,11 @@ feat_compute_utt(feat_t *fcb, mfcc_t **mfc, int32 nfr, int32 win, mfcc_t ***feat
         feat_lda_transform(fcb, feat, nfr - win * 2);
         feat_print_dbg(fcb, feat, nfr - win * 2, "After LDA");
     }
+
+    if (fcb->subvecs) {
+        feat_subvec_project(fcb, feat, nfr - win * 2);
+        feat_print_dbg(fcb, feat, nfr - win * 2, "After subvector projection");
+    }
 }
 
 int32
@@ -1054,32 +1246,46 @@ feat_s2mfc2feat_live(feat_t * fcb, mfcc_t ** uttcep, int32 *inout_ncep,
     if (fcb->lda)
         feat_lda_transform(fcb, ofeat, nfeatvec);
 
+    if (fcb->subvecs)
+        feat_subvec_project(fcb, ofeat, nfeatvec);
+
     return nfeatvec;
 }
 
-void
+feat_t *
+feat_retain(feat_t *f)
+{
+    ++f->refcount;
+    return f;
+}
+
+int
 feat_free(feat_t * f)
 {
-    if (f) {
-        if (f->cepbuf)
-            ckd_free_2d((void **) f->cepbuf);
-        ckd_free(f->tmpcepbuf);
+    if (f == NULL)
+        return 0;
+    if (--f->refcount > 0)
+        return f->refcount;
 
-        if (f->name) {
-            ckd_free((void *) f->name);
-        }
+    if (f->cepbuf)
+        ckd_free_2d((void **) f->cepbuf);
+    ckd_free(f->tmpcepbuf);
 
-        if (f->lda)
-            ckd_free_3d((void ***) f->lda);
-
-        ckd_free(f->stream_len);
-
-        cmn_free(f->cmn_struct);
-        agc_free(f->agc_struct);
-
-        ckd_free((void *) f);
+    if (f->name) {
+        ckd_free((void *) f->name);
     }
+    if (f->lda)
+        ckd_free_3d((void ***) f->lda);
 
+    ckd_free(f->stream_len);
+    ckd_free(f->sv_len);
+    subvecs_free(f->subvecs);
+
+    cmn_free(f->cmn_struct);
+    agc_free(f->agc_struct);
+
+    ckd_free(f);
+    return 0;
 }
 
 
@@ -1094,6 +1300,15 @@ feat_report(feat_t * f)
     for (i = 0; i < f->n_stream; i++) {
         E_INFO_NOFN("Vector size of stream[%d]: %d\n", i,
                     f->stream_len[i]);
+    }
+    E_INFO_NOFN("Number of subvectors = %d\n", f->n_sv);
+    for (i = 0; i < f->n_sv; i++) {
+        int32 *sv;
+
+        E_INFO_NOFN("Components of subvector[%d]:", i);
+        for (sv = f->subvecs[i]; sv && *sv != -1; ++sv)
+            E_INFOCONT(" %d", *sv);
+        E_INFOCONT("\n");
     }
     E_INFO_NOFN("Whether CMN is used  = %d\n", f->cmn);
     E_INFO_NOFN("Whether AGC is used  = %d\n", f->agc);

@@ -1,5 +1,10 @@
 EXTRA_DIST = pocketsphinx.c \
-	pocketsphinx.pyx
+	pocketsphinx.pyx \
+	pocketsphinx.pxd
+
+pkginclude_HEADERS = pocketsphinx.pxd
+
+noinst_HEADERS = bogus_pygobject.h
 
 if BUILD_PYTHON
 all-local: pymod-build-stamp
@@ -16,7 +21,7 @@ clean-local:
 	test -z "$(VPATH)" || $(RM) pocketsphinx.c
 	$(RM) pymod-build-stamp
 
-pymod-build-stamp: pocketsphinx.c
+pymod-build-stamp: $(srcdir)/pocketsphinx.c
 # This is dumb, but distutils is completely incapable of VPATH building
 	test -z "$(VPATH)" || cp "$(srcdir)/pocketsphinx.c" pocketsphinx.c
 	$(PYTHON) setup.py build
@@ -24,6 +29,6 @@ pymod-build-stamp: pocketsphinx.c
 endif
 
 if BUILD_PYREX
-$(srcdir)/pocketsphinx.c: pocketsphinx.pyx
+$(srcdir)/pocketsphinx.c: $(srcdir)/pocketsphinx.pyx $(srcdir)/pocketsphinx.pxd
 	pyrexc -o $@ $< $(CPPFLAGS) -I$(sphinxbase)/python
 endif
