@@ -217,6 +217,7 @@
 #include "cmn.h"
 #include "bio.h"
 #include "feat.h"
+#include "cmd_ln.h"
 
 /* ARCHAN: Dangerous routine :-)*/
 #include "s3_align.h"

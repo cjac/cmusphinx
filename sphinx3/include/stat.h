@@ -80,6 +80,7 @@
 #define _S3_STAT_
 
 #include <s3types.h>
+#include "sphinx3_export.h"
 
 /** \file stat.h
  * \brief The wrapper structure for all statistics in sphinx 3.x
