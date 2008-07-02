@@ -149,6 +149,16 @@ acmod_init_feat(acmod_t *acmod)
             return -1;
     }
 
+    if (cmd_ln_str_r(acmod->config, "-svspec")) {
+        int32 **subvecs;
+        E_INFO("Using subvector specification %s\n", 
+               cmd_ln_str_r(acmod->config, "-svspec"));
+        if ((subvecs = parse_subvecs(cmd_ln_str_r(acmod->config, "-svspec"))) == NULL)
+            return -1;
+        if ((feat_set_subvecs(acmod->fcb, subvecs)) < 0)
+            return -1;
+    }
+
     if (cmd_ln_exists_r(acmod->config, "-agcthresh")
         && 0 != strcmp(cmd_ln_str_r(acmod->config, "-agc"), "none")) {
         agc_set_threshold(acmod->fcb->agc_struct,
@@ -726,6 +736,10 @@ acmod_flags2list(acmod_t *acmod)
     bitvec_t *flagptr;
 
     total_dists = bin_mdef_n_sen(acmod->mdef);
+    if (acmod->compallsen) {
+        acmod->n_senone_active = total_dists;
+        return total_dists;
+    }
     total_words = total_dists / BITVEC_BITS;
     extra_bits = total_dists % BITVEC_BITS;
     w = n = 0;

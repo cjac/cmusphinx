@@ -315,6 +315,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\libpocketsphinx\sdc_mgau.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\libpocketsphinx\tmat.h"
 				>
 			</File>
@@ -635,6 +639,10 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\..\src\libpocketsphinx\sdc_mgau.c"
+				>
 			</File>
 			<File
 				RelativePath="..\..\..\src\libpocketsphinx\tmat.c"

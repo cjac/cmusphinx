@@ -1,5 +1,9 @@
 bin_PROGRAMS = sphinx_lm_eval
 
+bin_SCRIPTS = sphinx_lm_sort
+
+EXTRA_DIST = sphinx_lm_sort
+
 sphinx_lm_eval_SOURCES = lm_eval.c
 
 sphinx_lm_eval_LDADD = \
