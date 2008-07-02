@@ -245,8 +245,7 @@ s3_init_defaults(cmd_ln_t *config)
 }
 
 /**
- * Initialize sphinx 3 single stream hmm (use cont_mgau). This
- * function is duplicated with ms_s3_am_init. 
+ * Initialize sphinx 3 single stream hmm (use cont_mgau).
  */
 void
 s3_am_init(kbcore_t * kbc)
