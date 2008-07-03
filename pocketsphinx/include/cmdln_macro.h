@@ -280,6 +280,10 @@
       ARG_STRING,                                                               \
       NULL,                                                                     \
       "Senone dump (compressed mixture weights) input file" },                  \
+{ "-sdmap",                                                                     \
+      ARG_STRING,                                                               \
+      NULL,                                                                     \
+      "Subspace distribution cluster map file" },                               \
 { "-mmap",                                                                      \
       ARG_BOOLEAN,                                                              \
       "yes",                                                                    \
