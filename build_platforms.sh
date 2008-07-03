@@ -3,37 +3,46 @@
 set -e
 
 TOP=`pwd`
+BUILD=${1:-i386-linux}
 
 cd "$TOP"/sphinxbase
 make distclean || true
-autoreconf -i
 cd "$TOP"/pocketsphinx
 make distclean || true
-autoreconf -i
 cd "$TOP"
 
-rm -rf "$TOP"/sphinxbase/bfin-uclinux "$TOP"/pocketsphinx/bfin-uclinux
-mkdir "$TOP"/sphinxbase/bfin-uclinux "$TOP"/pocketsphinx/bfin-uclinux
+if command -v bfin-uclinux-gcc >/dev/null 2>&1; then
+    rm -rf "$TOP"/sphinxbase/bfin-uclinux "$TOP"/pocketsphinx/bfin-uclinux
+    mkdir "$TOP"/sphinxbase/bfin-uclinux "$TOP"/pocketsphinx/bfin-uclinux
 
-cd "$TOP"/sphinxbase/bfin-uclinux
-../configure --enable-fixed --without-lapack --host=bfin-uclinux --build=i686-linux
-make -j3
+    cd "$TOP"/sphinxbase/bfin-uclinux
+    configure=configure
+    test -x ../configure || configure=autogen.sh
+    ../$configure --enable-fixed --without-lapack --host=bfin-uclinux --build=$BUILD
+    make -j3
 
-cd "$TOP"/pocketsphinx/bfin-uclinux
-../configure --with-sphinxbase="$TOP"/sphinxbase \
-    --with-sphinxbase-build="$TOP"/sphinxbase/bfin-uclinux \
-    --host=bfin-uclinux --build=i686-linux
-make -j3
+    cd "$TOP"/pocketsphinx/bfin-uclinux
+    configure=configure
+    test -x ../configure || configure=autogen.sh
+    ../$configure --with-sphinxbase="$TOP"/sphinxbase \
+	--with-sphinxbase-build="$TOP"/sphinxbase/bfin-uclinux \
+	--host=bfin-uclinux --build=$BUILD
+    make -j3
+fi
 
 cd "$TOP"
-rm -rf "$TOP"/sphinxbase/i386-linux "$TOP"/pocketsphinx/i386-linux
-mkdir "$TOP"/sphinxbase/i386-linux "$TOP"/pocketsphinx/i386-linux
+rm -rf "$TOP"/sphinxbase/$BUILD "$TOP"/pocketsphinx/$BUILD
+mkdir "$TOP"/sphinxbase/$BUILD "$TOP"/pocketsphinx/$BUILD
 
-cd "$TOP"/sphinxbase/i386-linux
-../configure
+cd "$TOP"/sphinxbase/$BUILD
+configure=configure
+test -x ../configure || configure=autogen.sh
+../$configure
 make -j3
 
-cd "$TOP"/pocketsphinx/i386-linux
-../configure --with-sphinxbase="$TOP"/sphinxbase \
-    --with-sphinxbase-build="$TOP"/sphinxbase/i386-linux
+cd "$TOP"/pocketsphinx/$BUILD
+configure=configure
+test -x ../configure || configure=autogen.sh
+../$configure --with-sphinxbase="$TOP"/sphinxbase \
+    --with-sphinxbase-build="$TOP"/sphinxbase/$BUILD
 make -j3
