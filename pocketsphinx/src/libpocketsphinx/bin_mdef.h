@@ -78,13 +78,13 @@ struct mdef_entry_s {
 	union {
 		/**< CI phone information - attributes (just "filler" for now) */
 		struct {
-			int8 filler;
-			int8 reserved[3];
+			uint8 filler;
+			uint8 reserved[3];
 		} ci;
 		/**< CD phone information - context info. */
 		struct {
-			int8 wpos;
-			int8 ctx[3]; /**< quintphones will require hacking */
+			uint8 wpos;
+			uint8 ctx[3]; /**< quintphones will require hacking */
 		} cd;
 	} info;
 } ATTRIBUTE_PACKED;
@@ -123,7 +123,7 @@ struct bin_mdef_s {
 	cd_tree_t *cd_tree;  /**< Tree mapping CD phones to phone IDs */
 	mdef_entry_t *phone; /**< All phone structures */
 	int16 **sseq;        /**< Unique senone sequences (2D array built at load time) */
-	int8 *sseq_len;      /**< Number of states in each sseq (NULL for homogeneous) */
+	uint8 *sseq_len;     /**< Number of states in each sseq (NULL for homogeneous) */
 
 	/* These two are not stored on disk, but are generated at load time. */
 	int16 *cd2cisen;	/**< Parent CI-senone id for each senone */

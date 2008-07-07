@@ -123,9 +123,9 @@ bin_mdef_read_text(cmd_ln_t *config, const char *filename)
         }
         else {
             bmdef->phone[i].info.cd.wpos = mdef->phone[i].wpos;
-            bmdef->phone[i].info.cd.ctx[0] = mdef->phone[i].ci;
-            bmdef->phone[i].info.cd.ctx[1] = mdef->phone[i].lc;
-            bmdef->phone[i].info.cd.ctx[2] = mdef->phone[i].rc;
+            bmdef->phone[i].info.cd.ctx[0] = (uint8)mdef->phone[i].ci;
+            bmdef->phone[i].info.cd.ctx[1] = (uint8)mdef->phone[i].lc;
+            bmdef->phone[i].info.cd.ctx[2] = (uint8)mdef->phone[i].rc;
         }
     }
 
