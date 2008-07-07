@@ -655,9 +655,9 @@ find_bg(bigram_t * bg, int32 n, int32 w)
     e = n;
     while (e - b > BINARY_SEARCH_THRESH) {
         i = (b + e) >> 1;
-        if (bg[i].wid < w)
+        if ((int32)bg[i].wid < w)
             b = i + 1;
-        else if (bg[i].wid > w)
+        else if ((int32)bg[i].wid > w)
             e = i;
         else
             return i;
@@ -745,9 +745,9 @@ find_tg(trigram_t * tg, int32 n, int32 w)
     e = n;
     while (e - b > BINARY_SEARCH_THRESH) {
         i = (b + e) >> 1;
-        if (tg[i].wid < w)
+        if ((int32)tg[i].wid < w)
             b = i + 1;
-        else if (tg[i].wid > w)
+        else if ((int32)tg[i].wid > w)
             e = i;
         else
             return i;

@@ -541,7 +541,7 @@ ngram_model_set_add(ngram_model_t *base,
     }
 
     /* Renormalize the interpolation weights. */
-    fprob = weight * 1.0 / set->n_models;
+    fprob = weight * 1.0f / set->n_models;
     set->lweights = ckd_realloc(set->lweights,
                                 set->n_models * sizeof(*set->lweights));
     set->lweights[set->n_models - 1] = logmath_log(base->lmath, fprob);
@@ -594,7 +594,7 @@ ngram_model_set_remove(ngram_model_t *base,
 
     /* Renormalize the interpolation weights by scaling them by
      * 1/(1-fprob) */
-    fprob = logmath_exp(base->lmath, set->lweights[lmidx]);
+    fprob = (float32)logmath_exp(base->lmath, set->lweights[lmidx]);
     scale = logmath_log(base->lmath, 1.0 - fprob);
 
     /* Remove it from the array of lms, renormalize remaining weights,
@@ -799,7 +799,7 @@ ngram_model_set_add_ug(ngram_model_t *base,
             if (newwid[i] == NGRAM_INVALID_WID) {
                 /* Add it to the submodel. */
                 newwid[i] = ngram_model_add_word(set->lms[i], base->word_str[wid],
-                                                 logmath_exp(base->lmath, lweight));
+                                                 (float32)logmath_exp(base->lmath, lweight));
                 if (newwid[i] == NGRAM_INVALID_WID) {
                     ckd_free(newwid);
                     return base->log_zero;

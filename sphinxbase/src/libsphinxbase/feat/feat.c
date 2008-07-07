@@ -305,7 +305,7 @@ feat_set_subvecs(feat_t *fcb, int32 **subvecs)
         }
         ++n_sv;
     }
-    if (n_dim > feat_dimension(fcb)) {
+    if (n_dim > (int)feat_dimension(fcb)) {
         E_ERROR("Total dimensionality of subvector specification %d "
                 "> feature dimensionality %d\n", n_dim, feat_dimension(fcb));
         return -1;
@@ -528,7 +528,7 @@ feat_array_alloc(feat_t * fcb, int32 nfr)
     k = 0;
     for (i = 0; i < fcb->n_stream; ++i)
         k += fcb->stream_len[i];
-    assert(k >= feat_dimension(fcb));
+    assert(k >= (int)feat_dimension(fcb));
     assert(k >= fcb->sv_dim);
 
     feat =

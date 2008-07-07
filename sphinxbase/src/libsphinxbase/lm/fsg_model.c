@@ -636,7 +636,7 @@ fsg_model_write(fsg_model_t * fsg, FILE * fp)
 
                 fprintf(fp, "%s %d %d %f %s\n", FSG_MODEL_TRANSITION_DECL,
                         tl->from_state, tl->to_state,
-                        logmath_exp(fsg->lmath, tl->logs2prob / fsg->lw),
+                        logmath_exp(fsg->lmath, (int32)(tl->logs2prob / fsg->lw)),
                         (tl->wid < 0) ? "" : fsg_model_word_str(fsg, tl->wid));
             }
 
@@ -646,7 +646,7 @@ fsg_model_write(fsg_model_t * fsg, FILE * fp)
                 fprintf(fp, "%s %d %d %f\n",
                         FSG_MODEL_TRANSITION_DECL,
                         tl->from_state, tl->to_state,
-                        logmath_exp(fsg->lmath, tl->logs2prob / fsg->lw));
+                        logmath_exp(fsg->lmath, (int32)(tl->logs2prob / fsg->lw)));
             }
         }
     }
