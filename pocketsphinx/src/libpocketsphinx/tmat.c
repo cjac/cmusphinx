@@ -283,7 +283,7 @@ tmat_init(char const *file_name, logmath_t *lmath, float64 tpfloor, int32 brepor
                 /* For these ones, we floor them even if they are
                  * zero, otherwise HMM evaluation goes nuts. */
                 if (k >= j && k-j < 3 && tp[j][k] == 0.0f)
-                    tp[j][k] = tpfloor;
+                    tp[j][k] = (float32)tpfloor;
                 t->tp[i][j][k] = logmath_log(lmath, tp[j][k]);
             }
         }

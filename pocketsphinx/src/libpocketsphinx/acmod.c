@@ -175,12 +175,12 @@ acmod_init_feat(acmod_t *acmod)
         while (nvals < acmod->fcb->cmn_struct->veclen
                && (cc = strchr(c, ',')) != NULL) {
             *cc = '\0';
-            acmod->fcb->cmn_struct->cmn_mean[nvals] = FLOAT2MFCC(atof(c));
+            acmod->fcb->cmn_struct->cmn_mean[nvals] = FLOAT2MFCC((float32)atof(c));
             c = cc + 1;
             ++nvals;
         }
         if (nvals < acmod->fcb->cmn_struct->veclen && *c != '\0') {
-            acmod->fcb->cmn_struct->cmn_mean[nvals] = FLOAT2MFCC(atof(c));
+            acmod->fcb->cmn_struct->cmn_mean[nvals] = FLOAT2MFCC((float32)atof(c));
         }
         ckd_free(vallist);
     }

@@ -127,7 +127,7 @@ fsg_search_init(cmd_ln_t *config,
         fsgs->bestpath = TRUE;
 
     /* Acoustic score scale for posterior probabilities. */
-    fsgs->ascale = 1.0 / cmd_ln_float32_r(config, "-ascale");
+    fsgs->ascale = 1.0f / cmd_ln_float32_r(config, "-ascale");
 
     E_INFO("FSG(beam: %d, pbeam: %d, wbeam: %d; wip: %d, pip: %d)\n",
            fsgs->beam_orig, fsgs->pbeam_orig, fsgs->wbeam_orig,

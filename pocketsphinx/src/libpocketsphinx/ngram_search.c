@@ -76,7 +76,7 @@ static ps_searchfuncs_t ngram_funcs = {
 static void
 ngram_search_update_widmap(ngram_search_t *ngs)
 {
-    const char **words;
+    char **words;
     int32 i, n_words;
 
     /* It's okay to include fillers since they won't be in the LM */
@@ -129,7 +129,7 @@ ngram_search_calc_beams(ngram_search_t *ngs)
         / cmd_ln_float32_r(config, "-lw");
 
     /* Acoustic score scale for posterior probabilities. */
-    ngs->ascale = 1.0 / cmd_ln_float32_r(config, "-ascale");
+    ngs->ascale = 1.0f / cmd_ln_float32_r(config, "-ascale");
 }
 
 ps_search_t *
@@ -591,7 +591,8 @@ ngram_compute_seg_scores(ngram_search_t *ngs, float32 lwf)
             bpe->lscr = ngram_tg_score(ngs->lmset, de->wid,
                                        p_bpe->real_wid,
                                        p_bpe->prev_real_wid, &n_used);
-            bpe->lscr = bpe->lscr * lwf;
+			/* FIXME: Floating-point conversion = SLOW */
+            bpe->lscr = (int32)(bpe->lscr * lwf);
         }
         bpe->ascr = bpe->score - start_score - bpe->lscr;
     }
@@ -672,7 +673,7 @@ ngram_search_hyp(ps_search_t *search, int32 *out_score)
         /* Compute these such that they agree with the fwdtree language weight. */
         ngram_compute_seg_scores(ngs,
                                  ngs->fwdflat
-                                 ? ngs->fwdflat_fwdtree_lw_ratio : 1.0);
+                                 ? ngs->fwdflat_fwdtree_lw_ratio : 1.0f);
         if (ngram_search_lattice(search) == NULL)
             return NULL;
         link = ps_lattice_bestpath(ps_search_dag(ngs), ngs->lmset,
@@ -840,7 +841,7 @@ ngram_search_seg_iter(ps_search_t *search, int32 *out_score)
         return ngram_search_bp_iter(ngs, bpidx,
                                     /* but different language weights... */
                                     (ngs->done && ngs->fwdflat)
-                                    ? ngs->fwdflat_fwdtree_lw_ratio : 1.0);
+                                    ? ngs->fwdflat_fwdtree_lw_ratio : 1.0f);
     }
 
     return NULL;
@@ -953,7 +954,8 @@ find_end_node(ngram_search_t *ngs, ps_lattice_t *dag, float32 lwf)
                                ngs->bp_table[bp].real_wid,
                                ngs->bp_table[bp].prev_real_wid,
                                &n_used);
-        l_scr = l_scr * lwf;
+		/* FIXME: Floating-point conversion = SLOW */
+        l_scr = (int32)(l_scr * lwf);
 
         if (ngs->bp_table[bp].score + l_scr > bestscore) {
             bestscore = ngs->bp_table[bp].score + l_scr;
