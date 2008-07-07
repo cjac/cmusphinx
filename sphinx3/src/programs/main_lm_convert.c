@@ -134,6 +134,7 @@ main(int argc, char *argv[])
     const char *outputenc;
     const char *outputdir;
     char *outputpath;
+    int outputfnfree = FALSE;
 
     lm_t *lm;
     char separator[2];
@@ -176,11 +177,17 @@ main(int argc, char *argv[])
         E_FATAL("Fail to read inputfn %s in inputfmt %s\n", inputfn,
                 inputfmt);
 
+    if (outputfn == NULL) {
+      /* Length = strlen(inputfn) + 1 + strlen(outputfmt) + 5 (For safety) */
+      outputfn = (char *) ckd_calloc(strlen(inputfn) + strlen(outputfmt) + 5, sizeof(char));
+      sprintf(outputfn, "%s.%s", inputfn, outputfmt);
+      outputfnfree = TRUE;
+    }
 
-    /* Outputpath = outputdir . "/" (or "\" in windows). outpufn; */
+    /* Outputpath = outputdir . "/" (or "\" in windows). outputfn; */
     /* Length = strlen(outputdir) + 1 + strlen(outputfn) + 5 (For safety) */
     outputpath =
-        (char *) ckd_calloc(1, strlen(outputdir) + strlen(outputfn) + 6);
+      (char *) ckd_calloc(strlen(outputdir) + strlen(outputfn) + 6, sizeof(char));
 
 
 #if WIN32
@@ -193,6 +200,9 @@ main(int argc, char *argv[])
     lm_write(lm, outputpath, inputfn, outputfmt);
 
 
+    if (outputfn) {
+      ckd_free(outputfn);
+    }
     ckd_free(outputpath);
     lm_free(lm);
     cmd_ln_appl_exit();
