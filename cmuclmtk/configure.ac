@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.58)
+AC_PREREQ(2.61)
 AC_INIT([cmucuslmtk], [1.0], [air+logios@cs.cmu.edu])
 AM_INIT_AUTOMAKE([cmucuslmtk],[1.0])
 AM_INIT_AUTOMAKE([-Wall -Werror])
@@ -39,11 +39,5 @@ AC_HEADER_STDC
 AC_CHECK_HEADERS([stdlib.h strings.h sys/time.h])
 
 #AC_CONFIG_SUBDIRS(src/expat)
-AC_CONFIG_FILES([Makefile
-		src/Makefile
-		test/Makefile
-		src/liblmest/Makefile
-		src/libs/Makefile
-		src/programs/Makefile
-		])
+AC_CONFIG_FILES([Makefile src/Makefile test/Makefile src/liblmest/Makefile src/libs/Makefile src/programs/Makefile])
 AC_OUTPUT

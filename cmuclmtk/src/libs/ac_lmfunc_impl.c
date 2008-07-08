@@ -60,6 +60,7 @@ int text2wfreq_impl(FILE* infp, FILE* outfp, int init_nwords, int verbosity)
   if ( scanrc != EOF ) {
     quit(-1,"Error reading input\n");
   }
+
   print( outfp, &vocab );
   return 0;
 }

@@ -202,6 +202,9 @@ int main(int argc, char *argv[]) {
   /* Merge the temporary files, and output the result to standard output */
 
   pc_message(verbosity,2,"Merging %d temporary files...\n", number_of_tempfiles);
+  if (number_of_tempfiles <= 0) {
+    quit(-1,"text2idngram did not appear to find any input!\n");
+  }
   
   merge_tempfiles(1,
 		  number_of_tempfiles,
