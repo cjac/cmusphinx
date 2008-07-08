@@ -37,42 +37,49 @@ my $instance = "";
 my @classd = ();
 my @classf = ();
 my $cf;
+my $inpath = "";
+my $outpath = "";
 my $ingra = "";
 my $outgra = "";
 my $absgra = "";
 
-if (not GetOptions( "class:s" => \@classf,
-		    "project:s" => \$project,
-		    "instance:s" => \$instance,
-		    "ingra:s" => \$ingra,
-		    "outgra:s" => \$outgra,
-		    "absgra:s" => \$absgra,
-		    "tools:s" => \$tools,
+if (not GetOptions(
+		   "tools:s" => \$tools,
+		   "class" => \@classf,
+		   "project:s" => \$project,
+		   "instance:s" => \$instance,
+		   "inpath:s" => \$inpath,
+		   "outpath:s" => \$outpath,
 		  ) )
-  { die "usage: compile_gra --tools <path> [--class <file> ...] [--project <project> --instance <instance> --ingra <.gra> --outgra <.gra> --absgra <_abs.gra>\n"; }
+  { die "usage: compile_gra -tools <path> [-class <file>]* [-project <project> -instance <instance> -inpath <dir> -outpath <dir>\n"; }
 
-require "$tools/lib/LogiosLog.pm";
-my $outgra = "$instance.gra";
-print STDERR "compile_gra:  ingra->$ingra  outgra->$outgra\n";
-print STDERR "class-> ",join(" ",@classf),"\n";
+# can't do this earlier since we don't know where to look
+require File::Spec->catfile($tools,'lib','LogiosLog.pm');
+LogiosLog::open_logfile(File::Spec->catfile($outpath,"compile_gra.log"));
 
+my $ingra = File::Spec->catfile($inpath,"$project.gra");
+my $outgra = File::Spec->catfile($outpath,"$instance.gra");
+my $absgra = File::Spec->catfile($outpath,$instance.'_abs.gra');
+print STDERR "compile_gra.pl  [in ",File::Spec->rel2abs(File::Spec->curdir),"]\n";
+print STDERR "\tingra->  $ingra\n\toutgra-> $outgra\n";
+print STDERR "\tclass->  ",join(" ",@classf),"\n";
 
 # see if any ad-hoc class definitions are provided; put copies of the files into GRAMMAR/
 foreach $cf (@classf) {
   open(IN,$cf) or die "can't open class file: $cf\n";
   my ($v,$p,$f) = File::Spec->splitpath($cf);
-  open(OUT,">$f") or die "can't open GRAMMAR/$f for writing!";
+  open(OUT,">".File::Spec->catfile($inpath,$f)) or die "can't open $f for writing!";
   while (<IN>) { s/[\n\r]+//g; print OUT "\t($_)\n"; }
   push @classd, $f;
 }
 
 # resolve classes to make "extended" and "abstracted" grammars
 LogiosLog::fail("resolve.pl can't complete!") if
-  system("perl $EXEDIR/resolve.pl -i $ingra -e $outgra -a $absgra");
+  system("perl $EXEDIR/resolve.pl --inpath $inpath --infile $ingra --expgra $outgra --absgra $absgra");
 
 # fish out the net names
 open(TTGRA, "$outgra") or die "compile_gra: can't open $outgra!\n";;
-open(NETS, ">nets") or die "compile_gra: can't open nets!\n";;
+open(NETS, ">",File::Spec->catfile($outpath,"nets")) or die "compile_gra: can't open nets!\n";;
 while(<TTGRA>) {
   next unless (/^\[([^\]]+)\]/);
   print NETS "$1\n";
@@ -80,34 +87,32 @@ while(<TTGRA>) {
 close TTGRA; close NETS;
 
 # copy over the forms file
-open(TTFORMS, "$project.forms") or die "compile_gra: no $project.forms file!\n";
-open(FORMS, ">forms");
-open(FRAMES, ">frames");
-for(<TTFORMS>) {
-  print FORMS $_;
-  print FRAMES $_;
-}
-close TTFORMS; close FORMS; close FRAMES;
+open(TTFORMS, File::Spec->catfile($inpath,"$project.forms")) or die "compile_gra: no $project.forms file!\n";
+open(FORMS, ">".File::Spec->catfile($outpath,"forms"));
+print FORMS <TTFORMS>;
+close TTFORMS; close FORMS;
 
 # compile Phoenix grammar
-my $COMPILE = File::Spec->catfile($EXEDIR,$bindir,"compile_grammar").$exten;
-my $cmd = "$COMPILE -g . -f $instance";
-LogiosLog::fail("Phoenix compilation!: cmd='$cmd'") if not defined open(COMPILE, "$cmd|");
-open(LOG, ">log"); print LOG <COMPILE>; close LOG;
+LogiosLog::say("compile_gra","doing Phoenix compile");
+my $COMPILE = File::Spec->catfile($EXEDIR,$bindir,"compile").$exten;
+LogiosLog::fail("Phoenix compilation!")
+  if not defined open(COMPILE, "$COMPILE -SymBufSize 200000 -MaxSymbol 30000 -TokBufSize 200000 -g . -f $instance |");
+open(LOG, ">".File::Spec->catfile($outpath,"compile_gra.log")); print LOG <COMPILE>; close LOG;
 close COMPILE;
 
 my $CONCEPT_LEAF = File::Spec->catfile($EXEDIR,$bindir,"concept_leaf").$exten;
-# print STDERR $CONCEPT_LEAF,"\n";
-#LogiosLog::fail("Phoenix concept_leaf!") if 
-system("$CONCEPT_LEAF -grammar $instance.net");
+LogiosLog::say("compile_gra","doing Phoenix concept_leaf");
+LogiosLog::fail("Phoenix concept_leaf!") if system("$CONCEPT_LEAF -SymBufSize 200000 -grammar $instance.net");
 
-# finally, generate the class-grammar files
+
+
+# generate the class-grammar files
 #  .ctl and .prodef class files for decoder; .token for pronunciation; .words for lm
 LogiosLog::fail("tokenize.pl!") if
-  system("perl ".File::Spec->catfile($EXEDIR,"tokenize.pl")." -g $absgra -p $instance");
+  system("perl ".File::Spec->catfile($EXEDIR,"tokenize.pl")." -i $inpath -g $absgra -p $instance");
 
 
 # finally, remove any dynamic class files (to avoid littering with stealth classes)
-foreach $cf (@classd) { unlink("$cf"); }
+foreach $cf (@classd) { unlink(File::Spec($inpath,"$cf")); }
 
 #

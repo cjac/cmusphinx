@@ -3,6 +3,7 @@ package LogiosLog;
 # Simple-minded logging facility; takes care of creating a default log file
 # [20071025] (air) Modified from code written by tkharris
 # [20080304] (air) Added toggling
+# [20080707] (air) make it do appends
 #
 
 my $LOGFILE = undef;
@@ -10,7 +11,11 @@ my $DEFAULT = "logios.log";
 my $LOGGING = 0;
 my $LOG;
 
-END   { if (defined LOG) {close (LOG);} }
+END   { if (defined LOG) {
+  close (LOG);
+  print LOG "\n-----------     end log at ",scalar localtime,"----------\n";
+}
+      }
 
 # toggle the logging feature
 sub control {
@@ -25,10 +30,10 @@ sub control {
 sub open_logfile {
   my ($logf) = @_;
   if ( defined $LOGFILE and ($logf eq $LOGFILE)) { return 0; } # once is enough
-  elsif ( defined LOG ) { close(LOG); }  # close the current file, if such
   # open requested file
   $LOGFILE = $logf;
-  open(LOG,">$LOGFILE") or die "open_logfile(): can't open $LOGFILE\n";
+  open(LOG,">>$LOGFILE") or die "open_logfile(): can't open $LOGFILE\n";
+  print LOG "\n-----------  start log at ",scalar localtime,"----------\n";
 
   return 1;
 }

@@ -9,15 +9,16 @@
 use Getopt::Long;
 use File::Spec;
 
-my ($infile,$expfile);
-my $usage = "usage: resolve -infile <.gra> -expgra <_exp.gra> -abstgra <abs_.gra> \n";
+my ($inpath,$infile,$expfile);
+my $usage = "usage: resolve --inpath <path> --infile <.gra> --expgra <_exp.gra> --abstgra <_abs.gra> \n";
 if ( scalar @ARGV eq 0 or
-     not GetOptions ( "infile:s" => \$infile,
+     not GetOptions ( "inpath=s", \$inpath,
+		      "infile:s" => \$infile,
 		      "expgra:s" => \$expfile,
 		      "absgra:s" => \$absfile,
 		    ) ) { die $usage; }
-print STDERR "resolve: \n > infile-> $infile  graex-> $expfile  grabs-> $absfile\n";
-print STDERR " > executing in: ",File::Spec->rel2abs(File::Spec->curdir),"\n";
+print STDERR "resolve.pl  [in ",File::Spec->rel2abs(File::Spec->curdir),"]\n";
+print STDERR "\t> infile-> $infile\n\t> graex-> $expfile\n\t> grabs-> $absfile\n";
 open(IN,"$infile") or die "resolve: can't open infile: $infile!\n";
 open(OUT,">$expfile") or die "resolve: can't open expgra: $expfile!\n";
 open(ABS,">$absfile") or die "resolve: can't open absgra: $absfile!\n";
@@ -50,8 +51,8 @@ while (<IN>) {
     print ABS "$pre%\[$file\]%$post\n";  # pass the marker through
   } else { print OUT "$_\n"; print ABS "$_\n";  next; }
   if ( not defined $classnet{$file} ) {
-    print STDERR "resolve: defining $file\n";
-    open(CLASS,"$file.class") or die "resolve: missing .class file: $file\n";
+    print STDERR "resolve: defining '$file'\n";
+    open(CLASS,File::Spec->catfile($inpath,"$file.class")) or die "resolve: missing class file: $file.class\n";
     my $classset = "\n[$file]\n";
     while (<CLASS>) {
       chomp;

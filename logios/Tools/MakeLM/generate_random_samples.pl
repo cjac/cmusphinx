@@ -1,5 +1,6 @@
 #!/usr/bin/perl
 # This line tells emacs, that this is a -*-Perl-*- program
+# [20080707] (air) some minor error checking
 
 $licence = <<LICENCE;
 
@@ -117,7 +118,7 @@ warn "Changed to $dir\n";
 $FORMS = "forms";
 $FORMS .= ".$forms" if defined $forms;
 
-open FORMS;
+open FORMS or die "can't open FORMS file $FORMS\n";
 
 while(<FORMS>) {
 
@@ -521,7 +522,7 @@ sub select_random_entry {
 	return $i if $random<$prob;
 	$i++;
     }
-    die "$name not a probability distribution: ".join(" ",@{$array})."\n";
+    die "generate_random_samples.pl: $name not a probability distribution: ".join(" ",@{$array})."\n";
 }
 
 sub normalize_random_entry {

@@ -10,18 +10,21 @@
 
 use Getopt::Long;
 use File::Basename;
+use File::Spec;
 
-my ($grafile,$project,$wordfile);
+my ($inpath,$grafile,$project,$wordfile);
 my $usage="usage: tokenize -grammar <file> -project <name>\n";
 if (scalar @ARGV eq 0
     or not GetOptions (
-		      "grammar=s" => \$grafile,
-		      "project=s" => \$project,
+		       "inpath=s" => \$inpath,
+		       "grammar=s" => \$grafile,
+		       "project=s" => \$project,
 		      ) ) { die $usage; }
 $probdefile = "$project.probdef";
 $tokenfile = "$project.token";
 $wordfile = "$project.words";
-print STDERR "tokenize: \n > grammar->$grafile  project->$project  wordfile->$wordfile\n";
+print STDERR "tokenize.pl  [in ",File::Spec->rel2abs(File::Spec->curdir),"]\n";
+print STDERR "\tgrammar-> $grafile\n\tproject->$project\n\twordfile->$wordfile\n";
 my $classcount = 0;
 
 my $epsilon = 0.0001;  # slop factor for probability distribution (10^-4)
@@ -30,7 +33,7 @@ my $fault = 0;
 # scan .gra file; make a list of classes that need to be processed
 # also collect all terminals to make a wordlist (used in lm compilation)
 my %classes = (); my %wordlist = ();
-open(GRA,"$grafile") or die "tokenize: $grafile not found!\n$usage\n";
+open(GRA,"$grafile") or die "tokenize.pl: $grafile not found!\n$usage\n";
 while (<GRA>) {
   chomp;
   if ( /^\s*#/ or /^\s+$/ ) { next; }  # skip comments, blank lines
@@ -63,7 +66,7 @@ open(PROB,">$probdefile") or die "tokenize: can't open $probdefile";
 foreach $classfil (sort keys %classes) {
   $classid = $classes{$classfil};
   $classfil =~ s/\[(.+?)\]/$1/;  # strip []'s
-  open(CLASS,"$classfil.class") or die "tokenize: class file $classfil not found";
+  open(CLASS,File::Spec->catfile($inpath,"$classfil.class")) or die "tokenize: class file $classfil not found";
   ($classname,$dirn,$suffix) = fileparse($classfil,qr/\.[^.]*/);
   my %lexset = ();
   while (<CLASS>) {

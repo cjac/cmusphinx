@@ -36,9 +36,12 @@ use strict;
 
 #setup default variables
 my $MAKELMDIR = File::Spec->rel2abs(File::Spec->curdir); #needs to run from makelm directory
-my $RESOURCESDIR = File::Spec->catdir(File::Spec->updir, File::Spec->updir, 'Resources');
 #my $SOURCE = 'fife';
-my $SOURCE = 'lexdata';
+my $OLYMODE = 0;
+my $RESOURCESDIR = "";
+my $INPATH = "";
+my $OUTPATH = "";
+
 my $SAMPSIZE = 30000;
 
 # default input and ouput language IDs
@@ -55,27 +58,28 @@ sub usage {
                     ."[--source <pronounce>] [--project <name>]$/";
 }
 #process command line
-GetOptions("resourcesdir=s", \$RESOURCESDIR,
-	   "samplesize=s", \$SAMPSIZE,
-	   "source=s", \$SOURCE,
-	   "projectname=s", \$PROJECT
-	  );
-fail(&usage) if @ARGV;
+if ( not GetOptions( "olympus", \$OLYMODE,
+		     "resourcesdir=s", \$RESOURCESDIR,
+		     "inpath=s", \$INPATH,
+		     "outpath=s",\$OUTPATH,
+		     "samplesize=s", \$SAMPSIZE,
+		     "projectname=s", \$PROJECT
+		   ) )
+  { die &usage; }
 
-#open log file
-my $LOGFILE = 'log.txt';
-open(LOG, ">$LOGFILE") if $LOGFILE;
-
-#need access to cygwin dir so that cygwin1.dll can be found
-$ENV{'Path'} .= ';'.($ENV{'CYGWIN_DIR'} || 'C:\cygwin').'\bin';
+# can't do this earlier since we don't know where to look
+require File::Spec->catfile($tools,'lib','LogiosLog.pm');
+LogiosLog::open_logfile(File::Spec->catfile($outpath,"makelm.log"));
 
 
-&say('system', "project => $PROJECT$/resource dir => $RESOURCESDIR$/sample"
-     ."size => $SAMPSIZE$/source => $SOURCE$/");
+&LogiosLog::say('makelm',
+		"$/\tolympus => $OLYMODE$/\tproject => $PROJECT$/\tresource dir => $RESOURCESDIR$/".
+		"\tinpath => $INPATH$/\toutpath => $OUTPATH$/".
+		"\tsamplesize => $SAMPSIZE$/");
 
 # various globals...
-my $GRAMMARDIR = File::Spec->catdir($RESOURCESDIR, 'Grammar');
-my $PHOENIX = File::Spec->catfile($GRAMMARDIR, 'compile.exe');
+my $GRAMMARDIR = $OLYMODE ? File::Spec->catdir($RESOURCESDIR, 'Grammar') : $INPATH;
+
 my $GRAMMARFILE = File::Spec->catfile($GRAMMARDIR, $PROJECT.'.gra');
 my $BASEDIC = File::Spec->catfile($GRAMMARDIR, 'base.dic');
 my $TOKENLIST = File::Spec->catfile($GRAMMARDIR, $PROJECT.'.token');
@@ -92,22 +96,15 @@ my $CCS = 'temp.ccs';
 my $TEXT2IDNGRAM = File::Spec->catfile('CMU-Cam_Toolkit_v2', 'bin', 'text2idngram');
 my $IDNGRAM2LM = File::Spec->catfile('CMU-Cam_Toolkit_v2', 'bin', 'idngram2lm');
 my $RANDOMSAMPS = 'generate_random_samples.pl';
+
 my $IDNGRAM = $PROJECT.'.idngram';
 my $DECODERCONFIGDIR = File::Spec->catdir($RESOURCESDIR, 'DecoderConfig');
-my $LMDIR = File::Spec->catfile($DECODERCONFIGDIR, 'LanguageModel');
+my $LMDIR = $OLYMODE ? File::Spec->catfile($DECODERCONFIGDIR, 'LanguageModel') : $OUTPATH;
 my $LM = File::Spec->catfile($LMDIR, $PROJECT.'.arpa');
-
-my $PRONOUNCE = 'pronounce';
-my $LEXDATA = 'lexdata';
-my $DICTDIR = File::Spec->catdir($DECODERCONFIGDIR, 'Dictionary');
-my $HAND_DICT = File::Spec->catfile($DICTDIR, 'hand.dict');
-my $DICT = File::Spec->catfile($DICTDIR, $PROJECT.'.dict');
-my $REDUCED_DICT = $DICT.'.reduced_phoneset';
-#
 
 
 # compile Domain grammar into Project grammar, in Phoenix and corpus versions
-&say('compile', 'compiling grammar...');
+&LogiosLog::say('compile', 'compiling grammar...');
 chdir($GRAMMARDIR); system('chdir');
 system("perl compile_gra.pl -domain $DOMAIN -project $PROJECT -class ".
        "-ingra $DOMAIN.gra -absgra $GRABSFILE" )
@@ -115,35 +112,37 @@ system("perl compile_gra.pl -domain $DOMAIN -project $PROJECT -class ".
 
 # create at .ctl and .prodef file for decoder; .token for pronunciation; .words for lm
 chdir ($GRAMMARDIR); system('chdir');
-&fail("tokenize failed!") if system("perl tokenize.pl -g $GRABSFILE -p $PROJECT");
+&LogiosLog::fail("tokenize failed!") if system("perl tokenize.pl -g $GRABSFILE -p $PROJECT");
 copy("$PROJECT.ctl", $LMDIR);
 copy("$PROJECT.probdef", $LMDIR);
 
 # language model
-&say('compile', 'COMPILING LANGUAGE MODEL...');
+&LogiosLog::say('compile', 'COMPILING LANGUAGE MODEL...');
 chdir($MAKELMDIR); system('chdir');
-&say('compile', 'generating corpus...');
+&LogiosLog::say('compile', 'generating corpus...');
 &get_corpus($GRABSFILE,$CORPUSFILE);
-&say('compile', 'getting vocabulary...');
+&LogiosLog::say('compile', 'getting vocabulary...');
 &get_vocab($ABSDIC, $VOCAB, $CCS);
-&say('compile', 'computing ngrams...');
+&LogiosLog::say('compile', 'computing ngrams...');
 my $cmd = "$TEXT2IDNGRAM -vocab $VOCAB -temp . -write_ascii < $CORPUSFILE > $IDNGRAM";
-&say('compile', $cmd);
-&fail("text2idngram failed") if system($cmd);
-&say('compile', 'computing language model...');
+&LogiosLog::say('compile', $cmd);
+$LogiosLog::fail("text2idngram failed") if system($cmd);
+&LogiosLog::say('compile', 'computing language model...');
 $cmd = "$IDNGRAM2LM -idngram $IDNGRAM -vocab $VOCAB -arpa $LM -context $CCS -vocab_type 0"
                  ." -good_turing -disc_ranges 0 0 0 -ascii_input";
-&say('compile', "$cmd$/");
-&fail("idngram2lm failed") if system($cmd);
+&LogiosLog::say('compile', "$cmd$/");
+&LogiosLog::fail("idngram2lm failed") if system($cmd);
 
 #get dictionary
-&say('compile', 'compiling dictionary...');
+&LogiosLog::say('compile', 'compiling dictionary...');
 chdir($MAKELMDIR); system('chdir');
 &get_dict($DICT, $REDUCED_DICT, $TOKENS);
-&say('compile', "done\n");
+&LogiosLog::say('compile', "done\n");
 close(LOG) if $LOGFILE;
 
 exit;
+
+
 ##############################################
 
 
@@ -153,18 +152,18 @@ sub get_corpus {
   my $corpusfile = shift;
 
   # flatten out the Kleene stars
-  open(TEAMTALKGRA, $grabsfile) || &fail("get_corpus(): Can't open $grabsfile file");
-  open(TEAMTALKFLAT, ">$FLATGRAMMARFILE") || &fail("Can't open grammar flat file");
-  print TEAMTALKFLAT &flatten_gra(<TEAMTALKGRA>);  #
-  close TEAMTALKGRA;
-  close TEAMTALKFLAT;
+  open(TGRA, $grabsfile) || &LogiosLog::fail("get_corpus(): Can't open $grabsfile file");
+  open(TFLAT, ">$FLATGRAMMARFILE") || &LogioLog::fail("Can't open grammar flat file");
+  print TFLAT &flatten_gra(<TGRA>);  #
+  close TGRA;
+  close TFLAT;
 
   # generate corpus
-  &say('compile', "$RANDOMSAMPS -n $SAMPSIZE -d $GRAMMARDIR");
+  &LogiosLog::say('compile', "$RANDOMSAMPS -n $SAMPSIZE -d $GRAMMARDIR");
   open(RANDOM,
        "perl $RANDOMSAMPS -n $SAMPSIZE -d $GRAMMARDIR -grammarfile $FLATGRAMMARFILE |") ||
-	 &fail("Cannot execute $RANDOMSAMPS");
-  open(CORPUS, ">$corpusfile") || &fail("Can't open $corpusfile");
+	 &LogiosLog::fail("Cannot execute $RANDOMSAMPS");
+  open(CORPUS, ">$corpusfile") || &LogiosLog::fail("Can't open $corpusfile");
 
   # normalize sentences for output
   binmode CORPUS;
@@ -193,9 +192,9 @@ sub get_vocab {
     my $vocab = shift;
     my $ccs = shift;
     my @norm = ();
-    open(VOCAB, ">$vocab") || &fail("get_vocab(): can't open $vocab");
+    open(VOCAB, ">$vocab") || &LogiosLog::fail("get_vocab(): can't open $vocab");
     binmode VOCAB;
-    open(BASE, "<$basefile") || &fail("get_vocab(): can't open $basefile");
+    open(BASE, "<$basefile") || &LogiosLog::fail("get_vocab(): can't open $basefile");
  #   my @base = map { /(.*) .*/? "$1" : () } <BASE>; # base.dic file has "token nodeid\n"
     my @base = <BASE>;  # dic now comes pre-processed from tokenize.pl
     close BASE;
@@ -205,15 +204,11 @@ sub get_vocab {
     print VOCAB "</s>\n";
     close VOCAB;
 
-    open(CCS, ">$ccs") || &fail("get_vocab(): can't open $ccs");
+    open(CCS, ">$ccs") || &LogiosLog::fail("get_vocab(): can't open $ccs");
     binmode CCS;
     print CCS "<s>\n";
     close CCS;
 }
-
-
-# create pronouncing dictionary
-&Pronounce::get_dict($vocab,$handdict,$dict);
 
 
 # flatten out all instances of concepts with Kleene stars

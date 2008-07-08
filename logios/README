@@ -1,6 +1,6 @@
 The Logios Tool
 ----------------
-[20070424] (air)
+[20080708] (air) updated instructions
 
 Logios allows you to compile a complete set of knowledge files for use
 with a spoken language system based on the Sphinx decoder and the
@@ -11,38 +11,20 @@ produces files for decoding and parsing. If you want to start from a
 corpus of sentences you should continue to use
 http://www.speech.cs.cmu.edu/tools/lmtool.html 
 
-Logios provides a complete language compilation chain. 
+Logios provides a complete language compilation chain.
 
 
 Quick Start
 -----------
 
-At the same level as Tools, create the following tree:
+Logios is currently tested for Windows, however the code should run
+on linux if you adapt the CompileLanguage script.
 
-mkdir Resources/
-mkdir Resources/DecoderConfig/Dictionary/
-mkdir Resources/DecoderConfig/LanguageModel/
-mkdir Resources/Grammar/
-mkdir Resources/Grammar/GRAMMAR
+1) copy CompileLanguage.bat to the root of your project
+- edit paths and options as per the comments in the script
 
-This structure follows the one currently in use by the Olympus dialog
-system tool. You can modify MakeLanguage/make_language.pl to use your
-own scheme.
-
-Copy your grammar and class files into Resources/Grammar/GRAMMAR/
-Look in examples/GRAMMAR for a guide
-
-Edit the CompileLanguage.bat file and change the following variables
-to reflect your setup:
-
-LOGIOS_ROOT	where the tool is located
-RESOURCES	the root of the Resources tree
-PROJECT		the root-name of your grammar
-INSTANCE	the root-name you want for your generated files
-
-Run: CompileLanguage.bat
-
-Look in Resources for log files.
+2) Run: CompileLanguage.bat
+Look for log files; locations will vary with the scheme you selected in 1)
 
 That's it.
 
