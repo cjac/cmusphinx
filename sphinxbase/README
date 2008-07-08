@@ -54,10 +54,10 @@ customize it by running ./configure with an argument, as in
 
 Windows Installation:
 ^^^^^^^^^^^^^^^^^^^^^
-To compile sphinxbase in Visual C++ 6.0,
+To compile sphinxbase in Visual Studio 2005
 1, unzip the file.
 2, rename the directory to sphinxbase
-3, go into the sphinxbase folder and click sphinxbase.dsw
+3, go into the sphinxbase folder and click sphinxbase.sln
 4, in the menu, choose Build -> Rebuild All -> Batch Build -> Build
 
 In Step 4, make sure all projects are selected, preferably the

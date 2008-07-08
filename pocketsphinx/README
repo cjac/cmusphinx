@@ -1,4 +1,4 @@
-PocketSphinx 0.4.1
+PocketSphinx 0.5
 
 This is PocketSphinx, one of Carnegie Mellon University's open source
 large vocabulary, speaker-independent continuous speech recognition
@@ -38,11 +38,11 @@ In a unix-like environment (such as linux, solaris etc):
 % make test
 % make install
 
-In MS Windows (TM), under MS Visual C++ 6.0 (or better):
+In MS Windows (TM), under MS Visual Studio 2005:
 
- * compile all the projects in SphinxBase (from sphinxbase.dsw)
+ * compile all the projects in SphinxBase (from sphinxbase.sln)
 
- * load pocketsphinx.dsw (located at the top level directory)
+ * load pocketsphinx.sln (located at the top level directory)
 
  * compile minimally the project 'pocketsphinx_continuous'
 
