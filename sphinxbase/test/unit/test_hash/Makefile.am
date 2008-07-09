@@ -8,6 +8,6 @@ INCLUDES = \
 
 LDADD = ${top_builddir}/src/libsphinxbase/libsphinxbase.la
 
-TESTS = $(srcdir)/_*.test test_hash_iter
-EXTRA_DIST = $(TESTS) $(srcdir)/_*.res
+	TESTS = $(srcdir)/_*.test test_hash_iter
+EXTRA_DIST = $(srcdir)/_*.test $(srcdir)/_*.res
 CLEANFILES = *.out

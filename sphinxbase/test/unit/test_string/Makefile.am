@@ -10,4 +10,4 @@ LDADD = ${top_builddir}/src/libsphinxbase/libsphinxbase.la
 
 TESTS = $(srcdir)/_*.test test_atof
 
-EXTRA_DIST = $(TESTS) _fread_line.txt
+EXTRA_DIST = $(srcdir)/_*.test _fread_line.txt
