@@ -53,14 +53,9 @@ clean:
 
 	# Add here commands to clean up after the build process.
 	[ ! -f Makefile ] || $(MAKE) distclean
-ifneq "$(wildcard /usr/share/misc/config.sub)" ""
-	cp -f /usr/share/misc/config.sub config.sub
-endif
-ifneq "$(wildcard /usr/share/misc/config.guess)" ""
-	cp -f /usr/share/misc/config.guess config.guess
-endif
 	dh_clean 
 	$(RM) -r debian/python-sphinxbase debian/python-sphinxbase-dbg
+	$(RM) -r python/build
 
 install: build
 	dh_testdir
