@@ -180,7 +180,7 @@ static PyObject *
 sphinx3_close(PyObject *self, PyObject *args)
 {
 	s3_decode_close(&decoder);
-	fe_close(fe);
+	fe_free(fe);
 	cmd_ln_free();
 	Py_INCREF(Py_None);
 	return Py_None;
