@@ -81,7 +81,8 @@ logmath_init(float64 base, int shift, int use_table)
     lmath->inv_log_of_base = 1.0/lmath->log_of_base;
     lmath->inv_log10_of_base = 1.0/lmath->log10_of_base;
     lmath->t.shift = shift;
-    lmath->zero = logmath_log(lmath, 1e-300);
+    /* Shift this sufficiently that overflows can be avoided. */
+    lmath->zero = MAX_NEG_INT32 >> (shift + 2);
 
     if (!use_table)
         return lmath;
@@ -216,7 +217,8 @@ logmath_read(const char *file_name)
     lmath->log10_of_base = log10(lmath->base);
     lmath->inv_log_of_base = 1.0/lmath->log_of_base;
     lmath->inv_log10_of_base = 1.0/lmath->log10_of_base;
-
+    /* Shift this sufficiently that overflows can be avoided. */
+    lmath->zero = MAX_NEG_INT32 >> (lmath->t.shift + 2);
 
     /* #Values to follow */
     if (bio_fread(&lmath->t.table_size, sizeof(int32), 1, fp, byteswap, &chksum) != 1) {
@@ -392,9 +394,14 @@ logmath_add(logmath_t *lmath, int logb_x, int logb_y)
     logadd_t *t = LOGMATH_TABLE(lmath);
     int d, r;
 
-    if (t->table == NULL) {
+    /* handle 0 + x = x case. */
+    if (logb_x <= lmath->zero)
+        return logb_y;
+    if (logb_y <= lmath->zero)
+        return logb_x;
+
+    if (t->table == NULL)
         return logmath_add_exact(lmath, logb_x, logb_y);
-    }
 
     /* d must be positive, obviously. */
     if (logb_x > logb_y) {

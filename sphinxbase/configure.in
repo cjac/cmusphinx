@@ -1,7 +1,7 @@
 dnl Welcome to the Sphinx automated build system.
 dnl try not to hurt yourself ;)
 
-AC_INIT(sphinxbase, 0.4)
+AC_INIT(sphinxbase, 0.4.1)
 AM_CONFIG_HEADER([include/config.h include/sphinx_config.h])
 AM_INIT_AUTOMAKE([no-define dist-bzip2 dist-zip])
 
@@ -233,7 +233,7 @@ fi
 if test "x$use_python" = xtrue -a "x$PYTHON" = xpython; then
    AC_PATH_PROG(PYTHON, python, bogus)
 fi
-AM_CONDITIONAL(BUILD_PYTHON, test "$PYTHON" != "xbogus")
+AM_CONDITIONAL(BUILD_PYTHON, test "x$PYTHON" != "xbogus")
 AC_SUBST(PYTHON)
 
 dnl

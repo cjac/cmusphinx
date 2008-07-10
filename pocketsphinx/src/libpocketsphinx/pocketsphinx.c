@@ -146,7 +146,8 @@ ps_reinit(ps_decoder_t *ps, cmd_ln_t *config)
         if (ps->lmath)
             logmath_free(ps->lmath);
         ps->lmath = logmath_init
-            ((float64)cmd_ln_float32_r(config, "-logbase"), 0, FALSE);
+            ((float64)cmd_ln_float32_r(config, "-logbase"), 0,
+             cmd_ln_boolean_r(config, "-bestpath"));
     }
 
     /* Acoustic model (this is basically everything that
@@ -436,6 +437,8 @@ ps_start_utt(ps_decoder_t *ps, char const *uttid)
     /* Remove any residual word lattice and hypothesis. */
     ps_lattice_free(ps->search->dag);
     ps->search->dag = NULL;
+    ps->search->last_link = NULL;
+    ps->search->post = 0;
     ckd_free(ps->search->hyp_str);
     ps->search->hyp_str = NULL;
 
@@ -555,16 +558,29 @@ ps_end_utt(ps_decoder_t *ps)
 }
 
 char const *
-ps_get_hyp(ps_decoder_t *ps, int32 *out_best_score, char const **uttid)
+ps_get_hyp(ps_decoder_t *ps, int32 *out_best_score, char const **out_uttid)
 {
     char const *hyp;
 
     ptmr_start(&ps->perf);
     hyp = ps_search_hyp(ps->search, out_best_score);
-    if (uttid)
-        *uttid = ps->uttid;
+    if (out_uttid)
+        *out_uttid = ps->uttid;
     ptmr_stop(&ps->perf);
     return hyp;
+}
+
+int32
+ps_get_prob(ps_decoder_t *ps, char const **out_uttid)
+{
+    int32 prob;
+
+    ptmr_start(&ps->perf);
+    prob = ps_search_prob(ps->search);
+    if (out_uttid)
+        *out_uttid = ps->uttid;
+    ptmr_stop(&ps->perf);
+    return prob;
 }
 
 ps_seg_t *

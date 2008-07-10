@@ -7,6 +7,7 @@ SUBDIRS = src \
 	python
 
 EXTRA_DIST = autogen.sh								\
+	pocketsphinx.sln							\
 	pocketsphinx.pc.in							\
 	pocketsphinx.sln							\
 	win32/msdev/pocketsphinx/pocketsphinx.vcproj				\
