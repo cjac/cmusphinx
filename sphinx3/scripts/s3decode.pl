@@ -64,7 +64,6 @@ if ($#ARGV == ($index + 1)) {
   $npart = 1;
 }
 
-$mdefname = $ST::DEC_CFG_MDEF;
 $modelname = $ST::DEC_CFG_MODEL_NAME;
 $processname = "decode";
 
@@ -75,8 +74,6 @@ mkdir ($result_dir,0777) unless -d $result_dir;
 
 $logfile = "$log_dir/${ST::DEC_CFG_EXPTNAME}-${part}-${npart}.log";
 $matchfile = "$result_dir/${ST::DEC_CFG_EXPTNAME}-${part}-${npart}.match";
-
-$moddeffn = "$ST::DEC_CFG_BASE_DIR/model_architecture/$mdefname";
 $statepdeffn = $ST::DEC_CFG_HMM_TYPE; # indicates the type of HMMs
 
 $hmm_dir = "$ST::DEC_CFG_BASE_DIR/model_parameters/$modelname";
@@ -95,7 +92,6 @@ $ST::DEC_CFG_WORDPENALTY = 0.2 unless defined($ST::DEC_CFG_WORDPENALTY);
 
 Log("Decoding $ctlcount segments starting at $ctloffset (part $part of $npart) ", 'result');
 my $rv = RunTool('sphinx3_decode', $logfile, $ctlcount,
-		 -mdef => $moddeffn,
 		 -senmgau => $statepdeffn,
 		 -hmm => $hmm_dir,
 		 -lw => $ST::DEC_CFG_LANGUAGEWEIGHT ,
