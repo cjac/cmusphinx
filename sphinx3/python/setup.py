@@ -1,4 +1,11 @@
 from distutils.core import setup, Extension
+import os
+
+# For no good reason, CL.EXE doesn't actually define this constant
+if os.name == 'nt':
+    define_macros = [('WIN32', '1')]
+else:
+    define_macors = []
 
 module = Extension('_sphinx3',
                    include_dirs = ['../../sphinxbase/include',
@@ -6,8 +13,12 @@ module = Extension('_sphinx3',
                                    '/usr/local/include/sphinxbase/',
                                    '/usr/local/include/sphinx3',
                                    ],
+		   define_macros = define_macros,
 		   library_dirs = ['../../sphinxbase/src/libsphinxbase/.libs',
-				'../src/libs3decoder/.libs'],
+				'../src/libs3decoder/.libs',
+				'../../sphinxbase/lib/debug',
+				'../lib/debug',
+				],
                    libraries = ['sphinxbase', 's3decoder'],
                    sources = ['_sphinx3module.c'])
 
