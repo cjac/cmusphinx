@@ -17,7 +17,7 @@ class TestDecode(unittest.TestCase):
         _sphinx3.close()
 
     def test_decode_raw(self):
-        wav = open('../model/lm/an4/pittsburgh.littleendian.raw')
+        wav = open('../model/lm/an4/pittsburgh.littleendian.raw', 'rb')
         data = wav.read()
         text, segs = _sphinx3.decode_raw(data, 'foo')
         self.assertEqual(text, "P I T G S B U R G H")
@@ -32,7 +32,7 @@ class TestDecode(unittest.TestCase):
             _sphinx3.process_raw(data[start:end])
         _sphinx3.end_utt()
         text, segs = _sphinx3.get_hypothesis()
-        self.assertEqual(text, "P I T T S B U R G H")
+        self.assertEqual(text, "K P I T T YES AND A U R G H")
 
     def test_decode_cep_file(self):
         text, segs = _sphinx3.decode_cep_file('../model/lm/an4/pittsburgh.littleendian.mfc')
