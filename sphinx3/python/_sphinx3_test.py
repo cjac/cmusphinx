@@ -23,7 +23,7 @@ class TestDecode(unittest.TestCase):
         self.assertEqual(text, "P I T G S B U R G H")
 
     def test_process_raw(self):
-        wav = open('../model/lm/an4/pittsburgh.littleendian.raw')
+        wav = open('../model/lm/an4/pittsburgh.littleendian.raw', 'rb')
         data = wav.read()
         _sphinx3.begin_utt('foo')
         for i in range(0, len(data)/4096):
