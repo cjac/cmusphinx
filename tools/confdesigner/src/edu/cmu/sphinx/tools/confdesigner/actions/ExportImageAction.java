@@ -2,7 +2,6 @@ package edu.cmu.sphinx.tools.confdesigner.actions;
 
 import edu.cmu.sphinx.tools.confdesigner.ConfigScene;
 import edu.cmu.sphinx.tools.confdesigner.SessionManager;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -64,7 +63,7 @@ public class ExportImageAction extends AbstractAction {
         File exportFile = jfc.getSelectedFile();
 
         if (doExportViewOnly) {
-            throw new NotImplementedException();
+            throw new RuntimeException("not implemented yet");
         } else {
             Rectangle bounds = scene.getBounds();
             BufferedImage bufIm = new BufferedImage((int) bounds.getWidth(), (int) bounds.getHeight(), ColorSpace.TYPE_RGB);
