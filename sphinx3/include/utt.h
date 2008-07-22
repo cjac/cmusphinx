@@ -58,10 +58,12 @@ extern "C" {
 
 
 /** Begin utterance */
+S3DECODER_EXPORT
 void utt_begin (kb_t *kb /**< A kb */
     );
 
 /** End utterance */
+S3DECODER_EXPORT
 void utt_end (kb_t *kb     /**< A kb */
     );
 
@@ -83,6 +85,7 @@ void utt_decode (void *data,  /**< A kb */
  * is passed in.
  */
 
+S3DECODER_EXPORT
 void utt_decode_block (float ***block_feat,   /* Incoming block of featurevecs */
                        int32 block_nfeatvec, /* No. of vecs in cepblock */
                        int32 *curfrm,        /* Utterance level index of
