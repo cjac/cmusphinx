@@ -36,6 +36,7 @@ pkginclude_HEADERS =				\
 	profile.h				\
 	sbthread.h				\
 	sphinxbase_export.h			\
+	sphinx_config.h				\
 	strfuncs.h				\
 	unlimit.h
 
