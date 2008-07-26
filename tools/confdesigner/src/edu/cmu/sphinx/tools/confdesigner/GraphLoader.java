@@ -94,6 +94,9 @@ public class GraphLoader {
                     ConfNode targetNode = nodes.get(compName);
                     ConfNode sourceNode = nodes.get(componentName);
 
+                    if(targetNode == null || sourceNode == null)
+                        continue;
+                    
                     assert sourceNode != null;
                     assert targetNode != null;
 

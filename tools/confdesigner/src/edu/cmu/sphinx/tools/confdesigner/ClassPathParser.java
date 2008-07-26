@@ -157,18 +157,16 @@ public class ClassPathParser {
 
 
             if (fileName.endsWith(".class")) {
-                try {
                     String className = fileName.replace(pathEntryFile.getPath() + File.separator, "");
                     className = className.replace(File.separator, ".").replace(".class", "").replaceAll("^[.]", "");
-
+                try {
                     //remove anything but the package name
                     Class aClass = Class.forName(className);
-
 
                     if (ConfigurationManagerUtils.isImplementingInterface(aClass, Configurable.class) && !Modifier.isAbstract(aClass.getModifiers()))
                         configs.add((Class<? extends Configurable>) aClass);
                 } catch (ClassNotFoundException e1) {
-                    e1.printStackTrace();
+                    System.err.println("Error: Could not load " + className);
                 }
             }
         }

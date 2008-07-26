@@ -356,6 +356,7 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
 
     private void layoutGraphItemActionPerformed() {
         sesMan.getActiveScene().getScene().layoutScene();
+        System.err.println("scene layout updated");
     }
 
 
