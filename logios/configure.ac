@@ -11,8 +11,9 @@ AC_CONFIG_HEADER([config.h])
 # Native Windows compilation
 AC_ARG_ENABLE(mingw,
 	[--enable-mingw	  Compile for native Windows execution],
-	[LDFLAGS="-mno-cygwin -L/lib/mingw -L/lib/gcc/i686-pc-mingw32/3.4.4 $LDFLAGS"
-	 CC='g++ -mno-cygwin']
+	[LDFLAGS="-mno-cygwin -L/lib/mingw -L/lib/gcc/i686-pc-mingw32/3.4.4 $(LDFLAGS)"
+	 CC="gcc -mno-cygwin"
+	]
 )
 
 # Checks for programs.
