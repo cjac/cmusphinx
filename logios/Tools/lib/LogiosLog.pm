@@ -9,13 +9,13 @@ package LogiosLog;
 my $LOGFILE = undef;
 my $DEFAULT = "logios.log";
 my $LOGGING = 0;
-my $LOG;
 
-END   { if (defined LOG) {
-  close (LOG);
-  print LOG "\n-----------     end log at ",scalar localtime,"----------\n";
-}
-      }
+#END   {
+#  if (defined $LOGFILE) {
+#    print LOG "\n-----------     end log at ",scalar localtime,"----------\n";
+#    close (LOG);
+#  }
+#}
 
 # toggle the logging feature
 sub control {
