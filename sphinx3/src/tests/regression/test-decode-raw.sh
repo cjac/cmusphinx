@@ -1,7 +1,7 @@
 #!/bin/sh
 . ./testfuncs.sh
 
-tmpout="test-decode.out"
+tmpout="test-decode-raw.out"
 
 echo "DECODE RAW AUDIO TEST"
 echo "YOU SHOULD SEE THE RECOGNITION RESULT 'P I T T S B U R G H'"
