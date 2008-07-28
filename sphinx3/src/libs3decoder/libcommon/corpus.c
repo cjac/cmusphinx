@@ -91,7 +91,6 @@
 
 #include "corpus.h"
 #include "kb.h"
-#include "srch.h"
 
 utt_res_t *
 new_utt_res()
