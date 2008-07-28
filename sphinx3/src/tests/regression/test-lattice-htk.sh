@@ -40,6 +40,6 @@ lmargs="-lm $an4lm/an4.ug.lm.DMP"
 
 run_program sphinx3_decode $margs $lmargs > $tmpout 2>&1
 bn=`head -1 $an4lm/an4.ctl`
-sed -ne '!s,^#.*,,p' $bn.slf > tmp.slf && mv -f tmp.slf $bn.slf
-sed -ne '!s,^#.*,,p' $an4lm/$bn.slf > tmp.slf
+sed -ne '/^#.*/ ! p' $bn.slf > tmp.slf && mv -f tmp.slf $bn.slf
+sed -ne '/^#.*/ ! p' $an4lm/$bn.slf > tmp.slf
 compare_table "HTK lattice test" tmp.slf $bn.slf
