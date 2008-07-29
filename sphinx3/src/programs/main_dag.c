@@ -451,19 +451,21 @@ decode_utt(char *uttid, FILE * _matchfp, FILE * _matchsegfp)
     if (_matchsegfp)
         s3dag_log_hypseg(uttid, _matchsegfp, hyp, dag->nfrm);
 
+    lscr = dag->nfrm;
+
     dag_destroy(dag);
 
     ptmr_stop(&tm_utt);
 
-    printf("%s: TMR: %5d Frm", uttid, dag->nfrm);
-    if (dag->nfrm > 0) {
-        printf(" %6.2f xEl", tm_utt.t_elapsed * 100.0 / dag->nfrm);
-        printf(" %6.2f xCPU", tm_utt.t_cpu * 100.0 / dag->nfrm);
+    printf("%s: TMR: %5d Frm", uttid, lscr);
+    if (lscr > 0) {
+        printf(" %6.2f xEl", tm_utt.t_elapsed * 100.0 / lscr);
+        printf(" %6.2f xCPU", tm_utt.t_cpu * 100.0 / lscr);
     }
     printf("\n");
     fflush(stdout);
 
-    tot_nfr += dag->nfrm;
+    tot_nfr += lscr;
 
     if (hyp != NULL)
         hyp_free(hyp);
