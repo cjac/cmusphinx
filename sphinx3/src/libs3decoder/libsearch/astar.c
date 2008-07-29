@@ -520,6 +520,8 @@ astar_free(astar_t *astar)
         astar->heap_root = aheap_pop(astar->heap_root);
     ppath_free(astar);
     ckd_free(astar->heap_root);
+    ckd_free(astar->hash_list);
+    ckd_free(astar);
 }
 
 static ppath_t *
@@ -704,8 +706,8 @@ nbest_search(dag_t *dag, char *filename, char *uttid, float64 lwf,
         E_ERROR("%s: A* search failed\n", uttid);
     }
 
-    astar_free(astar);
-
     E_INFO("N-Best search(%s): %5d frm %4d hyp %6d pop %6d exp %8d pp\n",
           uttid, dag->nfrm, n_hyp, astar->n_pop, astar->n_exp, astar->n_pp);
+
+    astar_free(astar);
 }
