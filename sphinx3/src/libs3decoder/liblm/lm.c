@@ -692,23 +692,23 @@ lm_read_advance2(const char *file, const char *lmname, float64 lw,
     E_INFO("The LM routine is operating at %d bits mode\n",
            lm->is32bits ? 32 : 16);
 
-    /* Initialize the fast trigram cache, with all entries invalid 
-       ARCHAN 20060305, this is now done even n_tg is zero. Is it right?
-     */
-    if (lm->is32bits) {
-        lm->tgcache32 =
-            (lm_tgcache_entry32_t *) ckd_calloc(LM_TGCACHE_SIZE,
-                                                sizeof
-                                                (lm_tgcache_entry32_t));
-        for (i = 0; i < LM_TGCACHE_SIZE; i++)
-            lm->tgcache32[i].lwid[0] = (s3lmwid32_t) BAD_LMWID(lm);
-    }
-    else {
-        lm->tgcache =
-            (lm_tgcache_entry_t *) ckd_calloc(LM_TGCACHE_SIZE,
-                                              sizeof(lm_tgcache_entry_t));
-        for (i = 0; i < LM_TGCACHE_SIZE; i++)
-            lm->tgcache[i].lwid[0] = (s3lmwid_t) BAD_LMWID(lm);
+    /* Initialize the fast trigram cache, with all entries invalid */
+    if (lm->n_tg > 0) {
+        if (lm->is32bits) {
+            lm->tgcache32 =
+                (lm_tgcache_entry32_t *) ckd_calloc(LM_TGCACHE_SIZE,
+                        sizeof
+                        (lm_tgcache_entry32_t));
+            for (i = 0; i < LM_TGCACHE_SIZE; i++)
+                lm->tgcache32[i].lwid[0] = (s3lmwid32_t) BAD_LMWID(lm);
+        }
+        else {
+            lm->tgcache =
+                (lm_tgcache_entry_t *) ckd_calloc(LM_TGCACHE_SIZE,
+                        sizeof(lm_tgcache_entry_t));
+            for (i = 0; i < LM_TGCACHE_SIZE; i++)
+                lm->tgcache[i].lwid[0] = (s3lmwid_t) BAD_LMWID(lm);
+        }
     }
 
     if (applyWeight) {
@@ -1998,20 +1998,30 @@ lm_free(lm_t * lm)
         ckd_free((void *) lm->tg_segbase);
         ckd_free((void *) lm->tgprob);
         ckd_free((void *) lm->tgbowt);
-
-        if (lm->dict2lmwid) {
-            ckd_free(lm->dict2lmwid);
-        }
-
-        if (lm->HT) {
-            hash_table_free(lm->HT);
-        }
     }
 
+    if (lm->lmclass) {
+        for (i = 0; i < lm->n_lmclass; ++i)
+            lmclass_free(lm->lmclass[i]);
+        ckd_free(lm->lmclass);
+    }
+
+    if (lm->inclass_ugscore) {
+        ckd_free(lm->inclass_ugscore);
+    }
+
+    if (lm->HT) {
+        hash_table_free(lm->HT);
+    }
+
+    if (lm->dict2lmwid) {
+        ckd_free(lm->dict2lmwid);
+    }
+
+    if (lm->name)
+        ckd_free(lm->name);
 
     ckd_free((void *) lm);
-
-
 }
 
 static void

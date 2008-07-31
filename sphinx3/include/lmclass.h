@@ -122,6 +122,8 @@ typedef struct lmclass_set_s {
 /** Initialize and return a new, empty LMclass set */
 lmclass_set_t *lmclass_newset ( void );
 
+void lmclass_free(lmclass_t *lmclass);
+
 
 /**
  * Load LM classes defined in the given file into the given set, and return the new,

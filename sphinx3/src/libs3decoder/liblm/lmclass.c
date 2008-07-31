@@ -101,6 +101,20 @@ lmclass_newset(void)
     return set;
 }
 
+void
+lmclass_free(lmclass_t *lmclass)
+{
+    lmclass_word_t *cw;
+    for (cw = lmclass->wordlist; cw;) {
+        lmclass_word_t *pr = cw;
+        ckd_free(cw->word);
+        cw = cw->next;
+        ckd_free(pr);
+    }
+    ckd_free(lmclass->name);
+    ckd_free(lmclass);
+}
+
 static lmclass_set_t *
 lmclass_add(lmclass_set_t *set, lmclass_t *new)
 {

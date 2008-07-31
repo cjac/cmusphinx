@@ -837,6 +837,7 @@ lm_read_txt(const char *filename,        /**< Input: The file name*/
     if (_errmsg != LM_SUCCESS) {
         E_WARN("Couldnt' read the ngram count\n");
         *err_no = _errmsg;
+        fclose(fp);
         return NULL;
     }
 
@@ -851,6 +852,7 @@ lm_read_txt(const char *filename,        /**< Input: The file name*/
             ("Cannot allocate tables for new lm with ug %d, bg %d, tg %d\n",
              n_unigram, n_bigram, n_trigram);
         *err_no = LM_CANNOT_ALLOCATE;
+        fclose(fp);
         return NULL;
     }
 
@@ -904,6 +906,7 @@ lm_read_txt(const char *filename,        /**< Input: The file name*/
     _errmsg = ReadUnigrams(fp, model);
     if (_errmsg != LM_SUCCESS) {
         *err_no = _errmsg;
+        fclose(fp);
         return NULL;
     }
 
@@ -916,6 +919,7 @@ lm_read_txt(const char *filename,        /**< Input: The file name*/
     _errmsg = ReadBigrams(fp, model, idfmt);
     if (_errmsg != LM_SUCCESS) {
         *err_no = _errmsg;
+        fclose(fp);
         return NULL;
     }
 
@@ -939,6 +943,7 @@ lm_read_txt(const char *filename,        /**< Input: The file name*/
         _errmsg = ReadTrigrams(fp, model, idfmt);
         if (_errmsg != LM_SUCCESS) {
             *err_no = _errmsg;
+            fclose(fp);
             return NULL;
         }
 
@@ -955,6 +960,7 @@ lm_read_txt(const char *filename,        /**< Input: The file name*/
         free_sorted_list(&model->sorted_prob3);
     }
 
+    fclose(fp);
     *err_no = LM_SUCCESS;
     return model;
 }

@@ -787,7 +787,7 @@ lm_read_dump_tg(lm_t * lm,             /**< LM */
     mem_sz = is32bits ? sizeof(tg32_t) : sizeof(tg_t);
     lmptr = NULL;
 
-    if (lm->isLM_IN_MEMORY) {
+    if (lm->isLM_IN_MEMORY && lm->n_tg > 0) {
         if ((lmptr = ckd_calloc(lm->n_tg + 1, mem_sz)) == NULL) {
             E_ERROR
                 ("Fail to allocate memory with size %d for trigram reading.  Each trigram with mem_sz\n",
@@ -1061,6 +1061,9 @@ lm_read_dump_wordstr(lm_t * lm, const char *file, int32 is32bits)
         lm->ug[endwid].bowt.f = MIN_PROB_F;
         lm->finishlwid = endwid;
     }
+    else {
+        E_FATAL("No </s> in LM!\n");
+    }
 
     return LM_SUCCESS;
 }
@@ -1265,12 +1268,16 @@ lm_read_dump(const char *file,        /**< The file name*/
     /** Read header and compare byte order */
     if (lm_read_dump_header(lm, file) == LM_FAIL) {
         E_ERROR("Error in reading the header of the DUMP file. \n");
+        fclose(lm->fp);
+        ckd_free(lm);
         return NULL;
     }
 
     /** Read the full path of file name of lm */
     if (lm_read_lmfilename(lm, file) == LM_FAIL) {
         E_ERROR("Error in reading the file name of lm. \n");
+        fclose(lm->fp);
+        ckd_free(lm);
         return NULL;
     }
 
@@ -1278,6 +1285,8 @@ lm_read_dump(const char *file,        /**< The file name*/
     if (lm_read_dump_ver_nug(lm, file) == LM_FAIL) {
         E_ERROR
             ("Error in reading the version name and number of unigram\n");
+        fclose(lm->fp);
+        ckd_free(lm);
         return NULL;
     }
 
@@ -1285,6 +1294,8 @@ lm_read_dump(const char *file,        /**< The file name*/
 
     if (lm_read_dump_ng_counts(lm, file) == LM_FAIL) {
         E_ERROR("Error in reading the ngram counts.  \n");
+        fclose(lm->fp);
+        ckd_free(lm);
         return NULL;
     }
 
@@ -1297,6 +1308,9 @@ lm_read_dump(const char *file,        /**< The file name*/
 
     if (lm_read_dump_ng(lm, file) == LM_FAIL) {
         E_ERROR("Error in reading the ngram.  \n");
+        fclose(lm->fp);
+        hash_table_free(lm->HT);
+        ckd_free(lm);
         return NULL;
     }
 

@@ -263,11 +263,11 @@ lmset_free(lmset_t * lms)
     int i;
     for (i = 0; i < lms->n_lm; i++) {
         ckd_free((void *) lms->lmarray[i]->name);
+        lms->lmarray[i]->name = NULL;
         lm_free(lms->lmarray[i]);
     }
     ckd_free(lms->lmarray);
     ckd_free((void *) lms);
-
 }
 
 lmset_t *
@@ -492,6 +492,8 @@ lmset_read_ctl(const char *ctlfile,
     }
 
 
+    ckd_free(lmclass_set);
+    ckd_free(lmclass);
     fclose(ctlfp);
     return lms;
 }

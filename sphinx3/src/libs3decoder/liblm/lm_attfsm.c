@@ -207,7 +207,7 @@ lm_write_att_fsm(lm_t * lm, const char *filename)
                                                                     wid);
 
                             if (l > -1) {
-                                if (tgptr[k].wid != lm->finishlwid) {
+                                if (wid32_tg != lm->finishlwid) {
 
                                     id_hist2 =
                                         is32bits ? idx_tg32_hist(lm,
