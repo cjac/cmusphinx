@@ -330,7 +330,6 @@
 #include "logs3.h"
 #include "search.h"
 #include "ctxt_table.h"
-#include "vithist.h"
 
 #include "dag.h"
 

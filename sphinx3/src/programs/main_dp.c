@@ -168,6 +168,18 @@ dp_init(void)
     silwid = word2id(" ");
 }
 
+static void
+dp_free(void)
+{
+    int32 i;
+    for (i = 0; i < n_word; ++i)
+        ckd_free(word[i]);
+
+    ckd_free(word);
+    hash_table_free(dict_ht);
+    ckd_free(node_alloc);
+}
+
 
 /* For debugging */
 static void
@@ -637,6 +649,12 @@ main(int32 argc, char *argv[])
             ("==== SUMMARY: %d ref, %d hyp, %d err (%d sub, %d ins, %d del); %d corr ====\n",
              tot_ref, tot_hyp, tot_err, tot_sub, tot_ins, tot_del,
              tot_corr);
+
+    fclose(rfp);
+    if (hfp != stdin)
+        fclose(hfp);
+
+    dp_free();
 
     cmd_ln_appl_exit();
 

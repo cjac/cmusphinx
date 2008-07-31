@@ -156,6 +156,8 @@ typedef struct align_wdseg_s {
 
 int32 align_init(mdef_t * _mdef, tmat_t * _tmat, dict_t * _dict);
 
+void align_free(void);
+
 int32 align_build_sent_hmm(char *transcript,  /**< In: Word transcript */
                            int insert_sil     /**< In: Whether to insert silences/fillers */
     );

@@ -400,6 +400,22 @@ models_init(void)
     adapt_am = adapt_am_init();
 }
 
+static void models_free(void)
+{
+    if (adapt_am)
+        adapt_am_free(adapt_am);
+    if (fastgmm)
+        fast_gmm_free(fastgmm);
+    if (ascr)
+        ascr_free(ascr);
+    if (dict)
+        dict_free(dict);
+    if (fcb)
+        feat_free(fcb);
+    ckd_free(kbc);
+    logs_free();
+}
+
 
 /*
  * Build a filename int buf as follows (without file extension):
@@ -1138,16 +1154,11 @@ main(int32 argc, char *argv[])
     ckd_free(stsegdir);
     ckd_free(phsegdir);
     ckd_free(wdsegdir);
+    ckd_free(senscale);
 
-    if (ascr) {
-        ascr_free(ascr);
-    }
-    if (fastgmm) {
-        fast_gmm_free(fastgmm);
-    }
-    if (adapt_am) {
-        adapt_am_free(adapt_am);
-    }
+    feat_array_free(feat);
+    align_free();
+    models_free();
 
 #if (! WIN32)
     system("ps aguxwww | grep s3align");

@@ -128,6 +128,7 @@ main(int argc, char *argv[])
 {
     const char *inputfn;
     const char *outputfn;
+    char *local_outputfn;
     const char *inputfmt;
     const char *outputfmt;
     const char *inputenc;
@@ -143,7 +144,7 @@ main(int argc, char *argv[])
     cmd_ln_appl_enter(argc, argv, "default.arg", arg);
 
     inputfn = NULL;
-    outputfn = NULL;
+    outputfn = local_outputfn = NULL;
     inputfmt = NULL;
     outputfmt = NULL;
     outputdir = NULL;
@@ -179,8 +180,8 @@ main(int argc, char *argv[])
 
     if (outputfn == NULL) {
       /* Length = strlen(inputfn) + 1 + strlen(outputfmt) + 5 (For safety) */
-      outputfn = (char *) ckd_calloc(strlen(inputfn) + strlen(outputfmt) + 5, sizeof(char));
-      sprintf(outputfn, "%s.%s", inputfn, outputfmt);
+      outputfn = local_outputfn = (char *) ckd_calloc(strlen(inputfn) + strlen(outputfmt) + 5, sizeof(char));
+      sprintf(local_outputfn, "%s.%s", inputfn, outputfmt);
       outputfnfree = TRUE;
     }
 
@@ -200,8 +201,8 @@ main(int argc, char *argv[])
     lm_write(lm, outputpath, inputfn, outputfmt);
 
 
-    if (outputfn) {
-      ckd_free(outputfn);
+    if (local_outputfn) {
+      ckd_free(local_outputfn);
     }
     ckd_free(outputpath);
     lm_free(lm);

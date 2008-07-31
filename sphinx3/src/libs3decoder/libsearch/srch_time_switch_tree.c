@@ -824,13 +824,11 @@ srch_TST_propagate_graph_ph_lv2(void *srch, int32 frmno)
 
     lextree_t *lextree;
     kbcore_t *kbcore;
-    vithist_t *vh;
     pl_t *pl;
 
     s = (srch_t *) srch;
     tstg = (srch_TST_graph_t *) s->grh->graph_struct;
     kbcore = s->kbc;
-    vh = tstg->vithist;
     pl = s->pl;
     pheurtype = pl->pheurtype;
 

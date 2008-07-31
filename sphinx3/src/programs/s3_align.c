@@ -95,6 +95,7 @@
 #include <string.h>
 #include <assert.h>
 
+#include <feat.h>
 #include <s3types.h>
 #include "mdef.h"
 #include "tmat.h"
@@ -1362,4 +1363,13 @@ align_init(mdef_t * _mdef, tmat_t * _tmat, dict_t * _dict)
     align_wdseg = NULL;
 
     return 0;
+}
+
+void
+align_free(void)
+{
+    if (fillwid)
+        ckd_free(fillwid);
+    if (score_scale)
+        ckd_free(score_scale);
 }

@@ -327,6 +327,15 @@ models_init(void)
 }
 
 
+static void
+models_free(void)
+{
+    fillpen_free(fpen);
+    lmset_free(lmset);
+    dict_free(dict);
+    mdef_free(mdef);
+}
+
 /*
  * Build a filename int buf as follows (without file extension):
  *     if dir ends with ,CTLand ctlspec does not begin with /, filename is dir/ctlspec
@@ -461,7 +470,9 @@ main(int32 argc, char *argv[])
         E_FATAL("-ctl is not specified\n");
     }
 
+    models_free();
 
+    logs_free();
 
 #if (! WIN32)
     system("ps aguxwww | grep s3astar");

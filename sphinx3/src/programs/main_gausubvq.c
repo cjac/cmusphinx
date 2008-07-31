@@ -272,13 +272,16 @@ main(int32 argc, char *argv[])
     }
 
     subvecs_free(subvec);
+    ckd_free(datamap);
+    ckd_free(vqmap);
+
+    mgau_free(mgau);
 
     fprintf(fpout, "End\n");
     fclose(fpout);
 
-    exit(0);
+    logs_free();
 
     cmd_ln_appl_exit();
     exit(0);
-
 }

@@ -324,6 +324,14 @@ models_init(void)
 
 }
 
+static void
+models_free(void)
+{
+    fillpen_free(fpen);
+    lmset_free(lmset);
+    dict_free(dict);
+    mdef_free(mdef);
+}
 
 /*
  * Write exact hypothesis.  Format:
@@ -552,6 +560,10 @@ main(int32 argc, char *argv[])
                tm_utt.t_tot_elapsed / (tot_nfr * 0.01));
     }
     fflush(stdout);
+
+    models_free();
+
+    logs_free();
 
 #if (! WIN32)
     system("ps auxwww | grep s3dag");

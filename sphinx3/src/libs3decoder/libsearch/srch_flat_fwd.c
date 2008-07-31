@@ -298,9 +298,20 @@ srch_FLAT_FWD_uninit(void *srch)
     if (fwg->lathist)
 	latticehist_free(fwg->lathist);
 
+    if (fwg->fwdDBG)
+	ckd_free(fwg->fwdDBG);
+
+    if (fwg->whmm)
+	ckd_free(fwg->whmm);
+
+    if (fwg->hmmctx)
+	hmm_context_free(fwg->hmmctx);
+
     pctr_free(fwg->ctr_mpx_whmm);
     pctr_free(fwg->ctr_nonmpx_whmm);
     pctr_free(fwg->ctr_latentry);
+
+    ckd_free(fwg);
 
     return SRCH_SUCCESS;
 }

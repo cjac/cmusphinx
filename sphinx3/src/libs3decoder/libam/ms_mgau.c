@@ -226,9 +226,16 @@ ms_mgau_init(const char *meanfile,
 void
 ms_mgau_free(ms_mgau_model_t * msg)
 {
+    int32 i;
+    gauden_t *g;
+
     if (msg == NULL)
         return;
 
+    g = ms_mgau_gauden(msg);
+    for (i = 0; i < g->n_mgau; ++i)
+        ckd_free(msg->mgau2sen[i]);
+    ckd_free(msg->mgau2sen);
     gauden_free(msg->g);
     senone_free(msg->s);
     ckd_free_3d((void *) msg->dist);

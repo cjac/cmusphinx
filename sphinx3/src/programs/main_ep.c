@@ -220,6 +220,11 @@ main(int _argc, char **_argv)
 
     s3_endpointer_close(&ep);
 
+    fclose(in);
+    ckd_free_2d(frames);
+    logs_free();
+    cmd_ln_free();
+
     return 0;
 }
 

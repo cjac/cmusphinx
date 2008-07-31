@@ -1230,5 +1230,20 @@ void
 s2_semi_mgau_free(s2_semi_mgau_t * s)
 {
     /* FIXME: Need to free stuff. */
+    ckd_free_2d(s->OPDF_8B[0]);
+    ckd_free_2d(s->OPDF_8B[1]);
+    ckd_free_2d(s->OPDF_8B[2]);
+    ckd_free_2d(s->OPDF_8B[3]);
+
+    ckd_free(s->means[0]);
+    ckd_free(s->means[1]);
+    ckd_free(s->means[2]);
+    ckd_free(s->means[3]);
+
+    ckd_free(s->vars[0]);
+    ckd_free(s->vars[1]);
+    ckd_free(s->vars[2]);
+    ckd_free(s->vars[3]);
+
     ckd_free(s);
 }

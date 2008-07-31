@@ -458,10 +458,6 @@ kbcore_init_r(cmd_ln_t *config)
 		    REPORT_KBCORE, cmd_ln_int32_r(config, "-log3table")))
         E_FATAL("Error in logs3_init, exit\n");
 
-    if (REPORT_KBCORE) {
-        logs3_report();
-    }
-
     if (!(str = cmd_ln_str_r(config, "-feat")))
         E_FATAL("Please specify the feature type using -feat\n");
     else {
@@ -703,6 +699,11 @@ kbcore_free(kbcore_t * kbcore)
     if (kbcore->ms_mgau) {
         ms_mgau_free(kbcore->ms_mgau);
         kbcore->ms_mgau = NULL;
+    }
+
+    if (kbcore->s2_mgau) {
+        s2_semi_mgau_free(kbcore->s2_mgau);
+        kbcore->s2_mgau = NULL;
     }
 
     /* memory allocated in kbcore */

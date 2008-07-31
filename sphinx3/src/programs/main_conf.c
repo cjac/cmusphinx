@@ -176,6 +176,14 @@ models_init(void)
 
 }
 
+static void
+models_free(void)
+{
+    fillpen_free(fpen);
+    lmset_free(lmset);
+    dict_free(dict);
+    mdef_free(mdef);
+}
 
 int
 dump_line(FILE * fp_output, seg_hyp_line_t * seg_hyp_line, dict_t * dict)
@@ -359,6 +367,10 @@ main(int argc, char *argv[])
 
     fclose(outconfmatchsegfp);
     fclose(inmatchsegfp);
+
+    models_free();
+
+    logs_free();
 
     cmd_ln_appl_exit();
 
