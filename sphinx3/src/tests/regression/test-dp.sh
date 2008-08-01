@@ -6,6 +6,8 @@ tmpout="test-dp.out"
 
 echo "TEST THE WORD ALIGNMENT ROUTINE. "
 
+rm -f $tmpout
+
 run_program sphinx3_dp \
 -hypfile $hub4am/test.dp.hyp \
 -reffile $hub4am/test.dp.ref \

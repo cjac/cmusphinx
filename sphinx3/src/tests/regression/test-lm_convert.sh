@@ -41,6 +41,8 @@ pass "LM CONVERT PHONE DRY RUN LM TXT32-> DMP32 test"; else
 fail "LM CONVERT PHONE DRY RUN LM TXT32-> DMP32 test"; fi
 
 
+rm -f $tmptxt
+
 run_program sphinx3_lm_convert \
 -i $an4lm/an4.tg.phone.arpa.DMP \
 -ifmt DMP \
@@ -51,6 +53,8 @@ run_program sphinx3_lm_convert \
 compare_table "LM_CONVERT PHONE LM DMP -> TXT test" $tmptxt $an4lm/an4.tg.phone.arpa.lm_convert 0.0002 
  
 
+rm -f $tmpfst ${tmpfst}.sym
+
 run_program sphinx3_lm_convert \
 -i $an4lm/an4.tg.phone.arpa \
 -o $tmpfst \
@@ -59,6 +63,8 @@ run_program sphinx3_lm_convert \
 
 compare_table "LM_CONVERT PHONE LM TXT -> FST test" $tmpfst $an4lm/an4.tg.phone.arpa.FST 0.0002 
 compare_table "LM_CONVERT PHONE LM TXT -> FST SYM test" ${tmpfst}.sym $an4lm/an4.tg.phone.arpa.FST.SYM 0.0002 
+
+rm -f $tmpfst ${tmpfst}.sym
 
 run_program sphinx3_lm_convert \
 -i $an4lm/an4.tg.phone.arpa \
@@ -75,6 +81,8 @@ run_program sphinx3_lm_convert \
 compare_table "LM_CONVERT PHONE LM TXT32 -> FST SYM test" ${tmpfst}.sym $an4lm/an4.tg.phone.arpa.FST.SYM 0.0002 
  
 
+rm -f $tmpdmp $tmptxt
+
 run_program sphinx3_lm_convert \
 -i $an4lm/an4.tg.phone.arpa \
 -o $tmpdmp \
@@ -89,6 +97,8 @@ run_program sphinx3_lm_convert \
 
 compare_table "LM_CONVERT PHONE LM TXT -> DMP -> TXT test" $tmptxt $an4lm/an4.tg.phone.arpa.lm_convert 0.0002 
  
+
+rm -f $tmpdmp $tmptxt
 
 run_program sphinx3_lm_convert \
 -i $an4lm/an4.tg.phone.arpa \
@@ -106,6 +116,8 @@ run_program sphinx3_lm_convert \
 compare_table "LM_CONVERT PHONE LM TXT32 -> DMP -> TXT test" $tmptxt $an4lm/an4.tg.phone.arpa.lm_convert 0.0002 
  
 
+rm -f $tmpdmp $tmptxt
+
 run_program sphinx3_lm_convert \
 -i $an4lm/an4.tg.phone.arpa \
 -o $tmpdmp \
@@ -122,6 +134,8 @@ run_program sphinx3_lm_convert \
 compare_table "LM_CONVERT PHONE LM TXT -> DMP32 -> TXT test" $tmptxt $an4lm/an4.tg.phone.arpa.lm_convert 0.0002 
 
  
+
+rm -f $tmpdmp $tmptxt
 
 run_program sphinx3_lm_convert \
 -i $an4lm/an4.tg.phone.arpa \
@@ -157,6 +171,8 @@ pass "LM CONVERT WORD DRY RUN LM TXT-> DMP32 test"; else
 fail "LM CONVERT WORD DRY RUN LM TXT-> DMP32 test"; fi
 
 
+rm -f $tmptxt
+
 run_program sphinx3_lm_convert \
 -i $an4lm/an4.ug.lm.DMP \
 -ifmt DMP \
@@ -167,6 +183,8 @@ run_program sphinx3_lm_convert \
 compare_table "LM_CONVERT WORD LM DMP -> TXT test" $tmptxt $an4lm/an4.ug.lm.lm_convert 0.0002 
  
 
+rm -f $tmpfst
+
 run_program sphinx3_lm_convert \
 -i $an4lm/an4.ug.lm \
 -o $tmpfst \
@@ -175,6 +193,8 @@ run_program sphinx3_lm_convert \
 
 compare_table "LM_CONVERT WORD LM TXT -> FST test" $tmpfst $an4lm/an4.ug.lm.FST 0.0002 
  
+
+rm -f $tmpfst
 
 run_program sphinx3_lm_convert \
 -i $an4lm/an4.ug.lm \
@@ -185,6 +205,8 @@ run_program sphinx3_lm_convert \
 
 compare_table "LM_CONVERT WORD LM TXT32 -> FST test" $tmpfst $an4lm/an4.ug.lm.FST 0.0002 
  
+
+rm -f $tmpdmp $tmptxt
 
 run_program sphinx3_lm_convert \
 -i $an4lm/an4.ug.lm \

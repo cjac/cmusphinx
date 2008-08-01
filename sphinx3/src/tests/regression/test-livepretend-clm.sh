@@ -6,6 +6,8 @@ echo "YOU SHOULD SEE THE RECOGNITION RESULT 'P I T T S B U R G H'"
 
 tmpout="test-livepretend-clm.out"
 
+rm -f $tmpout
+
 run_program sphinx3_livepretend \
 $an4lm/an4.ctl \
 $an4lm \

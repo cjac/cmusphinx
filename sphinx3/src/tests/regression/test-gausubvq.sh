@@ -7,6 +7,8 @@ tmpout="test-gausubvq.out"
 
 echo "This will compare the answer with a pre-generated svq file"
 
+rm -f $tmpout $tmplog
+
 run_program sphinx3_gausubvq \
 -mean $hub4am/means \
 -var  $hub4am/variances \

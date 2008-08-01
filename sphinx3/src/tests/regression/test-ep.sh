@@ -5,6 +5,8 @@ echo "EP TEST"
 tmplog="test-ep.log"
 tmpout="test-ep.out"
 
+rm -f $tmpout $tmplog
+
 run_program sphinx3_ep \
 -frate 105 \
 -mean $sourcedir/model/ep/means \

@@ -5,6 +5,8 @@ echo "ALIGN TEST simple"
 
 tmpout="test-align-simple.seg"
 
+rm -f $tmpout
+
 #Simple test
 run_program sphinx3_align \
 -logbase 1.0003 \
@@ -39,6 +41,8 @@ tar cf test-align-simple.tar $tmpout $filebase.wdseg $filebase.phseg
 echo "ALIGN TEST cepext"
 
 tmpout="test-align-cepext.seg"
+
+rm -f $tmpout
 
 #Program we used -agc max. This is an exception
 #test for extension

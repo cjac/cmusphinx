@@ -6,6 +6,8 @@ echo "YOU SHOULD SEE THE RECOGNITION RESULT 'K P I T T S B U R G H A' (don't pan
 
 tmpout="test-livepretend-fsg.out"
 
+rm -f $tmpout
+
 run_program sphinx3_livepretend \
 $an4lm/an4.ctl \
 $an4lm \

@@ -30,6 +30,8 @@ margs="-hmm $hub4am/ \
 -ctl $an4lm/an4.ctl \
 -cepdir $an4lm/ "
 
+rm -f $tmpout
+
 run_program sphinx3_decode $margs > $tmpout 2>&1
 grep "FWDVIT" $tmpout
 grep "FWDXCT" $tmpout

@@ -39,6 +39,8 @@ margs="-mdef $hub4am/mdef \
 
 lmargs="-lm $an4lm/an4.ug.lm.DMP"
 
+rm -f $tmphypseg
+
 run_program sphinx3_decode $margs $lmargs > $tmpout 2>&1
 
 margs="-mdef $hub4am/mdef \
@@ -51,6 +53,8 @@ margs="-mdef $hub4am/mdef \
 -output $tmpconfhypseg \
 -lm $an4lm/an4.ug.lm.DMP \
 "
+
+rm -f $tmpconfhypseg
 
 run_program sphinx3_conf $margs >> $tmpout 2>&1 
 compare_table "DECODE -> CONF test" $tmpconfhypseg $hub4am/test-conf.confhypseg 2 

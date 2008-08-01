@@ -6,6 +6,8 @@ tmpout="test-decode-mllr.out"
 echo "DECODE+MLLR TEST"
 echo "YOU SHOULD SEE THE RECOGNITION RESULT 'P I T T S B U R G H'"
 
+rm -f $tmpout
+
 run_program sphinx3_decode \
 -mdef $hub4am/mdef \
 -fdict $an4lm/filler.dict \

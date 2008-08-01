@@ -39,6 +39,8 @@ lmargs="-lm $an4lm/an4.ug.lm.DMP"
 clsargs="-lmctlfn $an4lm/an4.ug.cls.lmctl \
 -ctl_lm  $an4lm/an4.ctl_lm" 
 
+rm -f $tmpout
+
 run_program sphinx3_decode $margs $lmargs  2>&1 | grep "SEARCH DEBUG" |sed "s/\.//g" > $tmpout
 
 if diff $tmpout $hub4am/test.mode1369.dump > /dev/null 2>&1; then

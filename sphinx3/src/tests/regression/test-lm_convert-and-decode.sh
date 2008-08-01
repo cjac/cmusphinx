@@ -8,6 +8,8 @@ echo "YOU SHOULD SEE THE RECOGNITION RESULT 'P I T T S B U R G H'"
 
 tmpdmp="test-lm_convert-and-decode.DMP"
 
+rm -f $tmpdmp
+
 run_program sphinx3_lm_convert \
 -i $an4lm/an4.ug.lm \
 -o $tmpdmp \
@@ -43,6 +45,8 @@ margs="-mdef $hub4am/mdef \
 
 lmargs="-lm $tmpdmp"
 
+rm -f $tmpout
+
 run_program sphinx3_decode $margs $lmargs > $tmpout 2>&1
 grep "FWDVIT" $tmpout
 grep "FWDXCT" $tmpout
@@ -58,6 +62,8 @@ echo "YOU SHOULD SEE THE RECOGNITION RESULT 'P I T T S B U R G H'"
 
 tmpdmp="test-lm_convert-and-decode.DMP32"
 
+rm -f $tmpdmp
+
 run_program sphinx3_lm_convert \
 -i $an4lm/an4.ug.lm \
 -o $tmpdmp \
@@ -65,6 +71,8 @@ run_program sphinx3_lm_convert \
 > /dev/null 2>&1
 
 lmargs="-lm $tmpdmp"
+
+rm -f $tmpout
 
 run_program sphinx3_decode $margs $lmargs > $tmpout 2>&1
 grep "FWDVIT" $tmpout
@@ -81,6 +89,8 @@ echo "YOU SHOULD SEE THE RECOGNITION RESULT 'P I T T S B U R G H'"
 
 lmargs="-lm $an4lm/an4.ug.lm"
 
+rm -f $tmpout
+
 run_program sphinx3_decode $margs $lmargs > $tmpout 2>&1
 grep "FWDVIT" $tmpout
 grep "FWDXCT" $tmpout
@@ -91,6 +101,8 @@ else
     fail "TXT LM -> DECODE test"
 fi
 
+rm -f $tmpdmp
+
 run_program sphinx3_lm_convert \
 -i $an4lm/an4.ug.lm \
 -ifmt TXT32 \
@@ -98,6 +110,8 @@ run_program sphinx3_lm_convert \
 > /dev/null 2>&1
 
 lmargs="-lm $tmpdmp"
+
+rm -f $tmpout
 
 run_program sphinx3_decode $margs $lmargs > $tmpout 2>&1
 grep "FWDVIT" $tmpout

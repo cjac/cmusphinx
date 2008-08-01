@@ -17,6 +17,8 @@ margs="-mdef $hub4am/mdef \
 
 lmargs="-lm $an4lm/an4.ug.lm.DMP"
 
+rm -f pittsburgh.nbest.gz pittsburgh.nbest
+
 run_program sphinx3_astar $margs $lmargs > $tmpout 2>&1 
 
 gzip -cfd ./pittsburgh.nbest.gz > ./pittsburgh.nbest 

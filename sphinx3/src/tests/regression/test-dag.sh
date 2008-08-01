@@ -16,6 +16,8 @@ margs="-mdef $hub4am/mdef \
 
 lmargs="-lm $an4lm/an4.ug.lm.DMP"
 
+rm -f $tmpout
+
 run_program sphinx3_dag $margs $lmargs > $tmpout 2>&1 
 
 grep "BSTPTH:" $tmpout 

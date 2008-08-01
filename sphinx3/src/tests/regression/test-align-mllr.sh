@@ -6,6 +6,8 @@ tmplog="test-align-mllr.log"
 
 echo "ALIGN+MLLR TEST simple"
 
+rm -f $tmpout
+
 run_program sphinx3_align \
 -logbase 1.0003 \
 -mdef $hub4am/mdef \

@@ -32,6 +32,8 @@ lmargs="-lm $an4lm/an4.ug.lm.DMP"
 clsargs="-lmctlfn $an4lm/an4.ug.cls.lmctl \
 -ctl_lm  $an4lm/an4.ctl_lm" 
 
+rm -f $tmpout
+
 run_program sphinx3_decode $margs $lmargs > $tmpout 2>&1
 grep "FWDVIT" $tmpout
 grep "FWDXCT" $tmpout

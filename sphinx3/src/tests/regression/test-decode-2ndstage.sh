@@ -41,6 +41,9 @@ lmargs="-lm $an4lm/an4.ug.lm.DMP"
 clsargs="-lmctlfn $an4lm/an4.ug.cls.lmctl \
 -ctl_lm  $an4lm/an4.ctl_lm" 
 
+rm -f $tmpout
+rm -f *.lat.gz *.nbest.gz
+
 run_program sphinx3_decode $margs $lmargs > $tmpout 2>&1
 
 #Next try to read the lattices with dag and see whether dag could read it. 
