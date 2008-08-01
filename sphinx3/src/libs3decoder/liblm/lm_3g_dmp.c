@@ -1062,7 +1062,7 @@ lm_read_dump_wordstr(lm_t * lm, const char *file, int32 is32bits)
         lm->finishlwid = endwid;
     }
     else {
-        E_FATAL("No </s> in LM!\n");
+        E_WARN("No </s> in LM!\n");
     }
 
     return LM_SUCCESS;
