@@ -7,7 +7,7 @@ tmptxt="test-lm_convert.TXT"
 tmpfst="test-lm_convert.FST"
 tmpdmp="test-lm_convert.DMP"
 
-echo "This will perform several tests that compare the converted LMs to a pre-generated ones. "
+echo "This will perform several tests that compare the converted LMs to pre-generated ones. "
 
 #Couldn't do a match test because the paths generated in the LM will differ.  
 if run_program sphinx3_lm_convert \
@@ -114,6 +114,7 @@ run_program sphinx3_lm_convert \
 
 run_program sphinx3_lm_convert \
 -i $tmpdmp \
+-ifmt DMP \
 -o $tmptxt \
 -ofmt TXT \
 > $tmpout 2>&1 
@@ -131,6 +132,7 @@ run_program sphinx3_lm_convert \
 
 run_program sphinx3_lm_convert \
 -i $tmpdmp \
+-ifmt DMP \
 -o $tmptxt \
 -ofmt TXT \
 > $tmpout 2>&1 
