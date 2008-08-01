@@ -90,3 +90,23 @@ init_word_ugprob(mdef_t * _mdef, lm_t * _lm, dict_t * _dict)
     }
     return wugp;
 }
+
+void
+word_ugprob_free(word_ugprob_t ** wugp, int32 n)
+{
+    int32 i;
+
+    for (i = 0; i < n; ++i) {
+        if (wugp[i] == NULL)
+            continue;
+        word_ugprob_t *wp = wugp[i]->next;
+        ckd_free(wugp[i]);
+        while (wp) {
+            word_ugprob_t *p = wp;
+            wp = wp->next;
+            ckd_free(p);
+        }
+    }
+
+    ckd_free(wugp);
+}

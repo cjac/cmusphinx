@@ -88,6 +88,8 @@ word_ugprob_t**  init_word_ugprob(mdef_t *_mdef,
 				  dict_t *_dict
     );
 
+void word_ugprob_free(word_ugprob_t ** wugp, int32 n);
+
 #ifdef __cplusplus
 }
 #endif

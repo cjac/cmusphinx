@@ -307,6 +307,9 @@ srch_FLAT_FWD_uninit(void *srch)
     if (fwg->hmmctx)
 	hmm_context_free(fwg->hmmctx);
 
+    if (fwg->word_ugprob)
+	word_ugprob_free(fwg->word_ugprob, kbcore_mdef(s->kbc)->n_ciphone);
+
     pctr_free(fwg->ctr_mpx_whmm);
     pctr_free(fwg->ctr_nonmpx_whmm);
     pctr_free(fwg->ctr_latentry);
