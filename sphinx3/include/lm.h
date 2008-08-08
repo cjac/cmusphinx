@@ -861,6 +861,7 @@ void lmset_delete_lm(lmset_t *lms, /**< In/Out : The set of LM */
 /**
  * Free the lmset data structure
  */
+S3DECODER_EXPORT
 void lmset_free(lmset_t *lms /**< In: The set of LM */
     );
 

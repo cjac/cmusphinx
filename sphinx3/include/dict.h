@@ -271,6 +271,7 @@ int32 dict_word2basestr (char *word);
 
 /* RAH, free memory allocated for the dictionary */
 /** Free memory allocated for the dictionary */
+S3DECODER_EXPORT
 void dict_free (dict_t *d);
 
 /** Report a diciontary structure */

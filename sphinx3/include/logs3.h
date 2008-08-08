@@ -162,6 +162,7 @@ float64 logs3_base(void);
 
 /* RAH, free the add_tbl if still allocated */
 /** Free the add_tbl if still allocated */
+S3DECODER_EXPORT
 void logs_free(void);
 
 /** Report the parameters for s3 log table */
