@@ -241,10 +241,7 @@ S3DECODER_EXPORT
 void hyp_free (srch_hyp_t *list);
 
 /** Initialize a dag_t */
-void dag_init(dag_t* dagp);
-
-/** Initialize a dag_t (re-entrant version) */
-void dag_init_r(dag_t* dagp, cmd_ln_t *config);
+void dag_init(dag_t* dagp, cmd_ln_t *config);
 
 
 /** Link two DAG nodes with the given arguments
@@ -339,10 +336,7 @@ srch_hyp_t *dag_backtrace (srch_hyp_t **hyp, /**< A pointer of a pointer to the 
 /**
  * writing the header of dag in Sphinx 3's format
  */
-
-void dag_write_header (FILE *fp);
-
-void dag_write_header_r(FILE *fp, cmd_ln_t *config);
+void dag_write_header(FILE *fp, cmd_ln_t *config);
 
 /**
  * Write a DAG (without segment scores) in Sphinx3 format
@@ -435,16 +429,7 @@ void dag_remove_unreachable(dag_t *dag);
  * @return: 0 if successful, -1 otherwise.
  */
 S3DECODER_EXPORT
-dag_t* dag_load (  
-    char *file,   /**< Input: File to lod from */
-    int32 maxedge, /**< Maximum # of edges */
-    float32 logbase,  /**< Logbase in float */
-    int32 fudge,    /**< The number of fudges added */
-    dict_t *dict,       /**< Dictionary */
-    fillpen_t *fpen    /**< Filler penalty structure */
-    );
-
-dag_t * dag_load_r(char *file,          /**< Input: File to lod from */
+dag_t * dag_load(char *file,          /**< Input: File to lod from */
            int32 maxedge,        /**< Maximum # of edges */
            float32 logbase,         /**< Logbase in float */
            int32 fudge,           /**< The number of fudges added */

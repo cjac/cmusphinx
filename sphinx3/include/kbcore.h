@@ -163,7 +163,7 @@ typedef struct {
    Create a new kbcore 
 */
 S3DECODER_EXPORT
-kbcore_t *New_kbcore(void);
+kbcore_t *New_kbcore(cmd_ln_t *config);
 
 /**
    Initialize just the acoustic model for kbcore, taking parameters
@@ -177,12 +177,7 @@ void s3_am_init(kbcore_t *kbc);
  * Initialize one or more of all the major models:  pronunciation dictionary, acoustic models,
  * language models.  Parameters are taken from the command line (see cmdln_macro.h)
  */
-kbcore_t *kbcore_init(void);
-
-/**
- * Re-entrant version of kbcore_init()
- */
-kbcore_t *kbcore_init_r(cmd_ln_t *config);
+kbcore_t *kbcore_init(cmd_ln_t *config);
 
 /** free the kbcore */
 void kbcore_free (kbcore_t *kbcore  /**< The kbcore structure */
@@ -210,14 +205,14 @@ void linksilences(lm_t* l,kbcore_t *kbc, dict_t *d);
 #define kbcore_dict2lmwid(k,w)	((k)->dict2lmwid[w])
 #define kbcore_mgau(k)		((k)->mgau)
 #define kbcore_ms_mgau(k)	((k)->ms_mgau)
-#define kbcore_s2_mgau(k)      ((k)->s2_mgau)
+#define kbcore_s2_mgau(k)	((k)->s2_mgau)
 #define kbcore_svq(k)		((k)->svq)
 #define kbcore_gs(k)		((k)->gs)
 #define kbcore_tmat(k)		((k)->tmat)
 #define kbcore_lmset(k)		((k)->lmset)
 /*#define kbcore_n_mgau(k)	((k)->mgau ? mgau_n_mgau((k)->mgau) : (k)->ms_mgau->s->n_sen)
  */
-#define kbcore_n_mgau(k)       ((k)->mgau ? mgau_n_mgau((k)->mgau) \
+#define kbcore_n_mgau(k)	((k)->mgau ? mgau_n_mgau((k)->mgau) \
                                 : ((k)->s2_mgau ? (k)->s2_mgau->CdWdPDFMod \
                                    : (k)->ms_mgau->s->n_sen))
 

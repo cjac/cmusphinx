@@ -958,7 +958,7 @@ srch_allphone_gen_dag(void *srch,         /**< a pointer of srch_t */
     int32 i, f, k;
 
     dag = ckd_calloc(1, sizeof(*dag));
-    dag_init_r(dag, kbcore_config(s->kbc));
+    dag_init(dag, kbcore_config(s->kbc));
 
     sfwid = (glist_t *) ckd_calloc(allp->curfrm, sizeof(glist_t));
 

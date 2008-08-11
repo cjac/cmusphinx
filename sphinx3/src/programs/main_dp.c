@@ -104,6 +104,7 @@ static arg_t arg[] = {
 
 
 
+static cmd_ln_t *config;
 static hash_table_t *dict_ht;
 static char **word;
 static int32 n_word_alloc;
@@ -317,7 +318,7 @@ dp(int32 * ref, int32 nref, int32 * hyp, int32 * hyp_sf, int32 nhyp)
         }
     }
 
-    if (cmd_ln_int32("-d"))
+    if (cmd_ln_int32_r(config, "-d"))
         dparray_dump(dparray, nhyp, (nref << 1));
 
     best = (nref << 1) - 1;
@@ -586,14 +587,16 @@ main(int32 argc, char *argv[])
     print_appl_info(argv[0]);
     cmd_ln_appl_enter(argc, argv, "default.arg", arg);
 
-    reffile = cmd_ln_str("-reffile");
-    hypfile = cmd_ln_str("-hypfile");
+    config = cmd_ln_get();
+
+    reffile = cmd_ln_str_r(config, "-reffile");
+    hypfile = cmd_ln_str_r(config, "-hypfile");
 
     /*argv[1];
        hypfile = argv[2];
        oldfmt = ((argc > 3) && (strcmp (argv[3], "-seg") == 0)) ? 0 : 1; */
 
-    oldfmt = cmd_ln_int32("-seg");
+    oldfmt = cmd_ln_int32_r(config, "-seg");
 
 
     if ((rfp = fopen(reffile, "r")) == NULL)
@@ -656,7 +659,7 @@ main(int32 argc, char *argv[])
 
     dp_free();
 
-    cmd_ln_appl_exit();
+    cmd_ln_free_r(config);
 
     return 0;
 }

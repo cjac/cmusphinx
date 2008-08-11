@@ -172,18 +172,11 @@ int32 ms_cont_mgau_frame_eval (ascr_t *ascr,   /**< In: An ascr object*/
 
 S3DECODER_EXPORT
 int32 model_set_mllr(ms_mgau_model_t* msg, /**< The model-stream Gaussian distribution model */
-		     const char *mllrfile, /**< The MLLR file name */
-		     const char *cb2mllrfile, /**< The codebook to MLLR file name */
-		     feat_t* fcb,            /**< FCB object */
-		     mdef_t *mdef            /**< A model definition */
-    );
-
-int32 model_set_mllr_r(ms_mgau_model_t* msg, /**< The model-stream Gaussian distribution model */
-                       const char *mllrfile, /**< The MLLR file name */
-                       const char *cb2mllrfile, /**< The codebook to MLLR file name */
-                       feat_t* fcb,            /**< FCB object */
-                       mdef_t *mdef,            /**< A model definition */
-                       cmd_ln_t *config
+                     const char *mllrfile, /**< The MLLR file name */
+                     const char *cb2mllrfile, /**< The codebook to MLLR file name */
+                     feat_t* fcb,            /**< FCB object */
+                     mdef_t *mdef,            /**< A model definition */
+                     cmd_ln_t *config
     );
 
 #ifdef __cplusplus

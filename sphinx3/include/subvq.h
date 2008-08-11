@@ -168,24 +168,11 @@ subvq_t *subvq_init (const char *file,	/**< In: Subvector model file */
 		     float64 varfloor,	/**< In: Floor to be applied to variance values */
 		     int32 max_sv,	/**< In: Use the first so many subvectors instead of all;
 					   if <0, use all */
-		     mgau_model_t *g    /**< In: Original model from
+		     mgau_model_t *g,	/**< In: Original model from
 					   which this subvq model was
 					   built, for
 					   cross-validation; optional */
-    );	
-
-/**
- * Re-entrant version of subvq_init().
- */
-subvq_t *subvq_init_r(const char *file,	/**< In: Subvector model file */
-                      float64 varfloor,	/**< In: Floor to be applied to variance values */
-                      int32 max_sv,	/**< In: Use the first so many subvectors instead of all;
-					   if <0, use all */
-                      mgau_model_t *g,    /**< In: Original model from
-					   which this subvq model was
-					   built, for
-					   cross-validation; optional */
-                      cmd_ln_t *config
+		     cmd_ln_t *config
     );	
 
 

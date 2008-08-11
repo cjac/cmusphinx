@@ -28,6 +28,7 @@ main(int _argc, char **_argv)
   const char *cfg_file;
   const char *fsg_file;
   int max_expansion;
+  cmd_ln_t *config;
 
   s3_cfg_t *cfg;
   s2_fsg_t *fsg;
@@ -36,11 +37,12 @@ main(int _argc, char **_argv)
   int n_trans = 0;
 
   print_appl_info(_argv[0]);
-  cmd_ln_parse(defn, _argc, _argv, TRUE);
+  if ((config = cmd_ln_parse_r(NULL, defn, _argc, _argv, TRUE)) == NULL)
+    E_FATAL("Cannot parse command line\n");
 
-  cfg_file = cmd_ln_str("-cfg");
-  fsg_file = cmd_ln_str("-fsg");
-  max_expansion = cmd_ln_int32("-max_expansion");
+  cfg_file = cmd_ln_str_r(config, "-cfg");
+  fsg_file = cmd_ln_str_r(config, "-fsg");
+  max_expansion = cmd_ln_int32_r(config, "-max_expansion");
 
   if ((out = fopen(fsg_file, "w")) == NULL)
     E_FATAL("Error opening output FSG file\n");

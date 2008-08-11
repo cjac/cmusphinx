@@ -176,13 +176,7 @@ file_open(const char *filepath)
 }
 
 void
-kb_init(kb_t *kb)
-{
-    kb_init_r(kb, cmd_ln_get());
-}
-
-void
-kb_init_r(kb_t * kb, cmd_ln_t *config)
+kb_init(kb_t * kb, cmd_ln_t *config)
 {
     kbcore_t *kbcore;
     mdef_t *mdef;
@@ -193,7 +187,7 @@ kb_init_r(kb_t * kb, cmd_ln_t *config)
 
     /* STRUCTURE: Initialize the kb structure to zero, just in case */
     memset(kb, 0, sizeof(*kb));
-    kb->kbcore = kbcore_init_r(config);
+    kb->kbcore = kbcore_init(config);
     if (kb->kbcore == NULL)
         E_FATAL("Initialization of kb failed\n");
 
@@ -349,11 +343,11 @@ kb_setmllr(const char *mllrname, const char *cb2mllrname,
     if (strcmp(kb->adapt_am->prevmllrfn, mllrname) != 0) {      /* If there is a change of mllr file name */
 
         if (kbc->mgau)
-            adapt_set_mllr_r(kb->adapt_am, kbc->mgau, mllrname, cb2mllrname,
-			     kbc->mdef, kbc->config);
+            adapt_set_mllr(kb->adapt_am, kbc->mgau, mllrname, cb2mllrname,
+			   kbc->mdef, kbc->config);
         else if (kbc->ms_mgau)
-            model_set_mllr_r(kbc->ms_mgau, mllrname, cb2mllrname, kbc->fcb,
-			     kbc->mdef, kbc->config);
+            model_set_mllr(kbc->ms_mgau, mllrname, cb2mllrname, kbc->fcb,
+			   kbc->mdef, kbc->config);
         else
             E_FATAL("Panic, kb has not Gaussian\n");
 
@@ -374,7 +368,6 @@ kb_setmllr(const char *mllrname, const char *cb2mllrname,
 void
 kb_free(kb_t * kb)
 {
-
     if (kb->srch) {
         srch_uninit(kb->srch);
     /** Add search free code */
@@ -417,6 +410,10 @@ kb_free(kb_t * kb)
         ckd_free(kb->uttid);
     }
 
+    if (kb->uttfile) {
+        ckd_free(kb->uttfile);
+    }
+
 
 #if 0                           /* valgrind reports this one. */
     if (kb->matchsegfp)
@@ -424,6 +421,4 @@ kb_free(kb_t * kb)
     if (kb->matchfp)
         fclose(kb->matchfp);
 #endif
-
-
 }

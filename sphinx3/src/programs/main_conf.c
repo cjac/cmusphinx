@@ -142,6 +142,7 @@ static dict_t *dict;            /**< The dictionary */
 static fillpen_t *fpen;         /**< The filler penalty structure */
 static lmset_t *lmset;          /**< The lmset. Replace lm */
 static ptmr_t tm_utt; /**< The model definition */
+static cmd_ln_t *config;
 
 static FILE *inmatchsegfp, *outconfmatchsegfp;  /* The segment file */
 
@@ -151,28 +152,28 @@ static void
 models_init(void)
 {
 
-    mdef = mdef_init(cmd_ln_str("-mdef"), 1);
+    mdef = mdef_init(cmd_ln_str_r(config, "-mdef"), 1);
 
     dict = dict_init(mdef,
-                     cmd_ln_str("-dict"),
-                     cmd_ln_str("-fdict"),
-                     0, cmd_ln_int32("-lts_mismatch"), 1);
+                     cmd_ln_str_r(config, "-dict"),
+                     cmd_ln_str_r(config, "-fdict"),
+                     0, cmd_ln_int32_r(config, "-lts_mismatch"), 1);
 
-    lmset = lmset_init(cmd_ln_str("-lm"),
-                       cmd_ln_str("-lmctlfn"),
-                       cmd_ln_str("-ctl_lm"),
-                       cmd_ln_str("-lmname"),
-                       cmd_ln_str("-lmdumpdir"),
-                       cmd_ln_float32("-lw"),
-                       cmd_ln_float32("-wip"),
-                       cmd_ln_float32("-uw"), dict);
+    lmset = lmset_init(cmd_ln_str_r(config, "-lm"),
+                       cmd_ln_str_r(config, "-lmctlfn"),
+                       cmd_ln_str_r(config, "-ctl_lm"),
+                       cmd_ln_str_r(config, "-lmname"),
+                       cmd_ln_str_r(config, "-lmdumpdir"),
+                       cmd_ln_float32_r(config, "-lw"),
+                       cmd_ln_float32_r(config, "-wip"),
+                       cmd_ln_float32_r(config, "-uw"), dict);
 
     /* Filler penalties */
-    fpen = fillpen_init(dict, cmd_ln_str("-fillpen"),
-                        cmd_ln_float32("-silprob"),
-                        cmd_ln_float32("-fillprob"),
-                        cmd_ln_float32("-lw"),
-                        cmd_ln_float32("-wip"));
+    fpen = fillpen_init(dict, cmd_ln_str_r(config, "-fillpen"),
+                        cmd_ln_float32_r(config, "-silprob"),
+                        cmd_ln_float32_r(config, "-fillprob"),
+                        cmd_ln_float32_r(config, "-lw"),
+                        cmd_ln_float32_r(config, "-wip"));
 
 }
 
@@ -191,7 +192,7 @@ dump_line(FILE * fp_output, seg_hyp_line_t * seg_hyp_line, dict_t * dict)
     double CONFIDENCE_THRESHOLD;
     conf_srch_hyp_t *w;
 
-    CONFIDENCE_THRESHOLD = cmd_ln_float64("-conf_thr");
+    CONFIDENCE_THRESHOLD = cmd_ln_float64_r(config, "-conf_thr");
     fprintf(fp_output, "%s ", seg_hyp_line->seq);
     fprintf(fp_output, "%d ", seg_hyp_line->cscore);
     fprintf(fp_output, "%d   ", (int) seg_hyp_line->lmtype);
@@ -248,8 +249,8 @@ confidence_utt(char *uttid, FILE * _confmatchsegfp)
         E_FATAL("Uttids in control file and matchseg file mismatches\n");
 
     /* Read the lattice */
-    latdir = cmd_ln_str("-inlatdir");
-    latext = cmd_ln_str("-latext");
+    latdir = cmd_ln_str_r(config, "-inlatdir");
+    latext = cmd_ln_str_r(config, "-latext");
 
     if (latdir)
         sprintf(dagfile, "%s/%s.%s", latdir, uttid, latext);
@@ -294,7 +295,7 @@ confidence_utt(char *uttid, FILE * _confmatchsegfp)
         E_FATAL("Fail to compute lm type\n");
 
     /* Dump pwp line */
-    fmt = cmd_ln_str("-confoutputfmt");
+    fmt = cmd_ln_str_r(config, "-confoutputfmt");
     if (!strcmp(fmt, "scores")) {
         dump_line(stdout, &s_hypline, dict);
         dump_line(outconfmatchsegfp, &s_hypline, dict);
@@ -336,26 +337,28 @@ main(int argc, char *argv[])
 
     unlimit();
 
-    logs3_init((float64) cmd_ln_float32("-logbase"), 1,
-               cmd_ln_int32("-log3table"));
+    config = cmd_ln_get();
 
-    E_INFO("Value of base %f \n", cmd_ln_float32("-logbase"));
+    logs3_init((float64) cmd_ln_float32_r(config, "-logbase"), 1,
+               cmd_ln_int32_r(config, "-log3table"));
+
+    E_INFO("Value of base %f \n", cmd_ln_float32_r(config, "-logbase"));
     models_init();
     ptmr_init(&tm_utt);
 
-    if ((inmatchsegfp = fopen(cmd_ln_str("-inhypseg"), "r")) == NULL)
-        E_ERROR("fopen(%s,r) failed\n", cmd_ln_str("-inhypseg"));
+    if ((inmatchsegfp = fopen(cmd_ln_str_r(config, "-inhypseg"), "r")) == NULL)
+        E_ERROR("fopen(%s,r) failed\n", cmd_ln_str_r(config, "-inhypseg"));
 
 
-    if ((outconfmatchsegfp = fopen(cmd_ln_str("-output"), "w")) == NULL)
-        E_ERROR("fopen(%s,w) failed\n", cmd_ln_str("-output"));
+    if ((outconfmatchsegfp = fopen(cmd_ln_str_r(config, "-output"), "w")) == NULL)
+        E_ERROR("fopen(%s,w) failed\n", cmd_ln_str_r(config, "-output"));
 
-    if (cmd_ln_str("-ctl")) {
-        ctl_process(cmd_ln_str("-ctl"),
-                    cmd_ln_str("-ctl_lm"),
+    if (cmd_ln_str_r(config, "-ctl")) {
+        ctl_process(cmd_ln_str_r(config, "-ctl"),
+                    cmd_ln_str_r(config, "-ctl_lm"),
                     NULL,
-                    cmd_ln_int32("-ctloffset"),
-                    cmd_ln_int32("-ctlcount"), utt_confidence, NULL);
+                    cmd_ln_int32_r(config, "-ctloffset"),
+                    cmd_ln_int32_r(config, "-ctlcount"), utt_confidence, NULL);
     }
     else {
         E_FATAL("-ctl is not specified\n");
@@ -372,7 +375,7 @@ main(int argc, char *argv[])
 
     logs_free();
 
-    cmd_ln_appl_exit();
+    cmd_ln_free_r(config);
 
     return 0;
 

@@ -217,7 +217,7 @@ fsg_search_init(word_fsg_t * fsg, void *srch)
 
     if (fsg) {
         search->fsglist = glist_add_ptr(NULL, (void *) fsg);
-        search->lextree = fsg_lextree_init(fsg, search->hmmctx);
+        search->lextree = fsg_lextree_init(fsg, search->hmmctx, search->config);
     }
     else {
         search->fsglist = NULL;
@@ -397,7 +397,7 @@ fsg_search_set_current_fsg(fsg_search_t * search, char *name)
         fsg_lextree_free(search->lextree);
 
     /* Allocate new lextree for the given FSG */
-    search->lextree = fsg_lextree_init(fsg, search->hmmctx);
+    search->lextree = fsg_lextree_init(fsg, search->hmmctx, search->config);
 
     /* Inform the history module of the new fsg */
     fsg_history_set_fsg(search->history, fsg);

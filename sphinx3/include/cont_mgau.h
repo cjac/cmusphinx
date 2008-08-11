@@ -195,7 +195,6 @@ typedef struct {
 				   because these values are in logs3 domain)*/
     float32 *mixw_f;      /**< (ONLY USED IN ENDPOINTER) mixture weights for the n_comp
                              components in float32 */
-
 } mgau_t;
 
 

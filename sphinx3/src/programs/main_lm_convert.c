@@ -136,12 +136,14 @@ main(int argc, char *argv[])
     const char *outputdir;
     char *outputpath;
     int outputfnfree = FALSE;
-
     lm_t *lm;
     char separator[2];
+    cmd_ln_t *config;
 
     print_appl_info(argv[0]);
     cmd_ln_appl_enter(argc, argv, "default.arg", arg);
+
+    config = cmd_ln_get();
 
     inputfn = NULL;
     outputfn = local_outputfn = NULL;
@@ -149,16 +151,16 @@ main(int argc, char *argv[])
     outputfmt = NULL;
     outputdir = NULL;
 
-    inputfn = cmd_ln_str("-i");
-    outputfn = cmd_ln_str("-o");
+    inputfn = cmd_ln_str_r(config, "-i");
+    outputfn = cmd_ln_str_r(config, "-o");
 
-    inputfmt = cmd_ln_str("-ifmt");
-    outputfmt = cmd_ln_str("-ofmt");
+    inputfmt = cmd_ln_str_r(config, "-ifmt");
+    outputfmt = cmd_ln_str_r(config, "-ofmt");
 
-    inputenc = cmd_ln_str("-ienc");
-    outputenc = cmd_ln_str("-oenc");
+    inputenc = cmd_ln_str_r(config, "-ienc");
+    outputenc = cmd_ln_str_r(config, "-oenc");
 
-    outputdir = cmd_ln_str("-odir");
+    outputdir = cmd_ln_str_r(config, "-odir");
 
     if (!strcmp(inputfmt, outputfmt) && !strcmp(inputenc, outputenc))
         E_FATAL
@@ -166,7 +168,7 @@ main(int argc, char *argv[])
              inputfmt, inputenc);
 
     if (!encoding_resolve
-        (cmd_ln_str("-ienc"), cmd_ln_str("-oenc")))
+        (cmd_ln_str_r(config, "-ienc"), cmd_ln_str_r(config, "-oenc")))
         E_FATAL
             ("Input and output encoding types is either not compatible or the conversion is not supported. Forced exit\n");
 
@@ -205,7 +207,8 @@ main(int argc, char *argv[])
       ckd_free(local_outputfn);
     }
     ckd_free(outputpath);
+
     lm_free(lm);
-    cmd_ln_appl_exit();
+    cmd_ln_free_r(config);
     return 0;
 }

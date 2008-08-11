@@ -1093,14 +1093,7 @@ vithist_backtrace(vithist_t * vh, int32 id, dict_t * dict)
 }
 
 dag_t *
-vithist_dag_build(vithist_t * vh, glist_t hyp, dict_t * dict, int32 endid)
-{
-    return vithist_dag_build_r(vh, hyp, dict, endid, cmd_ln_get());
-}
-
-
-dag_t *
-vithist_dag_build_r(vithist_t * vh, glist_t hyp, dict_t * dict, int32 endid, cmd_ln_t *config)
+vithist_dag_build(vithist_t * vh, glist_t hyp, dict_t * dict, int32 endid, cmd_ln_t *config)
 {
     glist_t *sfwid;             /* To maintain <start-frame, word-id> pair dagnodes */
     vithist_entry_t *ve, *ve2;
@@ -1112,7 +1105,7 @@ vithist_dag_build_r(vithist_t * vh, glist_t hyp, dict_t * dict, int32 endid, cmd
     dag_t *dag;
 
     dag = ckd_calloc(1, sizeof(*dag));
-    dag_init_r(dag, config);
+    dag_init(dag, config);
     sfwid = (glist_t *) ckd_calloc(vh->n_frm + 1, sizeof(glist_t));
 
     /* Min. endframes value that a node must persist for it to be not ignored */
@@ -1759,14 +1752,6 @@ lattice_backtrace(latticehist_t * lathist,
     }
 }
 
-dag_t *
-latticehist_dag_build(latticehist_t * vh, glist_t hyp, dict_t * dict,
-                      lm_t *lm, ctxt_table_t *ctxt, fillpen_t *fpen,
-                      int32 endid)
-{
-    return latticehist_dag_build_r(vh, hyp, dict, lm, ctxt, fpen, endid, cmd_ln_get());
-}
-
 /**
  * Build a DAG from the lattice: each unique <word-id,start-frame> is a node, i.e. with
  * a single start time but it can represent several end times.  Links are created
@@ -1780,9 +1765,9 @@ latticehist_dag_build(latticehist_t * vh, glist_t hyp, dict_t * dict,
  * absurdum.
  */
 dag_t *
-latticehist_dag_build_r(latticehist_t * vh, glist_t hyp, dict_t * dict,
-                        lm_t *lm, ctxt_table_t *ctxt, fillpen_t *fpen,
-                        int32 endid, cmd_ln_t *config)
+latticehist_dag_build(latticehist_t * vh, glist_t hyp, dict_t * dict,
+                      lm_t *lm, ctxt_table_t *ctxt, fillpen_t *fpen,
+                      int32 endid, cmd_ln_t *config)
 {
     glist_t *sfwid;             /* To maintain <start-frame, word-id> pair dagnodes */
     lattice_t *ve, *ve2;
@@ -1795,7 +1780,7 @@ latticehist_dag_build_r(latticehist_t * vh, glist_t hyp, dict_t * dict,
     dag_t *dag;
 
     dag = ckd_calloc(1, sizeof(*dag));
-    dag_init_r(dag, config);
+    dag_init(dag, config);
     sfwid = (glist_t *) ckd_calloc(vh->n_frm, sizeof(glist_t));
 
     /* Min. endframes value that a node must persist for it to be not ignored */
@@ -2011,7 +1996,7 @@ latticehist_dag_write(latticehist_t * lathist,
         return -1;
     }
 
-    dag_write_header(fp);
+    dag_write_header(fp, dag->config);
 
     fprintf(fp, "Frames %d\n", dag->nfrm);
     fprintf(fp, "#\n");

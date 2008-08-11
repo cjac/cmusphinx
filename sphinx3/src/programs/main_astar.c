@@ -240,6 +240,7 @@ static fillpen_t *fpen;         /* The filler penalty structure. */
 static lmset_t *lmset;          /* The lmset.           */
 
 static const char *nbestdir;
+static cmd_ln_t *config;
 
 /*
  * Command line arguments.
@@ -300,29 +301,29 @@ static void
 models_init(void)
 {
     /* HMM model definition */
-    mdef = mdef_init(cmd_ln_str("-mdef"), 1);
+    mdef = mdef_init(cmd_ln_str_r(config, "-mdef"), 1);
 
     /* Dictionary */
     dict = dict_init(mdef,
-                     cmd_ln_str("-dict"),
-                     cmd_ln_str("-fdict"),
-                     0, cmd_ln_int32("-lts_mismatch"), 1);
+                     cmd_ln_str_r(config, "-dict"),
+                     cmd_ln_str_r(config, "-fdict"),
+                     0, cmd_ln_int32_r(config, "-lts_mismatch"), 1);
 
-    lmset = lmset_init(cmd_ln_str("-lm"),
-                       cmd_ln_str("-lmctlfn"),
-                       cmd_ln_str("-ctl_lm"),
-                       cmd_ln_str("-lmname"),
-                       cmd_ln_str("-lmdumpdir"),
-                       cmd_ln_float32("-lw"),
-                       cmd_ln_float32("-wip"),
-                       cmd_ln_float32("-uw"), dict);
+    lmset = lmset_init(cmd_ln_str_r(config, "-lm"),
+                       cmd_ln_str_r(config, "-lmctlfn"),
+                       cmd_ln_str_r(config, "-ctl_lm"),
+                       cmd_ln_str_r(config, "-lmname"),
+                       cmd_ln_str_r(config, "-lmdumpdir"),
+                       cmd_ln_float32_r(config, "-lw"),
+                       cmd_ln_float32_r(config, "-wip"),
+                       cmd_ln_float32_r(config, "-uw"), dict);
 
 
-    fpen = fillpen_init(dict, cmd_ln_str("-fillpen"),
-                        cmd_ln_float32("-silprob"),
-                        cmd_ln_float32("-fillprob"),
-                        cmd_ln_float32("-lw"),
-                        cmd_ln_float32("-wip"));
+    fpen = fillpen_init(dict, cmd_ln_str_r(config, "-fillpen"),
+                        cmd_ln_float32_r(config, "-silprob"),
+                        cmd_ln_float32_r(config, "-fillprob"),
+                        cmd_ln_float32_r(config, "-lw"),
+                        cmd_ln_float32_r(config, "-wip"));
 
 }
 
@@ -380,9 +381,9 @@ utt_astar(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
     if (ur->lmname)
         lmset_set_curlm_wname(lmset, ur->lmname);
 
-    latdir = cmd_ln_str("-inlatdir");
-    latext = cmd_ln_str("-latext");
-    nbestext = cmd_ln_str("-nbestext");
+    latdir = cmd_ln_str_r(config, "-inlatdir");
+    latext = cmd_ln_str_r(config, "-latext");
+    nbestext = cmd_ln_str_r(config, "-nbestext");
     if (latdir) {
 	build_output_uttfile(dagfile, latdir, uttid, ur->uttfile);
 	strcat(dagfile, ".");
@@ -396,9 +397,9 @@ utt_astar(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
 
     nfrm = 0;
     if ((dag = dag_load(dagfile,
-			cmd_ln_int32("-maxedge"),
-			cmd_ln_float32("-logbase"),
-			cmd_ln_int32("-dagfudge"), dict, fpen)) != NULL) {
+			cmd_ln_int32_r(config, "-maxedge"),
+			cmd_ln_float32_r(config, "-logbase"),
+			cmd_ln_int32_r(config, "-dagfudge"), dict, fpen, config)) != NULL) {
         if (dict_filler_word(dict, dag->end->wid))
             dag->end->wid = dict->finishwid;
 
@@ -448,22 +449,24 @@ main(int32 argc, char *argv[])
     cmd_ln_appl_enter(argc, argv, "default.arg", defn);
     unlimit();
 
-    logs3_init((float64) cmd_ln_float32("-logbase"), 1,
-               cmd_ln_int32("-log3table"));
+    config = cmd_ln_get();
+
+    logs3_init((float64) cmd_ln_float32_r(config, "-logbase"), 1,
+               cmd_ln_int32_r(config, "-log3table"));
 
     /* Read in input databases */
     models_init();
 
     ptmr_init(&tm_utt);
 
-    nbestdir = cmd_ln_str("-nbestdir");
+    nbestdir = cmd_ln_str_r(config, "-nbestdir");
 
-    if (cmd_ln_str("-ctl")) {
-        ctl_process(cmd_ln_str("-ctl"),
-                    cmd_ln_str("-ctl_lm"),
+    if (cmd_ln_str_r(config, "-ctl")) {
+        ctl_process(cmd_ln_str_r(config, "-ctl"),
+                    cmd_ln_str_r(config, "-ctl_lm"),
                     NULL,
-                    cmd_ln_int32("-ctloffset"),
-                    cmd_ln_int32("-ctlcount"), utt_astar, NULL);
+                    cmd_ln_int32_r(config, "-ctloffset"),
+                    cmd_ln_int32_r(config, "-ctlcount"), utt_astar, NULL);
 
     }
     else {
@@ -478,6 +481,6 @@ main(int32 argc, char *argv[])
     system("ps aguxwww | grep s3astar");
 #endif
 
-    cmd_ln_appl_exit();
+    cmd_ln_free_r(config);
     return 0;
 }

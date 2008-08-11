@@ -119,24 +119,27 @@ main(int32 argc, char *argv[])
     float64 sqerr;
     int32 stdev;
     int32 i, j, v, m, c;
+    cmd_ln_t *config;
 
     print_appl_info(argv[0]);
     cmd_ln_appl_enter(argc, argv, "default.arg", arg);
     unlimit();
 
-    logs3_init(cmd_ln_float32("-logbase"), 1, cmd_ln_int32("-log3table"));      /*Report Progress, use log table */
+    config = cmd_ln_get();
+
+    logs3_init(cmd_ln_float32_r(config, "-logbase"), 1, cmd_ln_int32_r(config, "-log3table"));      /*Report Progress, use log table */
 
     /* Load means/vars but DO NOT precompute variance inverses or determinants */
-    mgau = mgau_init(cmd_ln_str("-mean"),
-                     cmd_ln_str("-var"), 0.0 /* no varfloor */ ,
-                     cmd_ln_str("-mixw"), cmd_ln_float32("-mixwfloor"), FALSE,  /* No precomputation */
+    mgau = mgau_init(cmd_ln_str_r(config, "-mean"),
+                     cmd_ln_str_r(config, "-var"), 0.0 /* no varfloor */ ,
+                     cmd_ln_str_r(config, "-mixw"), cmd_ln_float32_r(config, "-mixwfloor"), FALSE,  /* No precomputation */
                      ".cont.", MIX_INT_FLOAT_COMP);
 
     /* Parse subvector spec argument; subvec is null terminated; subvec[x] is -1 terminated */
-    subvec = parse_subvecs(cmd_ln_str("-svspec"));
+    subvec = parse_subvecs(cmd_ln_str_r(config, "-svspec"));
 
-    if (cmd_ln_str("-subvq")) {
-	    if ((fpout = fopen(cmd_ln_str("-subvq"), "w")) == NULL) {
+    if (cmd_ln_str_r(config, "-subvq")) {
+	    if ((fpout = fopen(cmd_ln_str_r(config, "-subvq"), "w")) == NULL) {
 		    E_ERROR_SYSTEM("Failed to open output file '%s'", fpout);
 		    return 1;
 	    }
@@ -151,7 +154,7 @@ main(int32 argc, char *argv[])
 
     /* Print input and output configurations to output file */
     for (v = 0; subvec[v]; v++);        /* No. of subvectors */
-    svqrows = cmd_ln_int32("-svqrows");
+    svqrows = cmd_ln_int32_r(config, "-svqrows");
     fprintf(fpout, "VQParam %d %d -> %d %d\n",
             mgau_n_mgau(mgau), mgau_max_comp(mgau), v, svqrows);
     for (v = 0; subvec[v]; v++) {
@@ -172,7 +175,7 @@ main(int32 argc, char *argv[])
     datamap = (int32 *) ckd_calloc(max_datarows, sizeof(int32));
     vqmap = (int32 *) ckd_calloc(max_datarows, sizeof(int32));
 
-    stdev = cmd_ln_int32("-stdev");
+    stdev = cmd_ln_int32_r(config, "-stdev");
 
     /* Copy and cluster each subvector */
     for (v = 0; subvec[v]; v++) {
@@ -240,8 +243,8 @@ main(int32 argc, char *argv[])
 #endif
         /* VQ the subvector copy built above */
         sqerr = vector_vqgen(data, datarows, svqcols, svqrows,
-                             cmd_ln_float64("-eps"), cmd_ln_int32("-iter"),
-                             vqmean, vqmap, cmd_ln_int32("-seed"));
+                             cmd_ln_float64_r(config, "-eps"), cmd_ln_int32_r(config, "-iter"),
+                             vqmean, vqmap, cmd_ln_int32_r(config, "-seed"));
 
         /* Output VQ */
         fprintf(fpout, "Codebook %d Sqerr %e\n", v, sqerr);
@@ -282,6 +285,6 @@ main(int32 argc, char *argv[])
 
     logs_free();
 
-    cmd_ln_appl_exit();
+    cmd_ln_free_r(config);
     exit(0);
 }

@@ -217,21 +217,6 @@ typedef struct
 } s3_decode_t;
 
 
-/** Initializes the Sphinx3 decoder.  Internal modules, eg. search algorithms,
-    language model, accoustic model, etc, are read from file and initialized.
-    The decoder internal variables are set to a starting state.
-
-    This version of the Sphinx3 decoder assumes the user has externally parsed
-    arguments using <I>cmd_ln_parse()</I> or <I>cmd_ln_parse_file()</I>.  The
-    user is responsible for calling <I>cmd_ln_free()</I> when he/she is done
-    with the decoder.
-
-    @param decoder Pointer to the decoder.
-    @return 0 for success.  -1 for failure.
-*/
-S3DECODER_EXPORT
-int s3_decode_init(s3_decode_t *_decode);
-
 /** Initializes a Sphinx3 decoder object (re-entrant).  Internal
     modules, eg. search algorithms, language model, accoustic model,
     etc, are read from file and initialized.  The decoder internal
@@ -248,7 +233,7 @@ int s3_decode_init(s3_decode_t *_decode);
     @return 0 for success.  -1 for failure.
 */
 S3DECODER_EXPORT
-int s3_decode_init_r(s3_decode_t *_decode, cmd_ln_t *_config);
+int s3_decode_init(s3_decode_t *_decode, cmd_ln_t *_config);
 
 /** Wraps up the Sphinx3 decoder.  All internal modules are closed or unloaded.
     Internal variables are freed and/or set to a finishing state.  This

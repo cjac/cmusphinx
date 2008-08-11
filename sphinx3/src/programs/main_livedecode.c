@@ -175,7 +175,7 @@ process_thread(void *aParam)
 
     cond_wait(startEvent);
 
-    if ((in_ad = ad_open_sps((int) cmd_ln_float32("-samprate"))) == NULL) {
+    if ((in_ad = ad_open_sps((int) cmd_ln_float32_r(decoder.kbcore->config, "-samprate"))) == NULL) {
         printf("Failed to open audio input device\n");
         exit(1);
     }
@@ -219,6 +219,7 @@ main(int argc, char **argv)
     mythread_t thread;
     char buffer[1024];
     char *hypstr;
+    cmd_ln_t *config = NULL;
 
     /*
      * Initializing
@@ -228,17 +229,17 @@ main(int argc, char **argv)
         return -1;
     }
 
-    if (cmd_ln_parse_file(S3_DECODE_ARG_DEFS, argv[1], TRUE)) {
+    if ((config = cmd_ln_parse_file_r(config, S3_DECODE_ARG_DEFS, argv[1], TRUE)) == NULL) {
         printf("Bad arguments file (%s).\n", argv[1]);
         return -1;
     }
 
-    if (s3_decode_init(&decoder)) {
+    if (s3_decode_init(&decoder, config)) {
         printf("Initialization failed.\n");
         return -1;
     }
 
-    fe = fe_init_auto(); 
+    fe = fe_init_auto_r(config); 
 
     if (s3_decode_begin_utt(&decoder, 0)) {
         printf("Cannot start decoding\n");
@@ -288,7 +289,6 @@ main(int argc, char **argv)
 
     s3_decode_close(&decoder);
     fe_free(fe);
-    cmd_ln_free();
 
     fclose(dump);
 

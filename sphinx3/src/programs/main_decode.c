@@ -134,30 +134,32 @@ main(int32 argc, char *argv[])
 {
     kb_t kb;
     stat_t *st;
+    cmd_ln_t *config;
 
     print_appl_info(argv[0]);
     cmd_ln_appl_enter(argc, argv, "default.arg", arg);
 
     unlimit();
 
-    kb_init(&kb);
+    config = cmd_ln_get();
+    kb_init(&kb, config);
     st = kb.stat;
     fprintf(stdout, "\n");
 
-    if (cmd_ln_str("-ctl")) {
+    if (cmd_ln_str_r(config, "-ctl")) {
         /* When -ctlfile is speicified, corpus.c will look at -ctl_lm and
 	   -ctl_mllr to get the corresponding LM and MLLR for the utterance */
-        st->tm = ctl_process(cmd_ln_str("-ctl"),
-                             cmd_ln_str("-ctl_lm"),
-                             cmd_ln_str("-ctl_mllr"),
-                             cmd_ln_int32("-ctloffset"),
-                             cmd_ln_int32("-ctlcount"), utt_decode, &kb);
+        st->tm = ctl_process(cmd_ln_str_r(config, "-ctl"),
+                             cmd_ln_str_r(config, "-ctl_lm"),
+                             cmd_ln_str_r(config, "-ctl_mllr"),
+                             cmd_ln_int32_r(config, "-ctloffset"),
+                             cmd_ln_int32_r(config, "-ctlcount"), utt_decode, &kb);
     }
-    else if (cmd_ln_str("-utt")) {
+    else if (cmd_ln_str_r(config, "-utt")) {
         /* When -utt is specified, corpus.c will wait for the utterance to
 	   change */
-        st->tm = ctl_process_utt(cmd_ln_str("-utt"),
-                                 cmd_ln_int32("-ctlcount"),
+        st->tm = ctl_process_utt(cmd_ln_str_r(config, "-utt"),
+                                 cmd_ln_int32_r(config, "-ctlcount"),
                                  utt_decode, &kb);
 
     }
@@ -184,6 +186,6 @@ main(int32 argc, char *argv[])
 #endif
 #endif
 
-    cmd_ln_appl_exit();
+    cmd_ln_free_r(config);
     exit(0);
 }

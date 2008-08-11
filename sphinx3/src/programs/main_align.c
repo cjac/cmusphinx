@@ -348,21 +348,21 @@ static ptmr_t tm_ovrhd;
 
 
 static void
-models_init(void)
+models_init(cmd_ln_t *config)
 {
     int32 cisencnt;
 
-    logs3_init((float64) cmd_ln_float32("-logbase"), 1,
-               cmd_ln_int32("-log3table"));
+    logs3_init((float64) cmd_ln_float32_r(config, "-logbase"), 1,
+               cmd_ln_int32_r(config, "-log3table"));
 
     /* Initialize feaure stream type */
-    fcb = feat_init(cmd_ln_str("-feat"),
-                    cmn_type_from_str(cmd_ln_str("-cmn")),
-                    cmd_ln_boolean("-varnorm"),
-		    agc_type_from_str(cmd_ln_str("-agc")), 1,
-		    cmd_ln_int32("-ceplen"));
+    fcb = feat_init(cmd_ln_str_r(config, "-feat"),
+                    cmn_type_from_str(cmd_ln_str_r(config, "-cmn")),
+                    cmd_ln_boolean_r(config, "-varnorm"),
+		    agc_type_from_str(cmd_ln_str_r(config, "-agc")), 1,
+		    cmd_ln_int32_r(config, "-ceplen"));
 
-    kbc = New_kbcore();
+    kbc = New_kbcore(config);
 
     s3_am_init(kbc);
 
@@ -371,10 +371,10 @@ models_init(void)
     assert(kbc->tmat);
 
     /* Dictionary */
-    dict = dict_init(kbc->mdef, cmd_ln_str("-dict"),
-		     cmd_ln_str("-fdict"), 
+    dict = dict_init(kbc->mdef, cmd_ln_str_r(config, "-dict"),
+		     cmd_ln_str_r(config, "-fdict"), 
 		     '_',      /* Compound word separator.  Default: none. */
-		     cmd_ln_int32("-lts_mismatch"), 1);
+		     cmd_ln_int32_r(config, "-lts_mismatch"), 1);
 
 
 
@@ -387,15 +387,15 @@ models_init(void)
                      1,         /* Phoneme lookahead window =1. Not enabled phoneme lookahead at this moment */
                      cisencnt);
 
-    fastgmm = fast_gmm_init(cmd_ln_int32("-ds"),
-                            cmd_ln_int32("-cond_ds"),
-                            cmd_ln_int32("-dist_ds"),
-                            cmd_ln_int32("-gs4gs"),
-                            cmd_ln_int32("-svq4svq"),
-                            cmd_ln_float64("-subvqbeam"),
-                            cmd_ln_float64("-ci_pbeam"),
-                            cmd_ln_float64("-tighten_factor"),
-                            cmd_ln_int32("-maxcdsenpf"),
+    fastgmm = fast_gmm_init(cmd_ln_int32_r(config, "-ds"),
+                            cmd_ln_int32_r(config, "-cond_ds"),
+                            cmd_ln_int32_r(config, "-dist_ds"),
+                            cmd_ln_int32_r(config, "-gs4gs"),
+                            cmd_ln_int32_r(config, "-svq4svq"),
+                            cmd_ln_float64_r(config, "-subvqbeam"),
+                            cmd_ln_float64_r(config, "-ci_pbeam"),
+                            cmd_ln_float64_r(config, "-tighten_factor"),
+                            cmd_ln_int32_r(config, "-maxcdsenpf"),
                             kbc->mdef->n_ci_sen);
     adapt_am = adapt_am_init();
 }
@@ -412,8 +412,8 @@ static void models_free(void)
         dict_free(dict);
     if (fcb)
         feat_free(fcb);
-    ckd_free(kbc);
-    logs_free();
+
+    kbcore_free(kbc);
 }
 
 
@@ -453,7 +453,7 @@ build_output_uttfile(char *buf, char *dir, char *uttid, char *ctlspec)
  * format!)
  */
 static void
-write_s2stseg(char *dir, align_stseg_t * stseg, char *uttid, char *ctlspec)
+write_s2stseg(char *dir, align_stseg_t * stseg, char *uttid, char *ctlspec, int32 cdsen)
 {
     char filename[1024];
     FILE *fp;
@@ -464,13 +464,11 @@ write_s2stseg(char *dir, align_stseg_t * stseg, char *uttid, char *ctlspec)
     int16 s2_info;
     char buf[8];
     static int32 byterev = -1;  /* Whether to byte reverse output data */
-    int32 cdsen;
 
     build_output_uttfile(filename, dir, uttid, ctlspec);
     strcat(filename, ".v8_seg");        /* .v8_seg for compatibility */
     E_INFO("Writing Sphinx-II format state segmentation to: %s\n",
            filename);
-    cdsen = cmd_ln_boolean("-s2cdsen");
     if (cdsen) {
 	E_INFO("Writing context-dependent state indices in segmentation file\n");
 	if (mdef_n_sen(kbc->mdef) > 0xffff) {
@@ -690,13 +688,12 @@ write_phseg(char *dir, align_phseg_t * phseg, char *uttid, char *ctlspec)
 
 /* Write xlabel style phone segmentation output file */
 static void
-write_phlab(char *dir, align_phseg_t * phseg, char *uttid, char *ctlspec)
+write_phlab(char *dir, align_phseg_t * phseg, char *uttid, char *ctlspec, int32 fps)
 {
     char str[1024];
     FILE *fp;
-    int32 f, scale, fps;
+    int32 f, scale;
 
-    fps = cmd_ln_int32("-frate");
     /* Attempt to write segmentation for this utt to a separate file */
     build_output_uttfile(str, dir, uttid, ctlspec);
     strcat(str, ".lab");
@@ -847,7 +844,7 @@ align_utt(char *sent,           /* In: Reference transcript */
     ptmr_start(timers + tmr_utt);
 
 
-    if (align_build_sent_hmm(sent, cmd_ln_int32("-insert_sil")) != 0) {
+    if (align_build_sent_hmm(sent, cmd_ln_int32_r(kbc->config, "-insert_sil")) != 0) {
         align_destroy_sent_hmm();
         ptmr_stop(timers + tmr_utt);
 
@@ -911,13 +908,13 @@ align_utt(char *sent,           /* In: Reference transcript */
         E_ERROR("Final state not reached; no alignment for %s\n\n", uttid);
     else {
         if (s2stsegdir)
-            write_s2stseg(s2stsegdir, stseg, uttid, ctlspec);
+            write_s2stseg(s2stsegdir, stseg, uttid, ctlspec, cmd_ln_boolean_r(kbc->config, "-s2cdsen"));
         if (stsegdir)
             write_stseg(stsegdir, stseg, uttid, ctlspec);
         if (phsegdir)
             write_phseg(phsegdir, phseg, uttid, ctlspec);
         if (phlabdir)
-            write_phlab(phsegdir, phseg, uttid, ctlspec);
+            write_phlab(phsegdir, phseg, uttid, ctlspec, cmd_ln_int32_r(kbc->config, "-frate"));
         if (wdsegdir)
             write_wdseg(wdsegdir, wdseg, uttid, ctlspec);
         if (outsentfp)
@@ -965,8 +962,8 @@ utt_align(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
     const char *cepext;
     char sent[16384];
 
-    cepdir = cmd_ln_str("-cepdir");
-    cepext = cmd_ln_str("-cepext");
+    cepdir = cmd_ln_str_r(kbc->config, "-cepdir");
+    cepext = cmd_ln_str_r(kbc->config, "-cepext");
 
 
     /* UGLY! */
@@ -1005,10 +1002,10 @@ utt_align(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
     if (ur->regmatname) {
         if (kbc->mgau)
             adapt_set_mllr(adapt_am, kbc->mgau, ur->regmatname,
-                           ur->cb2mllrname, kbc->mdef);
+                           ur->cb2mllrname, kbc->mdef, kbc->config);
         else if (kbc->ms_mgau)
             model_set_mllr(kbc->ms_mgau, ur->regmatname, ur->cb2mllrname,
-                           fcb, kbc->mdef);
+                           fcb, kbc->mdef, kbc->config);
         else
             E_WARN("Can't use MLLR matrices with .s2semi. yet\n");
     }
@@ -1035,29 +1032,31 @@ int
 main(int32 argc, char *argv[])
 {
     char sent[16384];
+    cmd_ln_t *config;
 
     print_appl_info(argv[0]);
     cmd_ln_appl_enter(argc, argv, "default.arg", defn);
 
     unlimit();
+    config = cmd_ln_get();
 
-    ctloffset = cmd_ln_int32("-ctloffset");
-    sentfile = cmd_ln_str("-insent");
+    ctloffset = cmd_ln_int32_r(config, "-ctloffset");
+    sentfile = cmd_ln_str_r(config, "-insent");
 
     if ((sentfp = fopen(sentfile, "r")) == NULL)
         E_FATAL("fopen(%s,r) failed\n", sentfile);
 
     /* Note various output directories */
-    if (cmd_ln_str("-s2stsegdir") != NULL)
-        s2stsegdir = (char *) ckd_salloc(cmd_ln_str("-s2stsegdir"));
-    if (cmd_ln_str("-stsegdir") != NULL)
-        stsegdir = (char *) ckd_salloc(cmd_ln_str("-stsegdir"));
-    if (cmd_ln_str("-phsegdir") != NULL)
-        phsegdir = (char *) ckd_salloc(cmd_ln_str("-phsegdir"));
-    if (cmd_ln_str("-phlabdir") != NULL)
-        phlabdir = (char *) ckd_salloc(cmd_ln_str("-phlabdir"));
-    if (cmd_ln_str("-wdsegdir") != NULL)
-        wdsegdir = (char *) ckd_salloc(cmd_ln_str("-wdsegdir"));
+    if (cmd_ln_str_r(config, "-s2stsegdir") != NULL)
+        s2stsegdir = (char *) ckd_salloc(cmd_ln_str_r(config, "-s2stsegdir"));
+    if (cmd_ln_str_r(config, "-stsegdir") != NULL)
+        stsegdir = (char *) ckd_salloc(cmd_ln_str_r(config, "-stsegdir"));
+    if (cmd_ln_str_r(config, "-phsegdir") != NULL)
+        phsegdir = (char *) ckd_salloc(cmd_ln_str_r(config, "-phsegdir"));
+    if (cmd_ln_str_r(config, "-phlabdir") != NULL)
+        phlabdir = (char *) ckd_salloc(cmd_ln_str_r(config, "-phlabdir"));
+    if (cmd_ln_str_r(config, "-wdsegdir") != NULL)
+        wdsegdir = (char *) ckd_salloc(cmd_ln_str_r(config, "-wdsegdir"));
 
     /* HACK! Pre-read insent without checking whether ctl could also 
        be read.  In general, this is caused by the fact that we used
@@ -1077,21 +1076,21 @@ main(int32 argc, char *argv[])
         --ctloffset;
     }
 
-    if ((outsentfile = cmd_ln_str("-outsent")) != NULL) {
+    if ((outsentfile = cmd_ln_str_r(config, "-outsent")) != NULL) {
         if ((outsentfp = fopen(outsentfile, "w")) == NULL)
             E_FATAL("fopen(%s,r) failed\n", outsentfile);
     }
 
-    if ((cmd_ln_str("-s2stsegdir") == NULL) &&
-        (cmd_ln_str("-stsegdir") == NULL) &&
-        (cmd_ln_str("-phlabdir") == NULL) &&
-        (cmd_ln_str("-phsegdir") == NULL) &&
-        (cmd_ln_str("-wdsegdir") == NULL) &&
-        (cmd_ln_str("-outsent") == NULL))
+    if ((cmd_ln_str_r(config, "-s2stsegdir") == NULL) &&
+        (cmd_ln_str_r(config, "-stsegdir") == NULL) &&
+        (cmd_ln_str_r(config, "-phlabdir") == NULL) &&
+        (cmd_ln_str_r(config, "-phsegdir") == NULL) &&
+        (cmd_ln_str_r(config, "-wdsegdir") == NULL) &&
+        (cmd_ln_str_r(config, "-outsent") == NULL))
         E_FATAL("Missing output file/directory argument(s)\n");
 
     /* Read in input databases */
-    models_init();
+    models_init(config);
 
     senscale = (int32 *) ckd_calloc(S3_MAX_FRAMES, sizeof(int32));
 
@@ -1104,16 +1103,16 @@ main(int32 argc, char *argv[])
     timers[tmr_align].name = "A";
 
     /* Initialize align module */
-    align_init(kbc->mdef, kbc->tmat, dict);
+    align_init(kbc->mdef, kbc->tmat, dict, config);
     printf("\n");
 
-    if (cmd_ln_str("-mllr") != NULL) {
+    if (cmd_ln_str_r(config, "-mllr") != NULL) {
         if (kbc->mgau)
-            adapt_set_mllr(adapt_am, kbc->mgau, cmd_ln_str("-mllr"), NULL,
-                           kbc->mdef);
+            adapt_set_mllr(adapt_am, kbc->mgau, cmd_ln_str_r(config, "-mllr"), NULL,
+                           kbc->mdef, config);
         else if (kbc->ms_mgau)
-            model_set_mllr(kbc->ms_mgau, cmd_ln_str("-mllr"), NULL, fcb,
-                           kbc->mdef);
+            model_set_mllr(kbc->ms_mgau, cmd_ln_str_r(config, "-mllr"), NULL, fcb,
+                           kbc->mdef, config);
         else
             E_WARN("Can't use MLLR matrices with .s2semi. yet\n");
     }
@@ -1122,14 +1121,14 @@ main(int32 argc, char *argv[])
 
     /*  process_ctlfile (); */
 
-    if (cmd_ln_str("-ctl")) {
+    if (cmd_ln_str_r(config, "-ctl")) {
         /* When -ctlfile is speicified, corpus.c will look at -ctl_mllr to get
            the corresponding  MLLR for the utterance */
-        ctl_process(cmd_ln_str("-ctl"),
+        ctl_process(cmd_ln_str_r(config, "-ctl"),
                     NULL,
-                    cmd_ln_str("-ctl_mllr"),
-                    cmd_ln_int32("-ctloffset"),
-                    cmd_ln_int32("-ctlcount"), utt_align, NULL);
+                    cmd_ln_str_r(config, "-ctl_mllr"),
+                    cmd_ln_int32_r(config, "-ctloffset"),
+                    cmd_ln_int32_r(config, "-ctlcount"), utt_align, NULL);
     }
     else {
         E_FATAL(" -ctl are not specified.\n");
@@ -1164,6 +1163,6 @@ main(int32 argc, char *argv[])
     system("ps aguxwww | grep s3align");
 #endif
 
-    cmd_ln_appl_exit();
+    cmd_ln_free_r(config);
     return 0;
 }

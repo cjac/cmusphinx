@@ -1323,7 +1323,7 @@ align_end_utt(align_stseg_t ** stseg_out,
 
 
 int32
-align_init(mdef_t * _mdef, tmat_t * _tmat, dict_t * _dict)
+align_init(mdef_t * _mdef, tmat_t * _tmat, dict_t * _dict, cmd_ln_t *_config)
 {
     int32 k;
     s3wid_t w;
@@ -1351,7 +1351,7 @@ align_init(mdef_t * _mdef, tmat_t * _tmat, dict_t * _dict)
     }
     fillwid[k] = BAD_S3WID;
 
-    beam = logs3(cmd_ln_float64("-beam"));
+    beam = logs3(cmd_ln_float64_r(_config, "-beam"));
     E_INFO("logs3(beam)= %d\n", beam);
 
     score_scale = (int32 *) ckd_calloc(S3_MAX_FRAMES, sizeof(int32));

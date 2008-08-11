@@ -198,13 +198,7 @@ subvq_map_linearize(subvq_t * vq)
 }
 
 subvq_t *
-subvq_init(const char *file, float64 varfloor, int32 max_sv, mgau_model_t * g)
-{
-	return subvq_init_r(file, varfloor, max_sv, g, cmd_ln_get());
-}
-
-subvq_t *
-subvq_init_r(const char *file, float64 varfloor, int32 max_sv, mgau_model_t * g, cmd_ln_t *config)
+subvq_init(const char *file, float64 varfloor, int32 max_sv, mgau_model_t * g, cmd_ln_t *config)
 {
     FILE *fp;
     char line[16384];

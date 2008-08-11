@@ -131,16 +131,19 @@ main(int _argc, char **_argv)
     float32 **frames;
     int n_frames, n_floats, n_ceps, i, swap = 0, frate, begin_frame, end_frame;
     struct stat statbuf;
+    cmd_ln_t *config;
 
     if ((_argc == 3) && (_argv[1][0] != '-')) {
         cfg_fn = _argv[1];
         mfcc_fn = _argv[2];
 
-        cmd_ln_parse_file(defn, cfg_fn, TRUE);
+        if ((config = cmd_ln_parse_file_r(NULL, defn, cfg_fn, TRUE)) == NULL)
+            E_FATAL("Cannot parse config file\n");
     }
     else {
-        cmd_ln_parse(defn, _argc, _argv, TRUE);
-        mfcc_fn = cmd_ln_str("-input");
+        if ((config = cmd_ln_parse_r(NULL, defn, _argc, _argv, TRUE)) == NULL)
+            E_FATAL("Cannot parse command line\n");
+        mfcc_fn = cmd_ln_str_r(config, "-input");
     }
 
     if (stat(mfcc_fn, &statbuf) < 0)
@@ -165,17 +168,17 @@ main(int _argc, char **_argv)
         swap = 1;
     }
 
-    n_ceps = cmd_ln_int32("-ncep");
-    frate = cmd_ln_int32("-frate");
-    logs3_init(cmd_ln_float32("-logbase"), 0, 0);
+    n_ceps = cmd_ln_int32_r(config, "-ncep");
+    frate = cmd_ln_int32_r(config, "-frate");
+    logs3_init(cmd_ln_float32_r(config, "-logbase"), 0, 0);
 
-    s3_endpointer_init(&ep, cmd_ln_str("-mean"), cmd_ln_str("-var"), cmd_ln_float32("-varfloor"), cmd_ln_str("-mixw"), cmd_ln_float32("-mixwfloor"), cmd_ln_str("-senmgau"), 1, /* post classify.  fixed at TRUE for now */
-                       cmd_ln_int32("-begin_window"),
-                       cmd_ln_int32("-begin_threshold"),
-                       cmd_ln_int32("-begin_pad"),
-                       cmd_ln_int32("-end_window"),
-                       cmd_ln_int32("-end_threshold"),
-                       cmd_ln_int32("-end_pad")
+    s3_endpointer_init(&ep, cmd_ln_str_r(config, "-mean"), cmd_ln_str_r(config, "-var"), cmd_ln_float32_r(config, "-varfloor"), cmd_ln_str_r(config, "-mixw"), cmd_ln_float32_r(config, "-mixwfloor"), cmd_ln_str_r(config, "-senmgau"), 1, /* post classify.  fixed at TRUE for now */
+                       cmd_ln_int32_r(config, "-begin_window"),
+                       cmd_ln_int32_r(config, "-begin_threshold"),
+                       cmd_ln_int32_r(config, "-begin_pad"),
+                       cmd_ln_int32_r(config, "-end_window"),
+                       cmd_ln_int32_r(config, "-end_threshold"),
+                       cmd_ln_int32_r(config, "-end_pad")
         );
 
     frames = (float32 **) ckd_calloc_2d(NFR, n_ceps, sizeof(float32));
@@ -223,7 +226,7 @@ main(int _argc, char **_argv)
     fclose(in);
     ckd_free_2d(frames);
     logs_free();
-    cmd_ln_free();
+    cmd_ln_free_r(config);
 
     return 0;
 }

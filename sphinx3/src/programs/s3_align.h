@@ -154,7 +154,7 @@ typedef struct align_wdseg_s {
 } align_wdseg_t;
 
 
-int32 align_init(mdef_t * _mdef, tmat_t * _tmat, dict_t * _dict);
+int32 align_init(mdef_t * _mdef, tmat_t * _tmat, dict_t * _dict, cmd_ln_t *_config);
 
 void align_free(void);
 

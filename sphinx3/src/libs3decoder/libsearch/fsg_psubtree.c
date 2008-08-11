@@ -500,21 +500,13 @@ psubtree_add_trans(fsg_pnode_t * root,
 }
 
 
-fsg_pnode_t *
-fsg_psubtree_init(hmm_context_t *ctx,
-                  word_fsg_t * fsg, int32 from_state,
-                  fsg_pnode_t ** alloc_head)
-{
-    return fsg_psubtree_init_r(ctx, fsg, from_state, alloc_head, cmd_ln_get());
-}
-
 /*
  * For now, this "tree" will be "flat"
  */
 fsg_pnode_t *
-fsg_psubtree_init_r(hmm_context_t *ctx,
-                    word_fsg_t * fsg, int32 from_state,
-                    fsg_pnode_t ** alloc_head, cmd_ln_t *config)
+fsg_psubtree_init(hmm_context_t *ctx,
+                  word_fsg_t * fsg, int32 from_state,
+                  fsg_pnode_t ** alloc_head, cmd_ln_t *config)
 {
     int32 dst;
     gnode_t *gn;

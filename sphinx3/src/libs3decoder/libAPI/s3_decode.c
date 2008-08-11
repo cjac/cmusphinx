@@ -234,19 +234,13 @@ static void
 s3_decode_free_hyps(s3_decode_t * _decode);
 
 int
-s3_decode_init(s3_decode_t * _decode)
-{
-    return s3_decode_init_r(_decode, cmd_ln_get());
-}
-
-int
-s3_decode_init_r(s3_decode_t * _decode, cmd_ln_t *_config)
+s3_decode_init(s3_decode_t * _decode, cmd_ln_t *_config)
 {
     if (_decode == NULL)
         return S3_DECODE_ERROR_NULL_POINTER;
 
     /* capture decoder parameters */
-    kb_init_r(&_decode->kb, _config);
+    kb_init(&_decode->kb, _config);
 
     /* initialize decoder variables */
     _decode->kbcore = _decode->kb.kbcore;

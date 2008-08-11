@@ -250,6 +250,7 @@ static int32 tot_nfr;
 static const char *matchfile;
 static const char *matchsegfile;
 static FILE *matchfp, *matchsegfp;
+static cmd_ln_t *config;
 
 /*
  * Command line arguments.
@@ -297,30 +298,30 @@ static void
 models_init(void)
 {
     /* HMM model definition */
-    mdef = mdef_init(cmd_ln_str("-mdef"), 1);
+    mdef = mdef_init(cmd_ln_str_r(config, "-mdef"), 1);
 
     /* Dictionary */
     dict = dict_init(mdef,
-                     cmd_ln_str("-dict"),
-                     cmd_ln_str("-fdict"),
-                     0, cmd_ln_int32("-lts_mismatch"), 1);
+                     cmd_ln_str_r(config, "-dict"),
+                     cmd_ln_str_r(config, "-fdict"),
+                     0, cmd_ln_int32_r(config, "-lts_mismatch"), 1);
 
     /* LM Set */
-    lmset = lmset_init(cmd_ln_str("-lm"),
-                       cmd_ln_str("-lmctlfn"),
-                       cmd_ln_str("-ctl_lm"),
-                       cmd_ln_str("-lmname"),
-                       cmd_ln_str("-lmdumpdir"),
-                       cmd_ln_float32("-lw"),
-                       cmd_ln_float32("-wip"),
-                       cmd_ln_float32("-uw"), dict);
+    lmset = lmset_init(cmd_ln_str_r(config, "-lm"),
+                       cmd_ln_str_r(config, "-lmctlfn"),
+                       cmd_ln_str_r(config, "-ctl_lm"),
+                       cmd_ln_str_r(config, "-lmname"),
+                       cmd_ln_str_r(config, "-lmdumpdir"),
+                       cmd_ln_float32_r(config, "-lw"),
+                       cmd_ln_float32_r(config, "-wip"),
+                       cmd_ln_float32_r(config, "-uw"), dict);
 
     /* Filler penalties */
-    fpen = fillpen_init(dict, cmd_ln_str("-fillpen"),
-                        cmd_ln_float32("-silprob"),
-                        cmd_ln_float32("-fillprob"),
-                        cmd_ln_float32("-lw"),
-                        cmd_ln_float32("-wip"));
+    fpen = fillpen_init(dict, cmd_ln_str_r(config, "-fillpen"),
+                        cmd_ln_float32_r(config, "-silprob"),
+                        cmd_ln_float32_r(config, "-fillprob"),
+                        cmd_ln_float32_r(config, "-lw"),
+                        cmd_ln_float32_r(config, "-wip"));
 
 }
 
@@ -398,8 +399,8 @@ decode_utt(char *uttid, FILE * _matchfp, FILE * _matchsegfp)
     ptmr_reset(&tm_utt);
     ptmr_start(&tm_utt);
 
-    latdir = cmd_ln_str("-inlatdir");
-    latext = cmd_ln_str("-latext");
+    latdir = cmd_ln_str_r(config, "-inlatdir");
+    latext = cmd_ln_str_r(config, "-latext");
 
     if (latdir)
         sprintf(dagfile, "%s/%s.%s", latdir, uttid, latext);
@@ -407,9 +408,9 @@ decode_utt(char *uttid, FILE * _matchfp, FILE * _matchsegfp)
         sprintf(dagfile, "%s.%s", uttid, latext);
 
     dag = dag_load(dagfile,
-		   cmd_ln_int32("-maxedge"),
-		   cmd_ln_float32("-logbase"),
-		   cmd_ln_int32("-dagfudge"), dict, fpen);
+		   cmd_ln_int32_r(config, "-maxedge"),
+		   cmd_ln_float32_r(config, "-logbase"),
+		   cmd_ln_int32_r(config, "-dagfudge"), dict, fpen, config);
     if (dag == NULL) {
         ptmr_stop(&tm_utt);
         E_ERROR("Failed to load dag from %s\n", dagfile);
@@ -428,7 +429,7 @@ decode_utt(char *uttid, FILE * _matchfp, FILE * _matchsegfp)
     hyp = dag_search(dag, uttid, 1.0, dag->final.node,
                      dict, lmset->cur_lm, fpen);
     if (hyp != NULL) {
-        if (cmd_ln_boolean("-backtrace"))
+        if (cmd_ln_boolean_r(config, "-backtrace"))
             log_hyp_detailed(stdout, hyp, uttid, "BP", "bp", NULL);
 
         /* Total acoustic score and LM score */
@@ -496,8 +497,10 @@ main(int32 argc, char *argv[])
 
     unlimit();
 
-    logs3_init((float64) cmd_ln_float32("-logbase"), 1,
-               cmd_ln_int32("-log3table"));
+    config = cmd_ln_get();
+
+    logs3_init((float64) cmd_ln_float32_r(config, "-logbase"), 1,
+               cmd_ln_int32_r(config, "-log3table"));
 
     /* Read in input databases */
     models_init();
@@ -509,7 +512,7 @@ main(int32 argc, char *argv[])
     printf("\n");
 
     matchfile = NULL;
-    matchfile = cmd_ln_str("-hyp");
+    matchfile = cmd_ln_str_r(config, "-hyp");
 
     if (matchfile == NULL) {
         E_WARN("No -hyp argument\n");
@@ -522,7 +525,7 @@ main(int32 argc, char *argv[])
 
 
     matchsegfile = NULL;
-    matchsegfile = cmd_ln_str("-hypseg");
+    matchsegfile = cmd_ln_str_r(config, "-hypseg");
     if (matchsegfile == NULL) {
         E_WARN("No -hypseg argument\n");
         matchsegfp = NULL;
@@ -532,12 +535,12 @@ main(int32 argc, char *argv[])
             E_ERROR("fopen(%s,w) failed\n", matchsegfile);
     }
 
-    if (cmd_ln_str("-ctl")) {
-        ctl_process(cmd_ln_str("-ctl"),
-                    cmd_ln_str("-ctl_lm"),
+    if (cmd_ln_str_r(config, "-ctl")) {
+        ctl_process(cmd_ln_str_r(config, "-ctl"),
+                    cmd_ln_str_r(config, "-ctl_lm"),
                     NULL,
-                    cmd_ln_int32("-ctloffset"),
-                    cmd_ln_int32("-ctlcount"), utt_dag, NULL);
+                    cmd_ln_int32_r(config, "-ctloffset"),
+                    cmd_ln_int32_r(config, "-ctlcount"), utt_dag, NULL);
 
     }
     else {
@@ -571,7 +574,7 @@ main(int32 argc, char *argv[])
 
     /* Hack!! To avoid hanging problem under Linux */
 
-    cmd_ln_appl_exit();
+    cmd_ln_free_r(config);
 
     return 0;
 }

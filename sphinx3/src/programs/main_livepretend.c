@@ -152,6 +152,7 @@ main(int _argc, char **_argv)
 {
     char *ctrlfn;
     char *cfgfn;
+    cmd_ln_t *config = NULL;
 
     print_appl_info(_argv[0]);
 
@@ -164,13 +165,13 @@ main(int _argc, char **_argv)
     rawdirfn = _argv[2];
     cfgfn = _argv[3];
 
-    if (cmd_ln_parse_file(S3_DECODE_ARG_DEFS, cfgfn, TRUE))
+    if ((config = cmd_ln_parse_file_r(config, S3_DECODE_ARG_DEFS, cfgfn, TRUE)) == NULL)
         E_FATAL("Bad configuration file %s.\n", cfgfn);
 
-    if (s3_decode_init(&decoder) != S3_DECODE_SUCCESS)
+    if (s3_decode_init(&decoder, config) != S3_DECODE_SUCCESS)
         E_FATAL("Failed to initialize live-decoder.\n");
 
-    fe = fe_init_auto(); 
+    fe = fe_init_auto_r(config); 
 
     st = decoder.kb.stat;
     ptmr_init(&(st->tm));
@@ -180,10 +181,10 @@ main(int _argc, char **_argv)
         /* When -ctlfile is speicified, corpus.c will look at -ctl_lm and
 	   -ctl_mllr to get the corresponding LM and MLLR for the utterance */
         st->tm = ctl_process(ctrlfn,
-                             cmd_ln_str("-ctl_lm"),
-                             cmd_ln_str("-ctl_mllr"),
-                             cmd_ln_int32("-ctloffset"),
-                             cmd_ln_int32("-ctlcount"),
+                             cmd_ln_str_r(config, "-ctl_lm"),
+                             cmd_ln_str_r(config, "-ctl_mllr"),
+                             cmd_ln_int32_r(config, "-ctloffset"),
+                             cmd_ln_int32_r(config, "-ctlcount"),
                              utt_livepretend, &(decoder.kb));
     }
     else {
@@ -194,7 +195,6 @@ main(int _argc, char **_argv)
 
     s3_decode_close(&decoder);
     fe_free(fe);
-    cmd_ln_free();
 
     return 0;
 }

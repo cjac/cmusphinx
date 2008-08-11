@@ -130,7 +130,8 @@ typedef struct fsg_lextree_s {
  * Create, initialize, and return a new phonetic lextree for the given FSM.
  */
 fsg_lextree_t *fsg_lextree_init (word_fsg_t *fsg,
-                                 hmm_context_t *ctx);
+                                 hmm_context_t *ctx,
+                                 cmd_ln_t *config);
 
 
 void fsg_lextree_free (fsg_lextree_t *);

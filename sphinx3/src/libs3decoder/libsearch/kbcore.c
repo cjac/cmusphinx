@@ -376,11 +376,11 @@ s3_am_init(kbcore_t * kbc)
 }
 
 kbcore_t *
-New_kbcore()
+New_kbcore(cmd_ln_t *config)
 {
     kbcore_t *kbc;
     kbc = (kbcore_t *) ckd_calloc(1, sizeof(kbcore_t));
-    kbc->config = cmd_ln_get(); /* Default value */
+    kbc->config = config; /* Default value */
     return kbc;
 }
 
@@ -390,12 +390,6 @@ static const arg_t feat_defn[] = {
     cepstral_to_feature_command_line_macro(),
     { NULL, 0, NULL, NULL }
 };
-
-kbcore_t *
-kbcore_init(void)
-{
-    return kbcore_init_r(cmd_ln_get());
-}
 
 void
 set_cmninit(feat_t *fcb, char const *cmninit)
@@ -422,7 +416,7 @@ set_cmninit(feat_t *fcb, char const *cmninit)
 }
 
 kbcore_t *
-kbcore_init_r(cmd_ln_t *config)
+kbcore_init(cmd_ln_t *config)
 {
     kbcore_t *kb;
     int i;
@@ -544,8 +538,8 @@ kbcore_init_r(cmd_ln_t *config)
         }
         if (subvqfile) {
             if ((kb->svq =
-                 subvq_init_r(subvqfile, cmd_ln_float32_r(config, "-varfloor"),
-			      -1, kb->mgau, config)) == NULL)
+                 subvq_init(subvqfile, cmd_ln_float32_r(config, "-varfloor"),
+			    -1, kb->mgau, config)) == NULL)
                 E_FATAL("subvq_init (%s, %e, -1) failed\n", subvqfile,
                         cmd_ln_float32_r(config, "-varfloor"));
         }

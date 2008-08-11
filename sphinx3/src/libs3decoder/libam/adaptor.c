@@ -100,14 +100,7 @@ adapt_am_free(adapt_am_t * ad)
 
 void
 adapt_set_mllr(adapt_am_t * ad, mgau_model_t * g, const char *mllrfile,
-	       const char *cb2mllrname, mdef_t * mdef)
-{
-	adapt_set_mllr_r(ad, g, mllrfile, cb2mllrname, mdef, cmd_ln_get());
-}
-
-void
-adapt_set_mllr_r(adapt_am_t * ad, mgau_model_t * g, const char *mllrfile,
-		 const char *cb2mllrname, mdef_t * mdef, cmd_ln_t *config)
+	       const char *cb2mllrname, mdef_t * mdef, cmd_ln_t *config)
 {
     int32 *cb2mllr;
 

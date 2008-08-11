@@ -561,13 +561,7 @@ lm_add_word_to_ug(lm_t * lm,      /**<In/Out: a modified LM structure */
 }
 
 lm_t *
-lm_read(const char *file, const char *lmname)
-{
-    return lm_read_r(file, lmname, cmd_ln_get());
-}
-
-lm_t *
-lm_read_r(const char *file, const char *lmname, cmd_ln_t *config)
+lm_read(const char *file, const char *lmname, cmd_ln_t *config)
 {
     return lm_read_advance(file,
                            lmname,

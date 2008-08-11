@@ -75,15 +75,8 @@
 /* Wrong place to put it */
 int32
 model_set_mllr(ms_mgau_model_t * msg, const char *mllrfile,
-	       const char *cb2mllrfile, feat_t * fcb, mdef_t * mdef)
-{
-	return model_set_mllr_r(msg, mllrfile, cb2mllrfile, fcb, mdef, cmd_ln_get());
-}
-
-int32
-model_set_mllr_r(ms_mgau_model_t * msg, const char *mllrfile,
-		 const char *cb2mllrfile, feat_t * fcb, mdef_t * mdef,
-		 cmd_ln_t *config)
+	       const char *cb2mllrfile, feat_t * fcb, mdef_t * mdef,
+	       cmd_ln_t *config)
 {
     float32 ****A, ***B;
     int32 *cb2mllr;
