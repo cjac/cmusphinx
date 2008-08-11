@@ -55,6 +55,7 @@
 #define _S3_CONTEXT_FREE_GRAMMAR_H
 
 #include <stdio.h>
+#include <logmath.h>
 #include "prim_type.h"
 #include "hash_table.h"
 #include "s3_arraylist.h"
@@ -231,7 +232,7 @@ s3_cfg_convert_to_fsg(s3_cfg_t *_cfg, int _max_expansion);
  *
  */
 void
-s3_cfg_rescore(s3_cfg_t *_cfg);
+s3_cfg_rescore(s3_cfg_t *_cfg, logmath_t *logmath);
 
 
 /**
@@ -305,7 +306,7 @@ s3_cfg_add_rule(s3_cfg_t *_cfg, s3_cfg_id_t _src, float32 _fake_score,
    @param _cfg A CFG parser.
  */
 void
-s3_cfg_compile_rules(s3_cfg_t *_cfg);
+s3_cfg_compile_rules(s3_cfg_t *_cfg, logmath_t *logmath);
 
 
 /**

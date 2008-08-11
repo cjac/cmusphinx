@@ -114,7 +114,8 @@ new_word_graph_link(word_graph_t * wg,              /**< The word graph */
                     int32 lscr,                     /**< Language score */
                     int32 cscr,                      /**< Confidence score */
                     int32 * senscale,                 /**< Array of senscale*/
-		    cmd_ln_t *config
+                    cmd_ln_t *config,
+                    logmath_t *logmath
     )
 {
     word_graph_link_t *wgl;
@@ -142,9 +143,9 @@ new_word_graph_link(word_graph_t * wg,              /**< The word graph */
     E_INFO("snodeid %d enodeid %d, sf %d, ef %d, ascr %d scl %d\n",
            snodeid, enodeid, sf, ef, ascr, scl);
 #endif
-    wgl->ascr = logs3_to_log(ascr + scl);
-    wgl->lscr = logs3_to_log(lscr);
-    wgl->cscr = logs3_to_log(cscr);
+    wgl->ascr = logmath_log_to_ln(logmath, ascr + scl);
+    wgl->lscr = logmath_log_to_ln(logmath, lscr);
+    wgl->cscr = logmath_log_to_ln(logmath, cscr);
 
     wgl->linkidx = wg->n_link;
 
@@ -312,8 +313,8 @@ print_wg(FILE * fp, word_graph_t * wg, dict_t * dict, int32 fmt)
       2, For all dag_children
            If there is a new start-time
                newnode->nodeidx=NewNode(children->sf);
-	       NewArc(dag_node->nodeidx, newnode->nodeidx, dag_node->wid, dag_link->ascr, dag_link->lscr)
-	       build_wg_from_dag(word_graph,dag,children,newnode->nodeidx)
+               NewArc(dag_node->nodeidx, newnode->nodeidx, dag_node->wid, dag_link->ascr, dag_link->lscr)
+               build_wg_from_dag(word_graph,dag,children,newnode->nodeidx)
      
       Node: dagnode->reachable is used as the marker 
 */
@@ -366,7 +367,7 @@ wg_from_dag(word_graph_t * wg, dag_t * dag, dagnode_t * d,
             /* FIX ME ! Currently, confidence score is hard-wired to 0.0 */
             new_word_graph_link(wg, dnode_stidx, nodeidx, d->sf, n->sf,
                                 d->wid, l->ascr, lm_rawscore(lm, l->lscr),
-                                0.0, senscale, dag->config);
+                                0.0, senscale, dag->config, dag->logmath);
         }
     }
 
@@ -379,12 +380,12 @@ wg_from_dag(word_graph_t * wg, dag_t * dag, dagnode_t * d,
         /* FIX ME ! Currently, confidence score is hard-wired to 0.0 */
         new_word_graph_link(wg, dnode_stidx, nodeidx, d->sf, d->lef,
                             d->wid, d->node_ascr, d->node_lscr, 0.0,
-                            senscale, dag->config);
+                            senscale, dag->config, dag->logmath);
 #if 0
         if (dict_filler_word(dict, d->wid)) {
             new_word_graph_link(wg, dnode_stidx, nodeidx, d->sf, d->lef,
                                 d->wid, 0.0, cmd_ln_float32_r(dag->config, "-fillprob"),
-                                0.0, senscale, dag->config);
+                                0.0, senscale, dag->config, dag->logmath);
 
         }
         else {
@@ -397,7 +398,7 @@ wg_from_dag(word_graph_t * wg, dag_t * dag, dagnode_t * d,
                                                                       wid],
                                                                      d->
                                                                      wid)),
-                                0.0, senscale, dag->config);
+                                0.0, senscale, dag->config, dag->logmath);
         }
 #endif
     }

@@ -407,7 +407,7 @@ approx_cont_mgau_ci_eval(kbcore_t * kbc,      /** In: kbcore */
     if (gs)
         best_cid = gc_compute_closest_cw(gs, feat);
     if (svq)
-        subvq_gautbl_eval_logs3(svq, feat);
+        subvq_gautbl_eval_logs3(svq, feat, kbcore_logmath(kbc));
 
     for (s = 0; mdef_is_cisenone(mdef, s); s++) {
         n_cig +=
@@ -501,7 +501,7 @@ approx_cont_mgau_frame_eval(kbcore_t * kbc,
     if (gs)
         best_cid = gc_compute_closest_cw(gs, feat);
     if (svq)
-        subvq_gautbl_eval_logs3(svq, feat);
+        subvq_gautbl_eval_logs3(svq, feat, kbcore_logmath(kbc));
 
     if (fastgmm->gmms->max_cd < mdef->n_sen - mdef->n_ci_sen)
         dyn_ci_pbeam = approx_compute_dyn_ci_pbeam(mdef, fastgmm, g,

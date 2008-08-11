@@ -115,12 +115,12 @@
 #include <listelem_alloc.h>
 #include <s3types.h>
 #include <cmd_ln.h>
+#include <logmath.h>
 
 #include "search.h"
 #include "dict.h"
 #include "lm.h"
 #include "fillpen.h"
-#include "logs3.h"
 
 
 #ifdef __cplusplus
@@ -233,6 +233,7 @@ typedef struct {
     cmd_ln_t *config;
     listelem_alloc_t *node_alloc; /**< Allocator for nodes. */
     listelem_alloc_t *link_alloc; /**< Allocator for edges. */
+    logmath_t *logmath;
 } dag_t;
 
 
@@ -241,7 +242,7 @@ S3DECODER_EXPORT
 void hyp_free (srch_hyp_t *list);
 
 /** Initialize a dag_t */
-void dag_init(dag_t* dagp, cmd_ln_t *config);
+void dag_init(dag_t* dagp, cmd_ln_t *config, logmath_t *logmath);
 
 
 /** Link two DAG nodes with the given arguments
@@ -435,7 +436,8 @@ dag_t * dag_load(char *file,          /**< Input: File to lod from */
            int32 fudge,           /**< The number of fudges added */
            dict_t * dict,             /**< Dictionary */
            fillpen_t * fpen,          /**< Filler penalty structure */
-           cmd_ln_t *config
+           cmd_ln_t *config,
+           logmath_t *logmath
     );
 
 #ifdef __cplusplus

@@ -1249,7 +1249,8 @@ lm_read_dump_ng(lm_t * lm, const char *file)
  */
 lm_t *
 lm_read_dump(const char *file,        /**< The file name*/
-             int lminmemory        /**< Whether using in memory LM */
+             int lminmemory,        /**< Whether using in memory LM */
+             logmath_t *logmath
     )
 {
     lm_t *lm;
@@ -1260,6 +1261,7 @@ lm_read_dump(const char *file,        /**< The file name*/
 
     lm->isLM_IN_MEMORY = lminmemory;
     lm->n_ng = 1;
+    lm->logmath = logmath;
 
 
     if ((lm->fp = fopen(file, "rb")) == NULL)

@@ -138,6 +138,8 @@
 #ifndef _S3_LM_H_
 #define _S3_LM_H_
 
+#include <logmath.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -661,6 +663,7 @@ typedef struct lm_s {
     sorted_list_t sorted_prob3; /**< Temporary Variable: Sorted list */
     int32 max_sorted_entries; /**< Temporary Variable: 2x the maximum size of the MAX_SORTED_ENTRIES*/
 
+    logmath_t *logmath;
 } lm_t;
 
 
@@ -761,7 +764,8 @@ lmset_t* lmset_init(const char* lmfile,  /**< The lm file name, lmfile and lmctl
 		    float32 lw,      /**< Language model weight */
 		    float32 wip,     /**< Word insertion penalty */
 		    float32 uw,      /**< Unigram weight */
-		    dict_t *dict     /**< A pre-initialized dict_t structure */
+		    dict_t *dict,     /**< A pre-initialized dict_t structure */
+		    logmath_t *logmath
     );
 
 
@@ -779,7 +783,8 @@ lmset_t* lmset_read_lm(const char *lmfile, /**< In: The LM file */
 		       float64 lw,         /**< The language weight */
 		       float64 wip,        /**< The word insertion penalty */
 		       float64 uw,          /**< The unigram weight */
-		       const char *lmdumpdir /**< In: LM dump dir */
+		       const char *lmdumpdir, /**< In: LM dump dir */
+		       logmath_t *logmath
     );
 
 /**
@@ -791,7 +796,8 @@ lmset_t* lmset_read_ctl(const char * ctlfile,/**< Control file name */
 			float64 lw,	/**< In: Language weight */
 			float64 wip,	/**< In: Word insertion penalty */
 			float64 uw,    /**< In: Unigram weight */
-			const char* lmdumpdir /**< In: LMdumpdir */
+			const char* lmdumpdir, /**< In: LMdumpdir */
+			logmath_t *logmath
     );	
 
 /**
@@ -1038,8 +1044,9 @@ void lm_cache_stats_dump (lm_t *lmp /**< In: the LM */
  */
 lm_t * lm_read ( 
     const char *file,	/**< In: LM file being read */
-    const char *lmname,   /**<In: LM name*/
-    cmd_ln_t *config);
+    const char *lmname,  /**<In: LM name*/
+    cmd_ln_t *config,
+    logmath_t *logmath);
 
 /**
  * Read an LM file, it will automatically decide whether the file is
@@ -1093,8 +1100,9 @@ lm_t *lm_read_advance (const char *file,	/**< In: LM file being read */
 					   now either "TXT", "DMP" and NULL,
 					   if NULL, file format is
 					   automaticaly determined */
-		       int32 applyweight      /**< In: whether lw,wip, uw should be 
+		       int32 applyweight,      /**< In: whether lw,wip, uw should be 
 						 applied to the lm or not */
+		       logmath_t *logmath
     );
 
 S3DECODER_EXPORT
@@ -1112,7 +1120,8 @@ lm_t *lm_read_advance2(const char *file,	/**< In: LM file being read */
 					   automaticaly determined */
 		       int32 applyweight,      /**< In: whether lw,wip, uw should be 
                                                   applied to the lm or not */
-                       int lminmemory /**< In: Whether LM is read into memory */
+                       int lminmemory, /**< In: Whether LM is read into memory */
+		       logmath_t *logmath
     );
 /**
    Simple writing of an LM file, the input and output encoding will

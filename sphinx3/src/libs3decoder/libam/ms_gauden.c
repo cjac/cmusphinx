@@ -113,7 +113,6 @@
 
 
 #include "ms_gauden.h"
-#include "logs3.h"
 
 /* #include <s3.h> */
 
@@ -376,7 +375,7 @@ gauden_dist_precompute(gauden_t * g, float32 varfloor)
 
 gauden_t *
 gauden_init(const char *meanfile, const char *varfile, float32 varfloor,
-            int32 precompute)
+            int32 precompute, logmath_t *logmath)
 {
     int32 i, m, f, d, *flen;
     gauden_t *g;
@@ -387,6 +386,7 @@ gauden_init(const char *meanfile, const char *varfile, float32 varfloor,
 
     g = (gauden_t *) ckd_calloc(1, sizeof(gauden_t));
     g->mean = g->var = NULL;    /* To force them to be allocated */
+    g->logmath = logmath;
 
     /* Read means and (diagonal) variances for all mixture gaussians */
     gauden_param_read(&(g->mean), &g->n_mgau, &g->n_feat, &g->n_density,
@@ -407,7 +407,7 @@ gauden_init(const char *meanfile, const char *varfile, float32 varfloor,
         gauden_dist_precompute(g, varfloor);
 
     /* Floor for density values */
-    min_density = logs3_to_log(S3_LOGPROB_ZERO);
+    min_density = logmath_log_to_ln(logmath, S3_LOGPROB_ZERO);
 
     return g;
 }
@@ -617,7 +617,7 @@ gauden_dist(gauden_t * g,
 #endif
                 dist[t].dist = min_density;
             }
-            out_dist[f][t].dist = (int32) log_to_logs3(dist[t].dist);
+            out_dist[f][t].dist = (int32) logmath_ln_to_log(g->logmath, dist[t].dist);
         }
     }
 
@@ -682,7 +682,7 @@ gauden_dist_norm(gauden_t * g, int32 n_top, gauden_dist_t *** dist,
     for (f = 0; f < g->n_feat; f++) {
         sum = dist[gid][f][0].dist;
         for (t = 1; t < n_top; t++)
-            sum = logs3_add(sum, dist[gid][f][t].dist);
+            sum = logmath_add(g->logmath, sum, dist[gid][f][t].dist);
 
         for (t = 0; t < n_top; t++)
             dist[gid][f][t].dist -= sum;

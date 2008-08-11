@@ -806,13 +806,14 @@ lm_read_txt(const char *filename,        /**< Input: The file name*/
 				 -15 (LM_CANNOT_ALLOCATE).  Please checkout
 				 lm.h for details. 
 			      */
-            int32 isforced32bit /** Input: normally, we should let lm_read_txt
+            int32 isforced32bit, /** Input: normally, we should let lm_read_txt
 				    to decide whether a file is 32 bit or not. 
 				    When the lm_read_txt couldn't decide that before
 				    reading or if more specificially when we hit
 				    the LM segment size problems. Then this bit
 				    will alter the reading behavior to 32 bit. 				    
 				*/
+	    logmath_t *logmath
     )
 {
     lm_t *model;
@@ -857,6 +858,7 @@ lm_read_txt(const char *filename,        /**< Input: The file name*/
     }
 
     model->n_ng = 1;
+    model->logmath = logmath;
 
     model->isLM_IN_MEMORY = lminmemory;
 

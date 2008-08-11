@@ -636,7 +636,7 @@ mgau_mixw_read(mgau_model_t * g, const char *file_name, float64 mixwfloor)
 
                 if (g->comp_type == MIX_INT_FLOAT_COMP)
                     mgau_mixw(g, i, j) =
-                        (pdf[j] != 0.0) ? logs3(pdf[j]) : S3_LOGPROB_ZERO;
+                        (pdf[j] != 0.0) ? logs3(g->logmath, pdf[j]) : S3_LOGPROB_ZERO;
                 else if (g->comp_type == FULL_FLOAT_COMP)
                     mgau_mixw_f(g, i, j) =
                         (pdf[j] != 0.0) ? log(pdf[j]) : S3_LOGPROB_ZERO_F;
@@ -886,7 +886,8 @@ mgau_model_t *
 mgau_init(const char *meanfile,
           const char *varfile, float64 varfloor,
           const char *mixwfile, float64 mixwfloor,
-          int32 precomp, const char *senmgau, int32 comp_type)
+          int32 precomp, const char *senmgau,
+          int32 comp_type, logmath_t *logmath)
 {
     mgau_model_t *g;
 
@@ -897,6 +898,8 @@ mgau_init(const char *meanfile,
     assert(mixwfloor >= 0.0);
 
     g = (mgau_model_t *) ckd_calloc(1, sizeof(mgau_model_t));
+
+    g->logmath = logmath;
 
     if (strcmp(senmgau, ".cont.") == 0) {
         g->gau_type = CONTHMM;
@@ -930,7 +933,7 @@ mgau_init(const char *meanfile,
         mgau_precomp(g);        /* Precompute Mahalanobis distance invariants */
 
     if (g->comp_type == MIX_INT_FLOAT_COMP)
-        g->distfloor = logs3_to_log(S3_LOGPROB_ZERO);   /* Floor for Mahalanobis distance values */
+        g->distfloor = logmath_log_to_ln(g->logmath, S3_LOGPROB_ZERO);   /* Floor for Mahalanobis distance values */
     else if (g->comp_type == FULL_FLOAT_COMP)
         g->distfloor = S3_LOGPROB_ZERO_F;
 
@@ -949,7 +952,7 @@ mgau_comp_eval(mgau_model_t * g, int32 s, float32 * x, int32 * score)
 
     veclen = mgau_veclen(g);
     mgau = &(g->mgau[s]);
-    f = log_to_logs3_factor();
+    f = 1.0 / log(logmath_get_base(g->logmath));
 
     bs = MAX_NEG_INT32;
     for (c = 0; c < mgau->n_comp; c++) {
@@ -1014,14 +1017,14 @@ mgau_density_full(mgau_t * mgau, int32 veclen, int32 c, float32 * x)
 
 static int32
 mgau_eval_all(mgau_t * mgau, float32 * x, int32 veclen, float64 distfloor,
-              int32 update_best_id)
+              int32 update_best_id, logmath_t * logmath)
 {
     float32 *m1, *m2, *v1, *v2;
     float64 dval1, dval2, diff1, diff2, f;
-    int32 gauscr;               /* This equals to log_to_logs3_factor *dval1 + the mixture weight */
+    int32 gauscr;               /* This equals to (1.0 / log(logmath_get_base())) * dval1 + the mixture weight */
     int32 score, i, c;
 
-    f = log_to_logs3_factor();
+    f = 1.0 / log(logmath_get_base(logmath));
     score = S3_LOGPROB_ZERO;
 
     for (c = 0; c < mgau->n_comp - 1; c += 2) { /* Interleave 2 components for speed */
@@ -1054,7 +1057,7 @@ mgau_eval_all(mgau_t * mgau, float32 * x, int32 veclen, float64 distfloor,
            E_INFO("Score %f, Index %d\n",dval2, c+1); */
         gauscr = (int32) (f * dval1) + mgau->mixw[c];
 
-        score = logs3_add(score, gauscr);
+        score = logmath_add(logmath, score, gauscr);
         if (gauscr > mgau->bstscr) {
             mgau->bstidx = c;
             mgau->bstscr = gauscr;
@@ -1062,7 +1065,7 @@ mgau_eval_all(mgau_t * mgau, float32 * x, int32 veclen, float64 distfloor,
 
         gauscr = (int32) (f * dval2) + mgau->mixw[c + 1];
 
-        score = logs3_add(score, gauscr);
+        score = logmath_add(logmath, score, gauscr);
         if (update_best_id && gauscr > mgau->bstscr) {
             mgau->bstidx = c + 1;
             mgau->bstscr = gauscr;
@@ -1091,7 +1094,7 @@ mgau_eval_all(mgau_t * mgau, float32 * x, int32 veclen, float64 distfloor,
         /*E_INFO("Score %f, Index %d\n",dval1, c); */
 
         gauscr = (int32) (f * dval1) + mgau->mixw[c];
-        score = logs3_add(score, gauscr);
+        score = logmath_add(logmath, score, gauscr);
 
         if (update_best_id && gauscr > mgau->bstscr) {
             mgau->bstidx = c;
@@ -1105,14 +1108,14 @@ mgau_eval_all(mgau_t * mgau, float32 * x, int32 veclen, float64 distfloor,
 
 static int32
 mgau_eval_active(mgau_t * mgau, float32 * x, int32 veclen,
-                 float64 distfloor, int32 * active, int32 update_best_id)
+                 float64 distfloor, int32 * active, int32 update_best_id, logmath_t * logmath)
 {
     float32 *m1, *v1;
     float64 dval1, diff1, f;
-    int32 gauscr;               /* This equals to log_to_logs3_factor *dval1 + the mixture weight */
+    int32 gauscr;               /* This equals to (1.0 / log(logmath_get_base())) * dval1 + the mixture weight */
     int32 score, i, j, c;
 
-    f = log_to_logs3_factor();
+    f = 1.0 / log(logmath_get_base(logmath));
     score = S3_LOGPROB_ZERO;
     for (j = 0; active[j] >= 0; j++) {
         c = active[j];
@@ -1135,7 +1138,7 @@ mgau_eval_active(mgau_t * mgau, float32 * x, int32 veclen,
 
         gauscr = (int32) (f * dval1) + mgau->mixw[c];
 
-        score = logs3_add(score, gauscr);
+        score = logmath_add(logmath, score, gauscr);
         /*          E_INFO("index c %d, gauscr %d , f*dval1 %d, mixw[c] %d\n",c,gauscr,f*dval1, mgau->mixw[c]); */
 
         if (update_best_id && gauscr > mgau->bstscr) {
@@ -1171,12 +1174,12 @@ mgau_eval(mgau_model_t * g, int32 m, int32 * active, float32 * x, int32 fr,
 
     if (!active) {              /* No short list; use all */
         score =
-            mgau_eval_all(mgau, x, veclen, g->distfloor, update_best_id);
+            mgau_eval_all(mgau, x, veclen, g->distfloor, update_best_id, g->logmath);
     }
     else {
         score =
             mgau_eval_active(mgau, x, veclen, g->distfloor, active,
-                             update_best_id);
+                             update_best_id, g->logmath);
     }
 
     if (score <= S3_LOGPROB_ZERO) {

@@ -119,6 +119,7 @@
  */
 
 #include <s3types.h>
+#include <logmath.h>
 #include "vector.h"
 
 #ifdef __cplusplus
@@ -133,6 +134,7 @@ extern "C" {
  * \brief Multivariate gaussian mixture density parameters
  */
 typedef struct {
+    logmath_t *logmath;
     vector_t ***mean;	/**< mean[codebook][feature][codeword] vector */
     vector_t ***var;	/**< like mean; diagonal covariance vector only */
     float32 ***det;	/**< log(determinant) for each variance vector;
@@ -165,7 +167,8 @@ gauden_t *
 gauden_init (const char *meanfile,	/**< Input: File containing means of mixture gaussians */
 	     const char *varfile,	/**< Input: File containing variances of mixture gaussians */
 	     float32 varfloor,		/**< Input: Floor value to be applied to variances */
-	     int32 precompute		/**< Input: Whether we should precompute */  
+	     int32 precompute,		/**< Input: Whether we should precompute */  
+	     logmath_t *logmath
     );
 
 /** Release memory allocated by gauden_init. */

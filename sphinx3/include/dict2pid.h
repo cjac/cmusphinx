@@ -100,6 +100,7 @@
 #define _S3_DICT2PID_H_
 
 
+#include <logmath.h>
 #include "dict.h"
 #include "ctxt_table.h"
 
@@ -235,7 +236,8 @@ typedef struct {
 /** Build the dict2pid structure for the given model/dictionary */
 dict2pid_t *dict2pid_build (mdef_t *mdef,  /**< A  model definition*/
 			    dict_t *dict,   /**< An initialized dictionary */
-			    int32 is_composite /**< Whether composite triphones will be built */
+			    int32 is_composite, /**< Whether composite triphones will be built */
+			    logmath_t *logmath
     );
 
   

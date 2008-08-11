@@ -109,16 +109,16 @@
 
 beam_t *
 beam_init(float64 hmm, float64 ptr, float64 wd, float64 wdend,
-          int32 ptranskip, int32 n_ciphone)
+          int32 ptranskip, int32 n_ciphone, logmath_t *logmath)
 {
     beam_t *beam;
 
     beam = (beam_t *) ckd_calloc(1, sizeof(beam_t));
 
-    beam->hmm = logs3(hmm);
-    beam->ptrans = logs3(ptr);
-    beam->word = logs3(wd);
-    beam->wordend = logs3(wdend);
+    beam->hmm = logs3(logmath, hmm);
+    beam->ptrans = logs3(logmath, ptr);
+    beam->word = logs3(logmath, wd);
+    beam->wordend = logs3(logmath, wdend);
     beam->ptranskip = ptranskip;
     beam->bestscore = MAX_NEG_INT32;
     beam->bestwordscore = MAX_NEG_INT32;
@@ -158,13 +158,13 @@ beam_free(beam_t * b)
 }
 
 pl_t *
-pl_init(int32 pheurtype, int32 pl_beam, int32 n_ciphone)
+pl_init(int32 pheurtype, int32 pl_beam, int32 n_ciphone, logmath_t *logmath)
 {
     pl_t *pl;
     pl = (pl_t *) ckd_calloc(1, sizeof(pl_t));
 
     pl->pheurtype = pheurtype;
-    pl->pl_beam = logs3(pl_beam);
+    pl->pl_beam = logs3(logmath, pl_beam);
     pl->n_ciphone = n_ciphone;
     pl->phn_heur_list = (int32 *) ckd_calloc(pl->n_ciphone, sizeof(int32));
 
@@ -425,7 +425,8 @@ fast_gmm_init(int32 down_sampling_ratio,
               int32 isSVQ4SVQ,
               float64 subvqbeam,
               float64 cipbeam,
-              float32 tighten_factor, int32 maxcd, int32 n_ci_sen)
+              float32 tighten_factor, int32 maxcd, int32 n_ci_sen,
+              logmath_t *logmath)
 {
     fast_gmm_t *fg;
 
@@ -440,7 +441,7 @@ fast_gmm_init(int32 down_sampling_ratio,
     fg->gmms = (gmm_select_t *) ckd_calloc(1, sizeof(gmm_select_t));
     fg->gaus = (gau_select_t *) ckd_calloc(1, sizeof(gau_select_t));
 
-    fg->gmms->ci_pbeam = logs3(cipbeam);
+    fg->gmms->ci_pbeam = logs3(logmath, cipbeam);
     fg->gmms->tighten_factor = tighten_factor;
     if (fg->gmms->ci_pbeam < -10000000)
         E_INFO
@@ -451,7 +452,7 @@ fast_gmm_init(int32 down_sampling_ratio,
 
     fg->gaus->rec_bstcid = -1;
 
-    fg->gaus->subvqbeam = logs3(subvqbeam);
+    fg->gaus->subvqbeam = logs3(logmath, subvqbeam);
 
     fg->downs->ds_ratio = down_sampling_ratio;
     fg->downs->cond_ds = mode_cond_ds;

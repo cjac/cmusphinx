@@ -65,6 +65,7 @@
 #ifndef _S3_LMCLASS_H_
 #define _S3_LMCLASS_H_
 
+#include <logmath.h>
 #include "s3types.h"
 
 #ifdef __cplusplus
@@ -150,7 +151,8 @@ void lmclass_free(lmclass_t *lmclass);
  * Lines beginning with a # IN THE FIRST COLUMN are comments and are ignored.
  */
 lmclass_set_t *lmclass_loadfile (lmclass_set_t *lmclass_set,  /**< An lm class set */
-                                 char *file /**< A class definition file */
+                                 char *file, /**< A class definition file */
+                                 logmath_t *logmath
     );
 
 

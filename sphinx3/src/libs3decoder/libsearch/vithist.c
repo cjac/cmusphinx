@@ -535,8 +535,8 @@ vithist_rescore(vithist_t * vh, kbcore_t * kbc,
     if (dict_filler_word(kbcore_dict(kbc), wid)) {
 
         tve.path.score = score;
-	tve.lscr = fillpen(kbcore_fillpen(kbc), wid);
-	tve.path.score += tve.lscr;
+        tve.lscr = fillpen(kbcore_fillpen(kbc), wid);
+        tve.path.score += tve.lscr;
 
         tve.path.pred = pred;
         tve.lmstate.lm3g = pve->lmstate.lm3g;
@@ -556,12 +556,12 @@ vithist_rescore(vithist_t * vh, kbcore_t * kbc,
             pve = vithist_id2entry(vh, i);
 
             if (pve->valid) {
-		tve.path.score = pve->path.score + tve.ascr;
-		tve.lscr = lm_tg_score(kbcore_lm(kbc),
-				       pve->lmstate.lm3g.lwid[1],
-				       pve->lmstate.lm3g.lwid[0],
-				       lwid, wid);
-		tve.path.score += tve.lscr;
+                tve.path.score = pve->path.score + tve.ascr;
+                tve.lscr = lm_tg_score(kbcore_lm(kbc),
+                                       pve->lmstate.lm3g.lwid[1],
+                                       pve->lmstate.lm3g.lwid[0],
+                                       lwid, wid);
+                tve.path.score += tve.lscr;
                 if ((tve.path.score - vh->wbeam) >= vh->bestscore[vh->n_frm]) {
                     tve.path.pred = i;
                     tve.lmstate.lm3g.lwid[1] = pve->lmstate.lm3g.lwid[0];
@@ -597,7 +597,7 @@ vithist_frame_gc(vithist_t * vh, int32 frm)
         ve = vithist_id2entry(vh, i);
         if (ve->valid) {
             if (i != te) {      /* Move i to te */
-		tve = vithist_id2entry(vh, te);
+                tve = vithist_id2entry(vh, te);
                 /**tve = *ve;*/
                 vithist_entry_cp(tve, ve);
             }
@@ -666,7 +666,7 @@ vithist_prune(vithist_t * vh, dict_t * dict, int32 frm,
     wid[0] = BAD_S3WID;
 
     for (i = se; i <= fe; i++) {
-	ve = vithist_id2entry(vh, i);
+        ve = vithist_id2entry(vh, i);
         heap_insert(h, (void *) ve, -(ve->path.score));
         ve->valid = 0;
     }
@@ -674,7 +674,7 @@ vithist_prune(vithist_t * vh, dict_t * dict, int32 frm,
     /* Mark invalid entries: beyond maxwpf words and below threshold */
     filler_done = 0;
     while ((heap_pop(h, (void **) (&ve), &i) > 0)
-	   && ve->path.score >= th /* the score (or the cw scores) is above threshold */
+           && ve->path.score >= th /* the score (or the cw scores) is above threshold */
            && maxhist > 0)        /* Number of history is larger than 0 */
     {
         if (dict_filler_word(dict, ve->wid)) {
@@ -794,18 +794,18 @@ vithist_utt_end(vithist_t * vh, kbcore_t * kbc)
     endwid = lm_finishwid(lm);
 
     for (i = sv; i < nsv; i++) {
-	ve = vithist_id2entry(vh, i);
-	scr = ve->path.score;
-	scr +=
-	    lm_tg_score(lm, ve->lmstate.lm3g.lwid[1],
-			ve->lmstate.lm3g.lwid[0], endwid,
-			dict_finishwid(dict));
+        ve = vithist_id2entry(vh, i);
+        scr = ve->path.score;
+        scr +=
+            lm_tg_score(lm, ve->lmstate.lm3g.lwid[1],
+                        ve->lmstate.lm3g.lwid[0], endwid,
+                        dict_finishwid(dict));
 
-	if (bestscore < scr) {
-	    bestscore = scr;
-	    bestvh = i;
-	    bestve = ve;
-	}
+        if (bestscore < scr) {
+            bestscore = scr;
+            bestvh = i;
+            bestve = ve;
+        }
     }
     assert(bestvh >= 0);
 
@@ -888,7 +888,7 @@ vithist_partialutt_end(vithist_t * vh, kbcore_t * kbc)
     bestvh = -1;
 
     for (i = sv; i < nsv; i++) {
-	ve = vithist_id2entry(vh, i);
+        ve = vithist_id2entry(vh, i);
 
         scr = ve->path.score;
         scr +=
@@ -1030,7 +1030,7 @@ vithist_dump(vithist_t * vh, int32 frm, kbcore_t * kbc, FILE * fp)
                 vh->bestvh[i]);
 
         for (j = vh->frame_start[i]; j < vh->frame_start[i + 1]; j++) {
-	    ve = vithist_id2entry(vh, j);
+            ve = vithist_id2entry(vh, j);
 
             fprintf(fp, "\t%c%6d %5d %5d %11d %9d %8d %7d %4d %s",
                     (ve->valid ? ' ' : '*'), j,
@@ -1069,7 +1069,7 @@ vithist_backtrace(vithist_t * vh, int32 id, dict_t * dict)
     ci = BAD_S3CIPID;
     while (id > 0) {
         /*      E_INFO("id %d\n",id); */
-	ve = vithist_id2entry(vh, id);
+        ve = vithist_id2entry(vh, id);
         assert(ve);
         h = (srch_hyp_t *) ckd_calloc(1, sizeof(srch_hyp_t));
         h->id = ve->wid;
@@ -1093,7 +1093,7 @@ vithist_backtrace(vithist_t * vh, int32 id, dict_t * dict)
 }
 
 dag_t *
-vithist_dag_build(vithist_t * vh, glist_t hyp, dict_t * dict, int32 endid, cmd_ln_t *config)
+vithist_dag_build(vithist_t * vh, glist_t hyp, dict_t * dict, int32 endid, cmd_ln_t *config, logmath_t *logmath)
 {
     glist_t *sfwid;             /* To maintain <start-frame, word-id> pair dagnodes */
     vithist_entry_t *ve, *ve2;
@@ -1105,7 +1105,7 @@ vithist_dag_build(vithist_t * vh, glist_t hyp, dict_t * dict, int32 endid, cmd_l
     dag_t *dag;
 
     dag = ckd_calloc(1, sizeof(*dag));
-    dag_init(dag, config);
+    dag_init(dag, config, logmath);
     sfwid = (glist_t *) ckd_calloc(vh->n_frm + 1, sizeof(glist_t));
 
     /* Min. endframes value that a node must persist for it to be not ignored */
@@ -1114,7 +1114,7 @@ vithist_dag_build(vithist_t * vh, glist_t hyp, dict_t * dict, int32 endid, cmd_l
     n_node = 0;
     sf = 0;
     for (i = 0; i < vh->n_entry; i++) { /* This range includes the dummy <s> and </s> entries */
-	ve = vithist_id2entry(vh, i);
+        ve = vithist_id2entry(vh, i);
         if (!ve->valid)
             continue;
 
@@ -1192,9 +1192,9 @@ vithist_dag_build(vithist_t * vh, glist_t hyp, dict_t * dict, int32 endid, cmd_l
      */
     for (gn = hyp; gn; gn = gnode_next(gn)) {
         /*
-	 * As long as the above comment about the MAJOR HACK is true
-	 * the start time has to be hacked here too
-	 */
+         * As long as the above comment about the MAJOR HACK is true
+         * the start time has to be hacked here too
+         */
         srch_hyp_t *h = (srch_hyp_t *) gnode_ptr(gn);
         int hacked_sf = h->sf == 0 ? 1 : h->sf;
         for (gn2 = sfwid[hacked_sf]; gn2; gn2 = gnode_next(gn2)) {
@@ -1463,8 +1463,8 @@ lattice_entry(latticehist_t * lathist, s3wid_t w, int32 f, int32 score,
             lathist->lattice =
                 ckd_realloc(lathist->lattice,
                             lathist->lat_alloc * sizeof(*lathist->lattice));
-	    memset(lathist->lattice + lathist->n_lat_entry,
-		   0, LAT_ALLOC_INCR * sizeof(*lathist->lattice));
+            memset(lathist->lattice + lathist->n_lat_entry,
+                   0, LAT_ALLOC_INCR * sizeof(*lathist->lattice));
         }
 
         lathist->lattice[lathist->n_lat_entry].wid = w;
@@ -1677,23 +1677,23 @@ lat_final_entry(latticehist_t * lathist, dict_t * dict, int32 curfrm,
 
     /* Find lattice entry in last frame for FINISH_WORD */
     for (l = lathist->frm_latstart[curfrm - 1];
-	 l < lathist->n_lat_entry; l++) {
-	if (dict_basewid(dict, lathist->lattice[l].wid) ==
-	    dict->finishwid)
-	    break;
+         l < lathist->n_lat_entry; l++) {
+        if (dict_basewid(dict, lathist->lattice[l].wid) ==
+            dict->finishwid)
+            break;
     }
 
     if (l < lathist->n_lat_entry) {
-	/* FINISH_WORD entry found; backtrack to obtain best Viterbi path */
-	return (l);
+        /* FINISH_WORD entry found; backtrack to obtain best Viterbi path */
+        return (l);
     }
 
     /* Find last available lattice entry with best ending score */
     E_WARN
-	("When %s is used as final word, %s: Search didn't end in %s\n",
-	 dict_wordstr(dict, dict->finishwid), uttid, dict_wordstr(dict,
-								  dict->
-								  finishwid));
+        ("When %s is used as final word, %s: Search didn't end in %s\n",
+         dict_wordstr(dict, dict->finishwid), uttid, dict_wordstr(dict,
+                                                                  dict->
+                                                                  finishwid));
 
     bestscore = S3_LOGPROB_ZERO;
     for (f = curfrm - 1; (f >= 0) && (bestscore <= S3_LOGPROB_ZERO); --f) {
@@ -1767,7 +1767,7 @@ lattice_backtrace(latticehist_t * lathist,
 dag_t *
 latticehist_dag_build(latticehist_t * vh, glist_t hyp, dict_t * dict,
                       lm_t *lm, ctxt_table_t *ctxt, fillpen_t *fpen,
-                      int32 endid, cmd_ln_t *config)
+                      int32 endid, cmd_ln_t *config, logmath_t *logmath)
 {
     glist_t *sfwid;             /* To maintain <start-frame, word-id> pair dagnodes */
     lattice_t *ve, *ve2;
@@ -1780,7 +1780,7 @@ latticehist_dag_build(latticehist_t * vh, glist_t hyp, dict_t * dict,
     dag_t *dag;
 
     dag = ckd_calloc(1, sizeof(*dag));
-    dag_init(dag, config);
+    dag_init(dag, config, logmath);
     sfwid = (glist_t *) ckd_calloc(vh->n_frm, sizeof(glist_t));
 
     /* Min. endframes value that a node must persist for it to be not ignored */
@@ -1789,7 +1789,7 @@ latticehist_dag_build(latticehist_t * vh, glist_t hyp, dict_t * dict,
     n_node = 0;
     sf = 0;
     for (i = 0; i < vh->n_lat_entry; i++) { /* This range includes the dummy <s> and </s> entries */
-	ve = &vh->lattice[i];
+        ve = &vh->lattice[i];
         sf = LATID2SF(vh, i);
         ef = ve->frm;
 

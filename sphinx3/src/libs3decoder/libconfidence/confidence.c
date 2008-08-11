@@ -193,7 +193,7 @@ delete_filler(ca_dag * word_lattice, dict_t * dict, fillpen_t * fillpen)
                         break;
                 if (lll) {
                     lll->ascore =
-                        logs3_add(int_add(score, ll->ascore), lll->ascore);
+                        logmath_add(word_lattice->logmath, int_add(score, ll->ascore), lll->ascore);
                     continue;
                 }
                 lll = (ca_daglink *) malloc(sizeof(ca_daglink));
@@ -243,7 +243,7 @@ delete_filler(ca_dag * word_lattice, dict_t * dict, fillpen_t * fillpen)
                         break;
                 if (lll) {
                     lll->ascore =
-                        logs3_add(int_add(score, ll->ascore), lll->ascore);
+                        logmath_add(word_lattice->logmath, int_add(score, ll->ascore), lll->ascore);
                     continue;
                 }
                 lll = (ca_daglink *) malloc(sizeof(ca_daglink));
@@ -387,7 +387,7 @@ post_check_lattice(ca_dag * word_lattice, dict_t * dict)
         if (d != word_lattice->exit.to) {
             fwdscore = CONFIDENCE_MIN_INT;
             for (l = d->succlist; l; l = l->next)
-                fwdscore = logs3_add(fwdscore, l->ascore);      /*int_add(fwdscore, l->ascore); */
+                fwdscore = logmath_add(word_lattice->logmath, fwdscore, l->ascore);      /*int_add(fwdscore, l->ascore); */
             n = 0;
             bwdscore = CONFIDENCE_MIN_INT;
             for (l = d->succlist; l; l = l->next) {
@@ -395,7 +395,7 @@ post_check_lattice(ca_dag * word_lattice, dict_t * dict)
                 for (ll = tod->predlist; ll; ll = ll->next) {
                     if (ll->to == d) {
                         n++;
-                        bwdscore = logs3_add(bwdscore, ll->ascore);     /*nt_add(bwdscore, ll->ascore); */
+                        bwdscore = logmath_add(word_lattice->logmath, bwdscore, ll->ascore);     /*nt_add(bwdscore, ll->ascore); */
                     }
                 }
             }
@@ -418,7 +418,7 @@ post_check_lattice(ca_dag * word_lattice, dict_t * dict)
             bwdscore = CONFIDENCE_MIN_INT;
             for (l = d->predlist; l; l = l->next) {
                 /*      E_INFO("bwdscore %d, l->ascore %d\n", bwdscore, l->ascore); */
-                bwdscore = logs3_add(bwdscore, l->ascore);      /*int_add(bwdscore, l->ascore); */
+                bwdscore = logmath_add(word_lattice->logmath, bwdscore, l->ascore);      /*int_add(bwdscore, l->ascore); */
             }
             n = 0;
             fwdscore = CONFIDENCE_MIN_INT;
@@ -429,7 +429,7 @@ post_check_lattice(ca_dag * word_lattice, dict_t * dict)
                         n++;
                         /*      E_INFO("fwdscore %d, ll->ascore %d\n", fwdscore, ll->ascore); */
 
-                        fwdscore = logs3_add(fwdscore, ll->ascore);     /*int_add(fwdscore, ll->ascore); */
+                        fwdscore = logmath_add(word_lattice->logmath, fwdscore, ll->ascore);     /*int_add(fwdscore, ll->ascore); */
                     }
                 }
             }
@@ -857,6 +857,7 @@ ca_dag_load_lattice(char *filename, ca_dag * word_lattice, lm_t * lm,
     word_lattice->nfrm = -1;
     word_lattice->nnode = -1;
     word_lattice->nedge = -1;
+    word_lattice->logmath = lm->logmath;
 
     printf("reading word lattice file: %s\n", filename);
     if ((fp = fopen_compchk(filename, &ispipe)) == NULL) {
@@ -1126,10 +1127,10 @@ alpha_beta(ca_dag * word_lattice, lm_t * lm, dict_t * dict)
 #endif
                 for (ll = fromd->predlist->next; ll; ll = ll->next)
 #ifdef ACOUSTIC_ONLY
-                    sum = logs3_add(sum, ll->alpha_beta);
+                    sum = logmath_add(word_lattice->logmath, sum, ll->alpha_beta);
 #else
                     sum =
-                        logs3_add(sum,
+                        logmath_add(word_lattice->logmath, sum,
                                   int_add(ll->alpha_beta,
                                           ca_lm_tg_score(lm, dict,
                                                          ll->to->wid,
@@ -1180,10 +1181,10 @@ alpha_beta(ca_dag * word_lattice, lm_t * lm, dict_t * dict)
 #endif
                 for (ll = tod->succlist->next; ll; ll = ll->next)
 #ifdef ACOUSTIC_ONLY
-                    sum = logs3_add(sum, ll->alpha_beta);
+                    sum = logmath_add(word_lattice->logmath, sum, ll->alpha_beta);
 #else
                     sum =
-                        logs3_add(sum,
+                        logmath_add(word_lattice->logmath, sum,
                                   int_add(ll->alpha_beta,
                                           ca_lm_tg_score(lm, dict, d->wid,
                                                          tod->wid,
@@ -1225,7 +1226,7 @@ alpha_beta(ca_dag * word_lattice, lm_t * lm, dict_t * dict)
 
                 for (l = d->succlist->next; l; l = l->next) {
 
-                    sum = logs3_add(sum, l->alpha_beta);
+                    sum = logmath_add(word_lattice->logmath, sum, l->alpha_beta);
                     /*      E_INFO("Sum %d AB %d From %s To %s\n",sum, l->alpha_beta, l->from->word, l->to->word); */
                 }
                 d->cscore = sum;
@@ -1240,7 +1241,7 @@ alpha_beta(ca_dag * word_lattice, lm_t * lm, dict_t * dict)
                 /*      E_INFO("Sum %d AB %d From %s To %s\n",sum, d->predlist->alpha_beta, d->predlist->from->word, d->predlist->to->word); */
 
                 for (l = d->predlist->next; l; l = l->next) {
-                    sum = logs3_add(sum, l->alpha_beta);
+                    sum = logmath_add(word_lattice->logmath, sum, l->alpha_beta);
                     /*      E_INFO("Sum %d AB %d From %s To %s\n",sum, l->alpha_beta, l->from->word, l->to->word); */
                 }
                 d->cscore = sum;
@@ -1266,10 +1267,10 @@ alpha_beta(ca_dag * word_lattice, lm_t * lm, dict_t * dict)
                     continue;
 #ifdef ACOUSTIC_ONLY
                 sum =
-                    logs3_add(sum, int_add(l->alpha_beta, ll->alpha_beta));
+                    logmath_add(word_lattice->logmath, sum, int_add(l->alpha_beta, ll->alpha_beta));
 #else
                 sum =
-                    logs3_add(sum,
+                    logmath_add(word_lattice->logmath, sum,
                               int_add(int_add
                                       (l->alpha_beta, ll->alpha_beta),
                                       ca_lm_tg_score(lm, dict, l->to->wid,
@@ -1329,7 +1330,7 @@ pwp(seg_hyp_line_t * seg_hyp_line, ca_dag * word_lattice)
 /* 	  ((strstr(d->word, w->sh.word) != NULL) || (strstr(w->sh.word, d->word) != NULL))) { */
             if (strstr(d->word, w->sh.word) != NULL
                 || strstr(w->sh.word, d->word) != NULL) {
-                w->sh.cscr = logs3_add(d->cscore - p, w->sh.cscr);
+                w->sh.cscr = logmath_add(word_lattice->logmath, d->cscore - p, w->sh.cscr);
             }
         }
     }

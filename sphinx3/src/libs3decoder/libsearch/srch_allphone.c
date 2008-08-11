@@ -51,6 +51,7 @@
 #include "hmm.h"
 #include "s3types.h"
 #include "corpus.h"
+#include "logs3.h"
 
 /**
  * \struct phmm_t
@@ -692,7 +693,7 @@ srch_allphone_init(kb_t *kb, void *srch)
     }
     else {
 	E_WARN("-lm argument missing; doing unconstrained phone-loop decoding\n");
-	allp->inspen = logs3(cmd_ln_float32_r(kbcore_config(kbc), "-wip"));
+	allp->inspen = logs3(kbcore_logmath(kbc), cmd_ln_float32_r(kbcore_config(kbc), "-wip"));
     }
 
     /* Make sure all phones are in the dictionary */
@@ -703,9 +704,9 @@ srch_allphone_init(kb_t *kb, void *srch)
 			  &i, 1);
     }
 
-    allp->beam = logs3(cmd_ln_float64_r(kbcore_config(kbc), "-beam"));
+    allp->beam = logs3(kbcore_logmath(kbc), cmd_ln_float64_r(kbcore_config(kbc), "-beam"));
     E_INFO("logs3(beam)= %d\n", allp->beam);
-    allp->pbeam = logs3(cmd_ln_float64_r(kbcore_config(kbc), "-pbeam"));
+    allp->pbeam = logs3(kbcore_logmath(kbc), cmd_ln_float64_r(kbcore_config(kbc), "-pbeam"));
     E_INFO("logs3(pbeam)= %d\n", allp->pbeam);
 
     allp->frm_hist =
@@ -958,7 +959,7 @@ srch_allphone_gen_dag(void *srch,         /**< a pointer of srch_t */
     int32 i, f, k;
 
     dag = ckd_calloc(1, sizeof(*dag));
-    dag_init(dag, kbcore_config(s->kbc));
+    dag_init(dag, kbcore_config(s->kbc), kbcore_logmath(s->kbc));
 
     sfwid = (glist_t *) ckd_calloc(allp->curfrm, sizeof(glist_t));
 

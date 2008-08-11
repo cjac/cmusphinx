@@ -125,6 +125,7 @@
 #define HYP_SZ               1024
 
 
+#include <logmath.h>
 #include <glist.h>
 #include <whmm.h>
 #include <fsg_lextree.h>
@@ -191,6 +192,7 @@ typedef struct fsg_search_s {
     FILE* matchsegfp; 
 
     cmd_ln_t *config;
+    logmath_t *logmath;
 } fsg_search_t;
 
 
@@ -204,7 +206,7 @@ typedef struct fsg_search_s {
  * still created.  If an FSG is provided, it is made the currently active
  * FSG.
  */
-fsg_search_t *fsg_search_init (word_fsg_t *,void *srch_struct);
+fsg_search_t *fsg_search_init (word_fsg_t *, void *srch_struct);
 
 
 /**

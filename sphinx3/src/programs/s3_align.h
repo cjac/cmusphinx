@@ -108,6 +108,7 @@
 /** \file s3_align.h
     \brief data structure for alignment
  */
+#include <logmath.h>
 #include <s3types.h>
 
 
@@ -154,7 +155,7 @@ typedef struct align_wdseg_s {
 } align_wdseg_t;
 
 
-int32 align_init(mdef_t * _mdef, tmat_t * _tmat, dict_t * _dict, cmd_ln_t *_config);
+int32 align_init(mdef_t * _mdef, tmat_t * _tmat, dict_t * _dict, cmd_ln_t *_config, logmath_t *_logmath);
 
 void align_free(void);
 

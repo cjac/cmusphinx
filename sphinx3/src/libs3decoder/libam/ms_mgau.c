@@ -141,7 +141,8 @@ ms_mgau_model_t *
 ms_mgau_init(const char *meanfile,
              const char *varfile, float64 varfloor,
              const char *mixwfile, float64 mixwfloor,
-             int32 precomp, const char *senmgau, const char *lambdafile, int32 _topn)
+             int32 precomp, const char *senmgau, const char *lambdafile,
+	     int32 _topn, logmath_t *logmath)
 {
     /* Codebooks */
     int32 i;
@@ -157,9 +158,9 @@ ms_mgau_init(const char *meanfile,
     msg->s = NULL;
     msg->i = NULL;
 
-    msg->g = gauden_init(meanfile, varfile, varfloor, precomp);
+    msg->g = gauden_init(meanfile, varfile, varfloor, precomp, logmath);
 
-    msg->s = senone_init(mixwfile, senmgau, mixwfloor);
+    msg->s = senone_init(mixwfile, senmgau, mixwfloor, logmath);
 
     g = ms_mgau_gauden(msg);
     s = ms_mgau_senone(msg);
@@ -189,7 +190,7 @@ ms_mgau_init(const char *meanfile,
 
     /* CD/CI senone interpolation weights file, if present */
     if (lambdafile != NULL) {
-        msg->i = interp_init(lambdafile);
+        msg->i = interp_init(lambdafile, logmath);
         /* Verify interpolation weights size with senones */
         if (msg->i->n_sen != s->n_sen)
             E_FATAL("Interpolation file has %d weights; but #senone= %d\n",

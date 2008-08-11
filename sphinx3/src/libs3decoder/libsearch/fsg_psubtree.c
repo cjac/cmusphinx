@@ -175,7 +175,8 @@ psubtree_add_trans(fsg_pnode_t * root,
                    dict_t * dict,
                    mdef_t * mdef,
                    ctxt_table_t * ctxt_tab,
-                   cmd_ln_t *config)
+                   cmd_ln_t *config,
+                   logmath_t *logmath)
 {
 
     int32 wip;                  /* Word Insertion Penalty */
@@ -198,8 +199,8 @@ psubtree_add_trans(fsg_pnode_t * root,
     int32 i;
 
     lw = cmd_ln_float32_r(config, "-lw");
-    pip = (int32) (logs3(cmd_ln_float32_r(config, "-phonepen")) * lw);
-    wip = (int32) (logs3(cmd_ln_float32_r(config, "-wip")) * lw);
+    pip = (int32) (logs3(logmath, cmd_ln_float32_r(config, "-phonepen")) * lw);
+    wip = (int32) (logs3(logmath, cmd_ln_float32_r(config, "-wip")) * lw);
 
     silcipid = mdef->sil;
     n_ci = mdef_n_ciphone(mdef);
@@ -506,7 +507,7 @@ psubtree_add_trans(fsg_pnode_t * root,
 fsg_pnode_t *
 fsg_psubtree_init(hmm_context_t *ctx,
                   word_fsg_t * fsg, int32 from_state,
-                  fsg_pnode_t ** alloc_head, cmd_ln_t *config)
+                  fsg_pnode_t ** alloc_head, cmd_ln_t *config, logmath_t *logmath)
 {
     int32 dst;
     gnode_t *gn;
@@ -538,7 +539,7 @@ fsg_psubtree_init(hmm_context_t *ctx,
                                       word_fsg_rc(fsg, dst),
                                       alloc_head,
                                       fsg->dict,
-                                      fsg->mdef, fsg->ctxt, config);
+                                      fsg->mdef, fsg->ctxt, config, logmath);
         }
     }
 

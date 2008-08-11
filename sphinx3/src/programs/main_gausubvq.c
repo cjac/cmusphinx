@@ -120,6 +120,7 @@ main(int32 argc, char *argv[])
     int32 stdev;
     int32 i, j, v, m, c;
     cmd_ln_t *config;
+    logmath_t *logmath;
 
     print_appl_info(argv[0]);
     cmd_ln_appl_enter(argc, argv, "default.arg", arg);
@@ -127,22 +128,22 @@ main(int32 argc, char *argv[])
 
     config = cmd_ln_get();
 
-    logs3_init(cmd_ln_float32_r(config, "-logbase"), 1, cmd_ln_int32_r(config, "-log3table"));      /*Report Progress, use log table */
+    logmath = logs3_init(cmd_ln_float32_r(config, "-logbase"), 1, cmd_ln_int32_r(config, "-log3table"));      /*Report Progress, use log table */
 
     /* Load means/vars but DO NOT precompute variance inverses or determinants */
     mgau = mgau_init(cmd_ln_str_r(config, "-mean"),
                      cmd_ln_str_r(config, "-var"), 0.0 /* no varfloor */ ,
                      cmd_ln_str_r(config, "-mixw"), cmd_ln_float32_r(config, "-mixwfloor"), FALSE,  /* No precomputation */
-                     ".cont.", MIX_INT_FLOAT_COMP);
+                     ".cont.", MIX_INT_FLOAT_COMP, logmath);
 
     /* Parse subvector spec argument; subvec is null terminated; subvec[x] is -1 terminated */
     subvec = parse_subvecs(cmd_ln_str_r(config, "-svspec"));
 
     if (cmd_ln_str_r(config, "-subvq")) {
-	    if ((fpout = fopen(cmd_ln_str_r(config, "-subvq"), "w")) == NULL) {
-		    E_ERROR_SYSTEM("Failed to open output file '%s'", fpout);
-		    return 1;
-	    }
+            if ((fpout = fopen(cmd_ln_str_r(config, "-subvq"), "w")) == NULL) {
+                    E_ERROR_SYSTEM("Failed to open output file '%s'", fpout);
+                    return 1;
+            }
     }
     else
         fpout = stdout;
@@ -283,7 +284,7 @@ main(int32 argc, char *argv[])
     fprintf(fpout, "End\n");
     fclose(fpout);
 
-    logs_free();
+    logmath_free(logmath);
 
     cmd_ln_free_r(config);
     exit(0);

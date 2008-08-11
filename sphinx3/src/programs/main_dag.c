@@ -251,6 +251,7 @@ static const char *matchfile;
 static const char *matchsegfile;
 static FILE *matchfp, *matchsegfp;
 static cmd_ln_t *config;
+static logmath_t *logmath;
 
 /*
  * Command line arguments.
@@ -314,14 +315,16 @@ models_init(void)
                        cmd_ln_str_r(config, "-lmdumpdir"),
                        cmd_ln_float32_r(config, "-lw"),
                        cmd_ln_float32_r(config, "-wip"),
-                       cmd_ln_float32_r(config, "-uw"), dict);
+                       cmd_ln_float32_r(config, "-uw"), dict,
+                       logmath);
 
     /* Filler penalties */
     fpen = fillpen_init(dict, cmd_ln_str_r(config, "-fillpen"),
                         cmd_ln_float32_r(config, "-silprob"),
                         cmd_ln_float32_r(config, "-fillprob"),
                         cmd_ln_float32_r(config, "-lw"),
-                        cmd_ln_float32_r(config, "-wip"));
+                        cmd_ln_float32_r(config, "-wip"),
+                        logmath);
 
 }
 
@@ -408,9 +411,9 @@ decode_utt(char *uttid, FILE * _matchfp, FILE * _matchsegfp)
         sprintf(dagfile, "%s.%s", uttid, latext);
 
     dag = dag_load(dagfile,
-		   cmd_ln_int32_r(config, "-maxedge"),
-		   cmd_ln_float32_r(config, "-logbase"),
-		   cmd_ln_int32_r(config, "-dagfudge"), dict, fpen, config);
+                   cmd_ln_int32_r(config, "-maxedge"),
+                   cmd_ln_float32_r(config, "-logbase"),
+                   cmd_ln_int32_r(config, "-dagfudge"), dict, fpen, config, logmath);
     if (dag == NULL) {
         ptmr_stop(&tm_utt);
         E_ERROR("Failed to load dag from %s\n", dagfile);
@@ -499,8 +502,8 @@ main(int32 argc, char *argv[])
 
     config = cmd_ln_get();
 
-    logs3_init((float64) cmd_ln_float32_r(config, "-logbase"), 1,
-               cmd_ln_int32_r(config, "-log3table"));
+    logmath = logs3_init((float64) cmd_ln_float32_r(config, "-logbase"), 1,
+                         cmd_ln_int32_r(config, "-log3table"));
 
     /* Read in input databases */
     models_init();
@@ -566,7 +569,7 @@ main(int32 argc, char *argv[])
 
     models_free();
 
-    logs_free();
+    logmath_free(logmath);
 
 #if (! WIN32)
     system("ps auxwww | grep s3dag");

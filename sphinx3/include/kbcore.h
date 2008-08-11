@@ -105,6 +105,7 @@
 
 #include <s3types.h>
 #include <cmd_ln.h>
+#include <logmath.h>
 #include "feat.h"
 #include "cont_mgau.h"
 #include "ms_mgau.h"
@@ -156,6 +157,7 @@ typedef struct {
 
     s3lmwid32_t startwid;
     s3lmwid32_t finishwid;
+    logmath_t *logmath;
 } kbcore_t;
 
   
@@ -215,6 +217,7 @@ void linksilences(lm_t* l,kbcore_t *kbc, dict_t *d);
 #define kbcore_n_mgau(k)	((k)->mgau ? mgau_n_mgau((k)->mgau) \
                                 : ((k)->s2_mgau ? (k)->s2_mgau->CdWdPDFMod \
                                    : (k)->ms_mgau->s->n_sen))
+#define kbcore_logmath(k)	((k)->logmath)
 
 
 

@@ -102,9 +102,7 @@
 #endif
 
 #include "kb.h"
-#include "corpus.h"
 #include "utt.h"
-#include "logs3.h"
 #include "srch.h"
 
 /*

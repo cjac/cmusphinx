@@ -176,7 +176,7 @@ main(int argc, char *argv[])
     /* Read LM */
     if ((lm =
          lm_read_advance2(inputfn, "default", 1.0, 0.1, 1.0, 0, inputfmt,
-			  0, 1)) == NULL)
+                          0, 1, NULL)) == NULL)
         E_FATAL("Fail to read inputfn %s in inputfmt %s\n", inputfn,
                 inputfmt);
 

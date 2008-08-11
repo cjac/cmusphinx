@@ -157,7 +157,7 @@
 #endif
 #include "dag.h"
 #include "vithist.h"
-
+#include "logs3.h"
 #include <listelem_alloc.h>
 
 void
@@ -649,7 +649,7 @@ dag_backtrace(srch_hyp_t ** hyp, daglink_t * l, float64 lwf, dict_t * dict,
 }
 
 void
-dag_init(dag_t * dagp, cmd_ln_t *config)
+dag_init(dag_t * dagp, cmd_ln_t *config, logmath_t *logmath)
 {
 
     /* Initialize DAG structure */
@@ -664,6 +664,7 @@ dag_init(dag_t * dagp, cmd_ln_t *config)
     dagp->filler_removed = 0;
     dagp->fudged = 0;
     dagp->hook = NULL;
+    dagp->logmath = logmath;
 }
 
 
@@ -837,8 +838,8 @@ dag_write_htk(dag_t *dag,
 
             fprintf(fp, "J=%-10d S=%-5d E=%-5d W=%-20s a=%-10.2f v=%-5d l=%-10.2f\n",
                     i, l->node->seqid, d->seqid,
-                    dict_wordstr(dict, b), logs3_to_log(l->ascr), nalt,
-                    logs3_to_log(lm ? lm_rawscore(lm, l->lscr) : l->lscr));
+                    dict_wordstr(dict, b), logmath_log_to_ln(dag->logmath, l->ascr), nalt,
+                    logmath_log_to_ln(dag->logmath, lm ? lm_rawscore(lm, l->lscr) : l->lscr));
             ++i;
         }
     }
@@ -1015,8 +1016,8 @@ dag_bypass_filler_nodes(dag_t * dag, float64 lwf, dict_t * dict,
 
             ascr = plink->ascr;
             ascr += ((fillpen(fpen, dict_basewid(dict, d->wid))
-                      - logs3(fpen->wip)) * lwf
-                     + logs3(fpen->wip));
+                      - logs3(dag->logmath, fpen->wip)) * lwf
+                     + logs3(dag->logmath, fpen->wip));
 
             /* Link this predecessor of d to successors of d */
             for (slink = d->succlist; slink; slink = slink->next) {
@@ -1077,7 +1078,8 @@ dag_load(char *file,          /**< Input: File to lod from */
            int32 fudge,           /**< The number of fudges added */
            dict_t * dict,             /**< Dictionary */
            fillpen_t * fpen,          /**< Filler penalty structure */
-           cmd_ln_t *config
+           cmd_ln_t *config,
+           logmath_t *logmath
     )
 {
 
@@ -1099,7 +1101,7 @@ dag_load(char *file,          /**< Input: File to lod from */
     report = 0;
     lathist = NULL;
     dag = ckd_calloc(1, sizeof(dag_t));
-    dag_init(dag, config);
+    dag_init(dag, config, logmath);
 
     finishwid = dict_wordid(dict, S3_FINISH_WORD);
 
@@ -1149,8 +1151,8 @@ dag_load(char *file,          /**< Input: File to lod from */
             int32 orig, this;
             float64 diff;
 
-            orig = logs3(lb - 1.0);
-            this = logs3(f32arg - 1.0);
+            orig = logs3(logmath, lb - 1.0);
+            this = logs3(logmath, f32arg - 1.0);
             diff = ((orig - this) * 1000.0) / orig;
             if (diff < 0)
                 diff = -diff;

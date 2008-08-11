@@ -35,6 +35,7 @@ main(int _argc, char **_argv)
   s2_fsg_trans_t *trans;
   FILE *out;
   int n_trans = 0;
+  logmath_t *logmath;
 
   print_appl_info(_argv[0]);
   if ((config = cmd_ln_parse_r(NULL, defn, _argc, _argv, TRUE)) == NULL)
@@ -47,9 +48,9 @@ main(int _argc, char **_argv)
   if ((out = fopen(fsg_file, "w")) == NULL)
     E_FATAL("Error opening output FSG file\n");
 
-  logs3_init(1.0001, 0, 0);
+  logmath = logs3_init(1.0001, 0, 0);
   cfg = s3_cfg_read_simple(cfg_file);
-  s3_cfg_compile_rules(cfg);
+  s3_cfg_compile_rules(cfg, logmath);
   fsg = s3_cfg_convert_to_fsg(cfg, max_expansion);
 
   fprintf(out, "# Automatic CFG to FSG conversion\n");

@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "err.h"
+#include <err.h>
 #include "hmm.h"
 #include "mdef.h"
 #include "tmat.h"
@@ -16,15 +16,16 @@ main(int argc, char *argv[])
 	mdef_t *mdef;
 	tmat_t *tmat;
 	int32 *senscr;
+	logmath_t *logmath;
 
 	if (argc != 3) {
 		fprintf(stderr, "Usage: %s MDEF TMAT\n", argv[0]);
 		return 1;
 	}
 
-	logs3_init(1.0001, 1, 1);
+	logmath = logs3_init(1.0001, 1, 1);
 	mdef = mdef_init(argv[1], 1);
-	tmat = tmat_init(argv[2], 1e-5, 1);
+	tmat = tmat_init(argv[2], 1e-5, 1, logmath);
 	senscr = ckd_calloc(mdef_n_sen(mdef), sizeof(*senscr));
 	ctx = hmm_context_init(mdef_n_emit_state(mdef),
 			       tmat->tp, senscr,

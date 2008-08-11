@@ -268,7 +268,7 @@ senone_mixw_read(senone_t * s, const char *file_name)
     if ((s->mixwfloor <= 0.0) || (s->mixwfloor >= 1.0))
         E_FATAL("mixwfloor (%e) not in range (0, 1)\n", s->mixwfloor);
 
-    p = logs3(s->mixwfloor);
+    p = logs3(s->logmath, s->mixwfloor);
 
 #if TRUNCATE_LOGPDF
     for (s->shift = 0, p = -p; p >= 256; s->shift++, p >>= 1);
@@ -313,7 +313,7 @@ senone_mixw_read(senone_t * s, const char *file_name)
 
             /* Convert to logs3, truncate to 8 bits, and store in s->pdf */
             for (c = 0; c < s->n_cw; c++) {
-                p = -(logs3(pdf[c]));
+                p = -(logs3(s->logmath, pdf[c]));
 
 #if TRUNCATE_LOGPDF
                 p += (1 << (s->shift - 1)) - 1; /* Rounding before truncation */
@@ -356,7 +356,7 @@ senone_mixw_read(senone_t * s, const char *file_name)
 
 
 senone_t *
-senone_init(const char *mixwfile, const char *sen2mgau_map_file, float32 mixwfloor)
+senone_init(const char *mixwfile, const char *sen2mgau_map_file, float32 mixwfloor, logmath_t *logmath)
 {
     senone_t *s;
     int32 n = 0, i;
@@ -364,6 +364,7 @@ senone_init(const char *mixwfile, const char *sen2mgau_map_file, float32 mixwflo
     assert(sen2mgau_map_file);
 
     s = (senone_t *) ckd_calloc(1, sizeof(senone_t));
+    s->logmath = logmath;
     s->mixwfloor = mixwfloor;
 
 
@@ -465,7 +466,7 @@ senone_eval(senone_t * s, s3senid_t id, gauden_dist_t ** dist, int32 n_top)
                 fdist[t].dist - (s->pdf[f][fdist[t].id][id]);
 #endif
 
-            fscr = logs3_add(fscr, fwscr);
+            fscr = logmath_add(s->logmath, fscr, fwscr);
 
         }
 
@@ -522,7 +523,7 @@ senone_eval_all(senone_t * s, gauden_dist_t ** dist, int32 n_top,
 #else
             scr = cwdist - (pdf[i]);
 #endif
-            senscr[i] = logs3_add(senscr[i], scr);
+            senscr[i] = logmath_add(s->logmath, senscr[i], scr);
         }
     }
 
@@ -551,7 +552,7 @@ senone_eval_all(senone_t * s, gauden_dist_t ** dist, int32 n_top,
 #else
                 scr = cwdist - (pdf[i]);
 #endif
-                featscr[i] = logs3_add(featscr[i], scr);
+                featscr[i] = logmath_add(s->logmath, featscr[i], scr);
             }
         }
 

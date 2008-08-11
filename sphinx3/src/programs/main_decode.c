@@ -117,8 +117,8 @@ static arg_t arg[] = {
      "one file/utterance)"},
 
     /** ARCHAN 20050717: The only argument which I didn't refactor,
-	reason is it makes sense to make every s3.0 family of tool to
-	accept -utt.  DHD 20070525: I have no idea what that means. */
+        reason is it makes sense to make every s3.0 family of tool to
+        accept -utt.  DHD 20070525: I have no idea what that means. */
 
     {"-utt",
      ARG_STRING,
@@ -148,7 +148,7 @@ main(int32 argc, char *argv[])
 
     if (cmd_ln_str_r(config, "-ctl")) {
         /* When -ctlfile is speicified, corpus.c will look at -ctl_lm and
-	   -ctl_mllr to get the corresponding LM and MLLR for the utterance */
+           -ctl_mllr to get the corresponding LM and MLLR for the utterance */
         st->tm = ctl_process(cmd_ln_str_r(config, "-ctl"),
                              cmd_ln_str_r(config, "-ctl_lm"),
                              cmd_ln_str_r(config, "-ctl_mllr"),
@@ -157,7 +157,7 @@ main(int32 argc, char *argv[])
     }
     else if (cmd_ln_str_r(config, "-utt")) {
         /* When -utt is specified, corpus.c will wait for the utterance to
-	   change */
+           change */
         st->tm = ctl_process_utt(cmd_ln_str_r(config, "-utt"),
                                  cmd_ln_int32_r(config, "-ctlcount"),
                                  utt_decode, &kb);

@@ -62,6 +62,7 @@
 #ifndef _WORD_GRAPH_H_
 #define _WORD_GRAPH_H_
 
+#include <logmath.h>
 #include <dag.h>
 #include <dict.h>
 #include <s3types.h>

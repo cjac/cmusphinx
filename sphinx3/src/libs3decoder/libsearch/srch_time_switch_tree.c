@@ -1276,7 +1276,7 @@ srch_TST_gen_dag(void *srch,         /**< a pointer of srch_t */
     srch_TST_graph_t *tstg = (srch_TST_graph_t *) s->grh->graph_struct;
 
     return vithist_dag_build(tstg->vithist, hyp, kbcore_dict(s->kbc),
-                             s->exit_id, kbcore_config(s->kbc));
+                             s->exit_id, kbcore_config(s->kbc), kbcore_logmath(s->kbc));
 }
 
 glist_t

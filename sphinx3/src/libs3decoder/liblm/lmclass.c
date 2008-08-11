@@ -165,7 +165,7 @@ lmclass_addword(lmclass_t *class, lmclass_word_t *new)
 }
 
 lmclass_set_t *
-lmclass_loadfile(lmclass_set_t *lmclass_set, char *file)
+lmclass_loadfile(lmclass_set_t *lmclass_set, char *file, logmath_t *logmath)
 {
     FILE *fp;
     char line[16384], *word[4096], *_eof;
@@ -247,7 +247,7 @@ lmclass_loadfile(lmclass_set_t *lmclass_set, char *file)
                         E_FATAL("Line %d: Prob(%s) out of range (0,1)\n",
                                 lineno, word[1]);
                     /*fix me! */
-                    LOGp = logs3(p);
+                    LOGp = logs3(logmath, p);
                     SUMp += p;
                 }
                 else
@@ -282,7 +282,7 @@ lmclass_loadfile(lmclass_set_t *lmclass_set, char *file)
                         SUMp);
 
             p = ((float32) 1.0 - SUMp) / (float32) n_implicit_prob;
-            LOGp = logs3(p);
+            LOGp = logs3(logmath, p);
 
             for (lmclass_word = lmclass->wordlist;
                  lmclass_word; lmclass_word = lmclass_word->next) {

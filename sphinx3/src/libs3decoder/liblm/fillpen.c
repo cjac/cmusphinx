@@ -80,7 +80,7 @@
 
 fillpen_t *
 fillpen_init(dict_t * dict, const char *file, float64 silprob, float64 fillprob,
-             float64 lw, float64 wip)
+             float64 lw, float64 wip, logmath_t *logmath)
 {
     s3wid_t w, bw;
     float64 prob;
@@ -107,7 +107,7 @@ fillpen_init(dict_t * dict, const char *file, float64 silprob, float64 fillprob,
     prob = fillprob;
     for (w = dict->filler_start; w <= dict->filler_end; w++)
     _fillpen->prob[w - dict->filler_start] =
-        (int32) ((logs3(prob) * lw + logs3(wip)));
+        (int32) ((logs3(logmath, prob) * lw + logs3(logmath, wip)));
 
     /* Overwrite silence penalty (HACK!! backward compatibility) */
     w = dict_wordid(dict, S3_SILENCE_WORD);
@@ -116,7 +116,7 @@ fillpen_init(dict_t * dict, const char *file, float64 silprob, float64 fillprob,
                 S3_SILENCE_WORD);
     prob = silprob;
     _fillpen->prob[w - dict->filler_start] =
-        (int32) ((logs3(prob) * lw + logs3(wip)));
+        (int32) ((logs3(logmath, prob) * lw + logs3(logmath, wip)));
 
     /* Overwrite with filler prob input file, if specified */
     if (!file)
@@ -139,7 +139,7 @@ fillpen_init(dict_t * dict, const char *file, float64 silprob, float64 fillprob,
                     S3_SILENCE_WORD);
 
         _fillpen->prob[w - dict->filler_start] =
-            (int32) ((logs3(prob) * lw + logs3(wip)));
+            (int32) ((logs3(logmath, prob) * lw + logs3(logmath, wip)));
     }
     fclose(fp);
 

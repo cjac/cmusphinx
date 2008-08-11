@@ -238,6 +238,7 @@ static ptmr_t tm_utt;           /* Entire utterance */
 static dict_t *dict;            /* The dictionary       */
 static fillpen_t *fpen;         /* The filler penalty structure. */
 static lmset_t *lmset;          /* The lmset.           */
+static logmath_t *logmath;
 
 static const char *nbestdir;
 static cmd_ln_t *config;
@@ -316,14 +317,16 @@ models_init(void)
                        cmd_ln_str_r(config, "-lmdumpdir"),
                        cmd_ln_float32_r(config, "-lw"),
                        cmd_ln_float32_r(config, "-wip"),
-                       cmd_ln_float32_r(config, "-uw"), dict);
+                       cmd_ln_float32_r(config, "-uw"), dict,
+                       logmath);
 
 
     fpen = fillpen_init(dict, cmd_ln_str_r(config, "-fillpen"),
                         cmd_ln_float32_r(config, "-silprob"),
                         cmd_ln_float32_r(config, "-fillprob"),
                         cmd_ln_float32_r(config, "-lw"),
-                        cmd_ln_float32_r(config, "-wip"));
+                        cmd_ln_float32_r(config, "-wip"),
+                        logmath);
 
 }
 
@@ -385,9 +388,9 @@ utt_astar(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
     latext = cmd_ln_str_r(config, "-latext");
     nbestext = cmd_ln_str_r(config, "-nbestext");
     if (latdir) {
-	build_output_uttfile(dagfile, latdir, uttid, ur->uttfile);
-	strcat(dagfile, ".");
-	strcat(dagfile, latext);
+        build_output_uttfile(dagfile, latdir, uttid, ur->uttfile);
+        strcat(dagfile, ".");
+        strcat(dagfile, latext);
     }
     else
         sprintf(dagfile, "%s.%s", uttid, latext);
@@ -397,27 +400,27 @@ utt_astar(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
 
     nfrm = 0;
     if ((dag = dag_load(dagfile,
-			cmd_ln_int32_r(config, "-maxedge"),
-			cmd_ln_float32_r(config, "-logbase"),
-			cmd_ln_int32_r(config, "-dagfudge"), dict, fpen, config)) != NULL) {
+                        cmd_ln_int32_r(config, "-maxedge"),
+                        cmd_ln_float32_r(config, "-logbase"),
+                        cmd_ln_int32_r(config, "-dagfudge"), dict, fpen, config, logmath)) != NULL) {
         if (dict_filler_word(dict, dag->end->wid))
             dag->end->wid = dict->finishwid;
 
-	dag_remove_unreachable(dag);
+        dag_remove_unreachable(dag);
         if (dag_bypass_filler_nodes(dag, 1.0, dict, fpen) < 0) {
             E_ERROR("maxedge limit (%d) exceeded\n", dag->maxedge);
-	    goto search_done;
-	}
-	dag_compute_hscr(dag, dict, lmset->cur_lm, 1.0);
-	dag_remove_bypass_links(dag);
+            goto search_done;
+        }
+        dag_compute_hscr(dag, dict, lmset->cur_lm, 1.0);
+        dag_remove_bypass_links(dag);
 
-	E_INFO("%5d frames, %6d nodes, %8d edges, %8d bypass\n",
-	       dag->nfrm, dag->nnode, dag->nlink, dag->nbypass);
+        E_INFO("%5d frames, %6d nodes, %8d edges, %8d bypass\n",
+               dag->nfrm, dag->nnode, dag->nlink, dag->nbypass);
 
-	nfrm = dag->nfrm;
-	build_output_uttfile(nbestfile, nbestdir, uttid, ur->uttfile);
-	strcat(nbestfile, ".");
-	strcat(nbestfile, nbestext);
+        nfrm = dag->nfrm;
+        build_output_uttfile(nbestfile, nbestdir, uttid, ur->uttfile);
+        strcat(nbestfile, ".");
+        strcat(nbestfile, nbestext);
         nbest_search(dag, nbestfile, uttid, 1.0, dict, lmset->cur_lm, fpen);
 
         lm_cache_stats_dump(lmset->cur_lm);
@@ -451,8 +454,8 @@ main(int32 argc, char *argv[])
 
     config = cmd_ln_get();
 
-    logs3_init((float64) cmd_ln_float32_r(config, "-logbase"), 1,
-               cmd_ln_int32_r(config, "-log3table"));
+    logmath = logs3_init((float64) cmd_ln_float32_r(config, "-logbase"), 1,
+                         cmd_ln_int32_r(config, "-log3table"));
 
     /* Read in input databases */
     models_init();
@@ -475,7 +478,7 @@ main(int32 argc, char *argv[])
 
     models_free();
 
-    logs_free();
+    logmath_free(logmath);
 
 #if (! WIN32)
     system("ps aguxwww | grep s3astar");

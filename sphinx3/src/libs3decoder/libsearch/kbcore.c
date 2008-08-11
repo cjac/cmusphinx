@@ -259,10 +259,10 @@ s3_am_init(kbcore_t * kbc)
     s3_init_defaults(config);
 
     if ((fn = cmd_ln_str_r(config, "-lda"))) {
-	E_INFO_NOFN("Reading Feature Space Transform from: %s\n", fn);
-	if (feat_read_lda(kbcore_fcb(kbc), fn,
-			  cmd_ln_int32_r(config, "-ldadim")) < 0)
-	    E_FATAL("LDA initialization failed.\n");
+        E_INFO_NOFN("Reading Feature Space Transform from: %s\n", fn);
+        if (feat_read_lda(kbcore_fcb(kbc), fn,
+                          cmd_ln_int32_r(config, "-ldadim")) < 0)
+            E_FATAL("LDA initialization failed.\n");
     }
 
     E_INFO_NOFN("Reading HMM in Sphinx 3 Model format\n");
@@ -273,7 +273,7 @@ s3_am_init(kbcore_t * kbc)
     E_INFO_NOFN("Transition Matrices File: %s\n", cmd_ln_str_r(config, "-tmat"));
 
     if ((kbc->mdef = mdef_init(cmd_ln_str_r(config, "-mdef"),
-			       REPORT_KBCORE)) == NULL)
+                               REPORT_KBCORE)) == NULL)
         E_FATAL("mdef_init(%s) failed\n", cmd_ln_str_r(config, "-mdef"));
 
     if (REPORT_KBCORE) {
@@ -286,13 +286,14 @@ s3_am_init(kbcore_t * kbc)
         E_INFO
             ("Using optimized GMM computation for Continuous HMM, -topn will be ignored\n");
         kbc->mgau = mgau_init(cmd_ln_str_r(config, "-mean"),
-			      cmd_ln_str_r(config, "-var"),
-			      cmd_ln_float32_r(config, "-varfloor"),
-			      cmd_ln_str_r(config, "-mixw"),
-			      cmd_ln_float32_r(config, "-mixwfloor"),
-			      TRUE,      /* Do precomputation */
-			      (char *)fn,
-			      MIX_INT_FLOAT_COMP);     /*Use hybrid integer and float routine */
+                              cmd_ln_str_r(config, "-var"),
+                              cmd_ln_float32_r(config, "-varfloor"),
+                              cmd_ln_str_r(config, "-mixw"),
+                              cmd_ln_float32_r(config, "-mixwfloor"),
+                              TRUE,      /* Do precomputation */
+                              (char *)fn,
+                              MIX_INT_FLOAT_COMP,     /*Use hybrid integer and float routine */
+                              kbc->logmath);
 
         if (kbc->mdef && kbc->mgau) {
             /* Verify senone parameters against model definition parameters */
@@ -307,10 +308,11 @@ s3_am_init(kbcore_t * kbc)
         E_INFO("Using Sphinx2 multi-stream GMM computation\n");
         kbc->s2_mgau = s2_semi_mgau_init(cmd_ln_str_r(config, "-mean"),
                                          cmd_ln_str_r(config, "-var"),
-					 cmd_ln_float32_r(config, "-varfloor"),
-					 cmd_ln_str_r(config, "-mixw"),
-					 cmd_ln_float32_r(config, "-mixwfloor"),
-					 cmd_ln_int32_r(config, "-topn"));
+                                         cmd_ln_float32_r(config, "-varfloor"),
+                                         cmd_ln_str_r(config, "-mixw"),
+                                         cmd_ln_float32_r(config, "-mixwfloor"),
+                                         cmd_ln_int32_r(config, "-topn"),
+                                         kbc->logmath);
         if (kbc->mdef && kbc->s2_mgau) {
             /* Verify senone parameters against model definition parameters */
             if (kbc->mdef->n_sen != kbc->s2_mgau->CdWdPDFMod)
@@ -321,7 +323,7 @@ s3_am_init(kbcore_t * kbc)
          * for other model types. */
         if ((fn = cmd_ln_str_r(config, "-kdtree"))) {
             if (s2_semi_mgau_load_kdtree(kbc->s2_mgau,
-					 fn,
+                                         fn,
                                          cmd_ln_int32_r(config, "-kdmaxdepth"),
                                          cmd_ln_int32_r(config, "-kdmaxbbi")) < 0) {
                 E_FATAL("Failed to load kdtrees from %s\n", fn);
@@ -333,15 +335,16 @@ s3_am_init(kbcore_t * kbc)
         /* Multiple stream Gaussian mixture Initialization */
         E_INFO("Using multi-stream GMM computation\n");
         kbc->ms_mgau = ms_mgau_init(cmd_ln_str_r(config, "-mean"),
-				    cmd_ln_str_r(config, "-var"),
-				    cmd_ln_float32_r(config, "-varfloor"),
-				    cmd_ln_str_r(config, "-mixw"),
-				    cmd_ln_float32_r(config, "-mixwfloor"),
-				    TRUE,        /*Do precomputation */
+                                    cmd_ln_str_r(config, "-var"),
+                                    cmd_ln_float32_r(config, "-varfloor"),
+                                    cmd_ln_str_r(config, "-mixw"),
+                                    cmd_ln_float32_r(config, "-mixwfloor"),
+                                    TRUE,        /*Do precomputation */
                                     (char *)fn,
-				    cmd_ln_exists_r(config, "-lambda")
-				    ? cmd_ln_str_r(config, "-lambda") : NULL,
-                                    cmd_ln_int32_r(config, "-topn"));
+                                    cmd_ln_exists_r(config, "-lambda")
+                                    ? cmd_ln_str_r(config, "-lambda") : NULL,
+                                    cmd_ln_int32_r(config, "-topn"),
+                                    kbc->logmath);
         sen = ms_mgau_senone(kbc->ms_mgau);
         /* Verify senone parameters against model definition parameters */
         if (kbc->mdef->n_sen != sen->n_sen)
@@ -355,10 +358,10 @@ s3_am_init(kbcore_t * kbc)
 
     /* STRUCTURE: Initialize the transition matrices */
     if ((kbc->tmat = tmat_init(cmd_ln_str_r(config, "-tmat"),
-			       cmd_ln_float32_r(config, "-tmatfloor"),
-			       REPORT_KBCORE)) == NULL)
+                               cmd_ln_float32_r(config, "-tmatfloor"),
+                               REPORT_KBCORE, kbc->logmath)) == NULL)
         E_FATAL("tmat_init (%s, %e) failed\n", cmd_ln_str_r(config, "-tmat"),
-		cmd_ln_float32_r(config, "-tmatfloor"));
+                cmd_ln_float32_r(config, "-tmatfloor"));
 
     if (REPORT_KBCORE) {
         tmat_report(kbc->tmat);
@@ -398,19 +401,19 @@ set_cmninit(feat_t *fcb, char const *cmninit)
     int32 nvals;
 
     if (cmninit == NULL)
-	return;
+        return;
     vallist = ckd_salloc(cmninit);
     c = vallist;
     nvals = 0;
     while (nvals < fcb->cmn_struct->veclen
-	   && (cc = strchr(c, ',')) != NULL) {
-	*cc = '\0';
-	fcb->cmn_struct->cmn_mean[nvals] = atof(c);
-	c = cc + 1;
-	++nvals;
+           && (cc = strchr(c, ',')) != NULL) {
+        *cc = '\0';
+        fcb->cmn_struct->cmn_mean[nvals] = atof(c);
+        c = cc + 1;
+        ++nvals;
     }
     if (nvals < fcb->cmn_struct->veclen && *c != '\0') {
-	fcb->cmn_struct->cmn_mean[nvals] = atof(c);
+        fcb->cmn_struct->cmn_mean[nvals] = atof(c);
     }
     ckd_free(vallist);
 }
@@ -440,33 +443,36 @@ kbcore_init(cmd_ln_t *config)
     /* Look for a feat.params very early on, because it influences
      * everything below. */
     if (cmd_ln_str_r(config, "-hmm")) {
-	char *pfile;
-	pfile = string_join(cmd_ln_str_r(config, "-hmm"), "/feat.params", NULL);
-	if (cmd_ln_parse_file_r(config, feat_defn, pfile, FALSE) == 0) {
-	    E_INFO("Parsed model-specific feature parameters from %s\n", pfile);
-	}
-	ckd_free(pfile);
+        char *pfile;
+        pfile = string_join(cmd_ln_str_r(config, "-hmm"), "/feat.params", NULL);
+        if (cmd_ln_parse_file_r(config, feat_defn, pfile, FALSE) == 0) {
+            E_INFO("Parsed model-specific feature parameters from %s\n", pfile);
+        }
+        ckd_free(pfile);
     }
 
-    if (!logs3_init(cmd_ln_float32_r(config, "-logbase"),
-		    REPORT_KBCORE, cmd_ln_int32_r(config, "-log3table")))
-        E_FATAL("Error in logs3_init, exit\n");
+    if ((kb->logmath = logmath_init(cmd_ln_float32_r(config, "-logbase"), 0,
+                                    cmd_ln_int32_r(config, "-log3table"))) == NULL)
+        E_FATAL("Error in logmath_init, exit\n");
+
+    if (REPORT_KBCORE)
+        logs3_report(kb->logmath);
 
     if (!(str = cmd_ln_str_r(config, "-feat")))
         E_FATAL("Please specify the feature type using -feat\n");
     else {
         if ((kb->fcb =
              feat_init(str, cmn_type_from_str(cmd_ln_str_r(config, "-cmn")),
-		       cmd_ln_boolean_r(config, "-varnorm"),
-		       agc_type_from_str(cmd_ln_str_r(config, "-agc")),
+                       cmd_ln_boolean_r(config, "-varnorm"),
+                       agc_type_from_str(cmd_ln_str_r(config, "-agc")),
                        REPORT_KBCORE, cmd_ln_int32_r(config, "-ceplen"))) == NULL)
             E_FATAL("feat_init(%s) failed\n", str);
 
-	if (cmd_ln_exists_r(config, "-cmninit")) {
-	    set_cmninit(kb->fcb, cmd_ln_str_r(config, "-cmninit"));
-	}
+        if (cmd_ln_exists_r(config, "-cmninit")) {
+            set_cmninit(kb->fcb, cmd_ln_str_r(config, "-cmninit"));
+        }
 
-	str = cmd_ln_str_r(config, "-senmgau");
+        str = cmd_ln_str_r(config, "-senmgau");
         E_INFO("%s\n", str);
         if (strcmp(str, ".cont.") == 0) {
             if (feat_n_stream(kb->fcb) != 1)
@@ -502,9 +508,9 @@ kbcore_init(cmd_ln_t *config)
     assert(kb->mdef != NULL);
 
     if ((str = cmd_ln_str_r(config, "-dict"))) {
-	char const *compsep = cmd_ln_exists_r(config, "-compsep")
-	    ? cmd_ln_str_r(config, "-compsep") : NULL;
-	char const *fdictfile = cmd_ln_str_r(config, "-fdict");
+        char const *compsep = cmd_ln_exists_r(config, "-compsep")
+            ? cmd_ln_str_r(config, "-compsep") : NULL;
+        char const *fdictfile = cmd_ln_str_r(config, "-fdict");
 
         if (!compsep)
             compsep = "";
@@ -530,8 +536,8 @@ kbcore_init(cmd_ln_t *config)
     }
 
     if (kb->mgau) {
-	char const *subvqfile = cmd_ln_str_r(config, "-subvq");
-	char const *gsfile = cmd_ln_str_r(config, "-gs");
+        char const *subvqfile = cmd_ln_str_r(config, "-subvq");
+        char const *gsfile = cmd_ln_str_r(config, "-gs");
         if (subvqfile && gsfile) {
             E_FATAL
                 ("Currently there is no combination scheme of gs and svq in Gaussian Selection\n");
@@ -539,13 +545,13 @@ kbcore_init(cmd_ln_t *config)
         if (subvqfile) {
             if ((kb->svq =
                  subvq_init(subvqfile, cmd_ln_float32_r(config, "-varfloor"),
-			    -1, kb->mgau, config)) == NULL)
+                            -1, kb->mgau, config, kb->logmath)) == NULL)
                 E_FATAL("subvq_init (%s, %e, -1) failed\n", subvqfile,
                         cmd_ln_float32_r(config, "-varfloor"));
         }
 
         if (gsfile) {
-            if ((kb->gs = gs_read(gsfile)) == NULL)
+            if ((kb->gs = gs_read(gsfile, kb->logmath)) == NULL)
                 E_FATAL("gs_read(%s) failed\n", gsfile);
 
             E_INFO("After reading the number of senones: %d\n",
@@ -562,14 +568,15 @@ kbcore_init(cmd_ln_t *config)
     
     if (cmd_ln_str_r(config, "-lm") || cmd_ln_str_r(config, "-lmctlfn")) {
         kb->lmset = lmset_init(cmd_ln_str_r(config, "-lm"),
-			       cmd_ln_str_r(config, "-lmctlfn"),
-			       cmd_ln_str_r(config, "-ctl_lm"),        /* This two are ugly. */
+                               cmd_ln_str_r(config, "-lmctlfn"),
+                               cmd_ln_str_r(config, "-ctl_lm"),        /* This two are ugly. */
                                cmd_ln_str_r(config, "-lmname"),
                                cmd_ln_str_r(config, "-lmdumpdir"),
-			       cmd_ln_float32_r(config, "-lw"),
-			       cmd_ln_float32_r(config, "-wip"),
-			       cmd_ln_float32_r(config, "-uw"),
-			       kb->dict);
+                               cmd_ln_float32_r(config, "-lw"),
+                               cmd_ln_float32_r(config, "-wip"),
+                               cmd_ln_float32_r(config, "-uw"),
+                               kb->dict,
+                               kb->logmath);
 
         /* CHECK: check whether LM has a start word and end word  */
         for (i = 0; i < kb->lmset->n_lm; i++) {
@@ -587,11 +594,12 @@ kbcore_init(cmd_ln_t *config)
 
         if ((kb->fillpen =
              fillpen_init(kb->dict,
-			  cmd_ln_str_r(config, "-fillpen"),
-			  cmd_ln_float32_r(config, "-silprob"),
-			  cmd_ln_float32_r(config, "-fillprob"),
-			  cmd_ln_float32_r(config, "-lw"),
-                          cmd_ln_float32_r(config, "-wip"))) == NULL)
+                          cmd_ln_str_r(config, "-fillpen"),
+                          cmd_ln_float32_r(config, "-silprob"),
+                          cmd_ln_float32_r(config, "-fillprob"),
+                          cmd_ln_float32_r(config, "-lw"),
+                          cmd_ln_float32_r(config, "-wip"),
+                          kb->logmath)) == NULL)
             E_FATAL("fillpen_init(%s) failed\n", cmd_ln_str_r(config, "-fillpen"));
     }
 
@@ -608,8 +616,8 @@ kbcore_init(cmd_ln_t *config)
     /* This should be removed and put into the search */
     /* NO KIDDING! */
     if (kb->mdef && kb->dict) { /* Initialize dict2pid */
-	int32 composite = 1;
-        kb->dict2pid = dict2pid_build(kb->mdef, kb->dict, composite);
+        int32 composite = 1;
+        kb->dict2pid = dict2pid_build(kb->mdef, kb->dict, composite, kb->logmath);
     }
 
     if (REPORT_KBCORE) {
@@ -707,7 +715,7 @@ kbcore_free(kbcore_t * kbcore)
     }
 
     /* Free the memory allocated by this module */
-    logs_free();
+    logmath_free(kbcore->logmath);
 
     /* Free the object */
     ckd_free((void *) kbcore);

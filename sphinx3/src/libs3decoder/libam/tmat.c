@@ -150,7 +150,7 @@ tmat_chk_1skip(tmat_t * tmat)
 
 
 tmat_t *
-tmat_init(const char *file_name, float64 tpfloor, int32 breport)
+tmat_init(const char *file_name, float64 tpfloor, int32 breport, logmath_t *logmath)
 {
     char tmp;
     int32 n_src, n_dst;
@@ -169,6 +169,7 @@ tmat_init(const char *file_name, float64 tpfloor, int32 breport)
     }
 
     t = (tmat_t *) ckd_calloc(1, sizeof(tmat_t));
+    t->logmath = logmath;
 
     if ((fp = fopen(file_name, "rb")) == NULL)
         E_FATAL_SYSTEM("fopen(%s,rb) failed\n", file_name);
@@ -244,7 +245,7 @@ tmat_init(const char *file_name, float64 tpfloor, int32 breport)
             /* Convert to logs3.  Take care of special case when tp = 0.0! */
             for (k = 0; k < n_dst; k++)
                 t->tp[i][j][k] =
-                    (tp[j][k] == 0.0) ? S3_LOGPROB_ZERO : logs3(tp[j][k]);
+                    (tp[j][k] == 0.0) ? S3_LOGPROB_ZERO : logs3(logmath, tp[j][k]);
         }
     }
 

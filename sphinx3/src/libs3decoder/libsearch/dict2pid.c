@@ -581,7 +581,7 @@ free_compress_map(xwdssid_t ** tree, int32 n_ci)
 
 /* RAH 4.16.01 This code has several leaks that must be fixed */
 dict2pid_t *
-dict2pid_build(mdef_t * mdef, dict_t * dict, int32 is_composite)
+dict2pid_build(mdef_t * mdef, dict_t * dict, int32 is_composite, logmath_t *logmath)
 {
     dict2pid_t *dict2pid;
     s3ssid_t *internal, **ldiph, **rdiph, *single;
@@ -910,10 +910,10 @@ dict2pid_build(mdef_t * mdef, dict_t * dict, int32 is_composite)
             for (j = 0; IS_S3SENID(sen[j]); j++);
 #if 0
             /* if comstate i has N states, its weight= (1/N^2) (Major Hack!!) */
-            dict2pid->comwt[i] = -(logs3((float64) j) << 1);
+            dict2pid->comwt[i] = -(logs3(logmath, (float64) j) << 1);
 #else
             /* if comstate i has N states, its weight= 1/N */
-            dict2pid->comwt[i] = -logs3((float64) j);
+            dict2pid->comwt[i] = -logs3(logmath, (float64) j);
 #endif
         }
     }

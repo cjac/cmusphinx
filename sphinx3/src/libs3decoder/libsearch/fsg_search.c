@@ -214,10 +214,11 @@ fsg_search_init(word_fsg_t * fsg, void *srch)
 
     search = (fsg_search_t *) ckd_calloc(1, sizeof(fsg_search_t));
     search->fsg = fsg;
+    search->logmath = kbcore_logmath(s->kbc);
 
     if (fsg) {
         search->fsglist = glist_add_ptr(NULL, (void *) fsg);
-        search->lextree = fsg_lextree_init(fsg, search->hmmctx, search->config);
+        search->lextree = fsg_lextree_init(fsg, search->hmmctx, search->config, search->logmath);
     }
     else {
         search->fsglist = NULL;
@@ -263,7 +264,7 @@ fsg_search_init(word_fsg_t * fsg, void *srch)
     search->senscale = s->ascale;
 
     lw = s->kbc->fillpen->lw;
-    pip = (int32) (logs3(cmd_ln_float32_r(search->config, "-phonepen")) * lw);
+    pip = (int32) (logs3(search->logmath, cmd_ln_float32_r(search->config, "-phonepen")) * lw);
     wip = s->kbc->fillpen->wip;
 
     E_INFO("FSG(beam: %d, pbeam: %d, wbeam: %d; wip: %d, pip: %d)\n",
@@ -397,7 +398,7 @@ fsg_search_set_current_fsg(fsg_search_t * search, char *name)
         fsg_lextree_free(search->lextree);
 
     /* Allocate new lextree for the given FSG */
-    search->lextree = fsg_lextree_init(fsg, search->hmmctx, search->config);
+    search->lextree = fsg_lextree_init(fsg, search->hmmctx, search->config, search->logmath);
 
     /* Inform the history module of the new fsg */
     fsg_history_set_fsg(search->history, fsg);

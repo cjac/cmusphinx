@@ -105,6 +105,7 @@
 #define _S3_CONT_MGAU_H_
 
 #include <s3types.h>
+#include <logmath.h>
 
 /** \file cont_mgau.h
  *  \brief Interface of full GMM computation with integer value of log likelihood. 
@@ -221,6 +222,8 @@ typedef struct {
 
     int32 gau_type; /**< gau_type=CONTHMM if it is fully continous HMM, 
                        gau_type=SEMIHMM if it is semi continous HMM. Currently SEMIHMM is not supported. */
+
+    logmath_t *logmath;		/**< The logmath_t structure */
 } mgau_model_t;
 
 
@@ -289,7 +292,8 @@ mgau_init (const char *meanfile,	/**< In: File containing means of mixture gauss
 						   cannot use the evaluation routines provided here.) */
 	   const char* senmgau,		/**< In: type of the gaussians distribution, .cont. or .semi. FIX 
 						   me! This is confusing!*/
-	   int32 comp_type);		/**< In: Type of computation in this set of gaussian mixtures. */
+	   int32 comp_type,		/**< In: Type of computation in this set of gaussian mixtures. */
+	   logmath_t *logmath);
 				
 
 /**

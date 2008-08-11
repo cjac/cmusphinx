@@ -105,6 +105,7 @@
 #include <mdef.h>
 #include <ascr.h>
 #include <cmd_ln.h>
+#include <logmath.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -155,7 +156,8 @@ ms_mgau_model_t* ms_mgau_init (const char *meanfile,	/**< In: File containing me
 			       const char* senmgau,	/**< In: type of the gaussians distribution, .cont. or .semi. FIX 
 							   me! This is confusing!*/
 			       const char* lambdafile, /**< In: Interplation file */
-			       int32 topn        /**< In: Top-n gaussian will be computed */
+			       int32 topn,        /**< In: Top-n gaussian will be computed */
+			       logmath_t *logmath
     );
 
 /** Free memory allocated by ms_mgau_init */

@@ -132,6 +132,7 @@ main(int _argc, char **_argv)
     int n_frames, n_floats, n_ceps, i, swap = 0, frate, begin_frame, end_frame;
     struct stat statbuf;
     cmd_ln_t *config;
+    logmath_t *logmath;
 
     if ((_argc == 3) && (_argv[1][0] != '-')) {
         cfg_fn = _argv[1];
@@ -170,7 +171,7 @@ main(int _argc, char **_argv)
 
     n_ceps = cmd_ln_int32_r(config, "-ncep");
     frate = cmd_ln_int32_r(config, "-frate");
-    logs3_init(cmd_ln_float32_r(config, "-logbase"), 0, 0);
+    logmath = logs3_init(cmd_ln_float32_r(config, "-logbase"), 0, 0);
 
     s3_endpointer_init(&ep, cmd_ln_str_r(config, "-mean"), cmd_ln_str_r(config, "-var"), cmd_ln_float32_r(config, "-varfloor"), cmd_ln_str_r(config, "-mixw"), cmd_ln_float32_r(config, "-mixwfloor"), cmd_ln_str_r(config, "-senmgau"), 1, /* post classify.  fixed at TRUE for now */
                        cmd_ln_int32_r(config, "-begin_window"),
@@ -178,7 +179,8 @@ main(int _argc, char **_argv)
                        cmd_ln_int32_r(config, "-begin_pad"),
                        cmd_ln_int32_r(config, "-end_window"),
                        cmd_ln_int32_r(config, "-end_threshold"),
-                       cmd_ln_int32_r(config, "-end_pad")
+                       cmd_ln_int32_r(config, "-end_pad"),
+                       logmath
         );
 
     frames = (float32 **) ckd_calloc_2d(NFR, n_ceps, sizeof(float32));
@@ -225,7 +227,7 @@ main(int _argc, char **_argv)
 
     fclose(in);
     ckd_free_2d(frames);
-    logs_free();
+    logmath_free(logmath);
     cmd_ln_free_r(config);
 
     return 0;

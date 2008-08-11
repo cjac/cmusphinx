@@ -342,7 +342,7 @@ word_fsg_null_trans_closure(word_fsg_t * fsg, glist_t nulls)
  * Return the number of transitions added..
  */
 static int32
-word_fsg_add_filler(word_fsg_t * fsg, float32 silprob, float32 fillprob)
+word_fsg_add_filler(word_fsg_t * fsg, float32 silprob, float32 fillprob, logmath_t * logmath)
 {
     dict_t *dict;
     int32 src;
@@ -358,8 +358,8 @@ word_fsg_add_filler(word_fsg_t * fsg, float32 silprob, float32 fillprob)
     silwid = dict_silwid(dict);
     n_word = dict_size(dict);
 
-    logsilp = (int32) (logs3(silprob) * fsg->lw);
-    logfillp = (int32) (logs3(fillprob) * fsg->lw);
+    logsilp = (int32) (logs3(logmath, silprob) * fsg->lw);
+    logfillp = (int32) (logs3(logmath, fillprob) * fsg->lw);
 
     /*
      * Add silence and filler word self-loop transitions to each state.
@@ -595,7 +595,7 @@ word_fsg_load(s2_fsg_t * fsg,
     for (trans = fsg->trans_list, n_trans = 0;
          trans; trans = trans->next, n_trans++) {
         /* Convert prob to logs2prob and apply language weight */
-        logp = (int32) (logs3(trans->prob) * lw);
+        logp = (int32) (logs3(kbcore_logmath(kbc), trans->prob) * lw);
 
         /* Check if word is in dictionary */
         if (trans->word) {
@@ -640,7 +640,7 @@ word_fsg_load(s2_fsg_t * fsg,
 
     /* Add silence and noise filler word transitions if specified */
     if (use_filler) {
-        n_filler_trans = word_fsg_add_filler(word_fsg, silprob, fillprob);
+        n_filler_trans = word_fsg_add_filler(word_fsg, silprob, fillprob, kbcore_logmath(kbc));
         n_trans += n_filler_trans;
     }
 

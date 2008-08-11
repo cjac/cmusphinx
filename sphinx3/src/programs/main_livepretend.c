@@ -129,15 +129,15 @@ utt_livepretend(void *data, utt_res_t * ur, int32 sf, int32 ef,
     while (len > 0) {
         ptmr_start(&(st->tm));
 
-	fe_process_utt(fe, samples, len, &frames, &n_frames);
-	if (frames != NULL) {
-	    s3_decode_process(&decoder, frames, n_frames);
-	    ckd_free_2d((void **)frames);
-	}
+        fe_process_utt(fe, samples, len, &frames, &n_frames);
+        if (frames != NULL) {
+            s3_decode_process(&decoder, frames, n_frames);
+            ckd_free_2d((void **)frames);
+        }
         ptmr_stop(&(st->tm));
 
         if (S3_DECODE_SUCCESS ==
-	    s3_decode_hypothesis(&decoder, NULL, &hypstr, NULL))
+            s3_decode_hypothesis(&decoder, NULL, &hypstr, NULL))
             if (decoder.phypdump)
                 E_INFO("PARTIAL_HYP: %s\n", hypstr);
         len = fread(samples, sizeof(short), SAMPLE_BUFFER_LENGTH, rawfd);
@@ -179,7 +179,7 @@ main(int _argc, char **_argv)
 
     if (ctrlfn) {
         /* When -ctlfile is speicified, corpus.c will look at -ctl_lm and
-	   -ctl_mllr to get the corresponding LM and MLLR for the utterance */
+           -ctl_mllr to get the corresponding LM and MLLR for the utterance */
         st->tm = ctl_process(ctrlfn,
                              cmd_ln_str_r(config, "-ctl_lm"),
                              cmd_ln_str_r(config, "-ctl_mllr"),

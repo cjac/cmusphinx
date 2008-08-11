@@ -472,7 +472,7 @@ astar_init(dag_t *dag, dict_t *dict, lm_t *lm, fillpen_t *fpen, float64 beam, fl
     astar->lm = lm;
     astar->fpen = fpen;
     astar->lwf = lwf;
-    astar->beam = logs3(beam);
+    astar->beam = logs3(dag->logmath, beam);
     astar->heap_root = NULL;
     astar->ppath_list = NULL;
     astar->hash_list = (ppath_t **) ckd_calloc(HISTHASH_MOD, sizeof(ppath_t *));

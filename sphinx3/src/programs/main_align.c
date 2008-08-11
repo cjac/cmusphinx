@@ -206,7 +206,6 @@
 #include <assert.h>
 #include <s3types.h>
 
-#include "kb.h"
 
 
 #include "logs3.h"
@@ -221,6 +220,7 @@
 
 /* ARCHAN: Dangerous routine :-)*/
 #include "s3_align.h"
+#include "adaptor.h"
 #include "approx_cont_mgau.h"
 #include "cont_mgau.h"
 #include "s2_semi_mgau.h"
@@ -240,7 +240,7 @@
 */
 
 static arg_t defn[] = {
-	cepstral_to_feature_command_line_macro(),
+        cepstral_to_feature_command_line_macro(),
 
     /* BOGUS! Where are the commas? */
         log_table_command_line_macro()
@@ -352,17 +352,17 @@ models_init(cmd_ln_t *config)
 {
     int32 cisencnt;
 
-    logs3_init((float64) cmd_ln_float32_r(config, "-logbase"), 1,
-               cmd_ln_int32_r(config, "-log3table"));
+    kbc = New_kbcore(config);
+
+    kbc->logmath = logs3_init((float64) cmd_ln_float32_r(config, "-logbase"), 1,
+                              cmd_ln_int32_r(config, "-log3table"));
 
     /* Initialize feaure stream type */
     fcb = feat_init(cmd_ln_str_r(config, "-feat"),
                     cmn_type_from_str(cmd_ln_str_r(config, "-cmn")),
                     cmd_ln_boolean_r(config, "-varnorm"),
-		    agc_type_from_str(cmd_ln_str_r(config, "-agc")), 1,
-		    cmd_ln_int32_r(config, "-ceplen"));
-
-    kbc = New_kbcore(config);
+                    agc_type_from_str(cmd_ln_str_r(config, "-agc")), 1,
+                    cmd_ln_int32_r(config, "-ceplen"));
 
     s3_am_init(kbc);
 
@@ -372,9 +372,9 @@ models_init(cmd_ln_t *config)
 
     /* Dictionary */
     dict = dict_init(kbc->mdef, cmd_ln_str_r(config, "-dict"),
-		     cmd_ln_str_r(config, "-fdict"), 
-		     '_',      /* Compound word separator.  Default: none. */
-		     cmd_ln_int32_r(config, "-lts_mismatch"), 1);
+                     cmd_ln_str_r(config, "-fdict"), 
+                     '_',      /* Compound word separator.  Default: none. */
+                     cmd_ln_int32_r(config, "-lts_mismatch"), 1);
 
 
 
@@ -396,7 +396,8 @@ models_init(cmd_ln_t *config)
                             cmd_ln_float64_r(config, "-ci_pbeam"),
                             cmd_ln_float64_r(config, "-tighten_factor"),
                             cmd_ln_int32_r(config, "-maxcdsenpf"),
-                            kbc->mdef->n_ci_sen);
+                            kbc->mdef->n_ci_sen,
+                            kbc->logmath);
     adapt_am = adapt_am_init();
 }
 
@@ -470,11 +471,11 @@ write_s2stseg(char *dir, align_stseg_t * stseg, char *uttid, char *ctlspec, int3
     E_INFO("Writing Sphinx-II format state segmentation to: %s\n",
            filename);
     if (cdsen) {
-	E_INFO("Writing context-dependent state indices in segmentation file\n");
-	if (mdef_n_sen(kbc->mdef) > 0xffff) {
-	    E_ERROR("Number of senones exceeds 65535, cannot write them to segmentation file\n");
-	    return;
-	}
+        E_INFO("Writing context-dependent state indices in segmentation file\n");
+        if (mdef_n_sen(kbc->mdef) > 0xffff) {
+            E_ERROR("Number of senones exceeds 65535, cannot write them to segmentation file\n");
+            return;
+        }
     }
     if ((fp = fopen(filename, "wb")) == NULL) {
         E_ERROR("fopen(%s,wb) failed\n", filename);
@@ -516,16 +517,16 @@ write_s2stseg(char *dir, align_stseg_t * stseg, char *uttid, char *ctlspec, int3
 
     /* Write state info for each frame */
     for (; stseg; stseg = stseg->next) {
-	if (cdsen) {
-	    s2_info = stseg->sen;
-	}
-	else {
-	    mdef_phone_components(kbc->mdef, stseg->pid, ci, &(ci[1]),
-				  &(ci[2]), &wpos);
-	    s2_info = ci[0] * kbc->mdef->n_emit_state + stseg->state;
-	    if (stseg->start)
-		s2_info |= 0x8000;
-	}
+        if (cdsen) {
+            s2_info = stseg->sen;
+        }
+        else {
+            mdef_phone_components(kbc->mdef, stseg->pid, ci, &(ci[1]),
+                                  &(ci[2]), &wpos);
+            s2_info = ci[0] * kbc->mdef->n_emit_state + stseg->state;
+            if (stseg->start)
+                s2_info |= 0x8000;
+        }
         if (byterev)
             SWAP_INT16(&s2_info);
 
@@ -1103,7 +1104,7 @@ main(int32 argc, char *argv[])
     timers[tmr_align].name = "A";
 
     /* Initialize align module */
-    align_init(kbc->mdef, kbc->tmat, dict, config);
+    align_init(kbc->mdef, kbc->tmat, dict, config, kbc->logmath);
     printf("\n");
 
     if (cmd_ln_str_r(config, "-mllr") != NULL) {

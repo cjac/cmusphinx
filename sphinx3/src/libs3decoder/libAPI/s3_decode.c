@@ -251,8 +251,8 @@ s3_decode_init(s3_decode_t * _decode, cmd_ln_t *_config)
     _decode->hyp_segs = NULL;
 
     _decode->swap =
-	    strcmp(cmd_ln_str_r(_config,"-machine_endian"),
-		   cmd_ln_str_r(_config,"-input_endian"));
+            strcmp(cmd_ln_str_r(_config,"-machine_endian"),
+                   cmd_ln_str_r(_config,"-input_endian"));
 
     if (_decode->swap)
         E_INFO("Input data WILL be byte swapped\n");
@@ -325,13 +325,13 @@ s3_decode_end_utt(s3_decode_t * _decode)
 
     /* Call this with no frames, to update CMN and AGC statistics. */
     num_features = feat_s2mfc2feat_live(kbcore_fcb(_decode->kbcore),
-					NULL, NULL, FALSE,
-					TRUE, _decode->kb.feat);
+                                        NULL, NULL, FALSE,
+                                        TRUE, _decode->kb.feat);
     if (num_features > 0)
         utt_decode_block(_decode->kb.feat,
                          num_features,
                          &_decode->num_frames_decoded,
-			 &_decode->kb);
+                         &_decode->kb);
 
     _decode->kb.stat->tot_fr += _decode->kb.stat->nfr;
     s3_decode_record_hyps(_decode, TRUE);
@@ -341,8 +341,8 @@ s3_decode_end_utt(s3_decode_t * _decode)
 
 int
 s3_decode_process(s3_decode_t * _decode,
-		  float32 ** _cep_frames,
-		  int32 _num_frames)
+                  float32 ** _cep_frames,
+                  int32 _num_frames)
 {
     int32 num_features = 0;
     int32 begin_utt = _decode->num_frames_entered == 0;
@@ -356,11 +356,11 @@ s3_decode_process(s3_decode_t * _decode,
 
     if (_num_frames > 0) {
         num_features = feat_s2mfc2feat_live(kbcore_fcb(_decode->kbcore),
-					    _cep_frames,
-					    &_num_frames,
-					    begin_utt,
-					    FALSE,
-					    _decode->kb.feat);
+                                            _cep_frames,
+                                            &_num_frames,
+                                            begin_utt,
+                                            FALSE,
+                                            _decode->kb.feat);
         _decode->num_frames_entered += _num_frames;
 
         if (num_features > 0) {
@@ -379,7 +379,7 @@ s3_decode_process(s3_decode_t * _decode,
 
 int
 s3_decode_hypothesis(s3_decode_t * _decode, char **_uttid, char **_hyp_str,
-		     hyp_t *** _hyp_segs)
+                     hyp_t *** _hyp_segs)
 {
     int rv = S3_DECODE_SUCCESS;
 
@@ -432,10 +432,11 @@ s3_decode_read_lm(s3_decode_t * _decode,
 
 
     lm = lm_read_advance(lmpath, lmname,
-			 cmd_ln_float32_r(kbcore_config(_decode->kbcore), "-lw"),
-			 cmd_ln_float32_r(kbcore_config(_decode->kbcore), "-wip"),
-			 cmd_ln_float32_r(kbcore_config(_decode->kbcore), "-uw"),
-			 ndict, NULL, 1   /* Weight apply */
+                         cmd_ln_float32_r(kbcore_config(_decode->kbcore), "-lw"),
+                         cmd_ln_float32_r(kbcore_config(_decode->kbcore), "-wip"),
+                         cmd_ln_float32_r(kbcore_config(_decode->kbcore), "-uw"),
+                         ndict, NULL, 1,   /* Weight apply */
+                         kbcore_logmath(s->kbc)
         );
 
     s->funcs->add_lm(s, lm, lmname);

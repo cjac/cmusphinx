@@ -65,6 +65,7 @@
     \brief operation on Vector
 */
 #include <s3types.h>
+#include <logmath.h>
 #include <stdio.h>
 
 #ifdef __cplusplus
@@ -309,7 +310,7 @@ typedef struct {
  * gautbl->{n_mgau, veclen, distfloor}; the last to the equivalent of S3_LOGPROB_ZERO.
  */
 void vector_gautbl_alloc (vector_gautbl_t *gautbl,
-			  int32 n_gau, int32 veclen);
+			  int32 n_gau, int32 veclen, logmath_t *logmath);
 void vector_gautbl_free (vector_gautbl_t *gautbl);
 
 
@@ -338,9 +339,10 @@ vector_gautbl_eval_logs3 (vector_gautbl_t *gau,	/**< In: Table of Gaussians */
 			  int32 offset,	/**< In: First VQ codeword in the range to be evaluated */
 			  int32 count,	/**< In: #Codewords to be evaluated (range size) */
 			  float32 *x,	/**< In: Input vector being compared to codewords */
-			  int32 *scr	/**< Out: Mahalanobis distance scores (logs3 values).
+			  int32 *scr,	/**< Out: Mahalanobis distance scores (logs3 values).
 					   Caller must allocate this array.  Note that only
 					   score[offset..offset+count-1] are updated. */
+			  logmath_t *logmath
     );
 
 #if 0

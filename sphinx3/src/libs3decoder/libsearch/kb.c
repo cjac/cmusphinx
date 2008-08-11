@@ -150,7 +150,6 @@
 
 
 #include "kb.h"
-#include "logs3.h"              /* RAH, added to resolve log3_free */
 #include "srch.h"
 
 
@@ -167,10 +166,10 @@ file_open(const char *filepath)
 #ifdef WIN32
         if ((fp = fopen(filepath, "wt")) == NULL)
 #else
-	    if ((fp = fopen(filepath, "w")) == NULL)
+        if ((fp = fopen(filepath, "w")) == NULL)
 #endif
-		E_ERROR("fopen(%s,w) failed; use FWDXCT: from std logfile\n",
-			filepath);
+            E_ERROR("fopen(%s,w) failed; use FWDXCT: from std logfile\n",
+                    filepath);
     }
     return fp;
 }
@@ -199,71 +198,74 @@ kb_init(kb_t * kb, cmd_ln_t *config)
 
     /* STRUCTURE INITIALIZATION: Initialize the beam data structure */
     if (cmd_ln_exists_r(config, "-ptranskip")) {
-	kb->beam = beam_init(cmd_ln_float64_r(config, "-beam"),
-			     cmd_ln_float64_r(config, "-pbeam"),
-			     cmd_ln_float64_r(config, "-wbeam"),
-			     cmd_ln_float64_r(config, "-wend_beam"),
-			     cmd_ln_int32_r(config, "-ptranskip"), mdef_n_ciphone(mdef)
-	    );
+        kb->beam = beam_init(cmd_ln_float64_r(config, "-beam"),
+                             cmd_ln_float64_r(config, "-pbeam"),
+                             cmd_ln_float64_r(config, "-wbeam"),
+                             cmd_ln_float64_r(config, "-wend_beam"),
+                             cmd_ln_int32_r(config, "-ptranskip"), mdef_n_ciphone(mdef),
+                             kbcore->logmath
+            );
 
-	/* REPORT : Report the parameters in the beam data structure */
-	if (REPORT_KB)
-		beam_report(kb->beam);
+        /* REPORT : Report the parameters in the beam data structure */
+        if (REPORT_KB)
+                beam_report(kb->beam);
     }
 
 
     /* STRUCTURE INITIALIZATION: Initialize the fast GMM computation data structure */
     if (cmd_ln_exists_r(config, "-ci_pbeam")) {
-	kb->fastgmm = fast_gmm_init(cmd_ln_int32_r(config, "-ds"),
-				    cmd_ln_int32_r(config, "-cond_ds"),
-				    cmd_ln_int32_r(config, "-dist_ds"),
-				    cmd_ln_int32_r(config, "-gs4gs"),
-				    cmd_ln_int32_r(config, "-svq4svq"),
-				    cmd_ln_float64_r(config, "-subvqbeam"),
-				    cmd_ln_float64_r(config, "-ci_pbeam"),
-				    cmd_ln_float64_r(config, "-tighten_factor"),
-				    cmd_ln_int32_r(config, "-maxcdsenpf"),
-				    mdef->n_ci_sen);
+        kb->fastgmm = fast_gmm_init(cmd_ln_int32_r(config, "-ds"),
+                                    cmd_ln_int32_r(config, "-cond_ds"),
+                                    cmd_ln_int32_r(config, "-dist_ds"),
+                                    cmd_ln_int32_r(config, "-gs4gs"),
+                                    cmd_ln_int32_r(config, "-svq4svq"),
+                                    cmd_ln_float64_r(config, "-subvqbeam"),
+                                    cmd_ln_float64_r(config, "-ci_pbeam"),
+                                    cmd_ln_float64_r(config, "-tighten_factor"),
+                                    cmd_ln_int32_r(config, "-maxcdsenpf"),
+                                    mdef->n_ci_sen,
+                                    kbcore->logmath);
 
-	/* REPORT : Report the parameters in the fast_gmm_t data struture */
-	if (REPORT_KB)
-	    fast_gmm_report(kb->fastgmm);
+        /* REPORT : Report the parameters in the fast_gmm_t data struture */
+        if (REPORT_KB)
+            fast_gmm_report(kb->fastgmm);
     }
 
     /* STRUCTURE INITIALIZATION: Initialize the phoneme lookahead data structure */
     if (cmd_ln_exists_r(config, "-pl_beam")) {
-	kb->pl = pl_init(cmd_ln_int32_r(config, "-pheurtype"),
-			 cmd_ln_int32_r(config, "-pl_beam"), mdef_n_ciphone(mdef)
-	    );
+        kb->pl = pl_init(cmd_ln_int32_r(config, "-pheurtype"),
+                         cmd_ln_int32_r(config, "-pl_beam"), mdef_n_ciphone(mdef),
+                         kbcore->logmath
+            );
 
-	/* REPORT : Report the parameters in the pl_t data struture */
-	if (REPORT_KB)
-	    pl_report(kb->pl);
+        /* REPORT : Report the parameters in the pl_t data struture */
+        if (REPORT_KB)
+            pl_report(kb->pl);
     }
 
     /* STRUCTURE INITIALIZATION: Initialize the acoustic score data structure */
     {
-	int32 pl_window = 1;
+        int32 pl_window = 1;
 
-	if (cmd_ln_exists_r(config, "-pl_window"))
-	    pl_window = cmd_ln_int32_r(config, "-pl_window");
+        if (cmd_ln_exists_r(config, "-pl_window"))
+            pl_window = cmd_ln_int32_r(config, "-pl_window");
 
-	for (cisencnt = 0; cisencnt == mdef->cd2cisen[cisencnt]; cisencnt++);
-	kb->ascr = ascr_init(kbcore_n_mgau(kbcore),
-			     kb->kbcore->dict2pid->n_comstate,
-			     mdef_n_sseq(mdef),
-			     dict2pid_n_comsseq(d2p),
-			     pl_window, cisencnt);
+        for (cisencnt = 0; cisencnt == mdef->cd2cisen[cisencnt]; cisencnt++) ;
+        kb->ascr = ascr_init(kbcore_n_mgau(kbcore),
+                             kb->kbcore->dict2pid->n_comstate,
+                             mdef_n_sseq(mdef),
+                             dict2pid_n_comsseq(d2p),
+                             pl_window, cisencnt);
 
-	if (REPORT_KB)
-	    ascr_report(kb->ascr);
+        if (REPORT_KB)
+            ascr_report(kb->ascr);
     }
 
     /* Initialize the front end if -adcin is specified */
     if (cmd_ln_exists_r(config, "-adcin") && cmd_ln_boolean_r(config, "-adcin")) {
-	if ((kb->fe = fe_init_auto_r(config)) == NULL) {
-	    E_FATAL("fe_init_auto_r() failed\n");
-	}
+        if ((kb->fe = fe_init_auto_r(config)) == NULL) {
+            E_FATAL("fe_init_auto_r() failed\n");
+        }
     }
     /* STRUCTURE INITIALIZATION : The feature vector */
     if ((kb->feat =
@@ -292,23 +294,23 @@ kb_init(kb_t * kb, cmd_ln_t *config)
     kb->matchfp = file_open(cmd_ln_str_r(config, "-hyp"));
 
     if (cmd_ln_exists_r(config, "-hmmdump"))
-	kb->hmmdumpfp = cmd_ln_int32_r(config, "-hmmdump") ? stderr : NULL;
+        kb->hmmdumpfp = cmd_ln_int32_r(config, "-hmmdump") ? stderr : NULL;
 
     /* STRUCTURE INITIALIZATION : The search data structure, done only
        after kb is initialized kb is acted as a clipboard. */
     if (cmd_ln_exists_r(config, "-op_mode")) {
-	/* -op_mode, if set (i.e. not -1), takes precedence over -mode. */
-	if (cmd_ln_int32_r(config, "-op_mode") != -1)
-	    kb->op_mode = cmd_ln_int32_r(config, "-op_mode");
-	else
-	    kb->op_mode = srch_mode_str_to_index(cmd_ln_str_r(config, "-mode"));
-	E_INFO("SEARCH MODE INDEX %d\n", kb->op_mode);
-	if ((kb->srch = (srch_t *) srch_init(kb, kb->op_mode)) == NULL) {
-	    E_FATAL("Search initialization failed. Forced exit\n");
-	}
-	if (REPORT_KB) {
-	    srch_report(kb->srch);
-	}
+        /* -op_mode, if set (i.e. not -1), takes precedence over -mode. */
+        if (cmd_ln_int32_r(config, "-op_mode") != -1)
+            kb->op_mode = cmd_ln_int32_r(config, "-op_mode");
+        else
+            kb->op_mode = srch_mode_str_to_index(cmd_ln_str_r(config, "-mode"));
+        E_INFO("SEARCH MODE INDEX %d\n", kb->op_mode);
+        if ((kb->srch = (srch_t *) srch_init(kb, kb->op_mode)) == NULL) {
+            E_FATAL("Search initialization failed. Forced exit\n");
+        }
+        if (REPORT_KB) {
+            srch_report(kb->srch);
+        }
     }
 }
 
@@ -325,7 +327,7 @@ kb_set_uttid(const char *_uttid, const char *_uttfile, kb_t * _kb)
     ckd_free(_kb->uttfile);
     _kb->uttfile = NULL;
     if (_uttfile)
-	_kb->uttfile = ckd_salloc(_uttfile);
+        _kb->uttfile = ckd_salloc(_uttfile);
 }
 
 void
@@ -344,10 +346,10 @@ kb_setmllr(const char *mllrname, const char *cb2mllrname,
 
         if (kbc->mgau)
             adapt_set_mllr(kb->adapt_am, kbc->mgau, mllrname, cb2mllrname,
-			   kbc->mdef, kbc->config);
+                           kbc->mdef, kbc->config);
         else if (kbc->ms_mgau)
             model_set_mllr(kbc->ms_mgau, mllrname, cb2mllrname, kbc->fcb,
-			   kbc->mdef, kbc->config);
+                           kbc->mdef, kbc->config);
         else
             E_FATAL("Panic, kb has not Gaussian\n");
 

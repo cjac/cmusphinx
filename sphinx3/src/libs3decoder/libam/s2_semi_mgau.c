@@ -668,7 +668,7 @@ s2_semi_mgau_frame_eval(s2_semi_mgau_t * s,
     }
     for (i = 1; i < s->topN; i++)
         for (j = 0; j < S2_NUM_FEATURES; j++) {
-            tmp[j] = logs3_add(tmp[j], s->f[j][i].val.score);
+            tmp[j] = logmath_add(s->logmath, tmp[j], s->f[j][i].val.score);
         }
     for (i = 0; i < s->topN; i++)
         for (j = 0; j < S2_NUM_FEATURES; j++) {
@@ -986,7 +986,7 @@ read_dists_s3(s2_semi_mgau_t * s, char const *file_name, double SmoothMin)
             for (c = 0; c < n_comp; c++) {
                 int32 qscr;
 
-                qscr = logs3(pdf[c]);
+                qscr = logs3(s->logmath, pdf[c]);
                 /* ** HACK!! ** hardwired threshold!!! */
                 if (qscr < -161900)
                     E_FATAL("**ERROR** Too low senone PDF value: %d\n",
@@ -1137,11 +1137,11 @@ s3_read_mgau(const char *file_name, float32 ** cb)
     return n;
 }
 
-int32
-s3_precomp(mean_t ** means, var_t ** vars, int32 ** dets, float32 vFloor)
+static int32
+s3_precomp(mean_t ** means, var_t ** vars, int32 ** dets, float32 vFloor, logmath_t * logmath)
 {
     int feat;
-    float64 log_base = log(logs3_base());
+    float64 log_base = log(logmath_get_base(logmath));
 
     for (feat = 0; feat < 4; ++feat) {
         float32 *fmp;
@@ -1175,7 +1175,7 @@ s3_precomp(mean_t ** means, var_t ** vars, int32 ** dets, float32 vFloor)
                 fvar = *(float32 *) vp;
                 if (fvar < vFloor)
                     fvar = vFloor;
-                d += logs3(1 / sqrt(fvar * 2.0 * PI));
+                d += logs3(logmath, 1 / sqrt(fvar * 2.0 * PI));
                 *vp = (var_t) (1.0 / (2.0 * fvar * log_base));
             }
             *dp++ = d;
@@ -1187,7 +1187,7 @@ s3_precomp(mean_t ** means, var_t ** vars, int32 ** dets, float32 vFloor)
 s2_semi_mgau_t *
 s2_semi_mgau_init(const char *mean_path, const char *var_path,
                   float64 varfloor, const char *mixw_path,
-                  float64 mixwfloor, int32 topn)
+                  float64 mixwfloor, int32 topn, logmath_t *logmath)
 {
     s2_semi_mgau_t *s;
     int i;
@@ -1195,6 +1195,7 @@ s2_semi_mgau_init(const char *mean_path, const char *var_path,
     s = ckd_calloc(1, sizeof(*s));
 
     s->use20ms_diff_pow = FALSE;
+    s->logmath = logmath;
 
     for (i = 0; i < S2_MAX_TOPN; i++) {
         s->lxfrm[i].val.dist = s->ldfrm[i].val.dist =
@@ -1215,7 +1216,7 @@ s2_semi_mgau_init(const char *mean_path, const char *var_path,
     /* Precompute means, variances, and determinants. */
     for (i = 0; i < 4; ++i)
         s->dets[i] = s->detArr + i * S2_NUM_ALPHABET;
-    s3_precomp(s->means, s->vars, s->dets, varfloor);
+    s3_precomp(s->means, s->vars, s->dets, varfloor, logmath);
 
     /* Read mixture weights (gives us CdWdPDFMod = number of
      * mixture weights per codeword, which is fixed at the number

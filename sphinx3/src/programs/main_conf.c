@@ -143,6 +143,7 @@ static fillpen_t *fpen;         /**< The filler penalty structure */
 static lmset_t *lmset;          /**< The lmset. Replace lm */
 static ptmr_t tm_utt; /**< The model definition */
 static cmd_ln_t *config;
+static logmath_t *logmath;
 
 static FILE *inmatchsegfp, *outconfmatchsegfp;  /* The segment file */
 
@@ -166,14 +167,16 @@ models_init(void)
                        cmd_ln_str_r(config, "-lmdumpdir"),
                        cmd_ln_float32_r(config, "-lw"),
                        cmd_ln_float32_r(config, "-wip"),
-                       cmd_ln_float32_r(config, "-uw"), dict);
+                       cmd_ln_float32_r(config, "-uw"), dict,
+                       logmath);
 
     /* Filler penalties */
     fpen = fillpen_init(dict, cmd_ln_str_r(config, "-fillpen"),
                         cmd_ln_float32_r(config, "-silprob"),
                         cmd_ln_float32_r(config, "-fillprob"),
                         cmd_ln_float32_r(config, "-lw"),
-                        cmd_ln_float32_r(config, "-wip"));
+                        cmd_ln_float32_r(config, "-wip"),
+                        logmath);
 
 }
 
@@ -339,8 +342,8 @@ main(int argc, char *argv[])
 
     config = cmd_ln_get();
 
-    logs3_init((float64) cmd_ln_float32_r(config, "-logbase"), 1,
-               cmd_ln_int32_r(config, "-log3table"));
+    logmath = logs3_init((float64) cmd_ln_float32_r(config, "-logbase"), 1,
+                         cmd_ln_int32_r(config, "-log3table"));
 
     E_INFO("Value of base %f \n", cmd_ln_float32_r(config, "-logbase"));
     models_init();
@@ -373,7 +376,7 @@ main(int argc, char *argv[])
 
     models_free();
 
-    logs_free();
+    logmath_free(logmath);
 
     cmd_ln_free_r(config);
 

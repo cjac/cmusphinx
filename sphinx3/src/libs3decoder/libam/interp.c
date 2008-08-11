@@ -128,8 +128,8 @@ interp_read(interp_t * ip, const char *file_name)
         if ((f < 0.0) || (f > 1.0))
             E_FATAL("%s: interpolation weight(%d)= %e\n", file_name, i, f);
 
-        ip->wt[i].cd = (f == 0.0) ? S3_LOGPROB_ZERO : logs3(f);
-        ip->wt[i].ci = (f == 1.0) ? S3_LOGPROB_ZERO : logs3(1.0 - f);
+        ip->wt[i].cd = (f == 0.0) ? S3_LOGPROB_ZERO : logs3(ip->logmath, f);
+        ip->wt[i].ci = (f == 1.0) ? S3_LOGPROB_ZERO : logs3(ip->logmath, 1.0 - f);
     }
 
     if (chksum_present)
@@ -147,13 +147,14 @@ interp_read(interp_t * ip, const char *file_name)
 
 
 interp_t *
-interp_init(const char *file)
+interp_init(const char *file, logmath_t *logmath)
 {
     interp_t *ip;
 
     assert(file != NULL);
 
     ip = (interp_t *) ckd_calloc(1, sizeof(interp_t));
+    ip->logmath = logmath;
 
     if (interp_read(ip, file) != 1)
         E_FATAL("interp_init(%s) failed\n", file);
@@ -168,8 +169,9 @@ interp_cd_ci(interp_t * ip, int32 * senscr, int32 cd, int32 ci)
     assert((ci >= 0) && (ci < ip->n_sen));
     assert((cd >= 0) && (cd < ip->n_sen));
 
-    senscr[cd] = logs3_add(senscr[cd] + ip->wt[cd].cd,
-                           senscr[ci] + ip->wt[cd].ci);
+    senscr[cd] = logmath_add(ip->logmath,
+                             senscr[cd] + ip->wt[cd].cd,
+                             senscr[ci] + ip->wt[cd].ci);
 
     return 0;
 }
@@ -185,8 +187,9 @@ interp_all(interp_t * ip, int32 * senscr, s3senid_t * cimap,
 
     for (cd = n_ci_sen; cd < ip->n_sen; cd++) {
         ci = cimap[cd];
-        senscr[cd] = logs3_add(senscr[cd] + ip->wt[cd].cd,
-                               senscr[ci] + ip->wt[cd].ci);
+        senscr[cd] = logmath_add(ip->logmath,
+                                 senscr[cd] + ip->wt[cd].cd,
+                                 senscr[ci] + ip->wt[cd].ci);
     }
 
     return 0;

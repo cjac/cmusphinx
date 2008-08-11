@@ -125,6 +125,7 @@ typedef struct ca_dag_type {
     int nfrm;
     int nnode;
     int nedge;
+    logmath_t *logmath;
 } ca_dag;
 
 

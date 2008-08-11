@@ -16,6 +16,7 @@ main(int argc, char *argv[])
     float64 logbase;
     float64 lw, wip, log10v;
     int32 ls3;
+    logmath_t *logmath;
 
     logbase = (float64) atof(argv[1]);
 
@@ -23,11 +24,11 @@ main(int argc, char *argv[])
     wip = (float64) atof(argv[3]);
     log10v = (float64) atof(argv[4]);
 
-    if (logs3_init(logbase, 0, 1) < 0) {        /*Don't report progress, use log table. */
+    if ((logmath = logs3_init(logbase, 0, 1)) == NULL) {        /*Don't report progress, use log table. */
         E_FATAL("Initialization of log table failed.\n");
     }
 
-    ls3 = (int32) (log10_to_logs3(log10v) * lw - logs3(wip));
+    ls3 = (int32) (logmath_log10_to_log(logmath, log10v) * lw - logs3(logmath, wip));
 
     /*logs3(wip); */
 

@@ -91,6 +91,7 @@
 #define _S3_TMAT_H_
 
 #include <s3types.h>
+#include <logmath.h>
 
 /** \file tmat.h
  *  \brief Transition matrix data structure.
@@ -108,6 +109,7 @@ extern "C" {
  * topology.
  */
 typedef struct {
+    logmath_t *logmath;
     int32 ***tp;	/**< The transition matrices; int32 since probs in logs3 domain:
 			   tp[tmatid][from-state][to-state] */
     int32 n_tmat;	/**< #matrices */
@@ -120,7 +122,8 @@ typedef struct {
 
 tmat_t *tmat_init (const char *tmatfile,	/**< In: input file */
 		   float64 tpfloor,		/**< In: floor value for each non-zero transition probability */
-		   int32 breport		/**< In: whether reporting the process of tmat_t  */
+		   int32 breport,		/**< In: whether reporting the process of tmat_t  */
+		   logmath_t *logmath
     );
 					    
 

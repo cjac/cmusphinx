@@ -151,7 +151,7 @@ gs_display(char *file, gs_t * gs)
 }
 
 gs_t *
-gs_read(const char *file)
+gs_read(const char *file, logmath_t *logmath)
 {
 
     int32 code_id;
@@ -167,6 +167,7 @@ gs_read(const char *file)
     if ((gs->fp = fopen(file, "rb")) == NULL)
         E_FATAL("gs_read(%s,rb) failed\n", file);
 
+    gs->logmath = logmath;
     gs->n_mgau = gs_fread_int32(gs);
 
     E_INFO("The number of mixtures of gaussian: %d\n", gs->n_mgau);
@@ -222,7 +223,7 @@ gc_compute_closest_cw(gs_t * gs, float32 * feat)
     int32 cid;
     float64 min_density;
     /*E_INFO("Compute the closest Code word\n"); */
-    min_density = logs3_to_log(S3_LOGPROB_ZERO);
+    min_density = logmath_log_to_ln(gs->logmath, S3_LOGPROB_ZERO);
 
     bst_codeid = 0;
     min = MAX_POS_FLOAT64;

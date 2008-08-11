@@ -81,6 +81,7 @@
 #include "astar.h"
 #include "whmm.h"
 #include "corpus.h"
+#include "logs3.h"
 
 static void
 fwd_timing_dump(srch_FLAT_FWD_graph_t * fwg)
@@ -484,7 +485,7 @@ srch_FLAT_FWD_srch_one_frame_lv2(void *srch)
 
     whmm_thresh = bestscr + s->beam->hmm;
     word_thresh = bestscr + s->beam->word;
-    phone_penalty = logs3(cmd_ln_float32_r(kbcore_config(fwg->kbcore), "-phonepen"));
+    phone_penalty = logs3(kbcore_logmath(s->kbc), cmd_ln_float32_r(kbcore_config(fwg->kbcore), "-phonepen"));
 
     assert(s->ascr->senscr);
     /*  E_INFO("fwg->n_frm %d\n",fwg->n_frm); */
@@ -672,7 +673,7 @@ srch_FLAT_FWD_gen_dag(void *srch,         /**< a pointer of srch_t */
     dag =
         latticehist_dag_build(fwg->lathist, hyp, kbcore_dict(s->kbc),
                               kbcore_lm(s->kbc), fwg->ctxt, s->kbc->fillpen,
-                              s->exit_id, kbcore_config(s->kbc));
+                              s->exit_id, kbcore_config(s->kbc), kbcore_logmath(s->kbc));
 
     return dag;
 }

@@ -532,7 +532,7 @@ vector_pdf_cross_entropy(float32 * p1, float32 * p2, int32 len)
 
 
 void
-vector_gautbl_alloc(vector_gautbl_t * gautbl, int32 n_gau, int32 veclen)
+vector_gautbl_alloc(vector_gautbl_t * gautbl, int32 n_gau, int32 veclen, logmath_t * logmath)
 {
     gautbl->n_gau = n_gau;
     gautbl->veclen = veclen;
@@ -541,7 +541,7 @@ vector_gautbl_alloc(vector_gautbl_t * gautbl, int32 n_gau, int32 veclen)
     gautbl->var =
         (float32 **) ckd_calloc_2d(n_gau, veclen, sizeof(float32));
     /*    gautbl->lrd = (float32 *) ckd_calloc (n_gau, sizeof(float32)); */
-    gautbl->distfloor = logs3_to_log(S3_LOGPROB_ZERO);
+    gautbl->distfloor = logmath_log_to_ln(logmath, S3_LOGPROB_ZERO);
 }
 
 
@@ -585,7 +585,7 @@ vector_gautbl_maha_precomp(vector_gautbl_t * gautbl)
 void
 vector_gautbl_eval_logs3(vector_gautbl_t * gautbl,
                          int32 offset,
-                         int32 count, float32 * x, int32 * score)
+                         int32 count, float32 * x, int32 * score, logmath_t * logmath)
 {
     int32 i, r;
     float64 f;
@@ -593,7 +593,7 @@ vector_gautbl_eval_logs3(vector_gautbl_t * gautbl,
     float32 *m1, *m2, *v1, *v2;
     float64 dval1, dval2, diff1, diff2;
 
-    f = log_to_logs3_factor();
+    f = 1.0 / log(logmath_get_base(logmath));
 
     /* Interleave evaluation of two vectors at a time for speed on pipelined machines */
     end = offset + count;

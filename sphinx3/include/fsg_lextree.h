@@ -93,6 +93,7 @@
 #define __S2_FSG_LEXTREE_H__
 
 
+#include <logmath.h>
 #include "word_fsg.h"
 #include "fsg_psubtree.h"
 #include "hmm.h"
@@ -131,8 +132,8 @@ typedef struct fsg_lextree_s {
  */
 fsg_lextree_t *fsg_lextree_init (word_fsg_t *fsg,
                                  hmm_context_t *ctx,
-                                 cmd_ln_t *config);
-
+                                 cmd_ln_t *config,
+                                 logmath_t *logmath);
 
 void fsg_lextree_free (fsg_lextree_t *);
 

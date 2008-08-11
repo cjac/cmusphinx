@@ -1,4 +1,5 @@
 
+#include <logmath.h>
 #include "cont_mgau.h"
 
 #ifndef __SPHINX3_ENDPOINTER_H
@@ -55,7 +56,8 @@ void s3_endpointer_init(s3_endpointer_t *_ep,
 			int _begin_pad,
 			int _end_window,
 			int _end_threshold,
-			int _end_pad);
+			int _end_pad,
+			logmath_t *logmath);
 S3DECODER_EXPORT
 void s3_endpointer_close(s3_endpointer_t *_ep);
 S3DECODER_EXPORT

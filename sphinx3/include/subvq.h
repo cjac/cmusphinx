@@ -92,11 +92,11 @@
 #define _S3_SUBVQ_H_
 
 #include <cmd_ln.h>
+#include <logmath.h>
 
 #include "s3types.h"
 #include "cont_mgau.h"
 #include "vector.h"
-#include "logs3.h"
 
 /** \file subvq.h
     \brief Implementation of Sub-vector quantization.
@@ -172,7 +172,8 @@ subvq_t *subvq_init (const char *file,	/**< In: Subvector model file */
 					   which this subvq model was
 					   built, for
 					   cross-validation; optional */
-		     cmd_ln_t *config
+		     cmd_ln_t *config,
+		     logmath_t *logmath
     );	
 
 
@@ -204,9 +205,10 @@ int32 subvq_frame_eval (subvq_t *vq,	/**< In: A sub-vector model */
  * given subvq codebook.  Save results, as logs3 values, in vq->vqdist[][].
  */
 void subvq_gautbl_eval_logs3 (subvq_t *vq,	/**< In/Out: Reference subvq structure */
-			      float32 *feat	/**< In: Subvectors
+			      float32 *feat,	/**< In: Subvectors
 						   extracted from this, and compared to
 						   relevant subvq codewords */
+			      logmath_t *logmath
     );
 
 /**
@@ -222,9 +224,10 @@ void subvq_subvec_eval_logs3 (subvq_t *vq,	/**< In/Out: Reference subvq structur
 						 ** to relevant
 						 ** codewords */
 
-			      int32 sv	        /**< In: ID of
+			      int32 sv,	        /**< In: ID of
 						   subvector being
 						   evaluated */
+			      logmath_t *logmath
     );
 
 /*

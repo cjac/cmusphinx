@@ -59,7 +59,8 @@ s3_endpointer_init(s3_endpointer_t *_ep,
 		   int _begin_pad,
 		   int _end_window,
 		   int _end_threshold,
-		   int _end_pad)
+		   int _end_pad,
+		   logmath_t *logmath)
 {
     int i;
 
@@ -76,15 +77,15 @@ s3_endpointer_init(s3_endpointer_t *_ep,
 
     _ep->gmm = mgau_init(_means_file, _vars_file, _var_floor,
 			 _mix_weights_file, _mix_weight_floor, TRUE, _gm_type,
-			 MIX_INT_FLOAT_COMP);
+			 MIX_INT_FLOAT_COMP, logmath);
 
     _ep->post_classify = _post_classify;
 
     _ep->priors = (int32 *)ckd_calloc(sizeof(int32), NUM_CLASSES);
-    _ep->priors[CLASS_SIL] = logs3(PRIOR_SIL);
-    _ep->priors[CLASS_OWNER] = logs3(PRIOR_OWNER);
-    _ep->priors[CLASS_SEC] = logs3(PRIOR_SEC);
-    _ep->priors[CLASS_NOISE] = logs3(PRIOR_NOISE);
+    _ep->priors[CLASS_SIL] = logs3(logmath, PRIOR_SIL);
+    _ep->priors[CLASS_OWNER] = logs3(logmath, PRIOR_OWNER);
+    _ep->priors[CLASS_SEC] = logs3(logmath, PRIOR_SEC);
+    _ep->priors[CLASS_NOISE] = logs3(logmath, PRIOR_NOISE);
 
     _ep->voters= (int *)ckd_calloc(sizeof(int), VOTING_LEN);
     for (i = 0; i < VOTING_LEN; i++)

@@ -196,7 +196,7 @@ static s3wid_t *fillwid;        /** BAD_S3WID terminated array of optional fille
 static snode_t **cur_active;    /** NULL-terminated active state list for current frame */
 static snode_t **next_active;   /** Similar list for next frame */
 static int32 active_list_size = 0;
-#define ACTIVE_LIST_SIZE_INCR	16380
+#define ACTIVE_LIST_SIZE_INCR   16380
 static int32 n_active;
 
 static int32 curfrm;            /** Current frame */
@@ -1137,7 +1137,7 @@ build_stseg(history_t * rooth)
     prevscr = 0;
     prevh = NULL;
     for (f = 0, h = rooth; h; h = h->pred, f++) {
-	stseg = (align_stseg_t *) ckd_calloc(1, sizeof(*stseg));
+        stseg = (align_stseg_t *) ckd_calloc(1, sizeof(*stseg));
         if (!align_stseg)
             align_stseg = stseg;
         else
@@ -1323,7 +1323,7 @@ align_end_utt(align_stseg_t ** stseg_out,
 
 
 int32
-align_init(mdef_t * _mdef, tmat_t * _tmat, dict_t * _dict, cmd_ln_t *_config)
+align_init(mdef_t * _mdef, tmat_t * _tmat, dict_t * _dict, cmd_ln_t *_config, logmath_t * _logmath)
 {
     int32 k;
     s3wid_t w;
@@ -1351,7 +1351,7 @@ align_init(mdef_t * _mdef, tmat_t * _tmat, dict_t * _dict, cmd_ln_t *_config)
     }
     fillwid[k] = BAD_S3WID;
 
-    beam = logs3(cmd_ln_float64_r(_config, "-beam"));
+    beam = logs3(_logmath, cmd_ln_float64_r(_config, "-beam"));
     E_INFO("logs3(beam)= %d\n", beam);
 
     score_scale = (int32 *) ckd_calloc(S3_MAX_FRAMES, sizeof(int32));

@@ -77,6 +77,7 @@
 #ifndef _S3_FILLPEN_H_
 #define _S3_FILLPEN_H_
 
+#include <logmath.h>
 #include <s3types.h>
 
 /** \file fillpen.h
@@ -129,7 +130,8 @@ fillpen_t *fillpen_init (dict_t *dict,		/**< In: Dictionary containing filler wo
 			 float64 fillprob,	/**< In: Default probability for non-silence filler
 						   words */
 			 float64 lw,		/**< In: Language weight (see lm.h) */
-			 float64 wip		/**< In: Word insertion penalty (see lm.h) */
+			 float64 wip,		/**< In: Word insertion penalty (see lm.h) */
+			 logmath_t *logmath
     );
 
 /**

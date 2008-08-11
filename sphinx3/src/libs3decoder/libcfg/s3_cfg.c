@@ -24,8 +24,8 @@ eval_state(s3_cfg_t *_cfg, s3_cfg_state_t *_state);
 
 static s3_cfg_entry_t *
 add_entry(s3_cfg_state_t *_state, s3_cfg_rule_t *_rule, int _dot,
-	  s3_cfg_state_t *_origin, int32 _score,
-	  s3_cfg_entry_t *_back, s3_cfg_entry_t *_cmplt);
+          s3_cfg_state_t *_origin, int32 _score,
+          s3_cfg_entry_t *_back, s3_cfg_entry_t *_cmplt);
 
 static s3_cfg_state_t *
 add_state(s3_cfg_t *_cfg, s3_cfg_state_t *_back, s3_cfg_id_t _term);
@@ -42,14 +42,14 @@ add_item(s3_cfg_t *_cfg, char *_name);
 
 static void
 read_1rule(s3_cfg_t *_cfg, FILE *_file, float32 *_score,
-	   s3_cfg_id_t *_src, s3_cfg_id_t *_products);
+           s3_cfg_id_t *_src, s3_cfg_id_t *_products);
 
 static void
 print_parse(s3_cfg_t *_cfg, s3_cfg_entry_t *_parse, FILE *_out,
-			int _depth);
+                        int _depth);
 
 static void
-compile_nonterm(s3_cfg_t *_cfg, s3_cfg_item_t *_item);
+compile_nonterm(s3_cfg_t *_cfg, s3_cfg_item_t *_item, logmath_t *logmath);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -155,11 +155,11 @@ s3_cfg_read_simple(const char *_fn)
     /* read the products */
     for (i = 0; i < len; i++) {
       if (fscanf(file, format, name) != 1)
-	E_FATAL("Bad CFG production rule\n");
+        E_FATAL("Bad CFG production rule\n");
 
       item = s3_cfg_str2id(cfg, name);
       if (item == S3_CFG_INVALID_ID)
-	E_FATAL("Bad CFG production term\n");
+        E_FATAL("Bad CFG production term\n");
       products[i] = item;
     }
     products[len] = S3_CFG_EOR_ITEM;
@@ -195,7 +195,7 @@ s3_cfg_write_simple(s3_cfg_t *_cfg, const char *_fn)
   for (i = 1; i < count; i++) {
     rule = (s3_cfg_rule_t *)s3_arraylist_get(rules, i);
     fprintf(file, "%f %s %d",
-	    rule->score, s3_cfg_id2str(_cfg, rule->src), rule->len);
+            rule->score, s3_cfg_id2str(_cfg, rule->src), rule->len);
     for (j = 0; j < rule->len; j++)
       fprintf(file, " %s", s3_cfg_id2str(_cfg, rule->products[j]));
   }
@@ -209,7 +209,7 @@ s3_cfg_write_simple(s3_cfg_t *_cfg, const char *_fn)
 /*---------------------------------------------------------------------------*/
 
 void
-s3_cfg_rescore(s3_cfg_t *_cfg)
+s3_cfg_rescore(s3_cfg_t *_cfg, logmath_t *logmath)
 {
   int i;
   s3_arraylist_t *rules = NULL;
@@ -220,7 +220,7 @@ s3_cfg_rescore(s3_cfg_t *_cfg)
   rules = &_cfg->rules;
   for (i = s3_arraylist_count(rules) - 1; i >= 0; i--) {
     rule = (s3_cfg_rule_t *)s3_arraylist_get(rules, i);
-    rule->log_score = logs3(rule->prob_score);
+    rule->log_score = logs3(logmath, rule->prob_score);
   }
 }
 
@@ -412,7 +412,7 @@ s3_cfg_id2str(s3_cfg_t *_cfg, s3_cfg_id_t _id)
   assert(_cfg != NULL);
 
   return ((s3_cfg_item_t *)s3_arraylist_get(&_cfg->item_info,
-					     s3_cfg_id2index(_id)))->name;
+                                             s3_cfg_id2index(_id)))->name;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -421,12 +421,12 @@ s3_cfg_id2str(s3_cfg_t *_cfg, s3_cfg_id_t _id)
 
 static s3_cfg_entry_t *
 add_entry(s3_cfg_state_t *_state,
-	  s3_cfg_rule_t *_rule,
-	  int _dot,
-	  s3_cfg_state_t *_origin,
-	  int32 _score,
-	  s3_cfg_entry_t *_back,
-	  s3_cfg_entry_t *_complete)
+          s3_cfg_rule_t *_rule,
+          int _dot,
+          s3_cfg_state_t *_origin,
+          int32 _score,
+          s3_cfg_entry_t *_back,
+          s3_cfg_entry_t *_complete)
 {
   s3_cfg_entry_t *entry = NULL;
 
@@ -523,11 +523,11 @@ eval_state(s3_cfg_t *_cfg, s3_cfg_state_t *_state)
 
     /* saving some scores */
     if (_state->best_overall_entry == NULL ||
-	score < _state->best_overall_entry->score)
+        score < _state->best_overall_entry->score)
       _state->best_overall_entry = entry;
     
     if (_state->best_overall_parse == NULL ||
-	score < _state->best_overall_parse->score)
+        score < _state->best_overall_parse->score)
       _state->best_overall_parse = entry;
 
     if (s3_cfg_is_terminal(scan)) {
@@ -557,21 +557,21 @@ eval_state(s3_cfg_t *_cfg, s3_cfg_state_t *_state)
        * for records keeping sake.
        */
       if (scan == S3_CFG_EOR_ITEM) {
-	scan = entry->rule->src;
-	arraylist = &entry->origin->entries;
+        scan = entry->rule->src;
+        arraylist = &entry->origin->entries;
 
-	for (j = s3_arraylist_count(arraylist) - 1; j >= 0; j--) {
-	  cmplt_entry = (s3_cfg_entry_t *)s3_arraylist_get(arraylist, j);
+        for (j = s3_arraylist_count(arraylist) - 1; j >= 0; j--) {
+          cmplt_entry = (s3_cfg_entry_t *)s3_arraylist_get(arraylist, j);
 
-	  if (cmplt_entry->rule->products[cmplt_entry->dot] == scan)
-	    add_entry(_state,
-		      cmplt_entry->rule,
-		      cmplt_entry->dot + 1,
-		      cmplt_entry->origin,
-		      cmplt_entry->score + entry->score,
-		      cmplt_entry,
-		      entry);
-	}
+          if (cmplt_entry->rule->products[cmplt_entry->dot] == scan)
+            add_entry(_state,
+                      cmplt_entry->rule,
+                      cmplt_entry->dot + 1,
+                      cmplt_entry->origin,
+                      cmplt_entry->score + entry->score,
+                      cmplt_entry,
+                      entry);
+        }
       }
       /************************************************************************
        * PARSE COMPLETION
@@ -586,13 +586,13 @@ eval_state(s3_cfg_t *_cfg, s3_cfg_state_t *_state)
        * state, since only the parse with the highest score is kept.
        */
       else if (scan == S3_CFG_EOI_ITEM) {
-	if (_state->best_completed_entry == NULL ||
-	    score < _state->best_completed_entry->score)
-	  _state->best_completed_entry = entry;
+        if (_state->best_completed_entry == NULL ||
+            score < _state->best_completed_entry->score)
+          _state->best_completed_entry = entry;
 
-	if (_state->best_completed_parse == NULL ||
-	    score < _state->best_completed_parse->score)
-	  _state->best_completed_parse = entry;
+        if (_state->best_completed_parse == NULL ||
+            score < _state->best_completed_parse->score)
+          _state->best_completed_parse = entry;
 
       }
       /************************************************************************
@@ -607,13 +607,13 @@ eval_state(s3_cfg_t *_cfg, s3_cfg_state_t *_state)
        *   ($X -> A y * B #EOR#, s, i)
        */
       else {
-	index = s3_cfg_id2index(scan);
-	arraylist = &_state->expansions;
-	target_state = (s3_cfg_state_t *)s3_arraylist_get(arraylist, index);
-	if (target_state == NULL)
-	  target_state = add_state(_cfg, _state, scan);
-	add_entry(target_state, rule, dot + 1, origin_state, score,
-		  entry, NULL);
+        index = s3_cfg_id2index(scan);
+        arraylist = &_state->expansions;
+        target_state = (s3_cfg_state_t *)s3_arraylist_get(arraylist, index);
+        if (target_state == NULL)
+          target_state = add_state(_cfg, _state, scan);
+        add_entry(target_state, rule, dot + 1, origin_state, score,
+                  entry, NULL);
       }
     }
     else {
@@ -639,8 +639,8 @@ eval_state(s3_cfg_t *_cfg, s3_cfg_state_t *_state)
        * parse pointer.
        */
       if (item->nil_rule != NULL)
-	add_entry(_state, rule, dot + 1, origin_state,
-		  score + item->nil_rule->log_score, entry, NULL);
+        add_entry(_state, rule, dot + 1, origin_state,
+                  score + item->nil_rule->log_score, entry, NULL);
 
       /************************************************************************
        * NORMAL PREDICTION
@@ -655,13 +655,13 @@ eval_state(s3_cfg_t *_cfg, s3_cfg_state_t *_state)
        * non-terminals we've already expanded in a table.
        */
       if (!predictions[index]) {
-	predictions[index] = 1;
-	arraylist = &item->rules;
-	for (j = s3_arraylist_count(arraylist) - 1; j >= 0; j--) {
-	  rule = (s3_cfg_rule_t *)s3_arraylist_get(arraylist, j);
-	  if (rule->products[0] != S3_CFG_EOR_ITEM)
-	    add_entry(_state, rule, 0, _state, rule->log_score, NULL, NULL);
-	}
+        predictions[index] = 1;
+        arraylist = &item->rules;
+        for (j = s3_arraylist_count(arraylist) - 1; j >= 0; j--) {
+          rule = (s3_cfg_rule_t *)s3_arraylist_get(arraylist, j);
+          if (rule->products[0] != S3_CFG_EOR_ITEM)
+            add_entry(_state, rule, 0, _state, rule->log_score, NULL, NULL);
+        }
       }
     }
   }
@@ -706,7 +706,7 @@ add_item(s3_cfg_t *_cfg, char *_name)
 
 s3_cfg_rule_t *
 s3_cfg_add_rule(s3_cfg_t *_cfg, s3_cfg_id_t _src, float32 _score, 
-		s3_cfg_id_t *_products)
+                s3_cfg_id_t *_products)
 {
   s3_cfg_rule_t *rule = NULL;
   s3_cfg_id_t *products = NULL;
@@ -759,7 +759,7 @@ s3_cfg_add_rule(s3_cfg_t *_cfg, s3_cfg_id_t _src, float32 _score,
 
 static void
 read_1rule(s3_cfg_t *_cfg, FILE *_file, float32 *_score,
-	   s3_cfg_id_t *_src, s3_cfg_id_t *_products)
+           s3_cfg_id_t *_src, s3_cfg_id_t *_products)
 {
   char name[S3_CFG_MAX_ITEM_STR_LEN + 1];
   float32 score;
@@ -897,7 +897,7 @@ s3_cfg_print_entry(s3_cfg_t *_cfg, s3_cfg_entry_t *_entry, FILE *_out)
 
 static void
 print_parse(s3_cfg_t *_cfg, s3_cfg_entry_t *_parse, FILE *_out,
-			int _depth)
+                        int _depth)
 {
   int i;
 
@@ -935,7 +935,7 @@ s3_cfg_print_parse(s3_cfg_t *_cfg, s3_cfg_entry_t *_parse, FILE *_out)
 /*---------------------------------------------------------------------------*/
 
 void
-s3_cfg_compile_rules(s3_cfg_t *_cfg)
+s3_cfg_compile_rules(s3_cfg_t *_cfg, logmath_t *logmath)
 {
   s3_cfg_item_t *item = NULL;
   s3_arraylist_t *arraylist = NULL;
@@ -948,7 +948,7 @@ s3_cfg_compile_rules(s3_cfg_t *_cfg)
   for (i = n - 1; i >= 0; i--) {
     item = s3_arraylist_get(arraylist, i);
     if (!s3_cfg_is_terminal(item->id))
-      compile_nonterm(_cfg, item);
+      compile_nonterm(_cfg, item, logmath);
   }
 
   _cfg->predictions = (int8 *)ckd_calloc(n, sizeof(int8));
@@ -961,7 +961,7 @@ s3_cfg_compile_rules(s3_cfg_t *_cfg)
 /*---------------------------------------------------------------------------*/
 
 static void
-compile_nonterm(s3_cfg_t *_cfg, s3_cfg_item_t *_item)
+compile_nonterm(s3_cfg_t *_cfg, s3_cfg_item_t *_item, logmath_t *logmath)
 {
   int i, n;
   s3_arraylist_t *arraylist;
@@ -989,12 +989,12 @@ compile_nonterm(s3_cfg_t *_cfg, s3_cfg_item_t *_item)
   for (i = n - 1; i >= 0; i--) {
     rule = (s3_cfg_rule_t *)s3_arraylist_get(arraylist, i);
     rule->prob_score = rule->score / sum;
-    rule->log_score = logs3(rule->prob_score);
+    rule->log_score = logs3(logmath, rule->prob_score);
   }
 
   if (_item->nil_rule != NULL) {
     _item->nil_rule->prob_score = _item->nil_rule->score / sum;
-    _item->nil_rule->log_score = logs3(_item->nil_rule->prob_score);
+    _item->nil_rule->log_score = logs3(logmath, _item->nil_rule->prob_score);
   }
 }
 

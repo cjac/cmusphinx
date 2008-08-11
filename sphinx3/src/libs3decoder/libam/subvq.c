@@ -91,6 +91,7 @@
  */
 
 
+#include <logmath.h>
 #include "subvq.h"
 #include "s3types.h"
 
@@ -198,7 +199,7 @@ subvq_map_linearize(subvq_t * vq)
 }
 
 subvq_t *
-subvq_init(const char *file, float64 varfloor, int32 max_sv, mgau_model_t * g, cmd_ln_t *config)
+subvq_init(const char *file, float64 varfloor, int32 max_sv, mgau_model_t * g, cmd_ln_t *config, logmath_t * logmath)
 {
     FILE *fp;
     char line[16384];
@@ -276,7 +277,7 @@ subvq_init(const char *file, float64 varfloor, int32 max_sv, mgau_model_t * g, c
             }
 
             vector_gautbl_alloc(&(vq->gautbl[s]), vq->vqsize,
-                                vq->gautbl[s].veclen);
+                                vq->gautbl[s].veclen, logmath);
         }
     }
 
@@ -464,7 +465,7 @@ subvq_mgau_shortlist(subvq_t * vq, int32 m,     /* In: Mixture index */
 
 
 void
-subvq_subvec_eval_logs3(subvq_t * vq, float32 * feat, int32 s)
+subvq_subvec_eval_logs3(subvq_t * vq, float32 * feat, int32 s, logmath_t * logmath)
 {
     int32 i;
     int32 *featdim;
@@ -476,12 +477,12 @@ subvq_subvec_eval_logs3(subvq_t * vq, float32 * feat, int32 s)
 
     /* Evaluate distances between extracted subvector and corresponding codebook */
     vector_gautbl_eval_logs3(&(vq->gautbl[s]), 0, vq->vqsize, vq->subvec,
-                             vq->vqdist[s]);
+                             vq->vqdist[s], logmath);
 }
 
 
 void
-subvq_gautbl_eval_logs3(subvq_t * vq, float32 * feat)
+subvq_gautbl_eval_logs3(subvq_t * vq, float32 * feat, logmath_t * logmath)
 {
     int32 s, i;
     int32 *featdim;
@@ -496,7 +497,7 @@ subvq_gautbl_eval_logs3(subvq_t * vq, float32 * feat)
         /* RAH, only evaluate the first VQ_EVAL set of features */
         if (s < vq->VQ_EVAL)
             vector_gautbl_eval_logs3(&(vq->gautbl[s]), 0, vq->vqsize,
-                                     vq->subvec, vq->vqdist[s]);
+                                     vq->subvec, vq->vqdist[s], logmath);
     }
 }
 
@@ -569,7 +570,7 @@ subvq_mgau_eval(mgau_model_t * g, subvq_t * vq, int32 m, int32 n,
     int32 last_active;
 
     float64 f;
-    f = log_to_logs3_factor();
+    f = 1.0 / log(logmath_get_base(g->logmath));
 
     vqdist = vq->vqdist[0];
     score = S3_LOGPROB_ZERO;
@@ -582,7 +583,7 @@ subvq_mgau_eval(mgau_model_t * g, subvq_t * vq, int32 m, int32 n,
             for (sv_id = 0; sv_id < vq->n_sv; sv_id++) {
                 v += vqdist[*(map++)];
             }
-            score = logs3_add(score, v + mgau->mixw[i]);
+            score = logmath_add(g->logmath, score, v + mgau->mixw[i]);
         }
     }
     else {
@@ -599,7 +600,7 @@ subvq_mgau_eval(mgau_model_t * g, subvq_t * vq, int32 m, int32 n,
             }
 
             last_active = c + 1;
-            score = logs3_add(score, v + mgau->mixw[i]);
+            score = logmath_add(g->logmath, score, v + mgau->mixw[i]);
         }
     }
 

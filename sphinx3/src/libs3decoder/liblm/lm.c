@@ -179,17 +179,19 @@ extern lm_t *lm_read_txt(const char *filename, /**< The file name */
 					-15 (LM_CANNOT_ALLOCATE).  Please checkout
 					lm.h for details. 
 				     */
-                         int32 isforced32bit /** Input: normally, we should let lm_read_txt
+                         int32 isforced32bit, /** Input: normally, we should let lm_read_txt
 						 to decide whether a file is 32 bit or not. 
 						 When the lm_read_txt couldn't decide that before
 						 reading or if more specificially when we hit
 						 the LM segment size problems. Then this bit
 						 will alter the reading behavior to 32 bit. 
 					     */
+                         logmath_t *logmath
     );
 
 extern lm_t *lm_read_dump(const char *file,  /**< The file name*/
-                          int lminmemory  /**< Whether using in memory LM */
+                          int lminmemory,  /**< Whether using in memory LM */
+                          logmath_t *logmath
     );
 
 
@@ -203,8 +205,7 @@ int32 lm3g_dump(char const *file,   /**< the file name */
 /**
    Writer of lm in ARPA text format
  */
-int32 lm_write_arpa_text(lm_t * lmp,
-                                   /**< the pointer of the language model */
+int32 lm_write_arpa_text(lm_t * lmp, /**< the pointer of the language model */
                          const char *outputfn, /**< the output file name */
                          const char *inputenc, /**< The input encoding method */
                          const char *outputenc /**< The output encoding method */
@@ -285,6 +286,7 @@ lm_null_struct(lm_t * lm)
     lm->tg_segbase = NULL;
     lm->lmclass = NULL;
     lm->inclass_ugscore = NULL;
+    lm->logmath = NULL;
 }
 
 /* Apply unigram weight; should be part of LM creation, but... */
@@ -294,15 +296,15 @@ lm_uw(lm_t * lm, float64 uw)
     int32 i, loguw, loguw_, loguniform, p1, p2;
 
     /* Interpolate unigram probs with uniform PDF, with weight uw */
-    loguw = logs3(uw);
-    loguw_ = logs3(1.0 - uw);
-    loguniform = logs3(1.0 / (lm->n_ug - 1));   /* Skipping S3_START_WORD */
+    loguw = logs3(lm->logmath, uw);
+    loguw_ = logs3(lm->logmath, 1.0 - uw);
+    loguniform = logs3(lm->logmath, 1.0 / (lm->n_ug - 1));   /* Skipping S3_START_WORD */
 
     for (i = 0; i < lm->n_ug; i++) {
         if (strcmp(lm->wordstr[i], S3_START_WORD) != 0) {
             p1 = lm->ug[i].prob.l + loguw;
             p2 = loguniform + loguw_;
-            lm->ug[i].prob.l = logs3_add(p1, p2);
+            lm->ug[i].prob.l = logmath_add(lm->logmath, p1, p2);
         }
     }
 }
@@ -314,7 +316,7 @@ lm2logs3(lm_t * lm, float64 uw)
     int32 i;
 
     for (i = 0; i < lm->n_ug; i++) {
-        lm->ug[i].prob.l = log10_to_logs3(lm->ug[i].prob.f);
+        lm->ug[i].prob.l = logmath_log10_to_log(lm->logmath, lm->ug[i].prob.f);
 
         /* This prevent underflow if the backoff value is too small 
            It happens sometimes in cmu-lmtk V3's lm_combine. 
@@ -323,23 +325,23 @@ lm2logs3(lm_t * lm, float64 uw)
         if (lm->ug[i].bowt.f < MIN_PROB_F)
             lm->ug[i].bowt.f = MIN_PROB_F;
 
-        lm->ug[i].bowt.l = log10_to_logs3(lm->ug[i].bowt.f);
+        lm->ug[i].bowt.l = logmath_log10_to_log(lm->logmath, lm->ug[i].bowt.f);
     }
 
     lm_uw(lm, uw);
 
     for (i = 0; i < lm->n_bgprob; i++)
-        lm->bgprob[i].l = log10_to_logs3(lm->bgprob[i].f);
+        lm->bgprob[i].l = logmath_log10_to_log(lm->logmath, lm->bgprob[i].f);
 
     if (lm->n_tg > 0) {
         for (i = 0; i < lm->n_tgprob; i++)
-            lm->tgprob[i].l = log10_to_logs3(lm->tgprob[i].f);
+            lm->tgprob[i].l = logmath_log10_to_log(lm->logmath, lm->tgprob[i].f);
         for (i = 0; i < lm->n_tgbowt; i++) {
 
             if (lm->tgbowt[i].f < MIN_PROB_F)
                 lm->tgbowt[i].f = MIN_PROB_F;
 
-            lm->tgbowt[i].l = log10_to_logs3(lm->tgbowt[i].f);
+            lm->tgbowt[i].l = logmath_log10_to_log(lm->logmath, lm->tgbowt[i].f);
         }
     }
 }
@@ -356,9 +358,9 @@ lm_set_param(lm_t * lm, float64 lw, float64 wip)
     if (wip <= 0.0)
         E_FATAL("wip = %e\n", wip);
 #if 0                           /* No lang weight on wip */
-    iwip = logs3(wip) * lw;
+    iwip = logs3(lm->logmath, wip) * lw;
 #endif
-    iwip = logs3(wip);
+    iwip = logs3(lm->logmath, wip);
 
     f = lw / lm->lw;
 
@@ -561,27 +563,27 @@ lm_add_word_to_ug(lm_t * lm,      /**<In/Out: a modified LM structure */
 }
 
 lm_t *
-lm_read(const char *file, const char *lmname, cmd_ln_t *config)
+lm_read(const char *file, const char *lmname, cmd_ln_t *config, logmath_t *logmath)
 {
     return lm_read_advance(file,
                            lmname,
                            cmd_ln_float32_r(config, "-lw"),
                            cmd_ln_float32_r(config, "-wip"),
-                           cmd_ln_float32_r(config, "-uw"), 0, NULL, 1);
+                           cmd_ln_float32_r(config, "-uw"), 0, NULL, 1, logmath);
 }
 
 lm_t *
 lm_read_advance(const char *file, const char *lmname, float64 lw,
                 float64 wip, float64 uw, int32 ndict, const char *fmt,
-                int32 applyWeight)
+                int32 applyWeight, logmath_t *logmath)
 {
-    return lm_read_advance2(file, lmname, lw, wip, uw, ndict, fmt, applyWeight, 0);
+    return lm_read_advance2(file, lmname, lw, wip, uw, ndict, fmt, applyWeight, 0, logmath);
 }
 
 lm_t *
 lm_read_advance2(const char *file, const char *lmname, float64 lw,
                  float64 wip, float64 uw, int32 ndict, const char *fmt,
-                 int32 applyWeight, int lminmemory)
+                 int32 applyWeight, int lminmemory, logmath_t *logmath)
 {
     int32 i, u;
     lm_t *lm;
@@ -606,21 +608,21 @@ lm_read_advance2(const char *file, const char *lmname, float64 lw,
     /* ARCHAN: We should provide function pointer implementation at here. */
     if (fmt == NULL) {
         /**Automatically decide the LM format */
-        lm = lm_read_dump(file, lminmemory);
+        lm = lm_read_dump(file, lminmemory, logmath);
         if (lm == NULL) {
             E_INFO("In lm_read, LM is not a DMP file. Trying to read it as a txt file\n");
             if (lminmemory == 0) {
                 E_WARN("On-disk LM not supported for text files, reading it into memory.\n");
                 lminmemory = 1;
             }
-            lm = lm_read_txt(file, lminmemory, &err_no, 0); /* Not forcing 32bit LM */
+            lm = lm_read_txt(file, lminmemory, &err_no, 0, logmath); /* Not forcing 32bit LM */
             if (lm == NULL) {
                 if (err_no == LM_OFFSET_TOO_LARGE) {
                     E_INFO
                         ("In lm read, LM is not a DMP, it is likely to be a ARPA format file. But the LM hits the limit of legacy 16 bit format. Force LM reading to 32bit now\n");
 
                     /* This only happens when both TXT & DMP format reading have problems */
-                    lm = lm_read_txt(file, lminmemory, &err_no, 1);      /* Now force 32bit LM */
+                    lm = lm_read_txt(file, lminmemory, &err_no, 1, logmath);      /* Now force 32bit LM */
                     if (lm == NULL) {
                         E_INFO
                             ("Panic: In lm_read, LM is not DMP format, it is likely to be ARPA format and hits legacy 16 bit format problem. But when forcing to 32bit LM, problem still couldn't be solved.\n");
@@ -635,14 +637,14 @@ lm_read_advance2(const char *file, const char *lmname, float64 lw,
         }
     }
     else if (!strcmp(fmt, "TXT")) {
-        lm = lm_read_txt(file, lminmemory, &err_no, 0);  /* Not forcing 32bit LM */
+        lm = lm_read_txt(file, lminmemory, &err_no, 0, logmath);  /* Not forcing 32bit LM */
         if (lm == NULL) {
             if (err_no == LM_OFFSET_TOO_LARGE) {
                 E_INFO
                     ("In lm read, LM is not a DMP, it is likely to be a ARPA format file. But the LM hits the limit of legacy 16 bit format. Force LM reading to 32bit now\n");
 
                 /* This only happens when both TXT & DMP format reading have problems */
-                lm = lm_read_txt(file, lminmemory, &err_no, 1);  /* Now force 32bit LM */
+                lm = lm_read_txt(file, lminmemory, &err_no, 1, logmath);  /* Now force 32bit LM */
                 if (lm == NULL) {
                     E_INFO
                         ("Panic: In lm_read, LM is not DMP format, it is likely to be ARPA format and hits legacy 16 bit format problem. But when forcing to 32bit LM, problem still couldn't be solved.\n");
@@ -657,7 +659,7 @@ lm_read_advance2(const char *file, const char *lmname, float64 lw,
 
     }
     else if (!strcmp(fmt, "DMP")) {
-        lm = lm_read_dump(file, lminmemory);
+        lm = lm_read_dump(file, lminmemory, logmath);
         if (lm == NULL) {
             E_INFO
                 ("In lm_read, a DMP format reader is called, but lm cannot be read, Diagnosis: LM is corrupted or not enough memory.\n");
@@ -665,7 +667,7 @@ lm_read_advance2(const char *file, const char *lmname, float64 lw,
         }
     }
     else if (!strcmp(fmt, "TXT32")) {
-        lm = lm_read_txt(file, lminmemory, &err_no, 1);
+        lm = lm_read_txt(file, lminmemory, &err_no, 1, logmath);
         if (lm == NULL) {
             E_INFO("In lm_read, failed to read lm in txt format. .\n");
             return NULL;

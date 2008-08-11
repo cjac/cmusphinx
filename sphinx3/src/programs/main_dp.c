@@ -147,10 +147,10 @@ word2id(char *w)
             E_FATAL("Increase dictionary size\n");
         word[n_word] = ckd_salloc(w);
         hash_table_enter(dict_ht, word[n_word], (void *)n_word);
-	return n_word++;
+        return n_word++;
     }
     else
-	return (int32)val;
+        return (int32)val;
 }
 
 

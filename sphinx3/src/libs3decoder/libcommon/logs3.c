@@ -96,101 +96,35 @@
  */
 
 
-#include <assert.h>
-#include <math.h>
-#include <logmath.h>
-
 #include "logs3.h"
-#include "s3types.h"
 
-static logmath_t *lmath;
-
-int32
+logmath_t*
 logs3_init(float64 base, int32 bReport, int32 bLogTable)
 {
-    lmath = logmath_init(base, 0, bLogTable);
+    logmath_t *lmath = logmath_init(base, 0, bLogTable);
     if (bReport)
-	logs3_report();
-    return LOGS3_SUCCESS;
+        logs3_report(lmath);
+    return lmath;
 }
 
 int32
-logs3_add(int32 logp, int32 logq)
-{
-    return logmath_add(lmath, logp, logq);
-}
-
-float64
-logs3_base(void)
-{
-    return logmath_get_base(lmath);
-}
-
-int32
-logs3(float64 p)
+logs3(logmath_t* logmath, float64 p)
 {
     if (p <= 0.0) {
         E_WARN("logs3 argument: %e; using S3_LOGPROB_ZERO\n", p);
         return S3_LOGPROB_ZERO;
     }
-    return logmath_log(lmath, p);
+    return logmath_log(logmath, p);
 }
 
-
-int32
-log_to_logs3(float64 logp)
-{
-    return logmath_ln_to_log(lmath, logp);
-}
-
-
-float64
-log_to_logs3_factor(void)
-{
-    return 1.0/log(logmath_get_base(lmath));
-}
-
-
-float64
-logs3_to_log(int32 logs3p)
-{
-    return logmath_log_to_ln(lmath, logs3p);
-}
-
-
-float64
-logs3_to_log10(int32 logs3p)
-{
-    return logmath_log_to_log10(lmath, logs3p);
-}
-
-float64
-logs3_to_p(int32 logs3p)
-{
-    return logmath_exp(lmath, logs3p);
-}
-
-
-int32
-log10_to_logs3(float64 log10p)
-{
-    return logmath_log10_to_log(lmath, log10p);
-}
 
 void
-logs_free()
+logs3_report(logmath_t* logmath)
 {
-    if (lmath)
-        logmath_free(lmath);
-}
-
-void
-logs3_report()
-{
-    if (lmath) {
+    if (logmath) {
 	uint32 size, width, shift;
 
-	logmath_get_table_shape(lmath, &size, &width, &shift);
+	logmath_get_table_shape(logmath, &size, &width, &shift);
 	E_INFO_NOFN("Initialization of the log add table\n");
 	E_INFO_NOFN("Log-Add table size = %d x %d >> %d\n", size, width, shift);
 	E_INFO_NOFN("\n");

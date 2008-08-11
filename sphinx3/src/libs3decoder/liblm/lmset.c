@@ -100,7 +100,7 @@ lmset_init(const char *lmfile,
            const char *ctl_lm,
            const char *lmname,
            const char *lmdumpdir,
-           float32 lw, float32 wip, float32 uw, dict_t * dict)
+           float32 lw, float32 wip, float32 uw, dict_t * dict, logmath_t * logmath)
 {
     lmset_t *lms;
     lms = NULL;
@@ -117,11 +117,11 @@ lmset_init(const char *lmfile,
         if (lmname != NULL)
             lms =
                 lmset_read_lm(lmfile, dict, lmname, lw, wip, uw,
-                              lmdumpdir);
+                              lmdumpdir, logmath);
         else
             lms =
                 lmset_read_lm(lmfile, dict, "default", lw, wip, uw,
-                              lmdumpdir);
+                              lmdumpdir, logmath);
         if (lms == NULL)
             E_FATAL("lmset_read_lm(%s,%e,%e,%e) failed\n:", lmctlfile, lw,
                     wip, uw);
@@ -129,7 +129,7 @@ lmset_init(const char *lmfile,
     }
     else if (lmctlfile) {
         E_INFO("Reading LM ctl file\n");
-        lms = lmset_read_ctl(lmctlfile, dict, lw, wip, uw, lmdumpdir);
+        lms = lmset_read_ctl(lmctlfile, dict, lw, wip, uw, lmdumpdir, logmath);
         if (lms == NULL)
             E_FATAL("lmset_read_ctl(%s,%e,%e,%e) failed\n:", lmctlfile, lw,
                     wip, uw);
@@ -272,7 +272,8 @@ lmset_free(lmset_t * lms)
 
 lmset_t *
 lmset_read_lm(const char *lmfile, dict_t * dict, const char *lmname,
-              float64 lw, float64 wip, float64 uw, const char *lmdumpdir)
+              float64 lw, float64 wip, float64 uw, const char *lmdumpdir,
+              logmath_t *logmath)
 {
     lmset_t *lms;
 
@@ -288,7 +289,7 @@ lmset_read_lm(const char *lmfile, dict_t * dict, const char *lmname,
      */
     if ((lms->lmarray[0] =
          lm_read_advance(lmfile, lmname, lw, wip, uw, dict_size(dict),
-                         NULL, 1)) == NULL)
+                         NULL, 1, logmath)) == NULL)
         E_FATAL
             ("lm_read_advance(%s, %e, %e, %e %d [Arbitrary Fmt], Weighted Apply) failed\n",
              lmfile, lw, wip, uw, dict_size(dict));
@@ -337,7 +338,8 @@ lmset_read_lm(const char *lmfile, dict_t * dict, const char *lmname,
 lmset_t *
 lmset_read_ctl(const char *ctlfile,
                dict_t * dict,
-               float64 lw, float64 wip, float64 uw, const char *lmdumpdir)
+               float64 lw, float64 wip, float64 uw,
+               const char *lmdumpdir, logmath_t *logmath)
 {
     FILE *ctlfp;
     FILE *tmp;
@@ -368,7 +370,7 @@ lmset_read_ctl(const char *ctlfile,
             /* Load LMclass files */
             while ((fscanf(ctlfp, "%s", str) == 1)
                    && (strcmp(str, "}") != 0))
-                lmclass_set = lmclass_loadfile(lmclass_set, str);
+                lmclass_set = lmclass_loadfile(lmclass_set, str, logmath);
 
             if (strcmp(str, "}") != 0)
                 E_FATAL("Unexpected EOF(%s)\n", ctlfile);
@@ -447,7 +449,7 @@ lmset_read_ctl(const char *ctlfile,
             str[0] = '\0';
 
         lm = (lm_t *) lm_read_advance(lmfile, lmname, lw, wip, uw,
-                                      dict_size(dict), NULL, 1);
+                                      dict_size(dict), NULL, 1, logmath);
 
 
         if (n_lmclass_used > 0) {

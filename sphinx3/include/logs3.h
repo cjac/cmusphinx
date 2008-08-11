@@ -94,6 +94,7 @@
 #define _S3_LOGS3_H_
 
 #include <s3types.h>
+#include <logmath.h>
 
 /** \file logs3.h
  * \brief s3 log table implementation. 
@@ -119,54 +120,19 @@ extern "C" {
 
 /** Initialize module with a new base (> 1.0).  Returns 0 if successful, -1 otherwise. */
 S3DECODER_EXPORT
-int32 logs3_init (float64 base, /**< The log base of the module */
-		  int32 bReport,  /**< Whether progress should be reported */
-		  int32 bLogTable /**< Whether log table should be used or not */
-    );
-
-/** Given logs3p, logs3q (ie, log-S3base of p and q), return logs3(p+q) */
-int32 logs3_add (int32 logs3p, /**< The first number in s3 log */
-		 int32 logs3q  /**< The second number in s3 log */
+logmath_t* logs3_init (float64 base, /**< The log base of the module */
+		       int32 bReport,  /**< Whether progress should be reported */
+		       int32 bLogTable /**< Whether log table should be used or not */
     );
 
 /** Given p, return logs3(p) */
 S3DECODER_EXPORT
-int32 logs3 (float64 p   /**< The first number in float */
+int32 logs3 (logmath_t* logmath,
+             float64 p   /**< The first number in float */
     );
-
-/** Given log(p), return logs3(p) */
-int32 log_to_logs3 (float64 logp /**< The number in log domain */
-    );
-
-/** Return the multiplication factor used for converting log values to logs3 */
-float64 log_to_logs3_factor( void );
-
-/** Given logs3(p), return log(p) */
-float64 logs3_to_log (int32 logs3p    /**< A number in log s3 domain*/
-    );
-
-/** Given logs3(p), return log10(p) */
-float64 logs3_to_log10 (int32 logs3p    /**< A number in log s3 domain*/
-    );
-
-/** Given logs3(p), return p */
-float64 logs3_to_p (int32 logs3p  /**< A number in log s3 domain*/
-    );
-
-/** Given log10(p), return logs3(p) */
-int32 log10_to_logs3 (float64 log10p /**< A number in log 10 domain */
-    );
-
-/** Return the logbase. */
-float64 logs3_base(void);
-
-/* RAH, free the add_tbl if still allocated */
-/** Free the add_tbl if still allocated */
-S3DECODER_EXPORT
-void logs_free(void);
 
 /** Report the parameters for s3 log table */
-void logs3_report(void);
+void logs3_report(logmath_t* logmath);
   
 #if 0
 { /* Stop indent from complaining */
