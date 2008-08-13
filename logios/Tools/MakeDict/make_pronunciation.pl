@@ -29,5 +29,11 @@ if (scalar @ARGV gt 0) { die "$usage\n"; }
 
 my $lib = File::Spec->catfile($toolsdir,'MakeDict','lib','Pronounce.pm');
 require $lib;
-&Pronounce::make_dict($toolsdir,$dictdir,$words,$handdict,$dict,"pronunciation.log");
+my $pronounce = Pronounce->new('TOOLS' => $toolsdir,
+                               'DICTDIR' => $dictdir,
+                               'VOCFN' => $words,
+                               'HANDICFN' => $handdict,
+                               'OUTFN' => $dict,
+                               'LOGFN' => 'pronunciation.log');
+$pronounce->do_pronounce;
 

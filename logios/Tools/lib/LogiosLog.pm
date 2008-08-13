@@ -39,11 +39,11 @@ sub open_logfile {
 }
 
 sub say {
-  my ($type, $txt) = @_;
+  my ($type, @txt) = @_;
 
-  if ((not $LOGGING eq -1) and (not $LOGGING eq 2)) {print STDERR "$type> $txt$/"; }
+  if ((not ($LOGGING eq -1)) and (not ($LOGGING eq 2))) {print STDERR "$type> @txt$/"; }
   if ( not defined $LOGFILE ) { open_logfile ( $DEFAULT ); }
-  print LOG "$type> $txt$/" if $LOGFILE;
+  print LOG "$type> @txt$/" if $LOGFILE;
 }
 
 sub info {

@@ -3,6 +3,7 @@
 use File::Spec;
 use File::Path;
 use Getopt::Long;
+use File::Spec->catfile(File::Spec->updir, 'scripts', 'Logios.pm');
 
 use strict;
 
@@ -14,8 +15,6 @@ my $LMDIR = File::Spec->catdir($RESOURCES, 'DecoderConfig', 'LanguageModel');
 my $GRAMMARDIR = File::Spec->catdir($RESOURCES, 'Grammar');
 my $PROJECT = 'MeetingLineDomain';
 my $INSTANCE = 'MeetingLine';
-
-my $MAKELANGUAGE = File::Spec->catfile($LOGIOS_ROOT, 'Tools', 'MakeLanguage', 'make_language.pl');
 
 my $target = shift;
 &clean; #clean by default

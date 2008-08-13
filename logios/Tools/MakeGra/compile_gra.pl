@@ -60,9 +60,9 @@ LogiosLog::open_logfile(File::Spec->catfile($outpath,"compile_gra.log"));
 my $ingra = File::Spec->catfile($inpath,"$project.gra");
 my $outgra = File::Spec->catfile($outpath,"$instance.gra");
 my $absgra = File::Spec->catfile($outpath,$instance.'_abs.gra');
-print STDERR "compile_gra.pl  [in ",File::Spec->rel2abs(File::Spec->curdir),"]\n";
-print STDERR "\tingra->  $ingra\n\toutgra-> $outgra\n";
-print STDERR "\tclass->  ",join(" ",@classf),"\n";
+LogiosLog::say('compile_gra', "compile_gra.pl  [in ",File::Spec->rel2abs(File::Spec->curdir),"]");
+LogiosLog::say('compile_gra', "\tingra->  $ingra\n\toutgra-> $outgra");
+LogiosLog::say('compile_gra', "\tclass->  ",join(" ",@classf));
 
 # see if any ad-hoc class definitions are provided; put copies of the files into GRAMMAR/
 foreach $cf (@classf) {
@@ -93,7 +93,7 @@ print FORMS <TTFORMS>;
 close TTFORMS; close FORMS;
 
 # compile Phoenix grammar
-LogiosLog::say("compile_gra","doing Phoenix compile");
+LogiosLog::say('compile_gra', "doing Phoenix compile");
 my $COMPILE = File::Spec->catfile($EXEDIR,$bindir,"compile").$exten;
 LogiosLog::fail("Phoenix compilation!")
   if not defined open(COMPILE, "$COMPILE -SymBufSize 200000 -MaxSymbol 30000 -TokBufSize 200000 -g . -f $instance |");
@@ -101,7 +101,7 @@ open(LOG, ">".File::Spec->catfile($outpath,"compile_gra.log")); print LOG <COMPI
 close COMPILE;
 
 my $CONCEPT_LEAF = File::Spec->catfile($EXEDIR,$bindir,"concept_leaf").$exten;
-LogiosLog::say("compile_gra","doing Phoenix concept_leaf");
+LogiosLog::say('compile_gra', "doing Phoenix concept_leaf");
 LogiosLog::fail("Phoenix concept_leaf!") if system("$CONCEPT_LEAF -SymBufSize 200000 -grammar $instance.net");
 
 

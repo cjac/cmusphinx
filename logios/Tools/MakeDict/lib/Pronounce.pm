@@ -14,94 +14,89 @@ use strict;
 use Config;
 use File::Spec;
 
+sub new {
+  my $class = shift;
+  my %params = @_;
 
-# problematic "globals"
-my $SOURCE = 'loc';   # default
-my ($PRONOUNCE);
-my $pron_bin;
+  my $objref = {'SOURCE' => $params{'SOUCRCE'} || 'loc',
+                'PRONOUNCE' => ($params{'SOURCE'} eq 'web'? undef:
+                                File::Spec->catfile($params{'TOOLS'}, 'MakeDict', 'bin',
+                                                    (($^O =~ /win32/i or $^O =~ /cygwin/)?
+                                                     'x86-nt/pronounce.exe':
+                                                     'x86-linux/pronounce'))),
+                'LEXILIB' => File::Spec->catdir($params{'TOOLS'}, 'MakeDict', 'lib'),
+                'LEXICON' => 'CMUdict_SPHINX_40',
+                'OUTDIR' => $params{'DICTDIR'},
+                'WORDFILE' => File::Spec->catfile($params{'DICTDIR'}, $params{'VOCFN'}),
+                'HANDDICT' => File::Spec->catfile($params{'DICTDIR'}, $params{'HANDICFN'}),
+                'OUTFILE' => File::Spec->catfile($params{'DICTDIR'}, $params{'OUTFN'}),
+                'LOGFILE' => File::Spec->catfile($params{'DICTDIR'}, $params{'LOGFN'})
+               };
 
-my ($LEXDATA, $LEXILIB, $LEXICON, $OUTDIR);
-my ($wordfile, $handdict, $outfile, $logfile);
+  die "Need to knoe the LOGIOS Tools root." if !defined $params{'TOOLS'};
+  require File::Spec->catfile($params{'TOOLS'}, 'lib', 'LogiosLog.pm');
 
+  for ('DICTDIR', 'VOCFN', 'HANDICFN', 'OUTFN', 'LOGFN') {
+    &LogiosLog::fail("Must supply $_") if !$params{$_};
+  }
 
+  for (keys %$objref) {
+    &LogiosLog::say('Pronounce', "\t$_ => $objref->{$_}");
+  }
 
-if ( ($^O =~ /win32/i) or ($^O =~ /cygwin/) ) {$pron_bin = "x86-nt/pronounce.exe";}
-else { $pron_bin = "x86-linux/pronounce"; }  # otherwise we're on linux
-
-
-
-#########  create pronouncing dictionary from vocab list  ##########
-sub make_dict {
-  my ($tools,$resources,$vocfn, $handicfn, $outfn, $logfn) = @_;
-
-  # require logging module
-  require File::Spec->catfile($tools,'lib','LogiosLog.pm');
-
-  # set required tools and project paths
-  $PRONOUNCE = File::Spec->catfile($tools,'MakeDict','bin',$pron_bin);
-  $LEXILIB = File::Spec->catdir($tools,'MakeDict','lib');
-  $LEXICON = "CMUdict_SPHINX_40";
-  $OUTDIR = $resources;
-
-  $wordfile = File::Spec->catfile($OUTDIR,$vocfn);
-  $handdict = File::Spec->catfile($OUTDIR,$handicfn);
-  $outfile = File::Spec->catfile($OUTDIR,$outfn);
-  $logfile = File::Spec->catfile($OUTDIR,$logfn);
-
-  # print STDERR ">>> $handdict, $wordfile, $outfile, $logfile <<<";
-  &do_pronounce( $handdict, $wordfile, $outfile, $logfile );
-
-  return;
+  bless $objref, $class;
 }
-
 
 ####  pronounce, either by local code or by web lookup  ####
 sub do_pronounce {
-  my ($handdf, $wordf, $outf, $logf) = @_;
+  my $self = shift;
 
-  if ($SOURCE eq 'web') { return &get_dic_web($handdf,$wordf,$outf,$logf); }
-  if ($SOURCE eq 'loc') { return &get_dic_loc($handdf,$wordf,$outf,$logf); }
-  &LogiosLog::fail("Pronounce::getdict(): unknown pronunciation source ".$SOURCE);
+  return $self->get_dic_web if $self->{'SOURCE'} eq 'web';
+  return $self->get_dic_loc if $self->{'SOURCE'} eq 'loc';
+  &LogiosLog::fail("Pronounce::getdict(): unknown pronunciation source ".$self->{'SOURCE'});
 }
 
 
 
 # pronunciation to be done locally; invoke pronunciation
 sub get_dic_loc {
-  my ($handdf, $wordf, $outf, $logf) = @_;
+  my $self = shift;
 
   my @pronounce_args = ('-P40',  # phone set; it's 40 by default, but be careful
-			'-r', $LEXILIB, # root of ./lib; will prepend dict/ and lexdata/
-			'-d', $LEXICON, # name of the dictionary to use
-			'-i', $wordf,  # input words file
-			'-o', $outf, # output dictionary file
-			'-e', $logf,  # logging data
-			'-v',  # verbose output
-		       );
-  push (@pronounce_args, '-H', $handdf) if -e $handdf;
+                        '-r', $self->{'LEXILIB'}, # root of ./lib; will prepend dict/ and lexdata/
+                        '-d', $self->{'LEXICON'}, # name of the dictionary to use
+                        '-i', $self->{'WORDFILE'},  # input words file
+                        '-o', $self->{'OUTFILE'}, # output dictionary file
+                        '-e', $self->{'LOGFILE'},  # logging data
+                        '-v',  # verbose output
+                       );
+  push(@pronounce_args, '-H', $self->{'HANDDICT'}) if -e $self->{'HANDDICT'};
 
-  print STDERR "\n$PRONOUNCE ", join " ", @pronounce_args,"\n";
-  return system("$PRONOUNCE",@pronounce_args);
+  &LogiosLog::say('Pronounce', join(" ", @pronounce_args));
+  return system($self->{'PRONOUNCE'}, @pronounce_args);
 }
 
 
 # get the pronunciation from the website
 sub get_dic_web {
+  my $self = shift;
+
   my $corpus = shift;
+  &LogiosLog::fail("Need corpus") if !$corpus;
 
   my $ua = new LWP::UserAgent;
   my $res = $ua->request(POST => 'http://www.speech.cs.cmu.edu/cgi-bin/tools/lmtool.2.pl',
-			 Content_Type => 'form-data', 
-			 Content => [formtype => 'simple', 
-				     corpus => [$corpus], 
-				     #handdict => undef,
-				     #extrawords => undef,
-				     #phoneset => '40',
-				     #bracket => 'Yes',
-				     #model => 'Bigram',
-				     #class => 'nil',
-				     #discount => '0.5',
-				     submit => 'COMPILE KNOWLEDGE BASE']);
+                         Content_Type => 'form-data',
+                         Content => [formtype => 'simple',
+                                     corpus => [$corpus],
+                                     #handdict => undef,
+                                     #extrawords => undef,
+                                     #phoneset => '40',
+                                     #bracket => 'Yes',
+                                     #model => 'Bigram',
+                                     #class => 'nil',
+                                     #discount => '0.5',
+                                     submit => 'COMPILE KNOWLEDGE BASE']);
 
   my $result;
   if ($res->is_success) {
@@ -109,7 +104,7 @@ sub get_dic_web {
   } else {
     &LogiosLog::fail("Pronounce::get_dict_web(): couldn't execute the perl script, probably error in the form"); }
 
-# grep !(/CONTENT-TYPE/ || /TEXT\/PLAIN/), &getdic($pron_tmp);
+  # grep !(/CONTENT-TYPE/ || /TEXT\/PLAIN/), &getdic($pron_tmp);
 
   if ($result =~ /\!-- DIC.*ct\/\/(.*)\">/) {
 
