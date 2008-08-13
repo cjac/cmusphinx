@@ -49,6 +49,8 @@ sub new {
                 'SAMPSIZE' => $params{'SAMPSIZE'} || 30000,
                 #name of the project (domain, really) we're in
                 'PROJECT' => $params{'PROJECT'},
+                #list of any auxiliary grammars that should be mixed in with the 'PROJECT' grammar
+                'AUX_PROJECTS' => $params{'AUX_PROJECTS'},
                 #name of the particular language we're building here
                 'INSTANCE' => $params{'INSTANCE'},
                 #name of the log file
@@ -72,7 +74,11 @@ sub new {
 
   # done with the first set of preliminaries
   for my $param (keys %$objref) {
-    &LogiosLog::say('Logios', "\t$param => $objref->{$param}");
+    if (ref($objref->{$param}) eq 'ARRAY') {
+      &LogiosLog::say('Logios', "\t$param => [".join(' ',@{$objref->{$param}})."]");
+    } else {
+      &LogiosLog::say('Logios', "\t$param => $objref->{$param}");
+    }
   }
   &LogiosLog::say('Logios', $/);
 
@@ -90,7 +96,6 @@ sub new {
     File::Spec->catdir($objref->{'RESOURCES'}, 'Grammar/GRAMMAR') : $objref->{'INPATH'};
   $objref->{'OUTGRAM'} = $objref->{'OLYMODE'} ? 
     File::Spec->catdir($objref->{'RESOURCES'}, 'Grammar') : $objref->{'OUTPATH'};
-  $objref->{'GRAMMARFILE'} = File::Spec->catfile($objref->{'OUTGRAM'}, $objref->{'INSTANCE'}.'.gra');
   $objref->{'BASEDIC'} = File::Spec->catfile($objref->{'OUTGRAM'}, 'base.dic');
   $objref->{'TOKENLIST'} = File::Spec->catfile($objref->{'OUTGRAM'}, $objref->{'INSTANCE'}.'.token');
 
@@ -112,10 +117,45 @@ sub new {
   bless $objref, $class;
 }
 
+#combine the grammar with any auxiliary grammars that may exits by concatenation
+sub compose_grammar {
+  my $self = shift;
+
+  return if !defined $self->{'AUX_PROJECTS'} || !scalar @{$self->{'AUX_PROJECTS'}};
+
+  #we're going to create a new grammar and forms and dump everything into it.
+  my $combined_instance = "$self->{'PROJECT'}-combined";
+  my $combined_gra = File::Spec->catfile($self->{'GRAMMAR'}, "$combined_instance.gra");
+  my $combined_forms = File::Spec->catfile($self->{'GRAMMAR'}, "$combined_instance.forms");
+  open(COMBINED_GRA, ">$combined_gra") ||
+    &LogiosLog::fail("combine_grammar(): can't open combined_gra '$combined_gra': $!$/");
+  for my $ingra (map File::Spec->catfile($self->{'GRAMMAR'}, "$_.gra"),
+                 ($self->{'PROJECT'}, @{$self->{'AUX_PROJECTS'}})) {
+    open(INGRA, $ingra) ||
+      &LogiosLog::fail("combine_grammar(): can't open ingra '$ingra': $!$/");
+    print COMBINED_GRA <INGRA>;
+    close INGRA;
+  }
+  open(COMBINED_FORMS, ">$combined_forms") ||
+    &LogiosLog::fail("combine_grammar(): can't open combined_forms '$combined_forms': $!$/");
+  for my $inform (map File::Spec->catfile($self->{'GRAMMAR'}, "$_.forms"), 
+                   ($self->{'PROJECT'}, @{$self->{'AUX_PROJECTS'}})) {
+    open(INFORM, $inform) ||
+      &LogiosLog::fail("combine_grammar(): can't open inform '$inform': $!$/");
+    print COMBINED_FORMS <INFORM>;
+    close INFORM;
+  }
+
+  #ensure that this happens only once
+  $self->{'PROJECT'} = $combined_instance;
+  $self->{'AUX_PROJECTS'} = undef;
+}
+
 # compile Domain GRAMMAR into Project grammar, in Phoenix and corpus versions
 sub compile_grammar {
   my $self = shift;
 
+  $self->compose_grammar;
   &LogiosLog::say('Logios', 'COMPILING GRAMMAR...');
   # need to be there for benefit of Phoenix
   my $homedir = Cwd::cwd(); chdir($self->{'OUTGRAM'});
@@ -132,15 +172,17 @@ sub compile_grammar {
   move("$self->{'INSTANCE'}.ctl", $self->{'LMDIR'});
   move("$self->{'INSTANCE'}.probdef", $self->{'LMDIR'});
   move("$self->{'INSTANCE'}.words",$self->{'LMTEMP'});
-  move("$self->{'INSTANCE'}.token",$self->{'DICTDIR'}); # make word tokens available for MakeDict
+  # make word tokens available for MakeDict
+  move("$self->{'INSTANCE'}.token",$self->{'DICTDIR'});
 
-  chdir($homedir); system('chdir');  # return to wherever we started
+  chdir($homedir); # return to wherever we started
 }
 
 # LANGUAGE MODEL
 sub makelm {
   my $self = shift;
 
+  $self->compose_grammar;
   my $MAKELM = File::Spec->catdir($self->{'TOOLS'},'MakeLM');
   my $TEXT2IDNGRAM = File::Spec->catfile($MAKELM, $bindir, 'text2idngram'.$exten);
   my $IDNGRAM2LM = File::Spec->catfile($MAKELM, $bindir , 'idngram2lm'.$exten);
@@ -176,6 +218,7 @@ sub makelm {
 sub makedict {
   my $self = shift;
 
+  $self->compose_grammar;
   &LogiosLog::say('Logios', 'COMPILING DICTIONARY...');
   require File::Spec->catfile($self->{'TOOLS'}, 'MakeDict', 'lib', 'Pronounce.pm');
   my $pronounce = Pronounce->new('TOOLS' => $self->{'TOOLS'},

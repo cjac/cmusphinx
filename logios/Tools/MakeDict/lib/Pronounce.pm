@@ -51,12 +51,26 @@ sub new {
 sub do_pronounce {
   my $self = shift;
 
+  $self->clean_wordfile;
   return $self->get_dic_web if $self->{'SOURCE'} eq 'web';
   return $self->get_dic_loc if $self->{'SOURCE'} eq 'loc';
   &LogiosLog::fail("Pronounce::getdict(): unknown pronunciation source ".$self->{'SOURCE'});
 }
 
+# clean-up the tokens
+# tokens that come from compile_gra.pl include context tokens <s> and </s>
+# sphinx chokes if those tokens are in the dictionary, and pronounce fails to ignore them
+# so we strip them out here
+sub clean_wordfile {
+  my $self = shift;
 
+  open(WORDFILE, $self->{'WORDFILE'});
+  my @clean_words = grep {!/^</} <WORDFILE>;
+  close WORDFILE;
+  open(WORDFILE, ">$self->{'WORDFILE'}");
+  print WORDFILE @clean_words;
+  close WORDFILE;
+}
 
 # pronunciation to be done locally; invoke pronunciation
 sub get_dic_loc {
