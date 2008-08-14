@@ -55,7 +55,9 @@ sub new {
                 #name of the particular language we're building here
                 'INSTANCE' => $params{'INSTANCE'},
                 #name of the log file
-                'LOGFILE' => $params{'LOGFILE'} || 'make_language.log'};
+                'LOGFILE' => $params{'LOGFILE'} || 'make_language.log',
+                #no interaction means that we don't want to wait for user key pressing etc
+                'NO_INTERACTION' => $params{'NO_INTERACTION'}};
 
   die "Need to know the LOGIOS root." if !defined $objref->{'LOGIOS'};
   # can't do this earlier since we don't know where to look
