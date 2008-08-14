@@ -13,6 +13,7 @@ package Pronounce;
 use strict;
 use Config;
 use File::Spec;
+use LWP::UserAgent;
 
 sub new {
   my $class = shift;
@@ -28,7 +29,9 @@ sub new {
                 'LEXICON' => 'CMUdict_SPHINX_40',
                 'OUTDIR' => $params{'DICTDIR'},
                 'WORDFILE' => File::Spec->catfile($params{'DICTDIR'}, $params{'VOCFN'}),
-                'HANDDICT' => File::Spec->catfile($params{'DICTDIR'}, $params{'HANDICFN'}),
+                'HANDDICT' => ($params{'HANDICFN'}?
+                               File::Spec->catfile($params{'DICTDIR'}, $params{'HANDICFN'}):
+                               undef),
                 'OUTFILE' => File::Spec->catfile($params{'DICTDIR'}, $params{'OUTFN'}),
                 'LOGFILE' => File::Spec->catfile($params{'DICTDIR'}, $params{'LOGFN'})
                };
@@ -36,7 +39,7 @@ sub new {
   die "Need to knoe the LOGIOS Tools root." if !defined $params{'TOOLS'};
   require File::Spec->catfile($params{'TOOLS'}, 'lib', 'LogiosLog.pm');
 
-  for ('DICTDIR', 'VOCFN', 'HANDICFN', 'OUTFN', 'LOGFN') {
+  for ('DICTDIR', 'VOCFN', 'OUTFN', 'LOGFN') {
     &LogiosLog::fail("Must supply $_") if !$params{$_};
   }
 
