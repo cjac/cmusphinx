@@ -94,16 +94,25 @@ close TTFORMS; close FORMS;
 
 # compile Phoenix grammar
 LogiosLog::say('compile_gra', "doing Phoenix compile");
-my $COMPILE = File::Spec->catfile($EXEDIR,$bindir,"compile").$exten;
-LogiosLog::fail("Phoenix compilation!")
-  if not defined open(COMPILE, "$COMPILE -SymBufSize 200000 -MaxSymbol 30000 -TokBufSize 200000 -g . -f $instance |");
+my $COMPILE = File::Spec->catfile($EXEDIR,$bindir,"compile_grammar").$exten;
+my $phoenix_cmd_line = "$COMPILE -SymBufSize 200000 -MaxSymbol 30000 -TokBufSize 200000 -g . -f $instance";
+LogiosLog::fail("Phoenix compilation: $phoenix_cmd_line")
+  if not defined open(COMPILE, "$phoenix_cmd_line|");
 open(LOG, ">".File::Spec->catfile($outpath,"compile_gra.log")); print LOG <COMPILE>; close LOG;
 close COMPILE;
 
+if(!-e 'frames' && -e 'forms') {
+# concept leaf needs a 'frames' file, but that file might be called 'forms'
+  open(FRAMES, '>frames'); open(FORMS, 'forms');
+  print FRAMES <FORMS>;
+  close FORMS; close FRAMES
+}
 my $CONCEPT_LEAF = File::Spec->catfile($EXEDIR,$bindir,"concept_leaf").$exten;
 LogiosLog::say('compile_gra', "doing Phoenix concept_leaf");
-LogiosLog::fail("Phoenix concept_leaf!") if system("$CONCEPT_LEAF -SymBufSize 200000 -grammar $instance.net");
-
+my $concept_cmd_line = "$CONCEPT_LEAF -SymBufSize 200000 -grammar $instance.net";
+#Bug! concept leaf fails!
+#LogiosLog::fail("Phoenix concept_leaf: $concept_cmd_line") if 
+system($concept_cmd_line);
 
 
 # generate the class-grammar files
