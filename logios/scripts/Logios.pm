@@ -34,7 +34,8 @@ sub new {
   my %params = @_;
 
   my $objref = {#run in . by default
-                'RESOURCES' => File::Spec->rel2abs($params{'RESOURCES'} || File::Spec->curdir),
+                'RESOURCES' => File::Spec->rel2abs($params{'RESOURCES'} ||
+                                                   File::Spec->curdir),
                 # where to get pronunciation information; could also use lmtool from web
                 'SOURCE' => $params{'SOURCE'} || 'local',
                 #root of the Logios tools
@@ -58,7 +59,7 @@ sub new {
 
   die "Need to know the LOGIOS root." if !defined $objref->{'LOGIOS'};
   # can't do this earlier since we don't know where to look
-  require File::Spec->catfile($objref->{'LOGIOS'},'Tools','lib','LogiosLog.pm');
+  require File::Spec->catfile($objref->{'LOGIOS'}, 'Tools' , 'lib' , 'LogiosLog.pm');
   LogiosLog::open_logfile($objref->{'OLYMODE'} ?
                           File::Spec->catfile($objref->{'RESOURCES'},$objref->{'LOGFILE'}) :
                           File::Spec->catfile($objref->{'OUTPATH'},$objref->{'LOGFILE'}));
@@ -159,13 +160,13 @@ sub compile_grammar {
   &LogiosLog::say('Logios', 'COMPILING GRAMMAR...');
   # need to be there for benefit of Phoenix
   my $homedir = Cwd::cwd(); chdir($self->{'OUTGRAM'});
-  &LogiosLog::fail("compile_gra.pl") if
-    system("perl ".File::Spec->catfile($self->{'MAKEGRA'},"compile_gra.pl")
-           ." --tools $self->{'TOOLS'}"
-           ." --project $self->{'PROJECT'} --instance $self->{'INSTANCE'} "
-           ." --inpath $self->{'GRAMMAR'} --outpath $self->{'OUTGRAM'}  "
+  my $cmd = "$^X \"".File::Spec->catfile($self->{'MAKEGRA'},"compile_gra.pl").'"'
+           ." --tools \"$self->{'TOOLS'}\""
+           ." --project $self->{'PROJECT'} --instance $self->{'INSTANCE'}"
+           ." --inpath \"$self->{'GRAMMAR'}\" --outpath \"$self->{'OUTGRAM'}\"";
            # ." --class "
-          );
+  &LogiosLog::fail("compile_gra.pl: $cmd") if system($cmd);
+
   # the following files will have been created inside compile_gra.pl:
   #  .ctl and .prodef class files for decoder; .token for pronunciation; .words for lm
   # move some over to LM space
@@ -203,15 +204,13 @@ sub makelm {
   &get_vocab($self->{'ABSDIC'}, $VOCAB, $CCS);
 
   &LogiosLog::say('Logios', 'computing ngrams...');
-  my $cmd = "$TEXT2IDNGRAM -vocab $VOCAB -temp $self->{'LMTEMP'} -write_ascii "
-    ."< $self->{'CORPUSFILE'} > $IDNGRAM";
-  &LogiosLog::say('Logios', $cmd);
-  &LogiosLog::fail("text2idngram failed") if system($cmd);
+  my $cmd = "\"$TEXT2IDNGRAM\" -vocab \"$VOCAB\" -temp \"$self->{'LMTEMP'}\" -write_ascii "
+    ."< \"$self->{'CORPUSFILE'}\" > \"$IDNGRAM\"";
+  &LogiosLog::fail("text2idngram failed: $cmd") if system($cmd);
   &LogiosLog::say('Logios', 'computing language model...');
-  $cmd = "$IDNGRAM2LM -idngram $IDNGRAM -vocab $VOCAB -arpa $LM -context $CCS -vocab_type 0"
-    ." -good_turing -disc_ranges 0 0 0 -ascii_input";
-  &LogiosLog::say('Logios', "$cmd");
-  &LogiosLog::fail("idngram2lm failed") if system($cmd);
+  $cmd = "\"$IDNGRAM2LM\" -idngram \"$IDNGRAM\" -vocab \"$VOCAB\" -arpa \"$LM\""
+    ." -context \"$CCS\" -vocab_type 0 -good_turing -disc_ranges 0 0 0 -ascii_input";
+  &LogiosLog::fail("idngram2lm failed: $cmd") if system($cmd);
 }
 
 # DICTIONARY
@@ -253,10 +252,10 @@ sub get_corpus {
   close GFLAT;
 
   # generate corpus
-  my $rs_cmd = "$RANDOMSAMPS -n $self->{'SAMPSIZE'} -d $self->{'OUTGRAM'}"
-    ." -grammarfile $self->{'FLATGRAMMARFILE'}";
+  my $rs_cmd = "\"$RANDOMSAMPS\" -n $self->{'SAMPSIZE'} -d \"$self->{'OUTGRAM'}\""
+    ." -grammarfile \"$self->{'FLATGRAMMARFILE'}\"";
   &LogiosLog::say('Logios', $rs_cmd);
-  open(RANDOM, "perl $rs_cmd|") ||
+  open(RANDOM, "$^X $rs_cmd|") ||
     &LogiosLog::fail("Cannot execute $rs_cmd");
   open(CORPUS, ">$corpusfile") || &LogiosLog::fail("Can't open $corpusfile");
 

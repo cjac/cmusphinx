@@ -54,15 +54,16 @@ if (not GetOptions(
   { die "usage: compile_gra -tools <path> [-class <file>]* [-project <project> -instance <instance> -inpath <dir> -outpath <dir>\n"; }
 
 # can't do this earlier since we don't know where to look
-require File::Spec->catfile($tools,'lib','LogiosLog.pm');
-LogiosLog::open_logfile(File::Spec->catfile($outpath,"compile_gra.log"));
+require File::Spec->catfile($tools, 'lib', 'LogiosLog.pm');
+LogiosLog::open_logfile(File::Spec->catfile($outpath, 'compile_gra.log'));
 
 my $ingra = File::Spec->catfile($inpath,"$project.gra");
 my $outgra = File::Spec->catfile($outpath,"$instance.gra");
-my $absgra = File::Spec->catfile($outpath,$instance.'_abs.gra');
-LogiosLog::say('compile_gra', "compile_gra.pl  [in ",File::Spec->rel2abs(File::Spec->curdir),"]");
-LogiosLog::say('compile_gra', "\tingra->  $ingra\n\toutgra-> $outgra");
-LogiosLog::say('compile_gra', "\tclass->  ",join(" ",@classf));
+my $absgra = File::Spec->catfile($outpath,"${instance}_abs.gra");
+LogiosLog::say('compile_gra', "[in ",File::Spec->rel2abs(File::Spec->curdir),"]",
+               "$/\tingra->  $ingra",
+               "$/\toutgra-> $outgra",
+               "$/\tclass->  ",join(" ",@classf));
 
 # see if any ad-hoc class definitions are provided; put copies of the files into GRAMMAR/
 foreach $cf (@classf) {
@@ -75,7 +76,10 @@ foreach $cf (@classf) {
 
 # resolve classes to make "extended" and "abstracted" grammars
 LogiosLog::fail("resolve.pl can't complete!") if
-  system("perl $EXEDIR/resolve.pl --inpath $inpath --infile $ingra --expgra $outgra --absgra $absgra");
+  system("$^X \"$EXEDIR/resolve.pl\" --inpath \"$inpath\""
+                                  ." --infile \"$ingra\""
+                                  ." --expgra \"$outgra\""
+                                  ." --absgra \"$absgra\"");
 
 # fish out the net names
 open(TTGRA, "$outgra") or die "compile_gra: can't open $outgra!\n";;
@@ -95,7 +99,7 @@ close TTFORMS; close FORMS;
 # compile Phoenix grammar
 LogiosLog::say('compile_gra', "doing Phoenix compile");
 my $COMPILE = File::Spec->catfile($EXEDIR,$bindir,"compile_grammar").$exten;
-my $phoenix_cmd_line = "$COMPILE -SymBufSize 200000 -MaxSymbol 30000 -TokBufSize 200000 -g . -f $instance";
+my $phoenix_cmd_line = "\"$COMPILE\" -SymBufSize 200000 -MaxSymbol 30000 -TokBufSize 200000 -g . -f $instance";
 LogiosLog::fail("Phoenix compilation: $phoenix_cmd_line")
   if not defined open(COMPILE, "$phoenix_cmd_line|");
 open(LOG, ">".File::Spec->catfile($outpath,"compile_gra.log")); print LOG <COMPILE>; close LOG;
@@ -109,7 +113,7 @@ if(!-e 'frames' && -e 'forms') {
 }
 my $CONCEPT_LEAF = File::Spec->catfile($EXEDIR,$bindir,"concept_leaf").$exten;
 LogiosLog::say('compile_gra', "doing Phoenix concept_leaf");
-my $concept_cmd_line = "$CONCEPT_LEAF -SymBufSize 200000 -grammar $instance.net";
+my $concept_cmd_line = "\"$CONCEPT_LEAF\" -SymBufSize 200000 -grammar $instance.net";
 #Bug! concept leaf fails!
 #LogiosLog::fail("Phoenix concept_leaf: $concept_cmd_line") if 
 system($concept_cmd_line);
@@ -118,7 +122,9 @@ system($concept_cmd_line);
 # generate the class-grammar files
 #  .ctl and .prodef class files for decoder; .token for pronunciation; .words for lm
 LogiosLog::fail("tokenize.pl!") if
-  system("perl ".File::Spec->catfile($EXEDIR,"tokenize.pl")." -i $inpath -g $absgra -p $instance");
+  system("$^X \"".File::Spec->catfile($EXEDIR,"tokenize.pl")."\" -i \"$inpath\""
+                                                              ." -g \"$absgra\""
+                                                              ." -p $instance");
 
 
 # finally, remove any dynamic class files (to avoid littering with stealth classes)

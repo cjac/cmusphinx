@@ -8,7 +8,6 @@ use Getopt::Long;
 
 use strict;
 
-my $PERL = 'perl';
 my $LOGIOS_ROOT = File::Spec->rel2abs(File::Spec->updir);
 my $RESOURCES = File::Spec->catdir($LOGIOS_ROOT, 'examples', 'Resources');
 my $PROJECT = 'MeetingLineDomain';
@@ -46,7 +45,7 @@ sub clean {
 }
 
 sub build {
-  print STDERR "Excersizing Logios.pm$/";
+  print STDERR "Exercising Logios.pm$/";
 
   require File::Spec->catfile($LOGIOS_ROOT, 'scripts', 'Logios.pm');
   my $logios = Logios->new('OLYMODE' => 1,
@@ -63,12 +62,12 @@ sub build_make_pronunciation {
   print STDERR "Executing make_pronunciation.pl$/";
 
   chdir('Resources');
-  my $cmd = "$PERL ".File::Spec->catfile($LOGIOS_ROOT, 'Tools', 'MakeDict',
-                                         'make_pronunciation.pl')
-    ." -tools ".File::Spec->catdir($LOGIOS_ROOT, 'Tools')
-      ." -dictdir ".File::Spec->catdir($RESOURCES, 'DecoderConfig', 'Dictionary')
-        ." -words $INSTANCE.token"
-          ." -dict $INSTANCE-make_pronunciation.dic";
+  my $cmd = "$^X \"".File::Spec->catfile($LOGIOS_ROOT, 'Tools', 'MakeDict',
+                                         'make_pronunciation.pl').'"'
+                    ." -tools \"".File::Spec->catdir($LOGIOS_ROOT, 'Tools').'"'
+                    ." -dictdir \"".File::Spec->catdir($RESOURCES, 'DecoderConfig', 'Dictionary').'"'
+                    ." -words $INSTANCE.token"
+                    ." -dict $INSTANCE-make_pronunciation.dic";
   print "$cmd$/";
   system($cmd);
   chdir(File::Spec->updir);

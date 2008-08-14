@@ -1,4 +1,4 @@
-#!E:/Perl/bin/perl -w
+#!/usr/bin/perl
 # resolve class references in a .gra file
 # produce an expanded version for Phoenix, abstracted version for generate_*
 #
