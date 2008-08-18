@@ -406,7 +406,9 @@ dag_t *
 s3_decode_word_graph(s3_decode_t *_decode)
 {
     srch_t *s;
-    assert(_decode != NULL);
+
+    if (_decode == NULL)
+        return NULL;
 
     if (_decode->state != S3_DECODE_STATE_IDLE) {
         E_WARN("Cannot retrieve word graph in current decoder state.\n");
@@ -593,7 +595,7 @@ s3_decode_record_hyps(s3_decode_t * _decode, int _end_utt)
         ckd_free(hyp_segs);
     }
     if (hyp_str != NULL) {
-        ckd_free(hyp_segs);
+        ckd_free(hyp_str);
     }
     if (hyp_list != NULL) {
         for (node = hyp_list; node != NULL; node = gnode_next(node)) {
