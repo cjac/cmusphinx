@@ -51,6 +51,11 @@ sub info {
   &say('INFO',$message);
 }
 
+sub warn {
+  my $message = shift;
+  &say('WARNING', $message);
+}
+
 sub fail {
   my $reason = shift;
   &say('FAIL', $reason);

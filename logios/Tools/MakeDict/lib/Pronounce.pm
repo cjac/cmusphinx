@@ -13,6 +13,7 @@ package Pronounce;
 use strict;
 use Config;
 use File::Spec;
+use File::stat;
 use LWP::UserAgent;
 
 sub new {
@@ -33,7 +34,8 @@ sub new {
                                File::Spec->catfile($params{'DICTDIR'}, $params{'HANDICFN'}):
                                undef),
                 'OUTFILE' => File::Spec->catfile($params{'DICTDIR'}, $params{'OUTFN'}),
-                'LOGFILE' => File::Spec->catfile($params{'DICTDIR'}, $params{'LOGFN'})
+                'LOGFILE' => File::Spec->catfile($params{'DICTDIR'}, $params{'LOGFN'}),
+                'FORCE' => $params{'FORCE'}
                };
 
   die "Need to knoe the LOGIOS Tools root." if !defined $params{'TOOLS'};
@@ -50,10 +52,48 @@ sub new {
   bless $objref, $class;
 }
 
+#return true if the targets are all newer than the sources
+sub up_to_date {
+  my $self = shift;
+  my @targets = ($self->{'OUTFILE'});
+  my @sources = ($self->{'WORDFILE'}, $self->{'WORDFILE'});
+  push @sources, $self->{'HANDDICT'} if defined $self->{'HANDDICT'};
+
+  my $latest_source;
+  for my $srcfn (@sources) {
+    if(!-e $srcfn) {
+      LogiosLog::warn("Source '$srcfn' doesn't exist!");
+      return 0;
+    }
+    my $mtime = stat($srcfn)->mtime;
+    $latest_source = $mtime if $mtime > $latest_source;
+  }
+  if (!defined $latest_source) {
+    Logios::Log::warn("No valid sources!");
+    return 0;
+  }
+
+  my $earliest_target;
+  for my $targetfn (@targets) {
+    if(!-e $targetfn) {
+      LogiosLog::warn("Source '$targetfn' doesn't exist!");
+      return 0;
+    }
+    my $mtime = stat($targetfn)->mtime;
+    $earliest_target = $mtime if $mtime > $earliest_target;
+  }
+  return 0 if !defined $earliest_target;
+  return $latest_source <= $earliest_target;
+}
+
 ####  pronounce, either by local code or by web lookup  ####
 sub do_pronounce {
   my $self = shift;
 
+  if(!$self->{'FORCE'} && $self->up_to_date) {
+    &LogiosLog::say('Pronounce', "up-to-date");
+    return;
+  }
   $self->clean_wordfile;
   return $self->get_dic_web if $self->{'SOURCE'} eq 'web';
   return $self->get_dic_loc if $self->{'SOURCE'} eq 'loc';

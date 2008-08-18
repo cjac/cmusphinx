@@ -14,6 +14,7 @@ use LWP::UserAgent;
 use HTTP::Request::Common;
 use File::Spec;
 use File::Copy;
+use File::stat;
 use Cwd;
 $ENV{'LC_COLLATE'} = 'C';
 $ENV{'LC_ALL'} = 'C';
@@ -57,7 +58,10 @@ sub new {
                 #name of the log file
                 'LOGFILE' => $params{'LOGFILE'} || 'make_language.log',
                 #no interaction means that we don't want to wait for user key pressing etc
-                'NO_INTERACTION' => $params{'NO_INTERACTION'}};
+                'NO_INTERACTION' => $params{'NO_INTERACTION'},
+                #force means rebuild even if targets are up-to-date with sources
+                'FORCE' => $params{'FORCE'}
+               };
 
   die "Need to know the LOGIOS root." if !defined $objref->{'LOGIOS'};
   # can't do this earlier since we don't know where to look
@@ -114,10 +118,41 @@ sub new {
   # words for dic
   $objref->{'TOKENS'} = File::Spec->catfile($objref->{'OUTGRAM'}, $objref->{'INSTANCE'}.'.token');
   # where final dict goes
-  $objref->{'DICTDIR'} = $objref->{'OLYMODE'} ? 
+  $objref->{'DICTDIR'} = $objref->{'OLYMODE'} ?
     File::Spec->catdir($objref->{'DECODERCONFIG'}, 'Dictionary') : $objref->{'OUTPATH'};
 
   bless $objref, $class;
+}
+
+#return true if the targets are all newer than the sources
+sub up_to_date {
+  my ($tref, $sref) = @_;
+
+  my $latest_source;
+  for my $srcfn (@$sref) {
+    #print STDERR "checking source: $srcfn$/";
+    if(!-e $srcfn) {
+      LogiosLog::warn("Source '$srcfn' doesn't exist!");
+      return 0;
+    }
+    my $mtime = stat($srcfn)->mtime;
+    $latest_source = $mtime if $mtime > $latest_source;
+  }
+  if (!defined $latest_source) {
+    Logios::Log::warn("No valid sources!");
+    return 0;
+  }
+
+  my $earliest_target;
+  for my $targetfn (@$tref) {
+    #print STDERR "checking target: $targetfn$/";
+    if(-e $targetfn) {
+      my $mtime = stat($targetfn)->mtime;
+      $earliest_target = $mtime if $mtime > $earliest_target;
+    }
+  }
+  return 0 if !defined $earliest_target;
+  return $latest_source <= $earliest_target;
 }
 
 #combine the grammar with any auxiliary grammars that may exits by concatenation
@@ -130,10 +165,21 @@ sub compose_grammar {
   my $combined_instance = "$self->{'PROJECT'}-combined";
   my $combined_gra = File::Spec->catfile($self->{'GRAMMAR'}, "$combined_instance.gra");
   my $combined_forms = File::Spec->catfile($self->{'GRAMMAR'}, "$combined_instance.forms");
+
+  my @ingras = map(File::Spec->catfile($self->{'GRAMMAR'}, "$_.gra"),
+                   $self->{'PROJECT'}, @{$self->{'AUX_PROJECTS'}});
+  my @informs = map(File::Spec->catfile($self->{'GRAMMAR'}, "$_.forms"),
+                    $self->{'PROJECT'}, @{$self->{'AUX_PROJECTS'}});
+  #ensure that this happens only once
+  $self->{'PROJECT'} = $combined_instance;
+  $self->{'AUX_PROJECTS'} = undef;
+
+  return if !$self->{'FORCE'} && 
+    &up_to_date([$combined_gra, $combined_forms], [@ingras, @informs]);
+
   open(COMBINED_GRA, ">$combined_gra") ||
     &LogiosLog::fail("combine_grammar(): can't open combined_gra '$combined_gra': $!$/");
-  for my $ingra (map File::Spec->catfile($self->{'GRAMMAR'}, "$_.gra"),
-                 ($self->{'PROJECT'}, @{$self->{'AUX_PROJECTS'}})) {
+  for my $ingra (@ingras) {
     open(INGRA, $ingra) ||
       &LogiosLog::fail("combine_grammar(): can't open ingra '$ingra': $!$/");
     print COMBINED_GRA <INGRA>;
@@ -141,17 +187,12 @@ sub compose_grammar {
   }
   open(COMBINED_FORMS, ">$combined_forms") ||
     &LogiosLog::fail("combine_grammar(): can't open combined_forms '$combined_forms': $!$/");
-  for my $inform (map File::Spec->catfile($self->{'GRAMMAR'}, "$_.forms"), 
-                   ($self->{'PROJECT'}, @{$self->{'AUX_PROJECTS'}})) {
+  for my $inform (@informs) {
     open(INFORM, $inform) ||
       &LogiosLog::fail("combine_grammar(): can't open inform '$inform': $!$/");
     print COMBINED_FORMS <INFORM>;
     close INFORM;
   }
-
-  #ensure that this happens only once
-  $self->{'PROJECT'} = $combined_instance;
-  $self->{'AUX_PROJECTS'} = undef;
 }
 
 # compile Domain GRAMMAR into Project grammar, in Phoenix and corpus versions
@@ -162,21 +203,34 @@ sub compile_grammar {
   &LogiosLog::say('Logios', 'COMPILING GRAMMAR...');
   # need to be there for benefit of Phoenix
   my $homedir = Cwd::cwd(); chdir($self->{'OUTGRAM'});
-  my $cmd = "$^X \"".File::Spec->catfile($self->{'MAKEGRA'},"compile_gra.pl").'"'
-           ." --tools \"$self->{'TOOLS'}\""
-           ." --project $self->{'PROJECT'} --instance $self->{'INSTANCE'}"
-           ." --inpath \"$self->{'GRAMMAR'}\" --outpath \"$self->{'OUTGRAM'}\"";
-           # ." --class "
-  &LogiosLog::fail("compile_gra.pl: $cmd") if system($cmd);
 
-  # the following files will have been created inside compile_gra.pl:
-  #  .ctl and .prodef class files for decoder; .token for pronunciation; .words for lm
-  # move some over to LM space
-  move("$self->{'INSTANCE'}.ctl", $self->{'LMDIR'});
-  move("$self->{'INSTANCE'}.probdef", $self->{'LMDIR'});
-  move("$self->{'INSTANCE'}.words",$self->{'LMTEMP'});
-  # make word tokens available for MakeDict
-  move("$self->{'INSTANCE'}.token",$self->{'DICTDIR'});
+  my @targets = ("$self->{'INSTANCE'}.net",
+                 "forms",
+                 File::Spec->catfile($self->{'LMDIR'}, "$self->{'INSTANCE'}.ctl"),
+                 File::Spec->catfile($self->{'LMDIR'}, "$self->{'INSTANCE'}.probdef"),
+                 File::Spec->catfile($self->{'LMTEMP'}, "$self->{'INSTANCE'}.words"),
+                 File::Spec->catfile($self->{'DICTDIR'}, "$self->{'INSTANCE'}.token"));
+  my @sources = (File::Spec->catfile($self->{'GRAMMAR'}, "$self->{'PROJECT'}.gra"),
+                 File::Spec->catfile($self->{'GRAMMAR'}, "$self->{'PROJECT'}.forms"));
+  if ($self->{'FORCE'} || !&up_to_date(\@targets, \@sources)) {
+    my $cmd = "$^X \"".File::Spec->catfile($self->{'MAKEGRA'},"compile_gra.pl").'"'
+      ." --tools \"$self->{'TOOLS'}\""
+      ." --project $self->{'PROJECT'} --instance $self->{'INSTANCE'}"
+      ." --inpath \"$self->{'GRAMMAR'}\" --outpath \"$self->{'OUTGRAM'}\"";
+    # ." --class "
+    &LogiosLog::fail("compile_gra.pl: $cmd") if system($cmd);
+
+    # the following files will have been created inside compile_gra.pl:
+    #  .ctl and .prodef class files for decoder; .token for pronunciation; .words for lm
+    # move some over to LM space
+    move("$self->{'INSTANCE'}.ctl", $self->{'LMDIR'});
+    move("$self->{'INSTANCE'}.probdef", $self->{'LMDIR'});
+    move("$self->{'INSTANCE'}.words",$self->{'LMTEMP'});
+    # make word tokens available for MakeDict
+    move("$self->{'INSTANCE'}.token",$self->{'DICTDIR'});
+  } else {
+    &LogiosLog::say('Logios', 'up-to-date');
+  }
 
   chdir($homedir); # return to wherever we started
 }
@@ -197,6 +251,19 @@ sub makelm {
   my $LM = File::Spec->catfile($self->{'LMDIR'}, $self->{'INSTANCE'}.'.arpa');
 
   &LogiosLog::say('Logios', 'COMPILING LANGUAGE MODEL...');
+
+  my @targets = ($LM, $VOCAB, $CCS);
+  my @sources = ($self->{'GRABSFILE'}, $self->{'ABSDIC'});
+
+  if(!$self->{'FORCE'} && &up_to_date(\@targets, \@sources)) {
+    &LogiosLog::say('Logios', "up-to-date");
+    return;
+  }
+
+  if(!$self->{'FORCE'} && &up_to_date(\@targets, \@sources)) {
+    &LogiosLog::say('Logios', "up-to-date");
+    return;
+  }
   &LogiosLog::say('Logios', 'generating corpus...');
   $self->get_corpus($RANDOMSAMPS, $self->{'GRABSFILE'},$self->{'CORPUSFILE'});
   &LogiosLog::fail("Logios.pl: Corpus generation failed!\n")
@@ -221,13 +288,15 @@ sub makedict {
 
   $self->compose_grammar;
   &LogiosLog::say('Logios', 'COMPILING DICTIONARY...');
+
   require File::Spec->catfile($self->{'TOOLS'}, 'MakeDict', 'lib', 'Pronounce.pm');
   my $pronounce = Pronounce->new('TOOLS' => $self->{'TOOLS'},
                                  'DICTDIR' => $self->{'DICTDIR'},
                                  'VOCFN' => "$self->{'INSTANCE'}.token",
                                  'HANDICFN' => 'hand.dict',
                                  'OUTFN' => "$self->{'INSTANCE'}.dict",
-                                 'LOGFN' => 'pronunciation.log');
+                                 'LOGFN' => 'pronunciation.log',
+                                 'FORCE' => $self->{'FORCE'});
   $pronounce->do_pronounce;
 }
 
