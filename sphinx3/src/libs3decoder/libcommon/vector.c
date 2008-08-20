@@ -186,17 +186,18 @@ int32
 vector_is_nan(float32 * vec, int32 len)
 {
     int32 i;
+    int result;
     for (i = 0; i < len; i++) {
 #if defined(WIN32)
-        return _isnan(vec[i]);
+        result = _isnan(vec[i]);
 #else
-        return isnan(vec[i]);
+        result = isnan(vec[i]);
 #endif
+	if (result)
+	    return 1;
     }
     return 0;
 }
-
-
 
 int32
 vector_maxcomp_int32(int32 * val, int32 len)
