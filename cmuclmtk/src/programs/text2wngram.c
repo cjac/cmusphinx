@@ -56,8 +56,6 @@
 
 int cmp_strings(const void *string1,const void *string2) {
   
-#include "../libs/win32compat.h"  
-
   char *s1;
   char *s2;
   
@@ -73,7 +71,6 @@ void merge_tempfiles (int start_file,
 		      char *temp_file_root,
 		      char *temp_file_ext,
 		      int max_files,
-		      char *tempfiles_directory, 
 		      FILE *outfile,
 		      int n,
 		      int verbosity) {
@@ -121,8 +118,7 @@ void merge_tempfiles (int start_file,
  	  if (new_end_file > end_file) new_end_file = end_file;
  	  
  	  sprintf(new_temp_filename,
- 		  "%s%s%hu%s",
- 		  tempfiles_directory,
+ 		  "%s%hu%s",
  		  temp_file_root,
  		  end_file+i+1,
  		  temp_file_ext);
@@ -134,7 +130,6 @@ void merge_tempfiles (int start_file,
  			  temp_file_root,
 			  temp_file_ext,
  			  max_files,
- 			  tempfiles_directory,
  			  new_temp_file,
  			  n,
 			  verbosity);
@@ -148,7 +143,6 @@ void merge_tempfiles (int start_file,
 		       temp_file_root,
 		       temp_file_ext,
 		       max_files,
-		       tempfiles_directory,
 		       outfile,
 		       n,
 		       verbosity);
@@ -174,7 +168,7 @@ void merge_tempfiles (int start_file,
   
    /* Open all the temp files for reading */
    for (i=start_file;i<=end_file;i++) {
-     sprintf(temp_filename[i],"%s%s%hu%s",tempfiles_directory,
+     sprintf(temp_filename[i],"%s%hu%s",
 	     temp_file_root,i,temp_file_ext);
      temp_file[i] = rr_iopen(temp_filename[i]);
    }
@@ -403,12 +397,7 @@ int main (int argc, char **argv) {
       temp_file_ext = salloc("");
   }
 
-  /*  uname(&uname_info); */
-  /* host_name = salloc(uname_info.nodename); */
-  /* proc_id = getpid();
-  /* sprintf(temp_word,"%s%s.%d.",TEMP_FILE_ROOT,host_name,proc_id);
-  /* temp_file_root = salloc(temp_word); /**/
-  temp_file_root = tempnam(NULL,"0123456789");  /* let system do the work */
+  temp_file_root = tempnam(temp_directory, TEMP_FILE_ROOT);
 
   pc_report_unk_args(&argc,argv,verbosity);
  
@@ -510,7 +499,7 @@ int main (int argc, char **argv) {
    
     /* Write out temporary file */
 
-    sprintf(current_temp_filename,"%s%s%hu%s",temp_directory,temp_file_root,current_file_number,temp_file_ext);
+    sprintf(current_temp_filename,"%s%hu%s",temp_file_root,current_file_number,temp_file_ext);
 
     pc_message(verbosity,2,"Writing out temporary file %s...\n",current_temp_filename);
         
@@ -594,7 +583,6 @@ int main (int argc, char **argv) {
 		  temp_file_root,
 		  temp_file_ext,
 		  max_files,
-		  temp_directory,
 		  stdout,
 		  n,
 		  verbosity); 

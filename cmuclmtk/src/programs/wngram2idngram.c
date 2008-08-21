@@ -78,14 +78,14 @@ int compare_ngrams2(const void *ngram1,
   
   temp = 0;
 
-  for (i=0;i<=n-1;i++) {
+  for (i=0;i<n;i++) {
     if ((r1->word[i]) < (r2->word[i])) {
       temp = -1;
-      i = n;
-    }else {
+      break;
+     }else {
       if ((r1->word[i]) > (r2->word[i])) {
 	temp = 1;
-	i = n;
+	break;
       }
     }
   }
@@ -184,13 +184,7 @@ int main(int argc, char *argv[]) {
       temp_file_ext = salloc("");
   }
 
-  /* uname(&uname_info); /**/
-  /* host_name = salloc(uname_info.nodename); /**/
-  /*   proc_id = getpid();  /**/
-  /* sprintf(temp_word,"%s%s.%d.",TEMP_FILE_ROOT,host_name,proc_id); /**/
-  /* temp_file_root = catfile(2, tempfiles_directory, temp_word); /**/
-
-  temp_file_root = tempnam(tempfiles_directory,"1234567890");
+  temp_file_root = tempnam(tempfiles_directory,TEMP_FILE_ROOT);
 
   pc_report_unk_args(&argc,argv,verbosity);
   
@@ -238,7 +232,8 @@ int main(int argc, char *argv[]) {
     warn_on_wrong_vocab_comments(temp_word);
 
     vocab_size++;
-    add_to_idngram_hashtable(&vocabulary,hash(temp_word2,M),temp_word2,vocab_size);
+    
+    add_to_idngram_hashtable(&vocabulary,idngram_hash(temp_word2,M),temp_word2,vocab_size);
     strcpy(temp_word3,temp_word2);
   }
 

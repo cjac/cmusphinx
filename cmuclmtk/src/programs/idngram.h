@@ -44,6 +44,33 @@ int n; /* Declare it globally, so doesn't need to be passed
 #include "../liblmest/ngram.h"
 #include "../liblmest/stats.h"
 
+int compare_ngrams3(const void *ngram1,
+		   const void *ngram2
+		   ) {
+
+  int i;
+
+  wordid_t *ngram_pointer1;
+  wordid_t *ngram_pointer2;
+
+  ngram_pointer1 = (wordid_t *) ngram1;
+  ngram_pointer2 = (wordid_t *) ngram2;
+
+  for (i=0;i<n;i++) {
+    if (ngram_pointer1[i]<ngram_pointer2[i]) 
+      return(1);
+    else {
+      if (ngram_pointer1[i]>ngram_pointer2[i]) 
+	return(-1);
+    }
+  }
+
+  return(0);
+
+}
+
+
+
 void merge_tempfiles (int start_file, 
 		      int end_file, 
 		      char *temp_file_root,
@@ -146,8 +173,8 @@ void merge_tempfiles (int start_file,
 
       for (i=0;i<=end_file-start_file;i++) {
 	if (!finished[i]) {
-	  if (compare_ngrams(smallest_ngram,current_ngram[i]) > 0) {
-	    for (j=0;j<=n-1;j++)
+	  if (compare_ngrams3(smallest_ngram,current_ngram[i]) < 0) {
+	    for (j=0;j<n;j++)
 	      smallest_ngram[j] = current_ngram[i][j];
 	  }
 	}
@@ -172,7 +199,7 @@ void merge_tempfiles (int start_file,
 
       for (i=0;i<=end_file-start_file;i++) {
 	if (!finished[i]) {
-	  if (compare_ngrams(smallest_ngram,current_ngram[i]) == 0) {
+	  if (compare_ngrams3(smallest_ngram,current_ngram[i]) == 0) {
 	    temp_count = temp_count + current_ngram_count[i];
 	    if (!rr_feof(temp_file[i])) {
 	      for (j=0;j<=n-1;j++) {
