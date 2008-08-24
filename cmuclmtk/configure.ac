@@ -5,7 +5,7 @@ AC_PREREQ(2.61)
 AC_INIT([cmucuslmtk], [1.0], [air+logios@cs.cmu.edu])
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([src/liblmest/disc_meth.h])
-AC_CONFIG_HEADER([config.h])
+AM_CONFIG_HEADER([config.h])
 
 # PUT EVETHING IN THIS DIRECTORY
 prefix=`pwd`
