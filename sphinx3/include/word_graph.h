@@ -62,10 +62,14 @@
 #ifndef _WORD_GRAPH_H_
 #define _WORD_GRAPH_H_
 
+#include <stdio.h>
+
 #include <logmath.h>
+#include <glist.h>
+#include <s3types.h>
 #include <dag.h>
 #include <dict.h>
-#include <s3types.h>
+#include <lm.h>
 
 
 #ifdef __cplusplus

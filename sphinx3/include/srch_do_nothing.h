@@ -43,7 +43,6 @@
 #ifndef _SRCH_DO_NOTHING_H_
 #define _SRCH_DO_NOTHING_H_
 
-#include "s3types.h"
 #include "kb.h"
 
 

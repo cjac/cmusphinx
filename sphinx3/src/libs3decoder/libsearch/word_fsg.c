@@ -146,6 +146,8 @@
 #include <string.h>
 #include <assert.h>
 #include <time.h>
+#include <math.h>
+
 #include <s3types.h>
 #include <err.h>
 #include <strfuncs.h>

@@ -89,8 +89,23 @@
  */
 
 
+#include <string.h>
+#ifndef WIN32
+#include <unistd.h>
+#else
+#include <stdlib.h>
+#endif
+
+#include "filename.h"
+#include "pio.h"
 #include "corpus.h"
 #include "kb.h"
+
+#if (defined(WIN32) && !defined(__CYGWIN__))
+#define SLEEP_SEC(sec)  (0)                     /* Why doesn't Sleep((sec)*1000) work? */
+#else
+#define SLEEP_SEC(sec)  sleep(sec)              /* sec must be integer */
+#endif
 
 utt_res_t *
 new_utt_res()

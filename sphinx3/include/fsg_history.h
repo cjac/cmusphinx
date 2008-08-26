@@ -93,10 +93,15 @@
 #define __S2_FSG_HISTORY_H__
 
 
+#include <stdio.h>
+
+#include <glist.h>
 #include <s3types.h>
 #include <blkarray_list.h>
 #include <fsg_psubtree.h>
 #include <word_fsg.h>
+#include <search.h>
+#include <dict.h>
 
 
 #ifdef __cplusplus
@@ -231,7 +236,7 @@ glist_t fsg_history_backtrace (fsg_history_t *);
 /*
  * Dump the Viterbi history data to the given file (mainly for debugging).
  */
-void fsg_history_dump (fsg_history_t *vh, char const *uttid, FILE *fp,dict_t *dict);
+void fsg_history_dump (fsg_history_t *vh, char const *uttid, FILE *fp, dict_t *dict);
 
 
 /*
@@ -253,7 +258,7 @@ void fsg_history_free (fsg_history_t *h);
 
 
 /*
- * Extract and fill out a search_hyp_t structure from the given history entry
+ * Extract and fill out a srch_hyp_t structure from the given history entry
  * (index).  Caller must allocate hyp.
  * Note: Must not be called with index <= 0.
  * Note: (hyp->wid < 0) iff the entry corresponds to a null transition.
@@ -263,7 +268,7 @@ void fsg_history_free (fsg_history_t *h);
  * the return value is +ve if it is a valid, real (non-dummy) entry.
  */
 int32 fsg_history_entry_hyp_extract (fsg_history_t *h, int32 index,
-				     srch_hyp_t *hyp,dict_t *dict);
+				     srch_hyp_t *hyp, dict_t *dict);
 
 #ifdef __cplusplus
 }

@@ -152,13 +152,18 @@
  * 		Started.
  */
 
+#include <string.h>
 #if defined(WIN32)
 #include <direct.h>
+#else
+#include <unistd.h>
 #endif
+
+#include <listelem_alloc.h>
+#include <pio.h>
 #include "dag.h"
 #include "vithist.h"
 #include "logs3.h"
-#include <listelem_alloc.h>
 
 void
 hyp_free(srch_hyp_t * list)

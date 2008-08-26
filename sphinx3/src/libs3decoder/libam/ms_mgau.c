@@ -67,6 +67,8 @@
  *
  */
 
+#include <string.h>
+
 #include <ms_mgau.h>
 #include <ms_mllr.h>
 #include <cb2mllr_io.h>

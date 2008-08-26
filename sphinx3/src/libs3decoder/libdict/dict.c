@@ -99,6 +99,9 @@
  */
 
 
+#include <string.h>
+
+#include "strfuncs.h"
 #include "dict.h"
 
 
@@ -107,6 +110,7 @@
 
 
 extern const char *const cmu6_lts_phone_table[];
+
 static s3cipid_t
 dict_ciphone_id(dict_t * d, const char *str)
 {

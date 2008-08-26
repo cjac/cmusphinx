@@ -90,6 +90,8 @@
  */
 
 
+#include <string.h>
+
 #include "dict2pid.h"
 #include "logs3.h"
 

@@ -115,7 +115,6 @@
 #include "dict2pid.h"
 #include "fillpen.h"
 #include "lm.h"
-#include "wid.h"
 #include "tmat.h"
 #include "subvq.h"
 #include "gs.h"
@@ -192,9 +191,9 @@ void kbcore_free (kbcore_t *kbcore  /**< The kbcore structure */
    behavior.  Called in mode 3, 4 and 5 to make sure different code
    works.  FIXME: This is dumb.
 */
-void unlinksilences(lm_t* l,kbcore_t *kbc, dict_t *d);
+void unlinksilences(lm_t* l, kbcore_t *kbc, dict_t *d);
 
-void linksilences(lm_t* l,kbcore_t *kbc, dict_t *d);
+void linksilences(lm_t* l, kbcore_t *kbc, dict_t *d);
 
 /** Access macros; not meant for arbitrary use */
 #define kbcore_config(k)	((k)->config)

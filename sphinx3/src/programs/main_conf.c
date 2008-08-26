@@ -89,6 +89,9 @@
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
+
+#include "info.h"
+#include "unlimit.h"
 #include "lm.h"
 #include "fillpen.h"
 #include "dict.h"

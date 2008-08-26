@@ -104,7 +104,6 @@
 
 #include "fast_algo_struct.h"
 #include "logs3.h"
-#include "s3types.h"
 
 
 beam_t *

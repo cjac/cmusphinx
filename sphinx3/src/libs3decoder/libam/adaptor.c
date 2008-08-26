@@ -71,7 +71,11 @@
  *              First started. 
  */
 
+#include <string.h>
+
 #include "adaptor.h"
+#include "mllr.h"
+#include "cb2mllr_io.h"
 
 #define ADAPT_FILE_NAME_LENGTH 1024
 

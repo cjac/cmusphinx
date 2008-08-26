@@ -214,6 +214,7 @@
  */
 
 
+#include "pio.h"
 #include "srch.h"
 #include "corpus.h"
 

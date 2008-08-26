@@ -136,11 +136,14 @@
 
 
 #include <stdio.h>
-#include <string.h>
+
 #include <s3types.h>
 #include <glist.h>
 #include <fsg.h>
 #include <kbcore.h>
+#include <dict.h>
+#include <mdef.h>
+#include <tmat.h>
 #include <ctxt_table.h>
 
 #if 0 

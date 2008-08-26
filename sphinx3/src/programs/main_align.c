@@ -204,10 +204,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+
 #include <s3types.h>
-
-
-
+#include "info.h"
+#include "unlimit.h"
 #include "logs3.h"
 #include "tmat.h"
 #include "mdef.h"
@@ -877,17 +877,25 @@ align_utt(char *sent,           /* In: Reference transcript */
                                                   i);
         }
         else if (kbc->mgau) {
-            approx_cont_mgau_ci_eval(kbc,
+            approx_cont_mgau_ci_eval(kbcore_svq(kbc),
+                                     kbcore_gs(kbc),
+                                     kbcore_mgau(kbc),
                                      fastgmm,
                                      kbc->mdef,
                                      feat[i][0],
                                      ascr->cache_ci_senscr[0],
-                                     &(ascr->cache_best_list[0]), i);
-            senscale[i] = approx_cont_mgau_frame_eval(kbc, fastgmm, ascr,
+                                     &(ascr->cache_best_list[0]), i,
+                                     kbcore_logmath(kbc));
+            senscale[i] = approx_cont_mgau_frame_eval(kbcore_mdef(kbc),
+                                                      kbcore_svq(kbc),
+                                                      kbcore_gs(kbc),
+                                                      kbcore_mgau(kbc),
+                                                      fastgmm, ascr,
                                                       feat[i][0], i,
                                                       ascr->
                                                       cache_ci_senscr[0],
-                                                      &tm_ovrhd);
+                                                      &tm_ovrhd,
+                                                      kbcore_logmath(kbc));
         }
 
         ptmr_stop(timers + tmr_gauden);

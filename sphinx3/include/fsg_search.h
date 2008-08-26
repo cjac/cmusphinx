@@ -125,13 +125,21 @@
 #define HYP_SZ               1024
 
 
+#include <stdio.h>
+
+#include <cmd_ln.h>
 #include <logmath.h>
+#include <s3types.h>
 #include <glist.h>
-#include <whmm.h>
+#include <word_fsg.h>
 #include <fsg_lextree.h>
 #include <fsg_history.h>
 #include <ascr.h>
-#include <srch_output.h>
+#include <search.h>
+#include <dict.h>
+#include <mdef.h>
+#include <tmat.h>
+#include <hmm.h>
 
 
 #ifdef __cplusplus

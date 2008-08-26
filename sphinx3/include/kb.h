@@ -116,18 +116,16 @@
 #ifndef _S3_KB_H_
 #define _S3_KB_H_
 
+#include <stdio.h>
+
 #include <s3types.h>
 #include <cmd_ln.h>
+#include <fe.h>
 #include "kbcore.h"
-#include "lextree.h"
-#include "vithist.h"
 #include "ascr.h"
 #include "fast_algo_struct.h"
-#include "mllr.h"
-#include "cmn.h"
 #include "stat.h"
 #include "adaptor.h"
-#include "cb2mllr_io.h"
 
 /** \file kb.h
  * \brief The global wrapper structure for all variables in 3.X

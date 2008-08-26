@@ -78,6 +78,9 @@
  *
  */
 
+#include <string.h>
+
+#include "info.h"
 #include "lm.h"
 #include "s3types.h"
 #include "cmd_ln.h"

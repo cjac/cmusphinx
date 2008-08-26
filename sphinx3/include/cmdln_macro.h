@@ -108,9 +108,6 @@
 #ifndef _CMDLN_MACRO_H_
 #define _CMDLN_MACRO_H_
 
-#include <fe.h>
-#include <feat.h>
-
 /* Note by ARCHAN at 20050717 
    
 The following are macros that used by individual modules and
@@ -216,7 +213,7 @@ us a better architecture.
 
 #if 0 
           /* Comment out because I don't know what is the meaning of Sphinx 2 fsg control file means. */
-{ "-fsgctlfn", 
+    { "-fsgctlfn", 
       ARG_STRING, 
       NULL, 
       "A finite state grammar control file" }, 
@@ -360,12 +357,12 @@ us a better architecture.
       "Maximum number of Gaussians per leaf node in kd-Trees" }, \
 
 #if 0
-{ "-feat",
+    { "-feat",
       ARG_STRING,
       "s2_4x",
       "Feature stream:\n\t\t\t\ts2_4x: Sphinx-II type 4 streams, 12cep, 24dcep, 3pow, 12ddcep\n\t\t\t\ts3_1x39: Single stream, 12cep+12dcep+3pow+12ddcep\n\t\t\t\t1s_12c_12d_3p_12dd: Single stream, 12cep+12dcep+3pow+12ddcep\n\t\t\t\t1s_c: Single stream, given input vector only\n\t\t\t\t1s_c_d: Feature + Deltas only\n\t\t\t\t1s_c_dd: Feature + Double deltas only\n\t\t\t\t1s_c_d_dd: Feature + Deltas + Double deltas\n\t\t\t\t1s_c_wd_dd: Feature cep+windowed delcep+deldel \n\t\t\t1s_c_d_ld_dd: Feature + delta + longter delta + doubledelta" },
 
-{ "-feat",	/* Captures the computation for converting input to feature vector */
+    { "-feat",	/* Captures the computation for converting input to feature vector */
       ARG_STRING,
       "1s_c_d_dd",
       "Feature stream: s2_4x / s3_1x39 / cep_dcep[,%d] / cep[,%d] / %d,%d,...,%d" },

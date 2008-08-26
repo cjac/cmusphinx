@@ -150,13 +150,13 @@ date: 2004/08/06 15:07:39;  author: yitao;  state: Exp;
 =============================================================================
 */
 
+#include <time.h>
+#include <feat.h>
 #include "s3_decode.h"
 #include "cmdln_macro.h"
 #include "utt.h"
-#include "bio.h"
 #include "lm.h"
-#include <feat.h>
-#include <time.h>
+#include "srch.h"
 
 arg_t S3_DECODE_ARG_DEFS[] = {
     waveform_to_cepstral_command_line_macro(),

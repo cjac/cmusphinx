@@ -101,6 +101,10 @@
 #ifndef _S3_CORPUS_H_
 #define _S3_CORPUS_H_
 
+#include <stdio.h>
+
+#include <hash_table.h>
+#include <profile.h>
 #include <s3types.h>
 
 

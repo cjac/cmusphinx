@@ -69,7 +69,10 @@
 #ifndef _SRCH_DEBUG_H_
 #define _SRCH_DEBUG_H_
 
+#include <glist.h>
 #include "s3types.h"
+#include "dag.h"
+#include "lm.h"
 #include "kb.h"
 
 /**
@@ -115,8 +118,8 @@ int srch_debug_propagate_graph_ph_lv2(void *srch, int32 wav_idx);
 int srch_debug_propagate_graph_wd_lv2(void *srch, int32 wav_idx);
 
 int srch_debug_compute_heuristic(void *srch, int32 win_efv);
-int srch_debug_frame_windup(void *srch_struct,int32 frmno);
-int srch_debug_shift_one_cache_frame(void *srch,int32 win_efv);
+int srch_debug_frame_windup(void *srch_struct, int32 frmno);
+int srch_debug_shift_one_cache_frame(void *srch, int32 win_efv);
 int srch_debug_select_active_gmm(void *srch);
 int srch_debug_rescoring(void* srch, int32 frmno);
 

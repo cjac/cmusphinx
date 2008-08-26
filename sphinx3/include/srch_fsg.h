@@ -71,13 +71,6 @@
 #ifndef _SRCH_FSG_H_
 #define _SRCH_FSG_H_
 
-#include <s3types.h>
-
-#include "kb.h"
-#include "word_fsg.h"
-#include "fsg_search.h"
-#include "cmd_ln.h"
-
 extern struct srch_funcs_s srch_FSG_funcs;
 
 #endif /* _SRCH_FSG_H_ */

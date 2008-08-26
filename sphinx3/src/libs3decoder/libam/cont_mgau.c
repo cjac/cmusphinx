@@ -120,7 +120,9 @@
  */
 
 
-#include "s3types.h"
+#include <string.h>
+#include <math.h>
+
 #include "bio.h"
 #include "vector.h"
 #include "matrix.h"
@@ -870,7 +872,7 @@ mgau_precomp(mgau_model_t * g)
                         (float32) (1.0 / (g->mgau[m].var[c][i] * 2.0));
                 }
             }
-            lrd += mgau_veclen(g) * log(2.0 * PI);      /* (2pi)^velen */
+            lrd += mgau_veclen(g) * log(2.0 * M_PI);      /* (2pi)^velen */
             mgau_lrd(g, m, c) = (float32) (-0.5 * lrd); /* Reciprocal, sqrt */
         }
     }

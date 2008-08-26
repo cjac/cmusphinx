@@ -93,10 +93,17 @@
 #define __S2_FSG_LEXTREE_H__
 
 
+#include <stdio.h>
+
 #include <logmath.h>
+#include <cmd_ln.h>
+
 #include "word_fsg.h"
 #include "fsg_psubtree.h"
 #include "hmm.h"
+#include "dict.h"
+#include "mdef.h"
+#include "ctxt_table.h"
 
 
 #ifdef __cplusplus

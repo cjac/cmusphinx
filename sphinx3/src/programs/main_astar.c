@@ -217,6 +217,8 @@
 #include <assert.h>
 
 #include <s3types.h>
+#include <info.h>
+#include <unlimit.h>
 #include <logs3.h>
 #include <tmat.h>
 #include <mdef.h>
@@ -224,7 +226,6 @@
 #include <lm.h>
 #include <fillpen.h>
 #include <search.h>
-#include <hyp.h>
 #include <wid.h>
 #include <dag.h>
 #include <cmdln_macro.h>

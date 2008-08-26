@@ -151,6 +151,7 @@
 
 #include "kb.h"
 #include "srch.h"
+#include "mllr.h"
 
 
 #define REPORT_KB 1

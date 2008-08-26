@@ -315,7 +315,6 @@
  * 		Started.
  */
 
-#define ANY
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -333,7 +332,7 @@
 
 #include "dag.h"
 
-#include "srch_flat_fwd.h"
+#include "srch_flat_fwd_internal.h"
 
 /** \file flat_fwd.c 
     \brief Implementation of forward search in a flat lexicon. 

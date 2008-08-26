@@ -27,7 +27,6 @@ pkginclude_HEADERS =				\
 	gmm_wrap.h				\
 	gs.h					\
 	hmm.h					\
-	hyp.h					\
 	interp.h				\
 	kbcore.h				\
 	kb.h					\

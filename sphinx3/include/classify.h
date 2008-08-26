@@ -74,6 +74,7 @@
  */
 
 
+#include "s3types.h"
 #include "cont_mgau.h"
 
 /** \file classify.h

@@ -65,6 +65,10 @@
 #include <string.h>
 #include <assert.h>
 
+#include <cmd_ln.h>
+#include <info.h>
+#include <hash_table.h>
+#include <case.h>
 #include <s3types.h>
 
 #define MAX_HYP_LEN	600

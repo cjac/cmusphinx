@@ -63,6 +63,8 @@
 #ifndef _LIBFBS_MISC_H_
 #define _LIBFBS_MISC_H_
 
+#include <stdio.h>
+
 #include "s3types.h"
 #include "search.h"
 

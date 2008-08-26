@@ -81,9 +81,10 @@
 #ifndef _LIB_GS_H_
 #define _LIB_GS_H_
 
+#include <stdio.h>
+
 #include <s3types.h>
 #include <logmath.h>
-#include <stdio.h>
 
 /**  \file gs.h
  * \brief (Not opened to public) Gaussian selector Implentation

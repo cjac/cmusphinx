@@ -59,6 +59,8 @@
 /** \file decode.c
  * \brief main function for application decode
  */
+#include "info.h"
+#include "unlimit.h"
 #include "utt.h"
 #include "kb.h"
 #include "corpus.h"

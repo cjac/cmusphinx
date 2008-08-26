@@ -66,7 +66,6 @@
 #include <s3types.h>
 #include "dict.h"
 #include "lm.h"
-#include "lmclass.h"
 
 /** \file wid.h
     \brief coversion of dictionary ID to LM ID. 

@@ -45,6 +45,8 @@
  *
  */
 
+#include <string.h>
+
 #include "srch_output.h"
 #include "logs3.h"
 

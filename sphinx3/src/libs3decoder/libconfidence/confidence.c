@@ -80,6 +80,7 @@
 
 #include <bio.h>
 #include <ckd_alloc.h>
+#include <pio.h>
 
 #include "confidence.h"
 #include "srch_output.h"

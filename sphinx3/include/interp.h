@@ -82,7 +82,6 @@
 
 #include <s3types.h>
 #include <logmath.h>
-#include "bio.h"
 
 /** \file interp.h \brief Interpolation of CD/CI senones.
  * Interpolation is used in the time of SCHMM and it is still a very

@@ -34,7 +34,7 @@
 /*
  * fsg_psubtree.h -- Phone-level FSG subtree representing all transitions
  * out of a single FSG state. 
- * (Note: Currently, it is actually a flat lexicon representationx
+ * (Note: Currently, it is actually a flat lexicon representation
  * 
  * **********************************************
  * CMU ARPA Speech Project
@@ -108,7 +108,6 @@
 
 
 #include <stdio.h>
-#include <string.h>
 
 #include <cmd_ln.h>
 #include <logmath.h>
@@ -117,7 +116,8 @@
 #include "word_fsg.h"
 #include "fsg.h"
 #include "hmm.h"
-#include "ctxt_table.h"
+#include "dict.h"
+#include "mdef.h"
 
 
 #ifdef __cplusplus

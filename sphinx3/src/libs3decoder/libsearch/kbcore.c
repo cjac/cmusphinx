@@ -142,6 +142,8 @@
  */
 
 
+#include <string.h>
+
 #include "kbcore.h"
 #include "logs3.h"
 #include "s3types.h"

@@ -72,15 +72,15 @@
 #ifndef _S3_APPROXCONGAU_H_
 #define _S3_APPROXCONGAU_H_
 
+#include <logmath.h>
+#include <profile.h>
 #include "cont_mgau.h"
-#include "vector.h"
 #include "subvq.h"
 #include "gs.h"
 #include "fast_algo_struct.h"
-
-/* These two headers should be eliminated to make libam more orthogonal to liblm and libcommon */ 
-#include "kbcore.h"  
 #include "ascr.h"
+#include "mdef.h"
+#include "s3types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -219,7 +219,10 @@ extern "C" {
     @return the best senone score
 */
 S3DECODER_EXPORT
-int32 approx_cont_mgau_frame_eval (kbcore_t * kbc,  /**< Input, kbcore, for mdef, svq and gs*/
+int32 approx_cont_mgau_frame_eval (mdef_t *mdef,
+				   subvq_t *svq,
+				   gs_t *gs, /**< Input mdef, svq and gs*/
+				   mgau_model_t *g,
 				   fast_gmm_t *fastgmm,	 /**< Input/Output: wrapper for
 							    parameters for Fast GMM , for
 							    all beams and parameters, during
@@ -229,7 +232,8 @@ int32 approx_cont_mgau_frame_eval (kbcore_t * kbc,  /**< Input, kbcore, for mdef
 				   float32 *feat,	/**< Input: the current feature vector */
 				   int32 frame,         /**< Input: The frame number */
 				   int32 *cache_ci_senscr, /**< Input: The cache CI scores for this frame */
-				   ptmr_t *tm_ovrhd        /**< Output: the timer used for computing overhead */
+				   ptmr_t *tm_ovrhd,        /**< Output: the timer used for computing overhead */
+				   logmath_t *logmath
     );
 
 
@@ -241,7 +245,9 @@ int32 approx_cont_mgau_frame_eval (kbcore_t * kbc,  /**< Input, kbcore, for mdef
 
 S3DECODER_EXPORT
 void approx_cont_mgau_ci_eval (
-    kbcore_t *kbc, /**< Input, kbcore, for mdef, svq and gs*/
+    subvq_t *svq,
+    gs_t *gs,
+    mgau_model_t *g,
     fast_gmm_t *fg, /**< Input/Output: wrapper for
                        parameters for Fast GMM , for
                        all beams and parameters, during
@@ -250,7 +256,8 @@ void approx_cont_mgau_ci_eval (
     float32 *feat, /**< Input : the current frame of feature */
     int32 *ci_senscr, /** Input/Output : ci senone score, a one dimension array */
     int32 *best_score, /** Input/Output: the best score, a scalar */
-    int32 fr /** In : The frame number */
+    int32 fr, /** In : The frame number */
+    logmath_t *logmath
     );
 
 #if 0

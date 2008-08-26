@@ -60,12 +60,13 @@
 
 
 #include <stdio.h>
+
+#include <logmath.h>
 #include "dict.h"
 #include "lm.h"
 #include "fillpen.h"
 #include "s3types.h"
-#include "logs3.h"
-#include "srch_output.h"
+#include "search.h"
 
 #define CONFIDENCE_MAX_INT 2147483640
 #define CONFIDENCE_MIN_INT -2147483640

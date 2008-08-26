@@ -43,6 +43,9 @@
  * 
  *********************************************************************/
 
+#include <stdio.h>
+#include <string.h>
+
 #include "cb2mllr_io.h"
 #include "ckd_alloc.h"
 #include "bio.h"
@@ -181,7 +184,7 @@ cb2mllr_read(const char *fn,
 
     return ret;
 }
-
+
 
 /*
  * Log record.  Maintained by RCS.

@@ -64,9 +64,9 @@
 #ifndef _LIBUTIL_SORT_H_
 #define _LIBUTIL_SORT_H_
 
-#include "sort.h"
-#include "prim_type.h"
 #include <stdlib.h>
+
+#include "prim_type.h"
 
 
 #ifdef __cplusplus

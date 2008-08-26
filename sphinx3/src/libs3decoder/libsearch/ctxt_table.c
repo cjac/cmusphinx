@@ -74,6 +74,8 @@
  *
  */
 
+#include <string.h>
+
 #include <ctxt_table.h>
 #include <ckd_alloc.h>
 

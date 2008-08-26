@@ -69,6 +69,9 @@
  *
  */
 
+#include <string.h>
+
+#include "pio.h"
 #include "lm.h"
 #include "bio.h"
 #include "logs3.h"

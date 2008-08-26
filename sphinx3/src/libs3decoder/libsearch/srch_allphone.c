@@ -46,6 +46,7 @@
 #include <listelem_alloc.h>
 
 #include "srch.h"
+#include "gmm_wrap.h"
 #include "astar.h"
 #include "srch_allphone.h"
 #include "hmm.h"

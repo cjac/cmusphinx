@@ -35,6 +35,9 @@
  *
  */
 
+#include <string.h>
+#include <sys/stat.h>
+
 #include "s3_endpointer.h"
 #include "classify.h"
 #include "endptr.h"

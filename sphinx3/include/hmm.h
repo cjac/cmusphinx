@@ -102,6 +102,7 @@
 
 #ifndef _S3_HMM_H_
 #define _S3_HMM_H_
+
 #include <stdio.h>
 
 #include "s3types.h"

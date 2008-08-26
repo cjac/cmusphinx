@@ -49,6 +49,8 @@
  *
  */
 
+#include <stdio.h>
+
 #include <s3types.h>
 #include <glist.h>
 #include <dict.h>

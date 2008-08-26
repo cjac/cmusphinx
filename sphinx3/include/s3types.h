@@ -81,8 +81,12 @@
 #ifndef _S3_S3TYPES_H_
 #define _S3_S3TYPES_H_
 
-#include <libutil.h>
 #include <float.h>
+#include <assert.h>
+
+#include <prim_type.h>
+#include <err.h>
+#include <ckd_alloc.h>
 #include <sphinx3_export.h>
 
 /** \file s3types.h

@@ -112,6 +112,8 @@
 #ifndef _LIBFBS_DAG_H_
 #define _LIBFBS_DAG_H_
 
+#include <stdio.h>
+
 #include <listelem_alloc.h>
 #include <s3types.h>
 #include <cmd_ln.h>

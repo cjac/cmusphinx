@@ -181,8 +181,16 @@
  * 1            Started. This replaced utt.c starting from Sphinx 3.6. 
  */
 
+#include <stdio.h>
+
 #include <s3types.h>
-#include "vithist.h"
+#include <glist.h>
+#include "dag.h"
+#include "lm.h"
+#include "ascr.h"
+#include "adaptor.h"
+#include "stat.h"
+#include "fast_algo_struct.h"
 #include "kbcore.h"
 #include "kb.h"
 
@@ -209,10 +217,6 @@
 #include "srch_debug.h"
 
 
-#include "dag.h"
-
-
-#include "gmm_wrap.h"
 #include "srch_output.h"
 
 #ifndef _SRCH_H_

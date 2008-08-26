@@ -84,6 +84,8 @@
  */
 
 
+#include <string.h>
+
 #include "tmat.h"
 #include "bio.h"
 #include "vector.h"

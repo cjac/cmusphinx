@@ -1,4 +1,5 @@
 
+#include <libutil.h>
 #include "classifier.h"
 #include "mdef.h"
 #include "logs3.h"

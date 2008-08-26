@@ -135,6 +135,7 @@
 
 
 #include "lextree.h"
+#include "wid.h"
 
 /*
  * Lextree nodes, and the HMMs contained within, are cleared upon creation, and whenever

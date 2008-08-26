@@ -90,6 +90,8 @@
 #ifndef _S3_TMAT_H_
 #define _S3_TMAT_H_
 
+#include <stdio.h>
+
 #include <s3types.h>
 #include <logmath.h>
 

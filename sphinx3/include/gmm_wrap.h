@@ -75,7 +75,6 @@
  *  \brief Function pointer wrapper of GMM computation. 
  */
 #include <s3types.h>
-#include "approx_cont_mgau.h"
 
 
 #ifdef __cplusplus

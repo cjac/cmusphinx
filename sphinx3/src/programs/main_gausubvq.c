@@ -66,6 +66,10 @@
  */
 
 
+#include <math.h>
+
+#include "info.h"
+#include "unlimit.h"
 #include "cont_mgau.h"
 #include "logs3.h"
 #include "vector.h"

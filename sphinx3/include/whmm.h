@@ -91,6 +91,7 @@
 #include "s3types.h"
 #include "tmat.h"
 #include "dict.h"
+#include "mdef.h"
 #include "hmm.h"
 
 

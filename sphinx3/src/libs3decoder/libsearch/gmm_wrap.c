@@ -73,7 +73,9 @@
  *
  */
 
+#include "gmm_wrap.h"
 #include "srch.h"
+#include "approx_cont_mgau.h"
 
 int32
 s3_cd_gmm_compute_sen_comp(void *srch, float32 ** feat, int32 wav_idx)
@@ -146,10 +148,14 @@ s3_cd_gmm_compute_sen(void *srch, float32 ** feat, int32 wav_idx)
     else if (kbcore->mgau) {
         fv = feat[0];
         s->senscale =
-            approx_cont_mgau_frame_eval(kbcore, fgmm, ascr, fv, wav_idx,
+            approx_cont_mgau_frame_eval(mdef,
+                                        kbcore_svq(kbcore),
+                                        kbcore_gs(kbcore),
+                                        mgau,
+                                        fgmm, ascr, fv, wav_idx,
                                         ascr->cache_ci_senscr[s->
                                                               cache_win_strt],
-                                        &(st->tm_ovrhd));
+                                        &(st->tm_ovrhd), kbcore_logmath(kbcore));
         st->utt_sen_eval += mgau_frm_sen_eval(mgau);
         st->utt_gau_eval += mgau_frm_gau_eval(mgau);
     }
@@ -189,12 +195,15 @@ approx_ci_gmm_compute(void *srch, float32 * feat, int32 cache_idx,
         return SRCH_SUCCESS;
     }
 
-    approx_cont_mgau_ci_eval(kbcore,
+    approx_cont_mgau_ci_eval(kbcore_svq(kbcore),
+                             kbcore_gs(kbcore),
+                             mgau,
                              fgmm,
                              mdef,
                              feat,
                              ascr->cache_ci_senscr[cache_idx],
-                             &(ascr->cache_best_list[cache_idx]), wav_idx);
+                             &(ascr->cache_best_list[cache_idx]), wav_idx,
+                             kbcore_logmath(kbcore));
 
     st->utt_cisen_eval += mgau_frm_cisen_eval(mgau);
     st->utt_cigau_eval += mgau_frm_cigau_eval(mgau);

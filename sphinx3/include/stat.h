@@ -79,6 +79,7 @@
 #ifndef _S3_STAT_
 #define _S3_STAT_
 
+#include <profile.h>
 #include <s3types.h>
 #include "sphinx3_export.h"
 

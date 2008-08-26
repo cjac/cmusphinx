@@ -62,8 +62,8 @@
 #ifndef ENCODING
 #define ENCODING
 
-#include "stdlib.h"
-#include <s3types.h> 
+#include <stdlib.h>
+#include <s3types.h>
 
 
 #ifdef __cplusplus

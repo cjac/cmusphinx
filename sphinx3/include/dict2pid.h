@@ -100,7 +100,11 @@
 #define _S3_DICT2PID_H_
 
 
+#include <stdio.h>
+
 #include <logmath.h>
+#include "s3types.h"
+#include "mdef.h"
 #include "dict.h"
 #include "ctxt_table.h"
 

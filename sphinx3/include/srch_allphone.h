@@ -38,8 +38,6 @@
 /* \file srch_allphone.h
  */
 
-#include "s3types.h"
-
 #ifndef SRCH_ALLPHONE
 #define SRCH_ALLPHONE
 

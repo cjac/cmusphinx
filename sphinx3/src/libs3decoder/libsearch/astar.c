@@ -151,7 +151,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#ifndef WIN32
+#include <unistd.h>
+#endif
 
+#include "pio.h"
 #include "astar.h"
 #include "s3types.h"
 #include "mdef.h"

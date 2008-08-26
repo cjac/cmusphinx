@@ -55,8 +55,10 @@
  *
  */
 
-#include "encoding.h"
 #include <ctype.h>
+#include <string.h>
+
+#include "encoding.h"
 
 
 int

@@ -39,7 +39,6 @@
 
 #include <s3types.h>
 #include "kb.h"
-#include "approx_cont_mgau.h"
 #include "corpus.h"
 
 #ifdef __cplusplus

@@ -68,6 +68,8 @@
  *
  */
 
+#include <string.h>
+
 #include <lm.h>
 #include <wid.h>
 

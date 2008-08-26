@@ -73,6 +73,8 @@
  *
  */
 
+#include <string.h>
+
 #include <lm.h>
 #include <s3types.h>
 #include <bio.h>

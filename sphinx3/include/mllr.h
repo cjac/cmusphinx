@@ -89,7 +89,6 @@ extern "C" {
 
 #include <s3types.h>
 #include "cont_mgau.h"
-#include "mdef.h"
 
 
 /** Dump the regression matrix from a given file */

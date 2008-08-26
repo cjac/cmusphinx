@@ -75,28 +75,22 @@
  */
 
 #include "approx_cont_mgau.h"
-#include "s3types.h"
-#include "gs.h"
-#include "mdef.h"
 #include <stdlib.h>
-
-int32 most_recent_best_cid = -1;
 
 
 
 #define DEBUG_GSCORE 1
 
-  /** \file approx_cont_mgau.c
-   * \brief Implementation detail of approx_cont_mgau
-     \warning You need to have some knowledge in fast GMM computation in order to modifed this function. 
-      
-  */
+/** \file approx_cont_mgau.c
+ *  \brief Implementation detail of approx_cont_mgau
+ *  \warning You need to have some knowledge in fast GMM computation in order to modify this function. 
+ */
 
 /** Decide whether this frame should be skip or not. 
     @return 1 if it is skipped, 0 if it is not.
  */
 
-int32
+static int32
 approx_isskip(int32 frame,       /**< In: The frame index */
               fast_gmm_t * fg,       /**< In: The fast GMM computation structure */
               int32 best_cid       /**< In: best code book index. Obtained from Gaussian Selector. Rarely used. */
@@ -190,7 +184,7 @@ approx_isskip(int32 frame,       /**< In: The frame index */
    @see approx_cont_mgau_frame_eval
    
 */
-int32
+static int32
 approx_mgau_eval(gs_t * gs,       /**< In: The Gaussian Selector. If Null, Gaussian Selection is not used.*/
                  subvq_t * svq,       /**< In: Sub VQ map, If Null, SVQ is not used.*/
                  mgau_model_t * g,       /**< In: The set of senones */
@@ -260,7 +254,7 @@ approx_mgau_eval(gs_t * gs,       /**< In: The Gaussian Selector. If Null, Gauss
     else
         senscr[s] = mgau_eval(g, s, mgau_sl, feat, fr, 1);
 
-    /*This routine safe guard the computation such that no abnomality will occur */
+    /*This routine safe guard the computation such that no abnormality will occur */
     if (senscr[s] < S3_LOGPROB_ZERO + 100000) {
         /* a range of value which recomputation is necessary , 100000 is a
            magic number tuned by using the Communicator, WSK5k and ICSI
@@ -291,7 +285,7 @@ approx_mgau_eval(gs_t * gs,       /**< In: The Gaussian Selector. If Null, Gauss
 
 int32 *ci;
 
-int
+static int
 intcmp(const void *v1, const void *v2)
 {
     return (ci[*(int32 *) v2] - ci[*(int32 *) v1]);
@@ -305,7 +299,7 @@ intcmp(const void *v1, const void *v2)
     @see approx_cont_mgau_ci_eval
   */
 
-int32
+static int32
 approx_compute_dyn_ci_pbeam(mdef_t * mdef,      /**< In: model definition */
                             fast_gmm_t * fastgmm,       /**< In: fast gmm computasion structure. */
                             mgau_model_t * g,      /**< In: Gaussian distribution */
@@ -370,21 +364,21 @@ approx_compute_dyn_ci_pbeam(mdef_t * mdef,      /**< In: model definition */
 */
 
 void
-approx_cont_mgau_ci_eval(kbcore_t * kbc,      /** In: kbcore */
+approx_cont_mgau_ci_eval(subvq_t * svq,
+                         gs_t * gs,
+                         mgau_model_t *g,
                          fast_gmm_t * fg,      /** In : The fast GMM structure */
                          mdef_t * mdef,      /** In : model definition */
                          float32 * feat,      /** In : the feature vector */
                          int32 * ci_senscr,      /** Input/Output : ci senone score, a one dimension array */
                          int32 * best_score,      /** Input/Output: the best score, a scalar */
-                         int32 fr       /** In : The frame number */
+                         int32 fr,       /** In : The frame number */
+                         logmath_t * logmath
     )
 {
     int32 s;
     s3senid_t *cd2cisen;
     int32 best_cid;
-    gs_t *gs;
-    subvq_t *svq;
-    mgau_model_t *g;
     int32 svq_beam;
     int32 n_cig;
     int32 n_cis;
@@ -395,10 +389,6 @@ approx_cont_mgau_ci_eval(kbcore_t * kbc,      /** In: kbcore */
     svq_beam = fg->gaus->subvqbeam;
 
 
-    gs = kbcore_gs(kbc);
-    svq = kbcore_svq(kbc);
-    g = kbcore_mgau(kbc);
-
     /*#ifdef APPROX_CONT_MGAU */
     /*Always turn on, so users can be the one who decide how fast/slow the recognizer can be */
 
@@ -407,7 +397,7 @@ approx_cont_mgau_ci_eval(kbcore_t * kbc,      /** In: kbcore */
     if (gs)
         best_cid = gc_compute_closest_cw(gs, feat);
     if (svq)
-        subvq_gautbl_eval_logs3(svq, feat, kbcore_logmath(kbc));
+        subvq_gautbl_eval_logs3(svq, feat, logmath);
 
     for (s = 0; mdef_is_cisenone(mdef, s); s++) {
         n_cig +=
@@ -441,12 +431,17 @@ approx_cont_mgau_ci_eval(kbcore_t * kbc,      /** In: kbcore */
 
 
 int32
-approx_cont_mgau_frame_eval(kbcore_t * kbc,
+approx_cont_mgau_frame_eval(mdef_t * mdef,
+                            subvq_t * svq,
+                            gs_t * gs,
+                            mgau_model_t * g,
                             fast_gmm_t * fastgmm,
                             ascr_t * a,
                             float32 * feat,
                             int32 frame,
-                            int32 * cache_ci_senscr, ptmr_t * tm_ovrhd)
+                            int32 * cache_ci_senscr,
+                            ptmr_t * tm_ovrhd,
+                            logmath_t * logmath)
 {
     int32 s;
     int32 best, ns, ng, n_cis, n_cig;
@@ -457,11 +452,7 @@ approx_cont_mgau_frame_eval(kbcore_t * kbc,
     int32 is_ciphone;
     int32 svq_beam;
     int32 *ci_occ;
-    mdef_t *mdef;
     s3senid_t *cd2cisen;
-    gs_t *gs;
-    subvq_t *svq;
-    mgau_model_t *g;
 
     int32 total;
     int32 dyn_ci_pbeam;
@@ -480,15 +471,11 @@ approx_cont_mgau_frame_eval(kbcore_t * kbc,
     ng = 0;
     total = 0;
     best_cid = -1;
-    gs = kbcore_gs(kbc);
-    svq = kbcore_svq(kbc);
-    g = kbcore_mgau(kbc);
 
 
     single_el_list[0] = -1;
     single_el_list[1] = -1;
     svq_beam = fastgmm->gaus->subvqbeam;
-    mdef = kbc->mdef;
 
     ci_occ = fastgmm->gmms->ci_occu;
     cd2cisen = mdef_cd2cisen(mdef);
@@ -501,7 +488,7 @@ approx_cont_mgau_frame_eval(kbcore_t * kbc,
     if (gs)
         best_cid = gc_compute_closest_cw(gs, feat);
     if (svq)
-        subvq_gautbl_eval_logs3(svq, feat, kbcore_logmath(kbc));
+        subvq_gautbl_eval_logs3(svq, feat, logmath);
 
     if (fastgmm->gmms->max_cd < mdef->n_sen - mdef->n_ci_sen)
         dyn_ci_pbeam = approx_compute_dyn_ci_pbeam(mdef, fastgmm, g,

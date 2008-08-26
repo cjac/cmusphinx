@@ -106,6 +106,7 @@
 #include <string.h>
 #include <assert.h>
 #include <limits.h>
+#include <math.h>
 
 #include "s3types.h"
 #include "logs3.h"
@@ -114,6 +115,7 @@
 #include "kdtree.h"
 #include "ckd_alloc.h"
 #include "bio.h"
+#include "vector.h"
 
 #define MGAU_MIXW_VERSION	"1.0"   /* Sphinx-3 file format version for mixw */
 #define MGAU_PARAM_VERSION	"1.0"   /* Sphinx-3 file format version for mean/var */
@@ -1175,7 +1177,7 @@ s3_precomp(mean_t ** means, var_t ** vars, int32 ** dets, float32 vFloor, logmat
                 fvar = *(float32 *) vp;
                 if (fvar < vFloor)
                     fvar = vFloor;
-                d += logs3(logmath, 1 / sqrt(fvar * 2.0 * PI));
+                d += logs3(logmath, 1 / sqrt(fvar * 2.0 * M_PI));
                 *vp = (var_t) (1.0 / (2.0 * fvar * log_base));
             }
             *dp++ = d;

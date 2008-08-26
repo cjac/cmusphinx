@@ -57,10 +57,12 @@
 #include <ad.h>
 #include <cont_ad.h>
 
+#include "info.h"
 #include "s3_decode.h"
 #include "kb.h"
 #include "s3types.h"
 #include "corpus.h"
+#include "srch.h"
 
 #define SAMPLE_BUFFER_LENGTH	4096
 #define FILENAME_LENGTH		512

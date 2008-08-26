@@ -1,4 +1,6 @@
 
+#include "cmd_ln.h"
+#include "info.h"
 #include "s3_cfg.h"
 #include "fsg.h"
 #include "logs3.h"

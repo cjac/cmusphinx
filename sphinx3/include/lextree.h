@@ -111,12 +111,20 @@
 #ifndef _S3_LEXTREE_H_
 #define _S3_LEXTREE_H_
 
+#include <stdio.h>
+
+#include <bitvec.h>
 #include <s3types.h>
+#include <glist.h>
 #include "kbcore.h"
 #include "hmm.h"
+#include "lm.h"
 #include "vithist.h"
 #include "ascr.h"
 #include "fast_algo_struct.h"
+#include "dict.h"
+#include "mdef.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

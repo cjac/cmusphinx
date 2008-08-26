@@ -138,7 +138,11 @@
 #ifndef _S3_LM_H_
 #define _S3_LM_H_
 
+#include <stdio.h>
+
 #include <logmath.h>
+#include <hash_table.h>
+#include <cmd_ln.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -285,7 +289,6 @@ extern "C" {
 #include "s3types.h"
 #include "lmclass.h"
 #include "dict.h"
-#include "encoding.h"
 
 /*
  * ARCHAN 20050503: comment copied from Sphinx 2

@@ -83,6 +83,8 @@
  */
 
 
+#include <string.h>
+
 #include "ascr.h"
 
 

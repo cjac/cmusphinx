@@ -65,6 +65,8 @@
 #ifndef _S3_LMCLASS_H_
 #define _S3_LMCLASS_H_
 
+#include <stdio.h>
+
 #include <logmath.h>
 #include "s3types.h"
 

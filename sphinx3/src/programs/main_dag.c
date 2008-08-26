@@ -222,7 +222,8 @@
 #include <assert.h>
 
 #include <s3types.h>
-
+#include "info.h"
+#include "unlimit.h"
 #include "dag.h"
 #include "logs3.h"
 #include "tmat.h"

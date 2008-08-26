@@ -88,14 +88,14 @@
  */
 
 
-#include "vector.h"
-#include "logs3.h"
-#include "s3types.h"
 #include <math.h>
 #include <float.h>
-
-
 #include <time.h>               /* RAH */
+
+#include "profile.h"
+#include "bitvec.h"
+#include "genrand.h"
+#include "vector.h"
 
 float64
 vector_sum_norm(float32 * vec, int32 len)
@@ -329,7 +329,7 @@ vector_maha_precomp(float32 * var, int32 len)
         det -= (float64) (log(var[i]));
         var[i] = (float32) (1.0 / (var[i] * 2.0));
     }
-    det -= log(2.0 * PI) * len;
+    det -= log(2.0 * M_PI) * len;
 
     return (det * 0.5);         /* sqrt */
 }

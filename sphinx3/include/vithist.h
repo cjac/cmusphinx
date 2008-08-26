@@ -124,17 +124,20 @@
 #ifndef _S3_VITHIST_H_
 #define _S3_VITHIST_H_
 
+#include <stdio.h>
+
 #include <s3types.h>
 #include <cmd_ln.h>
 #include <logmath.h>
+#include <glist.h>
 #include "kbcore.h"
 #include "search.h"
 #include "dict.h"
-#include "wid.h"
+#include "lm.h"
+#include "fillpen.h"
 
 #include "dag.h"  
 #include "ctxt_table.h"
-#include "glist.h"
 
 /** \file vithist.h 
 

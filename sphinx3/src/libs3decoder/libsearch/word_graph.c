@@ -67,6 +67,7 @@
 
 #include <dag.h>
 #include <s3types.h>
+#include "pio.h"
 #include "word_graph.h"
 #include "srch_output.h"
 #include "corpus.h"

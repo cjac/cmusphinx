@@ -1,4 +1,5 @@
 
+#include <libutil.h>
 #include "s3_cfg.h"
 #include "fsg.h"
 

@@ -55,6 +55,7 @@
 #define _S3_CONTEXT_FREE_GRAMMAR_H
 
 #include <stdio.h>
+
 #include <logmath.h>
 #include "prim_type.h"
 #include "hash_table.h"

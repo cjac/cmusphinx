@@ -233,20 +233,6 @@ typedef struct seg_hyp_line {
     conf_srch_hyp_t *wordlist; /**< The list of words */
 } seg_hyp_line_t;
 
-
-
-#if 0 /* Only in Sphinx 2 */
-float conf;         /* Confidence measure (roughly prob(correct)) for this word;
-		       NOT FILLED IN BY THE RECOGNIZER at the moment!! */
-int32 latden;       /* Average lattice density in segment.  Larger values imply
-		       more confusion and less certainty about the result.  To use
-		       it for rejection, cutoffs must be found independently */
-double phone_perp;  /* Average phone perplexity in segment.  Larger values imply
-		       more confusion and less certainty.  To use it for rejection,
-		       cutoffs must be found independently. */
-#endif
-
-
 #if 0
 { /* Stop indent from complaining */
 #endif

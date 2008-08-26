@@ -3,7 +3,7 @@
 #ifndef __SPHINX3_CLASSIFIER_H
 #define __SPHINX3_CLASSIFIER_H
 
-#include "libutil.h"
+#include "s3types.h"
 #include "cont_mgau.h"
 
 #ifdef __cplusplus

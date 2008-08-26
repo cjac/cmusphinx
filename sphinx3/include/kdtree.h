@@ -48,7 +48,6 @@
 #define __KDTREE_H__
 
 #include "s3types.h"
-#include "vector.h"
 
 
 #ifdef __cplusplus

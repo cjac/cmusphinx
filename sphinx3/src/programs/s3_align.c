@@ -96,6 +96,7 @@
 #include <assert.h>
 
 #include <feat.h>
+#include <strfuncs.h>
 #include <s3types.h>
 #include "mdef.h"
 #include "tmat.h"

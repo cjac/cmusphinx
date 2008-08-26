@@ -36,7 +36,7 @@
 #ifndef __S2_FSG_H__
 #define __S2_FSG_H__
 
-#include <search.h>
+#include "s3types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -65,36 +65,6 @@ typedef struct s2_fsg_s {
     s2_fsg_trans_t *trans_list;   /* Null-terminated list of transitions in FSG,
                                      in no particular order */
 } s2_fsg_t;
-
-
-#if 0
-/* ARCHAN: It was in fbs.h of Sphinx2 . Oh man, we have o
- */
-typedef struct search_hyp_s {
-
-    char const *word;   /* READ-ONLY */
-    int32 wid;          /* For internal use of decoder */
-    int32 sf, ef;       /* Start, end frames within utterance for this word */
-    int32 ascr, lscr;   /* Acoustic, LM scores (not always used!) */
-    int32 fsg_state;    /* At which this entry terminates (FSG mode only) */
-
-    struct search_hyp_s *next;  /* Next word segment in the hypothesis; NULL if none */
-
-} search_hyp_t;
-#endif
-
-
-#if 0 /* Only in Sphinx 2 */
-float conf;         /* Confidence measure (roughly prob(correct)) for this word;
-		       NOT FILLED IN BY THE RECOGNIZER at the moment!! */
-int32 latden;       /* Average lattice density in segment.  Larger values imply
-		       more confusion and less certainty about the result.  To use
-		       it for rejection, cutoffs must be found independently */
-double phone_perp;  /* Average phone perplexity in segment.  Larger values imply
-		       more confusion and less certainty.  To use it for rejection,
-		       cutoffs must be found independently. */
-#endif
-
 
 #ifdef __cplusplus
 }

@@ -110,11 +110,14 @@
 
 */
 
+#include <cmd_ln.h>
 #include <fe.h>
+#include "s3types.h"
 #include "sphinx3_export.h"
 #include "kb.h"
-#include "srch.h"
-#include "hyp.h"
+#include "kbcore.h"
+#include "dag.h"
+#include "search.h"
 
 #ifndef __S3_DECODE_H
 #define __S3_DECODE_H
@@ -210,9 +213,9 @@ typedef struct
     int32 phypdump;
 
     /**
-     * Extenstion for the raw director 
+     * Extension for the raw director 
      */
-    char* rawext;
+    const char* rawext;
 
 } s3_decode_t;
 
