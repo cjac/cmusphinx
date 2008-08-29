@@ -35,6 +35,9 @@ libsearch_la_SOURCES = \
 	word_graph.c \
 	word_ugprob.c
 
+noinst_HEADERS = \
+	srch_flat_fwd_internal.h
+
 INCLUDES = -I$(top_srcdir)/include \
            -I$(top_builddir)/include 
 
