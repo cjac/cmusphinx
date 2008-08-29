@@ -43,6 +43,6 @@ bn=`head -1 $an4lm/an4.ctl`
 rm -f $bn.slf
 
 run_program sphinx3_decode $margs $lmargs > $tmpout 2>&1
-sed -ne '/^#.*/ ! p' $bn.slf > tmp.slf && mv -f tmp.slf $bn.slf
-sed -ne '/^#.*/ ! p' $an4lm/$bn.slf > tmp.slf
-compare_table "HTK lattice test" tmp.slf $bn.slf
+sed -ne 's/=/ = /g;/^#.*/ ! p' $bn.slf > tmp.slf && mv -f tmp.slf $bn.slf
+sed -ne 's/=/ = /g;/^#.*/ ! p' $an4lm/$bn.slf > tmp.slf
+compare_table "HTK lattice test" tmp.slf $bn.slf 0.01

@@ -2,7 +2,7 @@ INFO:	Initialization of the log add table
 INFO:	Log-Add table size = 99042 x 2 >> 0
 INFO:	
 INFO: mdef.c(682): Reading model definition: ../../../../model/hmm/tidigits/wd_dependent_phone.cd_continuous_8gau/mdef
-INFO: tmat.c(167): Reading HMM transition probability matrices: ../../../../model/hmm/tidigits/wd_dependent_phone.cd_continuous_8gau/transition_matrices
+INFO: tmat.c(169): Reading HMM transition probability matrices: ../../../../model/hmm/tidigits/wd_dependent_phone.cd_continuous_8gau/transition_matrices
 SSID             0           1           2 (0)
 SENSCR           0           0           0
 SCORES  -939524096  -939524096  -939524096  -939524096
