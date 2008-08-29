@@ -1,14 +1,33 @@
 #!/bin/sh
 
+loopUntilSuccess () {
+    cmd=$@
+    # start loop to download code
+    count=0;
+
+    while ! $cmd; do
+	count=`expr $count + 1`
+	if [ $count -gt 50 ]; then
+	    # not successful, and we attempted it too many times. Clean up and leave.
+	    return $count
+	fi
+    done
+}
+
+export PATH=${PATH}:/usr/pbs/bin
+
+if ! SVN=`command -v svn 2>&1`; then exit 1; fi
+if ! QSUB=`command -v qsub 2>&1`; then exit 1; fi
+
 TMPSCRIPT=/tmp/daily$$
 
 TMPDIR=${HOME}/project/SourceForge/regression/daily$$
 mkdir ${TMPDIR}
 cd ${TMPDIR}
 
-if ${HOME}/script/loopUntilSuccess.sh /usr/local/bin/svn co https://cmusphinx.svn.sourceforge.net/svnroot/cmusphinx/trunk/sphinxbase > /dev/null ; then
+if loopUntilSuccess ${SVN} co https://cmusphinx.svn.sourceforge.net/svnroot/cmusphinx/trunk/sphinxbase > /dev/null ; then
 
-if ${HOME}/script/loopUntilSuccess.sh /usr/local/bin/svn co https://cmusphinx.svn.sourceforge.net/svnroot/cmusphinx/trunk/sphinx3 > /dev/null ; then
+if loopUntilSuccess ${SVN} co https://cmusphinx.svn.sourceforge.net/svnroot/cmusphinx/trunk/sphinx3 > /dev/null ; then
 
 cat > ${TMPSCRIPT} <<EOF &&
 #!/bin/sh
@@ -29,7 +48,7 @@ chmod a+x ./src/tests/regression/dailySTD.sh &&
 
 EOF
 
-/usr/pbs/bin/qsub -l host=elroy -j oe -o ${HOME}/project/SourceForge/regression/daily.latest ${TMPSCRIPT} > jobid &&
+${QSUB} -l host=elroy -j oe -o ${HOME}/project/SourceForge/regression/daily.latest ${TMPSCRIPT} > jobid &&
 
 cat > ${TMPSCRIPT} <<EOF &&
 #!/bin/sh
@@ -37,7 +56,7 @@ cat > ${TMPSCRIPT} <<EOF &&
 /bin/rm -rf ${TMPDIR}
 EOF
 
-/usr/pbs/bin/qsub -W depend=afterany:`sed -e 's/.scrappy//' jobid` -j oe -o ${HOME}/project/SourceForge/regression/daily.latest ${TMPSCRIPT} > /dev/null
+${QSUB} -W depend=afterany:`sed -e 's/.scrappy//' jobid` -j oe -o ${HOME}/project/SourceForge/regression/daily.latest ${TMPSCRIPT} > /dev/null
 
 else
 /bin/rm -rf ${TMPDIR}
@@ -45,4 +64,3 @@ fi
 fi
 
 /bin/rm ${TMPSCRIPT}
-

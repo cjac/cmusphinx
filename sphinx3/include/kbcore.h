@@ -181,6 +181,7 @@ void s3_am_init(kbcore_t *kbc);
 kbcore_t *kbcore_init(cmd_ln_t *config);
 
 /** free the kbcore */
+S3DECODER_EXPORT
 void kbcore_free (kbcore_t *kbcore  /**< The kbcore structure */
     );
 
