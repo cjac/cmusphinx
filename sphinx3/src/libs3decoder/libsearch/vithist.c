@@ -160,7 +160,6 @@ vithist_init(kbcore_t * kbc, int32 wbeam, int32 bghist, int32 report)
     vithist_t *vh;
     lmset_t *lmset;
     dict_t *dict;
-    wordprob_t *wp;
     int i;
 
     int max = -1;
@@ -188,19 +187,15 @@ vithist_init(kbcore_t * kbc, int32 wbeam, int32 bghist, int32 report)
     lmset = kbcore_lmset(kbc);
     dict = kbcore_dict(kbc);
 
-    wp = (wordprob_t *) ckd_calloc(dict_size(dict), sizeof(wordprob_t));
-
     for (i = 0; i < kbc->lmset->n_lm; i++) {
         if (lm_n_ug(lmset->lmarray[i]) > max) {
             max = lm_n_ug(lmset->lmarray[i]);
         }
     }
-    /*E_INFO("Allocation for viterbi history, finall size %d\n",max); */
+    /*E_INFO("Allocation for Viterbi history, final size %d\n", max); */
     vh->lms2vh_root =
         (vh_lms2vh_t **) ckd_calloc(max, sizeof(vh_lms2vh_t *));
     vh->n_ci = mdef_n_ciphone(kbc->mdef);
-
-    ckd_free((void *) wp);
 
     vh->lwidlist = NULL;
 
