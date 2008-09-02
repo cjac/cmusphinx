@@ -313,7 +313,7 @@ dag_mark_reachable(dagnode_t * d)
 void
 dag_remove_unreachable(dag_t *dag)
 {
-    dagnode_t *d;
+    dagnode_t *d, *dd;
     daglink_t *l, *pl, *nl;
 
     dag_mark_reachable(dag->end);
@@ -322,6 +322,7 @@ dag_remove_unreachable(dag_t *dag)
             /* Remove successor node links */
             for (l = d->succlist; l; l = nl) {
                 nl = l->next;
+                --dag->nlink;
                 listelem_free(dag->link_alloc, l);
             }
             d->succlist = NULL;
@@ -343,12 +344,24 @@ dag_remove_unreachable(dag_t *dag)
                         d->succlist = nl;
                     else
                         pl->next = nl;
+                    --dag->nlink;
                     listelem_free(dag->link_alloc, l);
                 }
                 else
                     pl = l;
             }
         }
+    }
+
+    for (d = dag->list, dd = NULL; d; d = d->alloc_next) {
+        if (!d->reachable && dd) {
+            /* Remove unreachable nodes */
+            dd->alloc_next = d->alloc_next;
+            listelem_free(dag->node_alloc, d);
+            d = dd;
+            --dag->nnode;
+        }
+        dd = d;
     }
 }
 
@@ -493,6 +506,9 @@ dag_chk_linkscr(dag_t * dagp)
 int32
 dag_destroy(dag_t * dagp)
 {
+    if (dagp == NULL)
+        return 0;
+
     /* No need to crawl the structure!  Just free the allocators (hooray) */
     listelem_alloc_free(dagp->node_alloc);
     listelem_alloc_free(dagp->link_alloc);
@@ -758,9 +774,12 @@ dag_write(dag_t * dag,
 
     fprintf(fp, "Edges (FROM-NODEID TO-NODEID ASCORE)\n");
     for (d = dag->list; d; d = d->alloc_next) {
-        for (l = d->succlist; l; l = l->next)
-            fprintf(fp, "%d %d %d\n", d->seqid, l->node->seqid,
-                    l->ascr);
+        for (l = d->succlist; l; l = l->next) {
+            /* Skip bypass edges */
+            if (l->bypass)
+                continue;
+            fprintf(fp, "%d %d %d\n", d->seqid, l->node->seqid, l->ascr);
+        }
     }
     fprintf(fp, "End\n");
 
@@ -807,6 +826,9 @@ dag_write_htk(dag_t *dag,
     for (d = dag->list; d; d = d->alloc_next) {
         ++n_nodes;
         for (l = d->predlist; l; l = l->next) {
+            /* Skip bypass links */
+            if (l->bypass)
+                continue;
             ++n_links;
         }
     }
@@ -832,6 +854,10 @@ dag_write_htk(dag_t *dag,
         for (l = d->predlist; l; l = l->next) {
             int32 nalt;
             s3wid_t b, a;
+
+            /* Skip bypass links */
+            if (l->bypass)
+                continue;
 
             /* Find the pronunciation alternate index. */
             nalt = 1;
@@ -872,11 +898,8 @@ dag_search(dag_t * dagp, char *utt, float64 lwf, dagnode_t * final,
     int32 bestscore;
     srch_hyp_t *hyp;
 
-    /* Add a "stop" link to the entry node if none exists. */
     assert(dagp);
     assert(dagp->root);
-    if (dagp->root->predlist == NULL)
-        dag_link(dagp, NULL, dagp->root, 0, 0, -1, NULL);
 
     /* Find the backward link from the final DAG node that has the best path to root */
     bestscore = (int32) 0x80000000;
@@ -893,6 +916,10 @@ dag_search(dag_t * dagp, char *utt, float64 lwf, dagnode_t * final,
     assert(dict);
     assert(lm);
     assert(fpen);
+
+    /* Add a "stop" link to the entry node if none exists. */
+    if (dagp->root->predlist == NULL)
+        dag_link(dagp, NULL, dagp->root, 0, 0, -1, NULL);
 
     for (l = final->predlist; l; l = l->next) {
         d = l->node;
@@ -911,6 +938,12 @@ dag_search(dag_t * dagp, char *utt, float64 lwf, dagnode_t * final,
         }
 
     }
+
+    /*
+     * Remove the "stop" link but DO NOT free it yet!
+     * DO NOT PANIC, the link will be freed in dag_destroy()
+     */
+    dagp->root->predlist = NULL;
 
     if (!bestl) {
         E_ERROR("Bestpath search failed for %s\n", utt);
@@ -1055,6 +1088,7 @@ dag_remove_bypass_links(dag_t *dag)
                     d->succlist = nl;
                 else
                     pl->next = nl;
+                --dag->nbypass;
                 listelem_free(dag->link_alloc, l);
             }
             else
@@ -1099,7 +1133,7 @@ dag_load(char *file,          /**< Input: File to lod from */
     float32 lb, f32arg;
     int32 ispipe;
     dag_t *dag;
-    latticehist_t *lathist;
+    latticehist_t *lathist = NULL;
     s3wid_t finishwid;
     int32 report;
 
@@ -1277,49 +1311,51 @@ dag_load(char *file,          /**< Input: File to lod from */
     dag->final.bypass = NULL;
     final = k;
 
+    E_INFO("dag->nfrm+1, %d\n", dag->nfrm + 1);
+
     /* Read bestsegscore entries */
     if ((k = dag_param_read(fp, "BestSegAscr", &lineno)) < 0) {
         E_ERROR("BestSegAscr parameter missing\n");
         goto load_error;
     }
 
-    E_INFO("dag->nfrm+1, %d\n", dag->nfrm + 1);
+    if (k > 0) {
+        lathist = latticehist_init(k, dag->nfrm + 1);
 
-    lathist = latticehist_init(k, dag->nfrm + 1);
+        j = -1;
+        for (i = 0; i < k; i++) {
+            if (fgets(line, 1024, fp) == NULL) {
+                E_ERROR("Premature EOF while (%s) loading BestSegAscr\n",
+                        line);
+                goto load_error;
+            }
 
-    j = -1;
-    for (i = 0; i < k; i++) {
-        if (fgets(line, 1024, fp) == NULL) {
-            E_ERROR("Premature EOF while (%s) loading BestSegAscr\n",
-                    line);
-            goto load_error;
+            lineno++;
+            if (sscanf(line, "%d %d %d", &seqid, &ef, &ascr) != 3) {
+                E_ERROR("Cannot parse line: %s\n", line);
+                goto load_error;
+            }
+
+            if ((seqid < 0) || (seqid >= dag->nnode)) {
+                E_ERROR("Seqno error: %s\n", line);
+                goto load_error;
+            }
+
+            if (ef != j) {
+                for (j++; j <= ef; j++)
+                    lathist->frm_latstart[j] = i;
+                --j;
+            }
+            lathist->lattice[i].dagnode = darray[seqid];
+            lathist->lattice[i].frm = ef;
+            lathist->lattice[i].ascr = ascr;
+
+            if ((seqid == final) && (ef == dag->final.node->lef))
+                dag->final.ascr = ascr;
         }
-
-        lineno++;
-        if (sscanf(line, "%d %d %d", &seqid, &ef, &ascr) != 3) {
-            E_ERROR("Cannot parse line: %s\n", line);
-            goto load_error;
-        }
-
-        if ((seqid < 0) || (seqid >= dag->nnode)) {
-            E_ERROR("Seqno error: %s\n", line);
-            goto load_error;
-        }
-
-        if (ef != j) {
-            for (j++; j <= ef; j++)
-                lathist->frm_latstart[j] = i;
-            --j;
-        }
-        lathist->lattice[i].dagnode = darray[seqid];
-        lathist->lattice[i].frm = ef;
-        lathist->lattice[i].ascr = ascr;
-
-        if ((seqid == final) && (ef == dag->final.node->lef))
-            dag->final.ascr = ascr;
+        for (j++; j <= dag->nfrm; j++)
+            lathist->frm_latstart[j] = k;
     }
-    for (j++; j <= dag->nfrm; j++)
-        lathist->frm_latstart[j] = k;
 
     /* Read in edges */
     while (fgets(line, 1024, fp) != NULL) {
@@ -1355,7 +1391,7 @@ dag_load(char *file,          /**< Input: File to lod from */
 
 #if 0
     /* Build edges from lattice end-frame scores if no edges input */
-    if (k == 0) {
+    if (k == 0 && lathist) {
         E_INFO("No edges in dagfile; using lattice scores\n");
         for (d = dag->list; d; d = d->alloc_next) {
             if (d->sf == 0)
@@ -1363,16 +1399,21 @@ dag_load(char *file,          /**< Input: File to lod from */
             else if ((d == dag->final.node)
                      || (d->lef - d->fef >= min_ef_range - 1)) {
                 /* Link from all end points == d->sf-1 to d */
+                int32 l;
                 for (l = lathist->frm_latstart[d->sf - 1];
                      l < lathist->frm_latstart[d->sf]; l++) {
                     pd = lathist->lattice[l].dagnode;   /* Predecessor DAG node */
+                    if (pd == NULL) {
+                        E_ERROR("Cannot determine DAG node!\n");
+                        goto load_error;
+                    }
                     if (pd->wid == finishwid)
                         continue;
 
                     if ((pd == dag->entry.node)
                         || (pd->lef - pd->fef >= min_ef_range - 1)) {
-                        dag_link(&dag, pd, d, lathist->lattice[l].ascr,
-                                 d->sf - 1, NULL);
+                        dag_link(dag, pd, d, lathist->lattice[l].ascr,
+                                 0, d->sf - 1, NULL);
                         k++;
                     }
                 }
@@ -1401,7 +1442,8 @@ dag_load(char *file,          /**< Input: File to lod from */
         dag->maxlmop = k;
     dag->lmop = 0;
 
-    dag_add_fudge_edges(dag, fudge, min_ef_range, (void *) lathist, dict);
+    if (lathist)
+        dag_add_fudge_edges(dag, fudge, min_ef_range, (void *) lathist, dict);
 
 
     fclose_comp(fp, ispipe);
@@ -1420,5 +1462,4 @@ dag_load(char *file,          /**< Input: File to lod from */
     if (lathist)
         latticehist_free(lathist);
     return NULL;
-
 }

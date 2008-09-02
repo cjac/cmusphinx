@@ -153,16 +153,13 @@ typedef struct dagnode_s {
     struct dagnode_s *alloc_next;	/**< Next in linear list of allocated nodes */
     struct daglink_s *succlist;		/**< List of successor nodes (adjacent in time) */
     struct daglink_s *predlist;		/**< List of preceding nodes (adjacent in time) */
-
+    int32 node_ascr;                      /**< Node acoustic score */
+    int32 node_lscr;                      /**< Node language score */
+    void *hook;                           /**< A hook that could allow arbitrary data structure to use dagnode_t */
     uint8 reachable;                      /**< In astar: Whether final node reachable from here 
                                              In flat_fwd's dag_to_wordgraph: A marker for whether 
                                              a node is already marked. 
-					     
                                           */
-    int32 node_ascr;                      /**< Node acoustic score */
-    int32 node_lscr;                      /**< Node langauge score */
-    void *hook;                           /**< A hook that could allow arbitrary data structure to use dagnode_t */
-
 } dagnode_t;
 
 /** 
@@ -201,8 +198,8 @@ typedef struct daglink_s {
     Summary of DAG structure information 
     Multiple-purpose, so some fields may not be used some time. 
 
-    FIXE, latfinal and exit are very very similar things, they just
-    happend to be declared by Ravi different time. 
+    FIXME, latfinal and exit are very very similar things, they just
+    happened to be declared by Ravi different time. 
 */
 typedef struct {
     dagnode_t *list;		/**< Linear list of nodes allocated */
@@ -217,7 +214,7 @@ typedef struct {
     int32 nfrm;                 /**< Number of frames */
     int32 nlink;                /**< Number of links */
     int32 nnode;                /**< Number of nodes */
-    int32 nbypass;              /**< The number of linke which are by-passed */
+    int32 nbypass;              /**< The number of links which are by-passed */
 
     int32 maxedge;              /**< (New in S3.6) Used in dag/astar/decode_anytopo, this decides whether
                                    parts of the dag code will exceed the maximum no of edge 
@@ -344,6 +341,7 @@ void dag_write_header(FILE *fp, cmd_ln_t *config);
 /**
  * Write a DAG (without segment scores) in Sphinx3 format
  **/
+S3DECODER_EXPORT
 int32 dag_write(dag_t * dag,
                 const char *filename,
                 lm_t * lm,
@@ -352,6 +350,7 @@ int32 dag_write(dag_t * dag,
 /**
  * Write a DAG (without segment scores) in HTK format
  **/
+S3DECODER_EXPORT
 int32 dag_write_htk(dag_t *dag,
                     const char *filename,
                     const char *uttid,
