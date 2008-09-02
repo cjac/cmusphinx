@@ -2,6 +2,7 @@
 #ifndef _S3_ARRAYLIST_H
 #define _S3_ARRAYLIST_H
 
+#include "sphinx3_export.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -180,6 +181,7 @@ s3_arraylist_dequeue(s3_arraylist_t *_arraylist);
    @param _arraylist The vector to count..
    @return The size of the vector.
  */
+S3DECODER_EXPORT
 int
 s3_arraylist_count(s3_arraylist_t *_arraylist);
 

@@ -32,6 +32,36 @@ AC_CHECK_FUNCS(memmove bcopy)
 AC_TYPE_SIGNAL
 
 
+dnl
+dnl Check whether visibility is supported
+dnl
+AC_DEFUN([CC_ATTRIBUTE_VISIBILITY], [
+	tmp_CFLAGS=$CFLAGS
+	CFLAGS="$CFLAGS -fvisibility=hidden"
+
+	AC_CACHE_CHECK([if compiler supports __attribute__((visibility("default")))],
+		[cc_cv_attribute_visibility],
+		[AC_COMPILE_IFELSE([
+			void __attribute__((visibility("default"))) visibility_function() { }
+			],
+			[cc_cv_attribute_visibility=yes],
+			[cc_cv_attribute_visibility=no])
+		])
+
+	CFLAGS=$tmp_CFLAGS
+
+	if test "x$cc_cv_attribute_visibility" = "xyes"; then
+		AC_DEFINE([HAVE_ATTRIBUTE_VISIBILITY], 1, [Define this if the compiler supports the visibility attributes.])
+		CFLAGS="$CFLAGS -fvisibility=hidden"
+		$1
+	else
+		true
+		$2
+	fi
+])
+
+CC_ATTRIBUTE_VISIBILITY
+
 epdata=`ls -1 $srcdir/model/ep | egrep -v '(Makefile|CVS)'`
 epdata=`echo $epdata`
 

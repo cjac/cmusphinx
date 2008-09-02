@@ -192,6 +192,7 @@ s3_cfg_close(s3_cfg_t *_cfg);
    @param _fn Plain-text file.
    @return A CFG parser.
  */
+S3DECODER_EXPORT
 s3_cfg_t *
 s3_cfg_read_simple(const char *_fn);
 
@@ -225,6 +226,7 @@ s3_cfg_write_simple(s3_cfg_t *_cfg, const char *_fn);
    @param _cfg A CFG parser.
    @return A FSG.
  */
+S3DECODER_EXPORT
 s2_fsg_t *
 s3_cfg_convert_to_fsg(s3_cfg_t *_cfg, int _max_expansion);
 
@@ -306,6 +308,7 @@ s3_cfg_add_rule(s3_cfg_t *_cfg, s3_cfg_id_t _src, float32 _fake_score,
 
    @param _cfg A CFG parser.
  */
+S3DECODER_EXPORT
 void
 s3_cfg_compile_rules(s3_cfg_t *_cfg, logmath_t *logmath);
 

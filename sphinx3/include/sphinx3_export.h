@@ -9,7 +9,11 @@
 #define S3DECODER_EXPORT __declspec(dllimport)
 #endif
 #else /* !_WIN32 */
+#ifdef HAVE_ATTRIBUTE_VISIBILITY
+#define S3DECODER_EXPORT __attribute__ ((visibility("default")))
+#else
 #define S3DECODER_EXPORT
+#endif
 #endif
 
 #if defined(__GNUC__) && __GNUC__ > 2
