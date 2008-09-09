@@ -326,6 +326,7 @@ void dag_compute_hscr(dag_t *dag, dict_t *dict, lm_t *lm, float64 lwf);
  * Recursive backtrace through DAG (from final node to root) using daglink_t.history.
  * Restore bypassed links during backtrace.
  */
+S3DECODER_EXPORT
 srch_hyp_t *dag_backtrace (srch_hyp_t **hyp, /**< A pointer of a pointer to the hypothesis*/
 			   daglink_t *l,  /**< A pointer to the final link*/
 			   float64 lwf,    /**< The language weight factor */
@@ -336,6 +337,7 @@ srch_hyp_t *dag_backtrace (srch_hyp_t **hyp, /**< A pointer of a pointer to the 
 /**
  * writing the header of dag in Sphinx 3's format
  */
+S3DECODER_EXPORT
 void dag_write_header(FILE *fp, cmd_ln_t *config);
 
 /**
