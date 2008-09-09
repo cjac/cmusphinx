@@ -14,6 +14,7 @@ check_PROGRAMS = \
 	test_ps_fwdflat_bestpath \
 	test_ps_fwdtree_bestpath \
 	test_ps_simple \
+	test_ps_partial \
 	test_ps_nbest \
 	test_ps_lattice \
 	test_acmod \
