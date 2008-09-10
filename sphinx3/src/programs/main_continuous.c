@@ -97,7 +97,7 @@ utt_livepretend(void *data, utt_res_t * ur, int32 sf, int32 ef,
     short samples[SAMPLE_BUFFER_LENGTH];
     float32 **frames;
     kb_t *kb;
-    int nread, n_frames;
+    int nread, n_frames, seg_n_frames;
     int ts, listening;
 
     kb = (kb_t *) data;
@@ -119,6 +119,7 @@ utt_livepretend(void *data, utt_res_t * ur, int32 sf, int32 ef,
     }
     listening = 0;
     ts = 0;
+    seg_n_frames = 0;
     while ((nread = cont_ad_read(cont_ad, samples, SAMPLE_BUFFER_LENGTH))
 	   >= 0) {
         if (nread) {
@@ -133,6 +134,7 @@ utt_livepretend(void *data, utt_res_t * ur, int32 sf, int32 ef,
             }
             ptmr_start(&(st->tm));
 	    fe_process_utt(fe, samples, nread, &frames, &n_frames);
+	    seg_n_frames += n_frames;
 	    if (frames != NULL) {
 		s3_decode_process(&decoder, frames, n_frames);
 		ckd_free_2d((void **)frames);
@@ -145,6 +147,12 @@ utt_livepretend(void *data, utt_res_t * ur, int32 sf, int32 ef,
                     E_INFO("PARTIAL_HYP: %s\n", hypstr);
                 }
             }
+
+	    /* If the segment is too long, break it. */
+	    if (seg_n_frames > 15000) {
+                s3_decode_end_utt(&decoder);
+                listening = 0;
+	    }
         }
         else {
             if (listening && cont_ad->read_ts - ts > 8000) {    /* HACK */
