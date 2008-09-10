@@ -182,7 +182,6 @@ kb_init(kb_t * kb, cmd_ln_t *config)
     mdef_t *mdef;
     dict_t *dict;
     dict2pid_t *d2p;
-    lmset_t *lmset;
     int32 cisencnt;
 
     /* STRUCTURE: Initialize the kb structure to zero, just in case */
@@ -194,7 +193,6 @@ kb_init(kb_t * kb, cmd_ln_t *config)
     kbcore = kb->kbcore;
     mdef = kbcore_mdef(kbcore);
     dict = kbcore_dict(kbcore);
-    lmset = kbcore_lmset(kbcore);
     d2p = kbcore_dict2pid(kbcore);
 
     /* STRUCTURE INITIALIZATION: Initialize the beam data structure */
