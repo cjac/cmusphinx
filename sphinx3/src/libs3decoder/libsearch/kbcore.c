@@ -404,6 +404,8 @@ set_cmninit(feat_t *fcb, char const *cmninit)
 
     if (cmninit == NULL)
         return;
+    if (fcb->cmn_struct == NULL)
+	return;
     vallist = ckd_salloc(cmninit);
     c = vallist;
     nvals = 0;
