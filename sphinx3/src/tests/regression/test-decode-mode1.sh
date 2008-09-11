@@ -14,6 +14,7 @@ margs="-logbase 1.0003 \
 -ctl $an4lm/an4.ctl \
 -ctlcount 1 \
 -outlatdir . \
+-phsegdir . \
 -cepdir $an4lm/"
 
 lmargs="-lm $an4lm/an4.tg.phone.arpa.DMP "

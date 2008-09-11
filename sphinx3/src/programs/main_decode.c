@@ -112,6 +112,11 @@ static arg_t arg[] = {
      "none)"},
 #endif
 
+    {"-phsegdir",
+     ARG_STRING,
+     NULL,
+     "(Allphone mode only) Output directory for phone segmentation files"},
+
     {"-bestscoredir",
      ARG_STRING,
      NULL,
