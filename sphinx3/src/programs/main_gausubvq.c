@@ -84,10 +84,10 @@ static arg_t arg[] = {
 
   /** Please see cmdln_macro.h */
 
-    log_table_command_line_macro()
-        common_application_properties_command_line_macro()
-        gmm_command_line_macro()        /* At here, mixw is involved, even though it is not used in the computation */
-        vq_cluster_command_line_macro()
+    log_table_command_line_macro(),
+    common_application_properties_command_line_macro(),
+    gmm_command_line_macro(),        /* At here, mixw is involved, even though it is not used in the computation */
+    vq_cluster_command_line_macro(),
 
   /** gausubvq-specific argument. */
     {"-seed",

@@ -88,7 +88,7 @@
 #include "encoding.h"
 
 static arg_t arg[] = {
-    common_application_properties_command_line_macro()
+    common_application_properties_command_line_macro(),
     {"-i",
      REQARG_STRING,
      NULL,

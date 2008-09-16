@@ -162,37 +162,36 @@ arg_t S3_DECODE_ARG_DEFS[] = {
     waveform_to_cepstral_command_line_macro(),
     cepstral_to_feature_command_line_macro(),
 
-    /* BOGUS!  Where are the commas? */
-    acoustic_model_command_line_macro()
-    speaker_adaptation_command_line_macro()
+    acoustic_model_command_line_macro(),
+    speaker_adaptation_command_line_macro(),
     
-    language_model_command_line_macro()
-    log_table_command_line_macro()
-    dictionary_command_line_macro()
-    phoneme_lookahead_command_line_macro()
-    histogram_pruning_command_line_macro()
-    fast_GMM_computation_command_line_macro()
-    common_filler_properties_command_line_macro()
-    common_s3x_beam_properties_command_line_macro()
-    control_file_handling_command_line_macro()
-    hypothesis_file_handling_command_line_macro()
-    score_handling_command_line_macro()
-    output_lattice_handling_command_line_macro()
-    dag_handling_command_line_macro()
-    second_stage_dag_handling_command_line_macro()
-    input_lattice_handling_command_line_macro()
-    flat_fwd_debugging_command_line_macro()
-    history_table_command_line_macro()
+    language_model_command_line_macro(),
+    log_table_command_line_macro(),
+    dictionary_command_line_macro(),
+    phoneme_lookahead_command_line_macro(),
+    histogram_pruning_command_line_macro(),
+    fast_GMM_computation_command_line_macro(),
+    common_filler_properties_command_line_macro(),
+    common_s3x_beam_properties_command_line_macro(),
+    control_file_handling_command_line_macro(),
+    hypothesis_file_handling_command_line_macro(),
+    score_handling_command_line_macro(),
+    output_lattice_handling_command_line_macro(),
+    dag_handling_command_line_macro(),
+    second_stage_dag_handling_command_line_macro(),
+    input_lattice_handling_command_line_macro(),
+    flat_fwd_debugging_command_line_macro(),
+    history_table_command_line_macro(),
     
-    decode_specific_command_line_macro()
-    search_specific_command_line_macro()
-    search_modeTST_specific_command_line_macro()
-    search_modeWST_specific_command_line_macro()
-    control_lm_mllr_file_command_line_macro()
-    finite_state_grammar_command_line_macro()
-    phone_insertion_penalty_command_line_macro()
+    decode_specific_command_line_macro(),
+    search_specific_command_line_macro(),
+    search_modeTST_specific_command_line_macro(),
+    search_modeWST_specific_command_line_macro(),
+    control_lm_mllr_file_command_line_macro(),
+    finite_state_grammar_command_line_macro(),
+    phone_insertion_penalty_command_line_macro(),
     
-    partial_hypothesis_command_line_macro()
+    partial_hypothesis_command_line_macro(),
 
     {
 	"-bestscoredir",

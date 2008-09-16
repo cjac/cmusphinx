@@ -103,16 +103,17 @@
 #include "glist.h"
 
 static arg_t defn[] = {
-    log_table_command_line_macro()
-        language_model_command_line_macro()
-        control_file_handling_command_line_macro()
-        common_filler_properties_command_line_macro()
-        common_application_properties_command_line_macro()
-        control_lm_file_command_line_macro()
-        dictionary_command_line_macro(){"-mdef",
-                                        REQARG_STRING,
-                                        NULL,
-                                        "Model definition input file: triphone -> senones/tmat tying"},
+    log_table_command_line_macro(),
+    language_model_command_line_macro(),
+    control_file_handling_command_line_macro(),
+    common_filler_properties_command_line_macro(),
+    common_application_properties_command_line_macro(),
+    control_lm_file_command_line_macro(),
+    dictionary_command_line_macro(),
+    {"-mdef",
+     REQARG_STRING,
+     NULL,
+     "Model definition input file: triphone -> senones/tmat tying"},
     {"-inlatdir",
      REQARG_STRING,
      NULL,

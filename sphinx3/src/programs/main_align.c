@@ -242,16 +242,15 @@
 static arg_t defn[] = {
         cepstral_to_feature_command_line_macro(),
 
-    /* BOGUS! Where are the commas? */
-        log_table_command_line_macro()
-        acoustic_model_command_line_macro()
-        speaker_adaptation_command_line_macro()
-        dictionary_command_line_macro()
-        common_application_properties_command_line_macro()
-        control_file_handling_command_line_macro()
-        hypothesis_file_handling_command_line_macro()
-        control_mllr_file_command_line_macro()
-        cepstral_input_handling_command_line_macro()
+        log_table_command_line_macro(),
+        acoustic_model_command_line_macro(),
+        speaker_adaptation_command_line_macro(),
+        dictionary_command_line_macro(),
+        common_application_properties_command_line_macro(),
+        control_file_handling_command_line_macro(),
+        hypothesis_file_handling_command_line_macro(),
+        control_mllr_file_command_line_macro(),
+        cepstral_input_handling_command_line_macro(),
     {"-lambda",
      ARG_STRING,
      NULL,
@@ -302,7 +301,7 @@ static arg_t defn[] = {
      ARG_INT32,
      "1",
      "Whether to insert optional silences and fillers between words."},
-    fast_GMM_computation_command_line_macro()
+    fast_GMM_computation_command_line_macro(),
     {NULL, ARG_INT32, NULL, NULL}
 };
 

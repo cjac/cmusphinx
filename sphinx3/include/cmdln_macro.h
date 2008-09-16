@@ -138,7 +138,7 @@ us a better architecture.
     { "-iter", \
       ARG_INT32, \
       "100", \
-      "Max no. of k-means iterations for clustering" },
+      "Max no. of k-means iterations for clustering" }
 
 #define gmm_command_line_macro() \
     { "-mean",\
@@ -160,10 +160,10 @@ us a better architecture.
     { "-mixwfloor",\
       ARG_FLOAT32,\
       "0.0000001",\
-      "Senone mixture weights floor (applied to data from -mixw file)" },
+      "Senone mixture weights floor (applied to data from -mixw file)" }
 
 #define acoustic_model_command_line_macro() \
-    gmm_command_line_macro() \
+    gmm_command_line_macro(), \
     { "-hmm", \
       ARG_STRING, \
       NULL, \
@@ -191,7 +191,7 @@ us a better architecture.
     { "-topn", \
       ARG_INT32, \
       "4", \
-      "(S3.0 GMM Computation only) No. of top scoring densities computed in each mixture gaussian codebook (semi-continuous models only)" }, \
+      "(S3.0 GMM Computation only) No. of top scoring densities computed in each mixture gaussian codebook (semi-continuous models only)" }
 
 #define language_model_command_line_macro() \
     { "-lm", \
@@ -209,14 +209,14 @@ us a better architecture.
     { "-lmname", \
       ARG_STRING, \
       NULL, \
-      "Name of language model in -lmctlfn to use for all utterances" }, 
+      "Name of language model in -lmctlfn to use for all utterances" }
 
-#if 0 
+#if 0
           /* Comment out because I don't know what is the meaning of Sphinx 2 fsg control file means. */
-    { "-fsgctlfn", 
-      ARG_STRING, 
-      NULL, 
-      "A finite state grammar control file" }, 
+    { "-fsgctlfn",
+      ARG_STRING,
+      NULL,
+      "A finite state grammar control file" },
 #endif
 
 #define finite_state_grammar_command_line_macro()  \
@@ -231,7 +231,7 @@ us a better architecture.
     { "-fsgusefiller", \
       ARG_BOOLEAN, \
       "yes", \
-      "(FSG Mode (Mode 2) only) Insert filler words at each state."}, 
+      "(FSG Mode (Mode 2) only) Insert filler words at each state."}
 
 
 #define log_table_command_line_macro() \
@@ -242,7 +242,7 @@ us a better architecture.
     { "-log3table", \
       ARG_BOOLEAN, \
       "yes", \
-      "Determines whether to use the logs3 table or to compute the values at run time."}, 
+      "Determines whether to use the logs3 table or to compute the values at run time."}
 
 #define phoneme_lookahead_command_line_macro() \
     { "-pheurtype", \
@@ -256,7 +256,7 @@ us a better architecture.
     { "-pl_beam", \
       ARG_FLOAT64, \
       "1.0e-80", \
-      "Beam for phoneme look-ahead. [1 (narrowest)..10000000(very wide)]" }, 
+      "Beam for phoneme look-ahead. [1 (narrowest)..10000000(very wide)]" }
 
 #define histogram_pruning_command_line_macro() \
     { "-maxwpf", \
@@ -274,7 +274,7 @@ us a better architecture.
     { "-maxhmmpf", \
       ARG_INT32, \
       "20000", \
-      "(Only used in Mode 4 and 5) Max no. of active HMMs to maintain at each frame; approx." }, 
+      "(Only used in Mode 4 and 5) Max no. of active HMMs to maintain at each frame; approx." }
 
 #define dictionary_command_line_macro() \
     { "-dict", \
@@ -288,13 +288,13 @@ us a better architecture.
     { "-lts_mismatch", \
       ARG_BOOLEAN, \
       "no", \
-      "Use CMUDict letter-to-sound rules to generate pronunciations for LM words doesn't appear in the dictionary . Use it with care. It assumes that the phone set in the mdef and dict are the same as the LTS rule. "},
+      "Use CMUDict letter-to-sound rules to generate pronunciations for LM words doesn't appear in the dictionary . Use it with care. It assumes that the phone set in the mdef and dict are the same as the LTS rule. "}
 
 #define gaussian_selection_command_line_macro() \
     { "-gs", \
       ARG_STRING, \
       NULL, \
-      "Gaussian Selection Mapping." }, 
+      "Gaussian Selection Mapping." }
 
 #define fast_GMM_computation_command_line_macro() \
     { "-subvq", \
@@ -305,7 +305,7 @@ us a better architecture.
       ARG_FLOAT64, \
       "3.0e-3", \
       "Beam selecting best components within each mixture Gaussian [0(widest)..1(narrowest)]" }, \
-    gaussian_selection_command_line_macro() \
+    gaussian_selection_command_line_macro(), \
     { "-ds", \
       ARG_INT32, \
       "1", \
@@ -354,7 +354,7 @@ us a better architecture.
     { "-kdmaxbbi",\
       ARG_INT32,\
       "-1",\
-      "Maximum number of Gaussians per leaf node in kd-Trees" }, \
+      "Maximum number of Gaussians per leaf node in kd-Trees" }
 
 #if 0
     { "-feat",
@@ -377,7 +377,7 @@ us a better architecture.
     { "-cb2mllr", \
       ARG_STRING, \
       ".1cls.", \
-      "Senone to MLLR transformation matrix mapping file (or .1cls.)" },
+      "Senone to MLLR transformation matrix mapping file (or .1cls.)" }
 
 
 #define common_filler_properties_command_line_macro() \
@@ -404,7 +404,7 @@ us a better architecture.
     { "-uw", \
       ARG_FLOAT32, \
       "0.7", \
-      "Unigram weight" }, 
+      "Unigram weight" }
 
           /* Follow sphinx 3.0, this should be implemented in nearly
              every tool */
@@ -412,7 +412,7 @@ us a better architecture.
     { "-phonepen", \
       ARG_FLOAT32, \
       "1.0", \
-      "(Mode 2 and 3 only) Word insertion penalty" }, 
+      "(Mode 2 and 3 only) Word insertion penalty" }
 
 
 #define common_s3x_beam_properties_command_line_macro() \
@@ -435,13 +435,13 @@ us a better architecture.
     { "-ptranskip", \
       ARG_INT32, \
       "0", \
-      "(Not used in Mode 3) Use wbeam for phone transitions every so many frames (if >= 1)" }, 
+      "(Not used in Mode 3) Use wbeam for phone transitions every so many frames (if >= 1)" }
 
 #define common_application_properties_command_line_macro() \
     { "-logfn", \
       ARG_STRING, \
       NULL, \
-      "Log file (default stdout/stderr)" },
+      "Log file (default stdout/stderr)" }
 
 #define control_file_handling_command_line_macro() \
     { "-ctl", \
@@ -455,7 +455,7 @@ us a better architecture.
     { "-ctlcount", \
       ARG_INT32, \
       "1000000000",	/* A big number to approximate the default: "until EOF" */ \
-      "No. of utterances to be processed (after skipping -ctloffset entries)" }, \
+      "No. of utterances to be processed (after skipping -ctloffset entries)" }
 
 #define hypothesis_file_handling_command_line_macro() \
     { "-hyp", \
@@ -465,13 +465,13 @@ us a better architecture.
     { "-hypseg", \
       ARG_STRING, \
       NULL, \
-      "Recognition result file, with word segmentations and scores" },
+      "Recognition result file, with word segmentations and scores" }
 
 #define score_handling_command_line_macro() \
     { "-hypsegscore_unscale", \
       ARG_BOOLEAN, \
       "yes", \
-      "When displaying the results, whether to unscale back the acoustic score with the best score in a frame"}, 
+      "When displaying the results, whether to unscale back the acoustic score with the best score in a frame"}
 
 #define cepstral_input_handling_command_line_macro() \
     { "-cepdir", \
@@ -489,7 +489,7 @@ us a better architecture.
     { "-adchdr", \
       ARG_INT32, \
       "0", \
-      "Number of bytes to skip at the beginning of a waveform file (44 for WAV, 1024 for Sphere)" }, 
+      "Number of bytes to skip at the beginning of a waveform file (44 for WAV, 1024 for Sphere)" }
 
 #define output_lattice_handling_command_line_macro() \
     { "-outlatdir", \
@@ -503,7 +503,7 @@ us a better architecture.
     { "-latext", \
       ARG_STRING, \
       "lat.gz", \
-      "Filename extension for lattice files (gzip compressed, by default - remove .gz for uncompressed)" }, 
+      "Filename extension for lattice files (gzip compressed, by default - remove .gz for uncompressed)" }
 
 
 
@@ -515,7 +515,7 @@ us a better architecture.
     { "-bptblsize", \
       ARG_INT32, \
       "32768", \
-      "Number of BPtable entries to allocate initially (grown as necessary)" },
+      "Number of BPtable entries to allocate initially (grown as necessary)" }
 
 /* decode-specific, that includes mode 4 and mode 5'
    share between decode/livepretend/livedecode
@@ -544,7 +544,7 @@ us a better architecture.
     { "-treeugprob", \
       ARG_BOOLEAN, \
       "yes", \
-      "If true, Use unigram probs in lextree" }, \
+      "If true, Use unigram probs in lextree" }
 
 #define dag_handling_command_line_macro() \
     { "-min_endfr", \
@@ -570,7 +570,7 @@ us a better architecture.
     {"-latcompress", \
       ARG_BOOLEAN, \
       "yes", \
-      "Whether lattice is compressed."},
+      "Whether lattice is compressed."}
 
 
 #define second_stage_dag_handling_command_line_macro() \
@@ -601,7 +601,7 @@ us a better architecture.
     {"-ppathdebug", \
      ARG_BOOLEAN, \
      "no", \
-     "Generate debugging information for N-best search. "}, \
+     "Generate debugging information for N-best search. "}
 
 #define input_lattice_handling_command_line_macro() \
     { "-inlatdir", \
@@ -611,7 +611,7 @@ us a better architecture.
     { "-inlatwin", \
       ARG_INT32, \
       "50", \
-      "Input word-lattice words starting within +/- <this argument> of current frame considered during search" },
+      "Input word-lattice words starting within +/- <this argument> of current frame considered during search" }
 
 #define flat_fwd_debugging_command_line_macro() \
     { "-tracewhmm", \
@@ -633,7 +633,7 @@ us a better architecture.
     { "-worddumpsf", \
       ARG_INT32, \
       "200000000", \
-      "(Mode 3 only) Starting frame for dumping all active words (for debugging/diagnosis/analysis)" },
+      "(Mode 3 only) Starting frame for dumping all active words (for debugging/diagnosis/analysis)" }
 
 
 #define search_specific_command_line_macro() \
@@ -644,7 +644,7 @@ us a better architecture.
     { "-bestsenscrdir", \
       ARG_STRING, \
       NULL, \
-      "When Best senone score directory." }, 
+      "When Best senone score directory." }
 
 
 /* mode TST or mode 4*/
@@ -656,14 +656,14 @@ us a better architecture.
     { "-epl", \
       ARG_INT32, \
       "3", \
-      "(Mode 4 only) Entries Per Lextree; #successive entries into one lextree before lextree-entries shifted to the next" }, 
+      "(Mode 4 only) Entries Per Lextree; #successive entries into one lextree before lextree-entries shifted to the next" }
 
 /* mode WST or mode 5*/
 #define search_modeWST_specific_command_line_macro() \
     { "-Nstalextree", \
       ARG_INT32, \
       "25", \
-      "(Mode 5 only) No. of lextrees to be instantiated statically; " }, 
+      "(Mode 5 only) No. of lextrees to be instantiated statically; " }
 
 #define partial_hypothesis_command_line_macro() \
     { "-maxhyplen", \
@@ -673,22 +673,22 @@ us a better architecture.
     { "-phypdump", \
       ARG_BOOLEAN, \
       "yes", \
-      "(Live-decoder only) dump parital hypothesis on the screen"},
+      "(Live-decoder only) dump parital hypothesis on the screen"}
 
 #define control_lm_file_command_line_macro() \
     { "-ctl_lm", \
       ARG_STRING, \
       NULL, \
-      "(Not used in mode 2 and 3) Control file that list the corresponding LMs" },
+      "(Not used in mode 2 and 3) Control file that list the corresponding LMs" }
 
 #define control_mllr_file_command_line_macro() \
     { "-ctl_mllr", \
       ARG_STRING, \
       NULL, \
-      "Control file that list the corresponding MLLR matrix for an utterance"},
+      "Control file that list the corresponding MLLR matrix for an utterance"}
 
 #define control_lm_mllr_file_command_line_macro() \
-    control_lm_file_command_line_macro() \
-    control_mllr_file_command_line_macro() 
+    control_lm_file_command_line_macro(), \
+    control_mllr_file_command_line_macro()
 
 #endif /* _CMDLN_MACRO_H_ */
