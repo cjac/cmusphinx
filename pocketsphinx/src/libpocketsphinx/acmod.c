@@ -59,6 +59,7 @@
 static const arg_t feat_defn[] = {
     waveform_to_cepstral_command_line_macro(),
     cepstral_to_feature_command_line_macro(),
+    POCKETSPHINX_DEBUG_OPTIONS,
     CMDLN_EMPTY_OPTION
 };
 

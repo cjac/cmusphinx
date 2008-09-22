@@ -183,6 +183,8 @@
 #define CONT_AD_POWHISTSIZE	98      /* #Powhist bins: ~ FRMPOW(65536^2*CONT_AD_SPF) */
 /* Maximum level is 96.3 dB full-scale; 97 for safety, plus 1 for zero-based */
 
+#define CONT_AD_CALIB_FRAMES	(CONT_AD_POWHISTSIZE * 2)
+
 #define CONT_AD_THRESH_UPDATE	100     /* Update thresholds approx every so many frames */
         /* PWP: update was 200 frames, or 3.2 seconds.  Now about every 1.6 sec. */
 
@@ -262,6 +264,7 @@ cont_ad_frame_pow(int16 * buf, int32 * prev, int32 spf)
     sumsq = 0.0;
     p = *prev;
     for (i = 0; i < spf; i++) {
+        /* Note: pre-emphasis done to remove low-frequency noise. */
         v = (double) (buf[i] - p);
         sumsq += v * v;
         p = buf[i];
@@ -372,26 +375,10 @@ find_thresh(cont_ad_t * r)
     old_noise_level = r->noise_level;
     old_thresh_sil = r->thresh_sil;
     old_thresh_speech = r->thresh_speech;
-#if 0
-    if (_ABS(r->noise_level - th) >= 10) {
-        if (th > r->noise_level)
-            r->noise_level += ((th - r->noise_level) / 2);
-        else
-            r->noise_level -= ((r->noise_level - th) / 2);
-    }
-    else {
-        r->noise_level = th;
-    }
-#else
-    /*
-     * RKM: The above is odd; if (diff >= 10) += diff/2; else += diff??
-     * This is discontinuous.  Instead, adapt based on the adapt_rate parameter.
-     */
     /* r->noise_level = (int32) (th * r->adapt_rate + r->noise_level * (1.0 - r->adapt_rate)); */
     r->noise_level =
         (int32) (r->noise_level +
                  r->adapt_rate * (th - r->noise_level) + 0.5);
-#endif
 
     /* update thresholds */
     r->thresh_sil = r->noise_level + r->delta_sil;
@@ -420,6 +407,111 @@ find_thresh(cont_ad_t * r)
 
 
 /*
+ * Silence to speech transition
+ */
+static void
+sil2speech_transition(cont_ad_t *r, int frm)
+{
+    spseg_t *seg;
+
+    /* Speech detected; create speech segment description */
+    seg = malloc(sizeof(*seg));
+
+    seg->startfrm = r->win_startfrm - r->leader;
+    if (seg->startfrm < 0)
+        seg->startfrm += CONT_AD_ADFRMSIZE;
+    seg->nfrm = r->leader + r->winsize;
+    seg->next = NULL;
+
+    if (!r->spseg_head)
+        r->spseg_head = seg;
+    else
+        r->spseg_tail->next = seg;
+    r->spseg_tail = seg;
+
+    r->tail_state = CONT_AD_STATE_SPEECH;
+
+    if (r->logfp) {
+        int32 n;
+
+        /* Where (in absolute time) this speech segment starts */
+        n = frm - seg->startfrm;
+        if (n < 0)
+            n += CONT_AD_ADFRMSIZE;
+        n = r->tot_frm - n - 1;
+
+        fprintf(r->logfp,
+                "%7.2fs %8d[%3d]f: Sil -> Sp detect; seg start: %7.2fs %8d\n",
+                (double) (r->tot_frm *
+                          r->spf) /
+                (double) (r->sps),
+                r->tot_frm, frm,
+                (double) (n * r->spf) / (double) (r->sps), n);
+    }
+
+    /* Now in SPEECH state; want to look for silence from end of this window */
+    r->win_validfrm = 1;
+    r->win_startfrm = frm;
+
+    /* Count #sil frames remaining in reduced window (of 1 frame) */
+    r->n_other = (r->frm_pow[frm] <= r->thresh_sil) ? 1 : 0;
+}
+
+/*
+ * Speech to silence transition
+ */
+static void
+speech2sil_transition(cont_ad_t *r, int frm)
+{
+    int f;
+
+    /* End of speech detected; speech->sil transition */
+    r->spseg_tail->nfrm += r->trailer;
+
+    r->tail_state = CONT_AD_STATE_SIL;
+
+    if (r->logfp) {
+        int32 n;
+
+        /* Where (in absolute time) this speech segment ends */
+        n = r->spseg_tail->startfrm + r->spseg_tail->nfrm - 1;
+        if (n >= CONT_AD_ADFRMSIZE)
+            n -= CONT_AD_ADFRMSIZE;
+        n = frm - n;
+        if (n < 0)
+            n += CONT_AD_ADFRMSIZE;
+        n = r->tot_frm - n;
+
+        fprintf(r->logfp,
+                "%7.2fs %8d[%3d]f: Sp -> Sil detect; seg end: %7.2fs %8d\n",
+                (double) (r->tot_frm * r->spf) /
+                (double) (r->sps), r->tot_frm, frm,
+                (double) (n * r->spf) / (double) (r->sps), n);
+    }
+
+    /* Now in SILENCE state; start looking for speech trailer+leader frames later */
+    r->win_validfrm -= (r->trailer + r->leader - 1);
+    r->win_startfrm += (r->trailer + r->leader - 1);
+    if (r->win_startfrm >= CONT_AD_ADFRMSIZE)
+        r->win_startfrm -= CONT_AD_ADFRMSIZE;
+
+    /* Count #speech frames remaining in reduced window */
+    r->n_other = 0;
+    for (f = r->win_startfrm;;) {
+        if (r->frm_pow[f] >= r->thresh_speech)
+            r->n_other++;
+
+        if (f == frm)
+            break;
+
+        f++;
+        if (f >= CONT_AD_ADFRMSIZE)
+            f = 0;
+    }
+}
+
+
+/*
  * Main silence/speech region detection routine.  If currently in
  * SILENCE state, switch to SPEECH state if a window (r->winsize)
  * of frames is mostly non-silence.  If in SPEECH state, switch to
@@ -428,9 +520,6 @@ find_thresh(cont_ad_t * r)
 static void
 boundary_detect(cont_ad_t * r, int32 frm)
 {
-    spseg_t *seg;
-    int32 f;
-
     assert(r->n_other >= 0);
 
     r->win_validfrm++;
@@ -457,97 +546,14 @@ boundary_detect(cont_ad_t * r, int32 frm)
     assert(r->win_validfrm == r->winsize);
 
     if (r->tail_state == CONT_AD_STATE_SIL) {   /* Currently in SILENCE state */
-        if (r->n_frm >= r->winsize + r->leader) {
-            if (r->n_other >= r->speech_onset) {
-                /* Speech detected; create speech segment description */
-                seg = malloc(sizeof(*seg));
-
-                seg->startfrm = r->win_startfrm - r->leader;
-                if (seg->startfrm < 0)
-                    seg->startfrm += CONT_AD_ADFRMSIZE;
-                seg->nfrm = r->leader + r->winsize;
-                seg->next = NULL;
-
-                if (!r->spseg_head)
-                    r->spseg_head = seg;
-                else
-                    r->spseg_tail->next = seg;
-                r->spseg_tail = seg;
-
-                r->tail_state = CONT_AD_STATE_SPEECH;
-
-                if (r->logfp) {
-                    int32 n;
-
-                    /* Where (in absolute time) this speech segment starts */
-                    n = frm - seg->startfrm;
-                    if (n < 0)
-                        n += CONT_AD_ADFRMSIZE;
-                    n = r->tot_frm - n - 1;
-
-                    fprintf(r->logfp,
-                            "%7.2fs %8d[%3d]f: Sil -> Sp detect; seg start: %7.2fs %8d\n",
-                            (double) (r->tot_frm *
-                                      r->spf) /
-                            (double) (r->sps),
-                            r->tot_frm, frm,
-                            (double) (n * r->spf) / (double) (r->sps), n);
-                }
-
-                /* Now in SPEECH state; want to look for silence from end of this window */
-                r->win_validfrm = 1;
-                r->win_startfrm = frm;
-
-                /* Count #sil frames remaining in reduced window (of 1 frame) */
-                r->n_other = (r->frm_pow[frm] <= r->thresh_sil) ? 1 : 0;
-            }
+        if (r->n_frm >= r->winsize + r->leader
+            && r->n_other >= r->speech_onset) {
+            sil2speech_transition(r, frm);
         }
     }
     else {
         if (r->n_other >= r->sil_onset) {
-            /* End of speech detected; speech->sil transition */
-            r->spseg_tail->nfrm += r->trailer;
-
-            r->tail_state = CONT_AD_STATE_SIL;
-
-            if (r->logfp) {
-                int32 n;
-
-                /* Where (in absolute time) this speech segment ends */
-                n = r->spseg_tail->startfrm + r->spseg_tail->nfrm - 1;
-                if (n >= CONT_AD_ADFRMSIZE)
-                    n -= CONT_AD_ADFRMSIZE;
-                n = frm - n;
-                if (n < 0)
-                    n += CONT_AD_ADFRMSIZE;
-                n = r->tot_frm - n;
-
-                fprintf(r->logfp,
-                        "%7.2fs %8d[%3d]f: Sp -> Sil detect; seg end: %7.2fs %8d\n",
-                        (double) (r->tot_frm * r->spf) /
-                        (double) (r->sps), r->tot_frm, frm,
-                        (double) (n * r->spf) / (double) (r->sps), n);
-            }
-
-            /* Now in SILENCE state; start looking for speech trailer+leader frames later */
-            r->win_validfrm -= (r->trailer + r->leader - 1);
-            r->win_startfrm += (r->trailer + r->leader - 1);
-            if (r->win_startfrm >= CONT_AD_ADFRMSIZE)
-                r->win_startfrm -= CONT_AD_ADFRMSIZE;
-
-            /* Count #speech frames remaining in reduced window */
-            r->n_other = 0;
-            for (f = r->win_startfrm;;) {
-                if (r->frm_pow[f] >= r->thresh_speech)
-                    r->n_other++;
-
-                if (f == frm)
-                    break;
-
-                f++;
-                if (f >= CONT_AD_ADFRMSIZE)
-                    f = 0;
-            }
+            speech2sil_transition(r, frm);
         }
         else {
             /* In speech state, and staying there; add this frame to segment */
@@ -697,34 +703,19 @@ buf_copy(cont_ad_t * r, int32 sf, int32 nf, int16 * buf)
         return (sf + nf);
 }
 
+int32
+cont_ad_buffer_space(cont_ad_t *r)
+{
+    return r->adbufsize - r->n_sample;
+}
 
 /*
- * Main function called by the application to filter out silence regions.
- * Maintains a linked list of speech segments pointing into r->adbuf and feeds
- * data to application from them.
+ * Read as much data as possible from r->adfunc into r->adbuf.
  */
-int32
-cont_ad_read(cont_ad_t * r, int16 * buf, int32 max)
+static int32
+cont_ad_read_internal(cont_ad_t *r, int16 *buf, int32 max)
 {
-    int32 head, tail, tailfrm, flen, len, retval, newstate;
-    int32 i, f, l;
-    spseg_t *seg;
-    int num_to_copy = 0, num_left = max;
-
-    if ((r == NULL) || (buf == NULL))
-        return -1;
-
-    if (max < r->spf) {
-        E_ERROR
-            ("cont_ad_read requires buffer of at least %d samples\n",
-             r->spf);
-        return -1;
-    }
-
-    if (r->logfp) {
-        fprintf(r->logfp, "cont_ad_read(,, %d)\n", max);
-        fflush(r->logfp);
-    }
+    int32 head, tail, len, l;
 
     /*
      * First read as much of raw A/D as possible and available.  adbuf is not
@@ -737,7 +728,7 @@ cont_ad_read(cont_ad_t * r, int16 * buf, int32 max)
     assert((len >= 0) && (len < r->spf));
 
     if ((tail < r->adbufsize) && (!r->eof)) {
-        if (r->adfunc != NULL) {
+        if (r->adfunc) {
             if ((l =
                  (*(r->adfunc)) (r->ad, r->adbuf + tail,
                                  r->adbufsize - tail)) < 0) {
@@ -746,25 +737,17 @@ cont_ad_read(cont_ad_t * r, int16 * buf, int32 max)
             }
         }
         else {
-            /*
-             * RKM(2005/02/01): Why would r->adfunc == NULL?  Where would this object
-             * get its raw data from if r->adfunc == NULL?  Why is data getting copied
-             * into r->adbuf from buf?  Where is this behavior documented?
-             * If max >> num_to_copy, the 2nd memcpy below can have overlapping src and
-             * dst regions, which isn't allowed by memcpy.
-             * This block of code doesn't make sense.
-             */
-            num_to_copy = r->adbufsize - tail;
-            num_left -= num_to_copy;
-            if (num_to_copy > max) {
-                num_to_copy = max;
-                num_left = 0;
+            l = r->adbufsize - tail;
+            if (l > max) {
+                l = max;
+                max = 0;
             }
-            memcpy(r->adbuf + tail, buf, num_to_copy * sizeof(int16));
-            memcpy(buf, buf + num_to_copy, num_left * sizeof(int16));
-            l = num_to_copy;
+            else {
+                max -= l;
+            }
+            memcpy(r->adbuf + tail, buf, l * sizeof(int16));
+            buf += l;
         }
-
         if ((l > 0) && r->rawfp) {
             fwrite(r->adbuf + tail, sizeof(int16), l, r->rawfp);
             fflush(r->rawfp);
@@ -777,7 +760,7 @@ cont_ad_read(cont_ad_t * r, int16 * buf, int32 max)
     if ((tail >= r->adbufsize) && (!r->eof)) {
         tail -= r->adbufsize;
         if (tail < head) {
-            if (r->adfunc != NULL) {
+            if (r->adfunc) {
                 if ((l =
                      (*(r->adfunc)) (r->ad,
                                      r->adbuf + tail, head - tail)) < 0) {
@@ -786,14 +769,11 @@ cont_ad_read(cont_ad_t * r, int16 * buf, int32 max)
                 }
             }
             else {
-                /* RKM(2005/02/01): See comment above */
-                num_to_copy = head - tail;
-                if (num_to_copy > num_left)
-                    num_to_copy = num_left;
-                memcpy(r->adbuf + tail, buf, num_to_copy * sizeof(int16));
-                l = num_to_copy;
+                l = head - tail;
+                if (l > max)
+                    l = max;
+                memcpy(r->adbuf + tail, buf, l * sizeof(int16));
             }
-
             if ((l > 0) && r->rawfp) {
                 fwrite(r->adbuf + tail, sizeof(int16), l, r->rawfp);
                 fflush(r->rawfp);
@@ -805,10 +785,21 @@ cont_ad_read(cont_ad_t * r, int16 * buf, int32 max)
         }
     }
 
-    /* Compute frame power for unprocessed+new data and find speech/silence boundaries */
+    return len;
+}
+
+/*
+ * Classify incoming frames as silence or speech.
+ */
+int32
+cont_ad_classify(cont_ad_t *r, int32 len)
+{
+    int32 tailfrm;
+
     tailfrm = (r->headfrm + r->n_frm);  /* Next free frame slot to be filled */
     if (tailfrm >= CONT_AD_ADFRMSIZE)
         tailfrm -= CONT_AD_ADFRMSIZE;
+
     for (; len >= r->spf; len -= r->spf) {
         compute_frame_pow(r, tailfrm);
         r->n_frm++;
@@ -823,9 +814,9 @@ cont_ad_read(cont_ad_t * r, int16 * buf, int32 max)
         if (++tailfrm >= CONT_AD_ADFRMSIZE)
             tailfrm = 0;
 
-        /* RKM: 2004-06-23: Moved this block from outside the enclosing loop */
         /* Update thresholds if time to do so */
         if (r->thresh_update <= 0) {
+            int32 i, f;
             find_thresh(r);
             decay_hist(r);
             r->thresh_update = CONT_AD_THRESH_UPDATE;
@@ -859,6 +850,41 @@ cont_ad_read(cont_ad_t * r, int16 * buf, int32 max)
 #endif
         }
     }
+
+    return r->tail_state;
+}
+
+/*
+ * Main function called by the application to filter out silence regions.
+ * Maintains a linked list of speech segments pointing into r->adbuf and feeds
+ * data to application from them.
+ */
+int32
+cont_ad_read(cont_ad_t * r, int16 * buf, int32 max)
+{
+    int32 flen, len, retval, newstate;
+    spseg_t *seg;
+
+    if ((r == NULL) || (buf == NULL))
+        return -1;
+
+    if (max < r->spf) {
+        E_ERROR
+            ("cont_ad_read requires buffer of at least %d samples\n",
+             r->spf);
+        return -1;
+    }
+
+    if (r->logfp) {
+        fprintf(r->logfp, "cont_ad_read(,, %d)\n", max);
+        fflush(r->logfp);
+    }
+
+    /* Read data from adfunc or from buf. */
+    len = cont_ad_read_internal(r, buf, max);
+
+    /* Compute frame power for unprocessed+new data and find speech/silence boundaries */
+    cont_ad_classify(r, len);
 
     /*
      * If eof on input data source, cleanup the final segment.
@@ -916,7 +942,7 @@ cont_ad_read(cont_ad_t * r, int16 * buf, int32 max)
 
         if (r->rawmode) {
             /* Restrict silence segment to user buffer size, integral #frames */
-            f = max / r->spf;
+            int32 f = max / r->spf;
             if (flen > f)
                 flen = f;
         }
@@ -994,7 +1020,7 @@ cont_ad_read(cont_ad_t * r, int16 * buf, int32 max)
 int32
 cont_ad_calib(cont_ad_t * r)
 {
-    int32 i, f, s, k, len, tailfrm;
+    int32 i, s, k, len, tailfrm;
 
     if (r == NULL)
         return -1;
@@ -1007,7 +1033,9 @@ cont_ad_calib(cont_ad_t * r)
         tailfrm -= CONT_AD_ADFRMSIZE;
     s = (tailfrm * r->spf);
 
-    for (f = 0; f < (CONT_AD_POWHISTSIZE << 1); f++) {
+    for (r->n_calib_frame = 0;
+         r->n_calib_frame < CONT_AD_CALIB_FRAMES;
+         ++r->n_calib_frame) {
         len = r->spf;
         while (len > 0) {
             /*Trouble */
@@ -1022,26 +1050,27 @@ cont_ad_calib(cont_ad_t * r)
     }
 
     r->thresh_update = CONT_AD_THRESH_UPDATE;
-
-    return (find_thresh(r));
+    return find_thresh(r);
 }
 
+int32
+cont_ad_calib_size(cont_ad_t *r)
+{
+    return r->spf * CONT_AD_CALIB_FRAMES;
+}
 
 int32
 cont_ad_calib_loop(cont_ad_t * r, int16 * buf, int32 max)
 {
     int32 i, s, len, tailfrm;
-    static int32 finished = 1;
-    static int32 f = 0;
 
-    if (finished) {
-        finished = 0;
-        f = 0;
-
+    if (r->n_calib_frame == CONT_AD_CALIB_FRAMES) {
+        /* If calibration previously succeeded, then this is a
+         * recalibration, so start again. */
+        r->n_calib_frame = 0;
         /* clear histogram */
         for (i = 0; i < CONT_AD_POWHISTSIZE; i++)
             r->pow_hist[i] = 0;
-
     }
 
     tailfrm = r->headfrm + r->n_frm;
@@ -1050,18 +1079,18 @@ cont_ad_calib_loop(cont_ad_t * r, int16 * buf, int32 max)
     s = (tailfrm * r->spf);
 
     len = r->spf;
-    for (; f < (CONT_AD_POWHISTSIZE << 1); f++) {
+    for (; r->n_calib_frame < CONT_AD_CALIB_FRAMES;
+         ++r->n_calib_frame) {
         if (max < len)
             return 1;
         memcpy(r->adbuf + s, buf, len * sizeof(int16));
         max -= len;
-        memcpy(buf, buf + len, max * sizeof(int16));
-
+        buf += len;
         compute_frame_pow(r, tailfrm);
     }
 
-    finished = 1;
-    return (find_thresh(r));
+    r->thresh_update = CONT_AD_THRESH_UPDATE;
+    return find_thresh(r);
 }
 
 
@@ -1416,6 +1445,8 @@ cont_ad_init(ad_rec_t * a, int32(*func) (ad_rec_t *, int16 *, int32))
 
     r->rawfp = NULL;
     r->logfp = NULL;
+
+    r->n_calib_frame = 0;
 
     cont_ad_reset(r);
 

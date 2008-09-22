@@ -13,6 +13,7 @@ SUBDIRS=test_alloc				\
 	test_cmdln				\
 	test_hash				\
 	$(maybe_lapack)				\
+	test_ad					\
 	test_fe					\
 	test_feat				\
 	test_logmath				\
