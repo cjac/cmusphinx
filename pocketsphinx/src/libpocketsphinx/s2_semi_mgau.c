@@ -406,7 +406,11 @@ s2_semi_mgau_frame_eval(s2_semi_mgau_t * s,
 	}
     }
     else {
-	switch (s->topn) {
+        if (s->rle_bits) {
+            return get_scores_rle(s, senone_scores, senone_active,
+                                  n_senone_active, out_bestidx);
+        }
+        switch (s->topn) {
 	case 4:
             if (s->mixw_cb)
                 return get_scores4_4b(s, senone_scores,
@@ -437,6 +441,76 @@ get_scores_rle(s2_semi_mgau_t * s, int16 *senone_scores,
                int32 *senone_active, int32 n_senone_active,
                int32 *out_bestidx)
 {
+    int32 j;
+    uint8 w_den[4][16];
+    int32 best = (int32)0x7fffffff;
+    uint8 tmp[6000];
+
+    memset(senone_scores, 0, s->n_sen * sizeof(*senone_scores));
+    for (j = 0; j < s->n_feat; j++) {
+        int32 i, k;
+
+        /* Precompute scaled densities. */
+        for (k = 0; k < 16; ++k) {
+            w_den[0][k] = s->mixw_cb[k] + s->f[j][0].score;
+            w_den[1][k] = s->mixw_cb[k] + s->f[j][1].score;
+            w_den[2][k] = s->mixw_cb[k] + s->f[j][2].score;
+            w_den[3][k] = s->mixw_cb[k] + s->f[j][3].score;
+        }
+
+        /* Compute partial scores for each active component. */
+        for (i = 0; i < s->topn; ++i) {
+            uint8 *x;
+            int32 *n, *en;
+            int l, cw, endrun;
+
+            /* Set up initial senone and codeword pointers. */
+            n = senone_active;
+            en = senone_active + n_senone_active;
+            x = s->mixw[j][s->f[j][i].codeword];
+            cw = endrun = 0;
+
+            /* Run through all senones. */
+            while (n < en) {
+                /* Scan forward to encompass current active senone. */
+                while (endrun <= *n) {
+                    l = (*x >> 4) + 1;
+                    cw = *x & 0xf;
+                    endrun += l;
+                    ++x;
+                }
+                /* Scan forward to encompass all senones in this run. */
+                if (i == 0) {
+                    while (n < en && *n < endrun) {
+                        tmp[*n] = w_den[i][cw];
+                        ++n;
+                    }
+                }
+                else {
+                    while (n < en && *n < endrun) {
+                        tmp[*n] = fast_logmath_add(s->lmath_8b, tmp[*n], w_den[i][cw]);
+                        ++n;
+                    }
+                }
+
+                assert(endrun <= s->n_sen);
+                if (endrun == s->n_sen)
+                    break;
+            }
+        }
+
+        /* And now, add together the partial scores. */
+        for (k = 0; k < n_senone_active; k++) {
+	    int n = senone_active[k];
+            senone_scores[n] += tmp[n];
+            if (j == s->n_feat - 1 && senone_scores[n] < best) {
+                best = senone_scores[n];
+                *out_bestidx = n;
+            }
+        }
+    }
+
+    return best;
 }
 
 static int32
@@ -838,9 +912,10 @@ read_sendump_rle(s2_semi_mgau_t *s, FILE *file,
                     E_ERROR("Inconsistent RLE in sendump: final n_sen = %d\n", i);
                     return -1;
                 }
-                l = *x >> 4;
+                l = (*x >> 4) + 1;
                 cw = *x & 0xf;
                 i += l;
+                ++x;
             }
         }
     }
@@ -915,7 +990,6 @@ read_sendump(s2_semi_mgau_t *s, bin_mdef_t *mdef, char const *file)
         }
         if (!strncmp(line, "cluster_count ", strlen("cluster_count "))) {
             n_clust = atoi(line + strlen("cluster_count "));
-            E_INFO("n_clust: %d\n", n_clust);
         }
         if (!strncmp(line, "cluster_bits ", strlen("cluster_bits "))) {
             n_bits = atoi(line + strlen("cluster_bits "));
@@ -976,34 +1050,12 @@ read_sendump(s2_semi_mgau_t *s, bin_mdef_t *mdef, char const *file)
     fseek(fp, offset, SEEK_SET);
 
     /* Allocate memory for pdfs (or memory map them) */
-    if (do_mmap)
+    if (do_mmap) {
         s->sendump_mmap = mmio_file_read(file);
-
-    /* If RLE is enabled, we need to scan the file to get start points. */
-    if (s->rle_bits) {
-        return read_sendump_rle(s, file, offset, filesize, n_density, n_sen);
-    }
-
-    /* Set up pointers, or read, or whatever */
-    if (s->sendump_mmap) {
         /* Get cluster codebook if any. */
         if (n_clust) {
             s->mixw_cb = ((uint8 *) mmio_file_ptr(s->sendump_mmap)) + offset;
             offset += n_clust;
-        }
-        s->mixw = ckd_calloc(s->n_feat, sizeof(*s->mixw));
-        for (i = 0; i < n_feat; i++) {
-            /* Pointers into the mmap()ed 2d array */
-	    s->mixw[i] = ckd_calloc(n_density, sizeof(**s->mixw));
-        }
-        for (n = 0; n < n_feat; n++) {
-            int step = n_sen;
-            if (n_bits == 4)
-                step = (step + 1) / 2;
-            for (i = 0; i < n_density; i++) {
-                s->mixw[n][i] = ((uint8 *) mmio_file_ptr(s->sendump_mmap)) + offset;
-                offset += step;
-            }
         }
     }
     else {
@@ -1015,6 +1067,27 @@ read_sendump(s2_semi_mgau_t *s, bin_mdef_t *mdef, char const *file)
                 return -1;
             }
         }
+    }
+
+    /* If RLE is enabled, we need to scan the file to get start points. */
+    if (s->rle_bits) {
+        return read_sendump_rle(s, fp, offset, filesize, n_density, n_sen);
+    }
+
+    /* Set up pointers, or read, or whatever */
+    if (s->sendump_mmap) {
+        s->mixw = ckd_calloc_2d(s->n_feat, n_density, sizeof(*s->mixw));
+        for (n = 0; n < n_feat; n++) {
+            int step = n_sen;
+            if (n_bits == 4)
+                step = (step + 1) / 2;
+            for (i = 0; i < n_density; i++) {
+                s->mixw[n][i] = ((uint8 *) mmio_file_ptr(s->sendump_mmap)) + offset;
+                offset += step;
+            }
+        }
+    }
+    else {
         s->mixw = ckd_calloc_3d(n_feat, n_density, n_sen, sizeof(***s->mixw));
         /* Read pdf values and ids */
         for (n = 0; n < n_feat; n++) {
@@ -1383,11 +1456,8 @@ s2_semi_mgau_free(s2_semi_mgau_t * s)
 
     logmath_free(s->lmath_8b);
     if (s->sendump_mmap) {
-        for (i = 0; i < s->n_feat; ++i) {
-            ckd_free(s->mixw[i]);
-        }
-        ckd_free(s->mixw); 
-       mmio_file_unmap(s->sendump_mmap);
+        ckd_free_2d(s->mixw); 
+        mmio_file_unmap(s->sendump_mmap);
     }
     else {
         ckd_free_3d(s->mixw);
