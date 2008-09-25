@@ -65,6 +65,9 @@ struct s2_semi_mgau_s {
     uint8 ***mixw;     /* mixture weight distributions */
     mmio_file_t *sendump_mmap;/* memory map for mixw (or NULL if not mmap) */
 
+    uint8 *mixw_cb;    /* mixture weight codebook, if any (assume it contains 16 values) */
+    int32 rle_bits;    /* RLE encoding for mixture weights if non-zero */
+
     int32 n_feat;	/* Number of feature streams */
     int32 *veclen;	/* Length of feature streams */
     int32 n_density;	/* Number of mixtures per codebook */

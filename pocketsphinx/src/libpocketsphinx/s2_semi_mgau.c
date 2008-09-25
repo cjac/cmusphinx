@@ -144,10 +144,13 @@ fast_logmath_add(logmath_t *lmath, int mlx, int mly)
     return r - (((uint8 *)t->table)[d]);
 }
 
-/*
- * Optimization for various topn cases, PDF-size(#bits) cases of
- * SCVQComputeScores() and SCVQComputeScores_all().
- */
+static int32 get_scores4_4b(s2_semi_mgau_t * s, int16 *senone_scores,
+                            int32 *senone_active, int32 n_senone_active,
+                            int32 *out_bestidx);
+static int32 get_scores_rle(s2_semi_mgau_t * s, int16 *senone_scores,
+                            int32 *senone_active, int32 n_senone_active,
+                            int32 *out_bestidx);
+
 static int32 get_scores4_8b(s2_semi_mgau_t * s, int16 *senone_scores,
                             int32 *senone_active, int32 n_senone_active,
                             int32 *out_bestidx);
@@ -405,9 +408,14 @@ s2_semi_mgau_frame_eval(s2_semi_mgau_t * s,
     else {
 	switch (s->topn) {
 	case 4:
-	    return get_scores4_8b(s, senone_scores,
-                                  senone_active, n_senone_active,
-                                  out_bestidx);
+            if (s->mixw_cb)
+                return get_scores4_4b(s, senone_scores,
+                                      senone_active, n_senone_active,
+                                      out_bestidx);
+            else
+                return get_scores4_8b(s, senone_scores,
+                                      senone_active, n_senone_active,
+                                      out_bestidx);
 	case 2:
 	    return get_scores2_8b(s, senone_scores,
                                   senone_active, n_senone_active,
@@ -422,6 +430,76 @@ s2_semi_mgau_frame_eval(s2_semi_mgau_t * s,
                                   out_bestidx);
 	}
     }
+}
+
+static int32
+get_scores_rle(s2_semi_mgau_t * s, int16 *senone_scores,
+               int32 *senone_active, int32 n_senone_active,
+               int32 *out_bestidx)
+{
+}
+
+static int32
+get_scores4_4b(s2_semi_mgau_t * s, int16 *senone_scores,
+               int32 *senone_active, int32 n_senone_active,
+               int32 *out_bestidx)
+{
+    int32 j;
+    uint8 w_den[4][16];
+    int32 best = (int32)0x7fffffff;
+
+    memset(senone_scores, 0, s->n_sen * sizeof(*senone_scores));
+    for (j = 0; j < s->n_feat; j++) {
+        uint8 *pid_cw0, *pid_cw1, *pid_cw2, *pid_cw3;
+        int32 k;
+
+        /* Precompute scaled densities. */
+        for (k = 0; k < 16; ++k) {
+            w_den[0][k] = s->mixw_cb[k] + s->f[j][0].score;
+            w_den[1][k] = s->mixw_cb[k] + s->f[j][1].score;
+            w_den[2][k] = s->mixw_cb[k] + s->f[j][2].score;
+            w_den[3][k] = s->mixw_cb[k] + s->f[j][3].score;
+        }
+
+        /* ptrs to senone prob ids */
+        pid_cw0 = s->mixw[j][s->f[j][0].codeword];
+        pid_cw1 = s->mixw[j][s->f[j][1].codeword];
+        pid_cw2 = s->mixw[j][s->f[j][2].codeword];
+        pid_cw3 = s->mixw[j][s->f[j][3].codeword];
+
+        for (k = 0; k < n_senone_active; k++) {
+	    int n = senone_active[k];
+            int tmp, cw;
+
+            if (n & 1) {
+                cw = pid_cw0[n/2] >> 4;
+                tmp = w_den[0][cw];
+                cw = pid_cw1[n/2] >> 4;
+                tmp = fast_logmath_add(s->lmath_8b, tmp, w_den[1][cw]);
+                cw = pid_cw2[n/2] >> 4;
+                tmp = fast_logmath_add(s->lmath_8b, tmp, w_den[2][cw]);
+                cw = pid_cw3[n/2] >> 4;
+                tmp = fast_logmath_add(s->lmath_8b, tmp, w_den[3][cw]);
+            }
+            else {
+                cw = pid_cw0[n/2] & 0x0f;
+                tmp = w_den[0][cw];
+                cw = pid_cw1[n/2] & 0x0f;
+                tmp = fast_logmath_add(s->lmath_8b, tmp, w_den[1][cw]);
+                cw = pid_cw2[n/2] & 0x0f;
+                tmp = fast_logmath_add(s->lmath_8b, tmp, w_den[2][cw]);
+                cw = pid_cw3[n/2] & 0x0f;
+                tmp = fast_logmath_add(s->lmath_8b, tmp, w_den[3][cw]);
+            }
+            senone_scores[n] += tmp;
+            if (j == s->n_feat - 1 && senone_scores[n] < best) {
+                best = senone_scores[n];
+                *out_bestidx = n;
+            }
+        }
+    }
+
+    return best;
 }
 
 static int32
@@ -727,19 +805,65 @@ s2_semi_mgau_load_kdtree(s2_semi_mgau_t * s, const char *kdtree_path,
 }
 
 static int32
+read_sendump_rle(s2_semi_mgau_t *s, FILE *file,
+                 size_t offset, size_t filesize,
+                 int32 n_comp, int32 n_sen)
+{
+    uint8 *mwdata, *x, *e;
+    int32 f, c, i;
+
+    /* Read in the data. */
+    if (s->sendump_mmap) {
+        mwdata = (uint8 *)mmio_file_ptr(s->sendump_mmap) + offset;
+    }
+    else {
+        mwdata = ckd_malloc(filesize - offset);
+        if (fread(mwdata, 1, filesize - offset, file) != filesize - offset) {
+            E_ERROR("Failed to read %d bytes from sendump\n", filesize - offset);
+            return -1;
+        }
+    }
+
+    /* Now decode it to find the endpoints for each (feature,component) */
+    s->mixw = ckd_calloc_2d(s->n_feat, n_comp, sizeof(**s->mixw));
+    x = mwdata;
+    e = mwdata + filesize - offset;
+    for (f = 0; f < s->n_feat; ++f) {
+        for (c = 0; c < n_comp; ++c) {
+            s->mixw[f][c] = x;
+            i = 0;
+            while (i < n_sen) {
+                int cw, l;
+                if (x >= e) {
+                    E_ERROR("Inconsistent RLE in sendump: final n_sen = %d\n", i);
+                    return -1;
+                }
+                l = *x >> 4;
+                cw = *x & 0xf;
+                i += l;
+            }
+        }
+    }
+
+    fclose(file);
+    return 0;
+}
+
+static int32
 read_sendump(s2_semi_mgau_t *s, bin_mdef_t *mdef, char const *file)
 {
     FILE *fp;
     char line[1000];
-    int32 i, n;
+    int32 i, n, r, c;
     int32 do_swap, do_mmap;
     size_t filesize, offset;
-    int n_clust = 256;          /* Number of clusters (if zero, we are just using
-                                 * 8-bit quantized weights) */
-    int r = s->n_density;
-    int c = bin_mdef_n_sen(mdef);
+    int n_clust = 0;
+    int n_feat = s->n_feat;
+    int n_density = s->n_density;
+    int n_sen = bin_mdef_n_sen(mdef);
+    int n_bits = 8;
 
-    s->n_sen = c;
+    s->n_sen = n_sen; /* FIXME: Should have been done earlier */
     do_mmap = cmd_ln_boolean_r(s->config, "-mmap");
 
     if ((fp = fopen(file, "rb")) == NULL)
@@ -756,10 +880,6 @@ read_sendump(s2_semi_mgau_t *s, bin_mdef_t *mdef, char const *file)
             E_FATAL("Title length %x in dump file %s out of range\n", n, file);
         }
         do_swap = 1;
-    }
-    if (do_swap && do_mmap) {
-        E_ERROR("Dump file is byte-swapped, cannot use memory-mapping\n");
-        do_mmap = 0;
     }
     if (fread(line, sizeof(char), n, fp) != n)
         E_FATAL("Cannot read title\n");
@@ -784,68 +904,129 @@ read_sendump(s2_semi_mgau_t *s, bin_mdef_t *mdef, char const *file)
         if (fread(line, sizeof(char), n, fp) != n)
             E_FATAL("Cannot read header\n");
         /* Look for a cluster count, if present */
+        if (!strncmp(line, "feature_count ", strlen("feature_count "))) {
+            n_feat = atoi(line + strlen("feature_count "));
+        }
+        if (!strncmp(line, "mixture_count ", strlen("mixture_count "))) {
+            n_density = atoi(line + strlen("mixture_count "));
+        }
+        if (!strncmp(line, "model_count ", strlen("model_count "))) {
+            n_sen = atoi(line + strlen("model_count "));
+        }
         if (!strncmp(line, "cluster_count ", strlen("cluster_count "))) {
             n_clust = atoi(line + strlen("cluster_count "));
+            E_INFO("n_clust: %d\n", n_clust);
+        }
+        if (!strncmp(line, "cluster_bits ", strlen("cluster_bits "))) {
+            n_bits = atoi(line + strlen("cluster_bits "));
+        }
+        if (!strncmp(line, "rle_bits ", strlen("rle_bits "))) {
+            s->rle_bits = atoi(line + strlen("rle_bits "));
         }
     }
 
-    /* Read #codewords, #pdfs */
-    fread(&r, 1, sizeof(r), fp);
-    if (do_swap) SWAP_INT32(&r);
-    fread(&c, 1, sizeof(c), fp);
-    if (do_swap) SWAP_INT32(&c);
-    E_INFO("Rows: %d, Columns: %d\n", r, c);
-
-    if (n_clust) {
-	E_ERROR ("Dump file is incompatible with PocketSphinx\n");
-	fclose(fp);
-	return -1;
+    /* Read #codewords, #pdfs, but only if there is no cluster_count */
+    if (n_clust == 0) {
+        fread(&r, 1, sizeof(r), fp);
+        if (do_swap) SWAP_INT32(&r);
+        fread(&c, 1, sizeof(c), fp);
+        if (do_swap) SWAP_INT32(&c);
+        E_INFO("Rows: %d, Columns: %d\n", r, c);
     }
+
+    if (n_feat != s->n_feat) {
+        E_ERROR("Number of feature streams mismatch: %d != %d\n",
+                n_feat, s->n_feat);
+        fclose(fp);
+        return -1;
+    }
+    if (n_density != s->n_density) {
+        E_ERROR("Number of densities mismatch: %d != %d\n",
+                n_density, s->n_density);
+        fclose(fp);
+        return -1;
+    }
+    if (n_sen != s->n_sen) {
+        E_ERROR("Number of senones mismatch: %d != %d\n",
+                n_sen, s->n_sen);
+        fclose(fp);
+        return -1;
+    }
+
+    if (!((n_clust == 0) || (n_clust == 15) || (n_clust == 16))) {
+        E_ERROR("Cluster count must be 0, 15, or 16\n");
+        fclose(fp);
+        return -1;
+    }
+    if (n_clust == 15)
+        ++n_clust;
+
+    if (!((n_bits == 8) || (n_bits == 4))) {
+        E_ERROR("Cluster count must be 4 or 8\n");
+        fclose(fp);
+        return -1;
+    }
+
     if (do_mmap) {
             E_INFO("Using memory-mapped I/O for senones\n");
-    }
-    /* Verify alignment constraints for using mmap() */
-    if ((c & 3) != 0) {
-        /* This will cause us to run very slowly, so don't do it. */
-        E_ERROR
-            ("Number of PDFs (%d) not padded to multiple of 4, will not use mmap()\n",
-             c);
-        do_mmap = 0;
     }
     offset = ftell(fp);
     fseek(fp, 0, SEEK_END);
     filesize = ftell(fp);
     fseek(fp, offset, SEEK_SET);
-    if ((offset & 3) != 0) {
-        E_ERROR
-            ("PDFs are not aligned to 4-byte boundary in file, will not use mmap()\n");
-        do_mmap = 0;
-    }
 
     /* Allocate memory for pdfs (or memory map them) */
     if (do_mmap)
         s->sendump_mmap = mmio_file_read(file);
-    if (s->sendump_mmap) {
-        s->mixw = ckd_calloc(s->n_feat, sizeof(*s->mixw));
-        for (i = 0; i < s->n_feat; i++) {
-            /* Pointers into the mmap()ed 2d array */
-	    s->mixw[i] = ckd_calloc(r, sizeof(**s->mixw));
-        }
 
-        for (n = 0; n < s->n_feat; n++) {
-            for (i = 0; i < r; i++) {
+    /* If RLE is enabled, we need to scan the file to get start points. */
+    if (s->rle_bits) {
+        return read_sendump_rle(s, file, offset, filesize, n_density, n_sen);
+    }
+
+    /* Set up pointers, or read, or whatever */
+    if (s->sendump_mmap) {
+        /* Get cluster codebook if any. */
+        if (n_clust) {
+            s->mixw_cb = ((uint8 *) mmio_file_ptr(s->sendump_mmap)) + offset;
+            offset += n_clust;
+        }
+        s->mixw = ckd_calloc(s->n_feat, sizeof(*s->mixw));
+        for (i = 0; i < n_feat; i++) {
+            /* Pointers into the mmap()ed 2d array */
+	    s->mixw[i] = ckd_calloc(n_density, sizeof(**s->mixw));
+        }
+        for (n = 0; n < n_feat; n++) {
+            int step = n_sen;
+            if (n_bits == 4)
+                step = (step + 1) / 2;
+            for (i = 0; i < n_density; i++) {
                 s->mixw[n][i] = ((uint8 *) mmio_file_ptr(s->sendump_mmap)) + offset;
-                offset += c;
+                offset += step;
             }
         }
     }
     else {
-        s->mixw = ckd_calloc_3d(s->n_feat, r, c, sizeof(***s->mixw));
+        /* Get cluster codebook if any. */
+        if (n_clust) {
+            s->mixw_cb = ckd_calloc(1, n_clust);
+            if (fread(s->mixw_cb, 1, n_clust, fp) != (size_t) n_clust) {
+                E_ERROR("Failed to read %d bytes from sendump\n", n_clust);
+                return -1;
+            }
+        }
+        s->mixw = ckd_calloc_3d(n_feat, n_density, n_sen, sizeof(***s->mixw));
         /* Read pdf values and ids */
-        for (n = 0; n < s->n_feat; n++) {
-            for (i = 0; i < r; i++) {
-                if (fread(s->mixw[n][i], sizeof(***s->mixw), c, fp) != (size_t) c)
-                    E_FATAL("fread failed\n");
+        for (n = 0; n < n_feat; n++) {
+            int step = n_sen;
+            if (n_bits == 4)
+                step = (step + 1) / 2;
+            for (i = 0; i < n_density; i++) {
+                if (fread(s->mixw[n][i], sizeof(***s->mixw), step, fp)
+                    != (size_t) step) {
+                    E_ERROR("Failed to read %d bytes from sendump\n", step);
+                    return -1;
+                }
             }
         }
     }
@@ -1169,14 +1350,15 @@ s2_semi_mgau_init(cmd_ln_t *config, logmath_t *lmath, bin_mdef_t *mdef)
     s->dets = (var_t **)ckd_calloc_2d(s->n_feat, s->n_density, sizeof(**s->dets));
     s3_precomp(s, lmath, cmd_ln_float32_r(config, "-varfloor"));
 
+    s->topn = cmd_ln_int32_r(config, "-topn");
+    s->ds_ratio = cmd_ln_int32_r(config, "-ds");
+
     /* Read mixture weights */
     if ((sendump_path = cmd_ln_str_r(config, "-sendump")))
         read_sendump(s, mdef, sendump_path);
     else
         read_mixw(s, cmd_ln_str_r(config, "-mixw"),
                   cmd_ln_float32_r(config, "-mixwfloor"));
-    s->topn = cmd_ln_int32_r(config, "-topn");
-    s->ds_ratio = cmd_ln_int32_r(config, "-ds");
 
     /* Top-N scores from current, previous frame */
     s->f = (vqFeature_t **) ckd_calloc_2d(s->n_feat, s->topn,
