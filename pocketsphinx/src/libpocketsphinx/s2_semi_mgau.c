@@ -150,6 +150,8 @@ static int32 get_scores4_4b(s2_semi_mgau_t * s, int16 *senone_scores,
 static int32 get_scores_rle(s2_semi_mgau_t * s, int16 *senone_scores,
                             int32 *senone_active, int32 n_senone_active,
                             int32 *out_bestidx);
+static int32 get_scores_rle_all(s2_semi_mgau_t * s, int16 *senone_scores,
+                                int32 *out_bestidx);
 
 static int32 get_scores4_8b(s2_semi_mgau_t * s, int16 *senone_scores,
                             int32 *senone_active, int32 n_senone_active,
@@ -394,6 +396,9 @@ s2_semi_mgau_frame_eval(s2_semi_mgau_t * s,
     }
 
     if (compallsen) {
+        if (s->rle_bits) {
+            return get_scores_rle_all(s, senone_scores, out_bestidx);
+        }
 	switch (s->topn) {
 	case 4:
 	    return get_scores4_8b_all(s, senone_scores, out_bestidx);
@@ -502,6 +507,66 @@ get_scores_rle(s2_semi_mgau_t * s, int16 *senone_scores,
         /* And now, add together the partial scores. */
         for (k = 0; k < n_senone_active; k++) {
 	    int n = senone_active[k];
+            senone_scores[n] += tmp[n];
+            if (j == s->n_feat - 1 && senone_scores[n] < best) {
+                best = senone_scores[n];
+                *out_bestidx = n;
+            }
+        }
+    }
+
+    return best;
+}
+
+static int32
+get_scores_rle_all(s2_semi_mgau_t * s, int16 *senone_scores, int32 *out_bestidx)
+{
+    int32 j;
+    uint8 w_den[4][16];
+    int32 best = (int32)0x7fffffff;
+    uint8 tmp[6000];
+
+    memset(senone_scores, 0, s->n_sen * sizeof(*senone_scores));
+    for (j = 0; j < s->n_feat; j++) {
+        int32 i, k, n;
+
+        /* Precompute scaled densities. */
+        for (k = 0; k < 16; ++k) {
+            w_den[0][k] = s->mixw_cb[k] + s->f[j][0].score;
+            w_den[1][k] = s->mixw_cb[k] + s->f[j][1].score;
+            w_den[2][k] = s->mixw_cb[k] + s->f[j][2].score;
+            w_den[3][k] = s->mixw_cb[k] + s->f[j][3].score;
+        }
+
+        /* Compute partial scores for each active component. */
+        for (i = 0; i < s->topn; ++i) {
+            uint8 *x;
+            int l, cw;
+
+            x = s->mixw[j][s->f[j][i].codeword];
+            /* Run through all senones. */
+            n = 0;
+            while (n < s->n_sen) {
+                l = (*x >> 4) + 1;
+                cw = *x & 0xf;
+                ++x;
+                /* Do all senones in this run. */
+                if (i == 0) {
+                    memset(tmp + n, w_den[i][cw], l);
+                }
+                else {
+                    int r;
+                    for (r = 0; r < l; ++r) {
+                        tmp[n + r] = fast_logmath_add(s->lmath_8b,
+                                                      tmp[n + r], w_den[i][cw]);
+                    }
+                }
+                n += l;
+            }
+        }
+
+        /* And now, add together the partial scores. */
+        for (n = 0; n < s->n_sen; ++n) {
             senone_scores[n] += tmp[n];
             if (j == s->n_feat - 1 && senone_scores[n] < best) {
                 best = senone_scores[n];
