@@ -320,8 +320,6 @@ static dict_t *dict;
 
 static float32 ***feat = NULL;  /* Speech feature data */
 
-static int32 *senscale;         /* ALL senone scores scaled by senscale[i] in frame i */
-
 static int32 ctloffset;
 
 static const char *outsentfile;
@@ -611,7 +609,7 @@ write_stseg(char *dir, align_stseg_t * stseg, char *uttid, char *ctlspec)
         if (fwrite(&pos, sizeof(uint8), 1, fp) != 1)
             goto write_error;
 
-        k = stseg->score + senscale[i];
+        k = stseg->score;
         if (fwrite(&k, sizeof(int32), 1, fp) != 1)
             goto write_error;
     }
@@ -631,7 +629,7 @@ write_phseg(char *dir, align_phseg_t * phseg, char *uttid, char *ctlspec)
 {
     char str[1024];
     FILE *fp;
-    int32 uttscr, f, scale;
+    int32 uttscr;
 
     /* Attempt to write segmentation for this utt to a separate file */
     build_output_uttfile(str, dir, uttid, ctlspec);
@@ -654,21 +652,14 @@ write_phseg(char *dir, align_phseg_t * phseg, char *uttid, char *ctlspec)
     for (; phseg; phseg = phseg->next) {
         mdef_phone_str(kbc->mdef, phseg->pid, str);
 
-        /* Account for senone score scaling in each frame */
-        scale = 0;
-
-        for (f = phseg->sf; f <= phseg->ef; f++) {
-            scale += senscale[f];
-        }
-
         if (!dir) {
             fprintf(fp, "ph:%s>", uttid);
             fflush(fp);
         }
         fprintf(fp, "\t%5d %5d %9d %s\n",
-                phseg->sf, phseg->ef, phseg->score + scale, str);
+                phseg->sf, phseg->ef, phseg->score, str);
         fflush(fp);
-        uttscr += (phseg->score + scale);
+        uttscr += (phseg->score);
     }
 
     if (!dir) {
@@ -692,7 +683,6 @@ write_phlab(char *dir, align_phseg_t * phseg, char *uttid, char *ctlspec, int32 
 {
     char str[1024];
     FILE *fp;
-    int32 f, scale;
 
     /* Attempt to write segmentation for this utt to a separate file */
     build_output_uttfile(str, dir, uttid, ctlspec);
@@ -715,13 +705,6 @@ write_phlab(char *dir, align_phseg_t * phseg, char *uttid, char *ctlspec, int32 
 
         name =
             mdef_ciphone_str(kbc->mdef, kbc->mdef->phone[phseg->pid].ci);
-
-        /* Account for senone score scaling in each frame */
-        scale = 0;
-
-        for (f = phseg->sf; f <= phseg->ef; f++) {
-            scale += senscale[f];
-        }
 
         if (!dir) {
             fprintf(fp, "ph:%s>", uttid);
@@ -746,7 +729,7 @@ write_wdseg(char *dir, align_wdseg_t * wdseg, char *uttid, char *ctlspec)
 {
     char str[1024];
     FILE *fp;
-    int32 uttscr, f, scale;
+    int32 uttscr;
 
     /* Attempt to write segmentation for this utt to a separate file */
     build_output_uttfile(str, dir, uttid, ctlspec);
@@ -767,22 +750,17 @@ write_wdseg(char *dir, align_wdseg_t * wdseg, char *uttid, char *ctlspec)
     fflush(fp);
     uttscr = 0;
     for (; wdseg; wdseg = wdseg->next) {
-        /* Account for senone score scaling in each frame */
-        scale = 0;
-        for (f = wdseg->sf; f <= wdseg->ef; f++)
-            scale += senscale[f];
-
         if (!dir) {
             fprintf(fp, "wd:%s>", uttid);
             fflush(fp);
         }
         fprintf(fp, "\t%5d %5d %10d %s\n",
-                wdseg->sf, wdseg->ef, wdseg->score + scale,
+                wdseg->sf, wdseg->ef, wdseg->score,
                 dict_wordstr(dict, wdseg->wid));
         fflush(fp);
 
 
-        uttscr += (wdseg->score + scale);
+        uttscr += wdseg->score;
     }
 
     if (!dir) {
@@ -866,14 +844,14 @@ align_utt(char *sent,           /* In: Reference transcript */
 
         /* Bah, there ought to be a function for this. */
         if (kbc->ms_mgau) {
-            senscale[i] = ms_cont_mgau_frame_eval(ascr,
-                                                  kbc->ms_mgau,
-                                                  kbc->mdef, feat[i]);
+            ms_cont_mgau_frame_eval(ascr,
+				    kbc->ms_mgau,
+				    kbc->mdef, feat[i]);
         }
         else if (kbc->s2_mgau) {
-            senscale[i] = s2_semi_mgau_frame_eval(kbc->s2_mgau,
-                                                  ascr, fastgmm, feat[i],
-                                                  i);
+            s2_semi_mgau_frame_eval(kbc->s2_mgau,
+				    ascr, fastgmm, feat[i],
+				    i);
         }
         else if (kbc->mgau) {
             approx_cont_mgau_ci_eval(kbcore_svq(kbc),
@@ -885,16 +863,16 @@ align_utt(char *sent,           /* In: Reference transcript */
                                      ascr->cache_ci_senscr[0],
                                      &(ascr->cache_best_list[0]), i,
                                      kbcore_logmath(kbc));
-            senscale[i] = approx_cont_mgau_frame_eval(kbcore_mdef(kbc),
-                                                      kbcore_svq(kbc),
-                                                      kbcore_gs(kbc),
-                                                      kbcore_mgau(kbc),
-                                                      fastgmm, ascr,
-                                                      feat[i][0], i,
-                                                      ascr->
-                                                      cache_ci_senscr[0],
-                                                      &tm_ovrhd,
-                                                      kbcore_logmath(kbc));
+            approx_cont_mgau_frame_eval(kbcore_mdef(kbc),
+					kbcore_svq(kbc),
+					kbcore_gs(kbc),
+					kbcore_mgau(kbc),
+					fastgmm, ascr,
+					feat[i][0], i,
+					ascr->
+					cache_ci_senscr[0],
+					&tm_ovrhd,
+					kbcore_logmath(kbc));
         }
 
         ptmr_stop(timers + tmr_gauden);
@@ -1100,8 +1078,6 @@ main(int32 argc, char *argv[])
     /* Read in input databases */
     models_init(config);
 
-    senscale = (int32 *) ckd_calloc(S3_MAX_FRAMES, sizeof(int32));
-
     if (!feat)
         feat = feat_array_alloc(fcb, S3_MAX_FRAMES);
 
@@ -1161,7 +1137,6 @@ main(int32 argc, char *argv[])
     ckd_free(stsegdir);
     ckd_free(phsegdir);
     ckd_free(wdsegdir);
-    ckd_free(senscale);
 
     feat_array_free(feat);
     align_free();
