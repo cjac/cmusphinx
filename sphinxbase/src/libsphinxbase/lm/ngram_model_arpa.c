@@ -880,8 +880,14 @@ ngram_model_arpa_free(ngram_model_t *base)
     ckd_free(model->lm3g.bo_wt2);
     ckd_free(model->lm3g.prob3);
     lm3g_tginfo_free(base, &model->lm3g);
-    listelem_alloc_free(model->lm3g.le);
     ckd_free(model->lm3g.tseg_base);
+}
+
+static void
+ngram_model_arpa_flush(ngram_model_t *base)
+{
+    ngram_model_arpa_t *model = (ngram_model_arpa_t *)base;
+    lm3g_tginfo_reset(base, &model->lm3g);
 }
 
 static ngram_funcs_t ngram_model_arpa_funcs = {
@@ -889,5 +895,6 @@ static ngram_funcs_t ngram_model_arpa_funcs = {
     ngram_model_arpa_apply_weights, /* apply_weights */
     ngram_model_arpa_score,         /* score */
     ngram_model_arpa_raw_score,     /* raw_score */
-    ngram_model_arpa_add_ug         /* add_ug */
+    ngram_model_arpa_add_ug,        /* add_ug */
+    ngram_model_arpa_flush          /* flush */
 };

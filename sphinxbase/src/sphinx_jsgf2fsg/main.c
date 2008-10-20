@@ -53,7 +53,8 @@ write_fsg(jsgf_t *grammar, const char *name)
         char const *rule_name = jsgf_rule_name(rule);
 
         if ((name == NULL && jsgf_rule_public(rule))
-            || (name && 0 == strncmp(rule_name + 1, name, strlen(rule_name) - 2))) {
+            || (name && strlen(rule_name)-2 == strlen(name) &&
+                0 == strncmp(rule_name + 1, name, strlen(rule_name) - 2))) {
             jsgf_write_fsg(grammar, rule, stdout);
             jsgf_rule_iter_free(itor);
             break;
@@ -73,6 +74,7 @@ main(int argc, char *argv[])
         return 1;
     }
     write_fsg(jsgf, argc > 2 ? argv[2] : NULL);
+    jsgf_grammar_free(jsgf);
 
     return 0;
 }
