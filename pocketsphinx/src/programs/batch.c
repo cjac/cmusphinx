@@ -432,6 +432,7 @@ main(int32 argc, char *argv[])
 
     process_ctl(ps, config, ctlfh);
 
+    fclose(ctlfh);
     ps_free(ps);
     return 0;
 }
