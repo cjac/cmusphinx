@@ -314,8 +314,8 @@ int32 mgau_var_nzvec_floor (mgau_model_t *g,  /**< In: A mixture of Gaussian com
  */
 /* The hybrid integer and floating point implementation of GMM computation */
 
-int32
-mgau_eval (mgau_model_t *g,	/**< In: The entire mixture Gaussian model */
+S3DECODER_EXPORT
+int32 mgau_eval (mgau_model_t *g,	/**< In: The entire mixture Gaussian model */
 	   int32 m,		/**< In: The chosen mixture in the model (i.e., g->mgau[m]) */
 	   int32 *active_comp,	/**< In: An optional, -1 terminated list of active component
 				   indices; if non-NULL, only the specified components are
@@ -330,6 +330,7 @@ mgau_eval (mgau_model_t *g,	/**< In: The entire mixture Gaussian model */
  * them into a senone score.  
  * @return: Best component score.
  */
+S3DECODER_EXPORT
 int32 mgau_comp_eval (mgau_model_t *g,	/**< In: Set of mixture Gaussians */
 		      int32 m,		/**< In: Mixture being considered */
 		      float32 *x,	/**< In: Input vector being compared to the components */
