@@ -312,7 +312,6 @@ static kbcore_t *kbc;           /* A kbcore structure */
 static ascr_t *ascr;            /* An acoustic score structure.  */
 static fast_gmm_t *fastgmm;     /* A fast GMM parameter structure.  */
 static adapt_am_t *adapt_am;    /* An adaptation structure. */
-static feat_t *fcb;             /* Feature type descriptor (Feature Control Block) */
 /*
  * Load and cross-check all models (acoustic/lexical/linguistic).
  */
@@ -355,11 +354,11 @@ models_init(cmd_ln_t *config)
                               cmd_ln_int32_r(config, "-log3table"));
 
     /* Initialize feaure stream type */
-    fcb = feat_init(cmd_ln_str_r(config, "-feat"),
-                    cmn_type_from_str(cmd_ln_str_r(config, "-cmn")),
-                    cmd_ln_boolean_r(config, "-varnorm"),
-                    agc_type_from_str(cmd_ln_str_r(config, "-agc")), 1,
-                    cmd_ln_int32_r(config, "-ceplen"));
+    kbc->fcb = feat_init(cmd_ln_str_r(config, "-feat"),
+			 cmn_type_from_str(cmd_ln_str_r(config, "-cmn")),
+			 cmd_ln_boolean_r(config, "-varnorm"),
+			 agc_type_from_str(cmd_ln_str_r(config, "-agc")), 1,
+			 cmd_ln_int32_r(config, "-ceplen"));
 
     s3_am_init(kbc);
 
@@ -408,8 +407,6 @@ static void models_free(void)
         ascr_free(ascr);
     if (dict)
         dict_free(dict);
-    if (fcb)
-        feat_free(fcb);
 
     kbcore_free(kbc);
 }
@@ -805,7 +802,7 @@ align_utt(char *sent,           /* In: Reference transcript */
     align_wdseg_t *wdseg;
     int32 w;
 
-    w = feat_window_size(fcb);  /* #MFC vectors needed on either side of current
+    w = feat_window_size(kbcore_fcb(kbc));  /* #MFC vectors needed on either side of current
                                    frame to compute one feature vector */
     if (nfr <= (w << 1)) {
         E_ERROR("Utterance %s < %d frames (%d); ignored\n", uttid,
@@ -982,7 +979,7 @@ utt_align(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
 
 
     nfr =
-        feat_s2mfc2feat(fcb, ur->uttfile, cepdir, cepext, sf, ef, feat,
+        feat_s2mfc2feat(kbcore_fcb(kbc), ur->uttfile, cepdir, cepext, sf, ef, feat,
                         S3_MAX_FRAMES);
 
     if (ur->regmatname) {
@@ -991,7 +988,7 @@ utt_align(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
                            ur->cb2mllrname, kbc->mdef, kbc->config);
         else if (kbc->ms_mgau)
             model_set_mllr(kbc->ms_mgau, ur->regmatname, ur->cb2mllrname,
-                           fcb, kbc->mdef, kbc->config);
+                           kbcore_fcb(kbc), kbc->mdef, kbc->config);
         else
             E_WARN("Can't use MLLR matrices with .s2semi. yet\n");
     }
@@ -1079,7 +1076,7 @@ main(int32 argc, char *argv[])
     models_init(config);
 
     if (!feat)
-        feat = feat_array_alloc(fcb, S3_MAX_FRAMES);
+        feat = feat_array_alloc(kbcore_fcb(kbc), S3_MAX_FRAMES);
 
     timers[tmr_utt].name = "U";
     timers[tmr_gauden].name = "G";
@@ -1095,7 +1092,7 @@ main(int32 argc, char *argv[])
             adapt_set_mllr(adapt_am, kbc->mgau, cmd_ln_str_r(config, "-mllr"), NULL,
                            kbc->mdef, config);
         else if (kbc->ms_mgau)
-            model_set_mllr(kbc->ms_mgau, cmd_ln_str_r(config, "-mllr"), NULL, fcb,
+            model_set_mllr(kbc->ms_mgau, cmd_ln_str_r(config, "-mllr"), NULL, kbcore_fcb(kbc),
                            kbc->mdef, config);
         else
             E_WARN("Can't use MLLR matrices with .s2semi. yet\n");
