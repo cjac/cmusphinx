@@ -526,8 +526,8 @@ srch_utt_end(srch_t * s)
 
     /* Write backtrace info */
     if (cmd_ln_boolean_r(kbcore_config(s->kbc), "-backtrace")) {
-        fprintf(stderr, "\nBacktrace(%s)\n", s->uttid);
-        match_detailed(stderr, hyp, s->uttid, "FV", "fv", s->ascale,
+        E_INFOCONT("\nBacktrace(%s)\n", s->uttid);
+        match_detailed(err_get_logfp(), hyp, s->uttid, "FV", "fv", s->ascale,
                        kbcore_dict(s->kbc));
     }
 
@@ -541,12 +541,12 @@ srch_utt_end(srch_t * s)
 			   kbcore_dict(s->kbc), s->stat->nfr, s->ascale,
 			   cmd_ln_int32_r(kbcore_config(s->kbc), "-hypsegscore_unscale"));
     }
-    match_write(stderr, hyp, s->uttid, kbcore_dict(s->kbc), "\nFWDVIT: ");
-    matchseg_write(stderr, hyp, s->uttid, "FWDXCT: ",
+    match_write(err_get_logfp(), hyp, s->uttid, kbcore_dict(s->kbc), "\nFWDVIT: ");
+    matchseg_write(err_get_logfp(), hyp, s->uttid, "FWDXCT: ",
                    kbcore_lm(s->kbc),
                    kbcore_dict(s->kbc), s->stat->nfr, s->ascale,
                    cmd_ln_int32_r(kbcore_config(s->kbc), "-hypsegscore_unscale"));
-    fprintf(stderr, "\n");
+    E_INFOCONT("\n");
 
     /* Write best senone scores */
     if (cmd_ln_str_r(kbcore_config(s->kbc), "-bestsenscrdir")) {
@@ -619,9 +619,9 @@ srch_utt_end(srch_t * s)
 			       kbcore_lm(s->kbc),
 			       kbcore_dict(s->kbc), s->stat->nfr, s->ascale,
 			       cmd_ln_int32_r(kbcore_config(s->kbc), "-hypsegscore_unscale"));
-	    match_write(stderr, rhyp, s->uttid,
+	    match_write(err_get_logfp(), rhyp, s->uttid,
 			kbcore_dict(s->kbc), "BSTPTH: ");
-	    matchseg_write(stderr, rhyp, s->uttid, "BSTXCT: ",
+	    matchseg_write(err_get_logfp(), rhyp, s->uttid, "BSTXCT: ",
 			   kbcore_lm(s->kbc), kbcore_dict(s->kbc),
 			   s->stat->nfr, s->ascale,
 			   cmd_ln_int32_r(kbcore_config(s->kbc), "-hypsegscore_unscale"));
@@ -822,11 +822,10 @@ srch_utt_decode_blk(srch_t * s, float ***block_feat, int32 block_nfeatvec,
         s->funcs->frame_windup(s, frmno);
 
         if (frmno % 10 == 0) {
-            fprintf(stdout, ".");
-            fflush(stdout);
+            E_INFOCONT(".");
         }
     }
-    fprintf(stdout, "\n");
+    E_INFOCONT("\n");
 
     st->nfr += block_nfeatvec;
 

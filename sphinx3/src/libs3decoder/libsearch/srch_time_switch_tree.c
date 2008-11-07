@@ -377,7 +377,7 @@ srch_TST_init(kb_t * kb, void *srch)
     if (cmd_ln_int32_r(kbcore_config(kbc), "-lextreedump")) {
         for (i = 0; i < kbc->lmset->n_lm; i++) {
             for (j = 0; j < n_ltree; j++) {
-                fprintf(stderr, "LM %d name %s UGTREE %d\n", i,
+                E_INFO("LM %d name %s UGTREE %d\n", i,
                         lmset_idx_to_name(kbc->lmset, i), j);
                 lextree_dump(tstg->ugtree[i * n_ltree + j], kbc->dict,
                              kbc->mdef, stderr,
@@ -385,7 +385,7 @@ srch_TST_init(kb_t * kb, void *srch)
             }
         }
         for (i = 0; i < n_ltree; i++) {
-            fprintf(stderr, "FILLERTREE %d\n", i);
+            E_INFO("FILLERTREE %d\n", i);
             lextree_dump(tstg->fillertree[i], kbc->dict, kbc->mdef, stderr,
                          cmd_ln_int32_r(kbcore_config(kbc), "-lextreedump"));
         }

@@ -258,12 +258,12 @@ srch_WST_init(kb_t * kb, void *srch)
 
     if (cmd_ln_int32("-lextreedump")) {
         for (i = 0; i < kbc->lmset->n_lm; i++) {
-            fprintf(stderr, "LM %d name %s UGTREE %d\n", i,
+		E_INFO("LM %d name %s UGTREE %d\n", i,
                     kbc->lmset->lmarray[i]->name, i);
             lextree_dump(wstg->roottree[i], kbc->dict, kbc->mdef, stderr,
                          cmd_ln_int32("-lextreedump"));
             /*
-               fprintf (stderr, "FILLERTREE %d\n", i);
+               E_INFO("FILLERTREE %d\n", i);
                lextree_dump (wstg->fillertree[i], kbc->dict, kbc->mdef, stderr, cmd_ln_int32("-lextreedump"));
              */
 

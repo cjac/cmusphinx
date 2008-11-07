@@ -756,13 +756,12 @@ mgau_uninit_compact(mgau_model_t * g             /**< The Gaussian distribution 
         }
         mgau_n_comp(g, m) = c2;
         if (c2 == 0) {
-            fprintf(stderr, " %d", m);
-            fflush(stderr);
+            E_INFOCONT(" %d", m);
             nm++;
         }
     }
     if (nm > 0)
-        fprintf(stderr, "\n");
+        E_INFOCONT("\n");
 
     if ((nm > 0) || (n > 0))
         E_WARN("%d densities removed (%d mixtures removed entirely)\n", n,

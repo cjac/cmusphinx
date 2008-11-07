@@ -79,6 +79,9 @@ match_write(FILE * fp, glist_t hyp, char *uttid, dict_t * dict, char *hdr)
     srch_hyp_t *h;
     int counter = 0;
 
+    if (fp == NULL)
+        return;
+
     if (hyp == NULL)            /* Following s3.0 convention */
         fprintf(fp, "(null)");
 
@@ -113,6 +116,9 @@ matchseg_write(FILE * fp, glist_t hyp, char *uttid, char *hdr,
     srch_hyp_t *h;
     int32 ascr, lscr, scl, hypscale, global_hypscale;
     int32 i;
+
+    if (fp == NULL)
+        return;
 
     ascr = 0;
     lscr = 0;
@@ -167,6 +173,9 @@ match_detailed(FILE * fp, glist_t hyp, char *uttid, char *LBL, char *lbl,
     int32 scl;
     gnode_t *gn;
     srch_hyp_t *h;
+
+    if (fp == NULL)
+        return;
 
     ascr = lscr = scl = 0;
     assert(dict);
@@ -228,6 +237,9 @@ log_hypstr(FILE * fp, srch_hyp_t * hypptr, char *uttid, int32 exact,
     srch_hyp_t *h;
     s3wid_t w;
 
+    if (fp == NULL)
+        return;
+
     if (!hypptr)                /* HACK!! */
         fprintf(fp, "(null)");
 
@@ -281,6 +293,9 @@ log_hypseg(char *uttid, FILE * fp,      /* Out: output file */
     srch_hyp_t *h;
     int32 ascr, lscr, tscr;
 
+    if (fp == NULL)
+        return;
+
     ascr = lscr = tscr = 0;
     for (h = hypptr; h; h = h->next) {
         ascr += h->ascr;
@@ -320,6 +335,9 @@ log_hyp_detailed(FILE * fp, srch_hyp_t * hypptr, char *uttid, char *LBL,
 {
     srch_hyp_t *h;
     int32 scale, ascr, lscr;
+
+    if (fp == NULL)
+        return;
 
     ascr = 0;
     lscr = 0;
