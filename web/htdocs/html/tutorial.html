@@ -20,7 +20,25 @@ var domeniu="@cs.cmu.edu";
 
 this.location=fifi+titi+domeniu;
 
-};//-->
+};//
+
+-->
+
+<!--
+
+function gup( name )
+{
+  var regexS = "[\\?&]"+name+"=([^&#]*)";
+  var regex = new RegExp( regexS );
+  var tmpURL = window.location.href;
+  var results = regex.exec( tmpURL );
+  if( results == null )
+    return "";
+  else
+    return results[1];
+};//
+
+-->
 
 </script>
 
@@ -1157,6 +1175,7 @@ perl scripts_pl/10.vector_quantize/slave.VQ.pl
 perl scripts_pl/20.ci_hmm/slave_convg.pl
 perl scripts_pl/30.cd_hmm_untied/slave_convg.pl
 perl scripts_pl/40.buildtrees/slave.treebuilder.pl
+perl scripts_pl/45.prunetree/slave-state-tying.pl
 perl scripts_pl/50.cd_hmm_tied/slave_convg.pl
 perl scripts_pl/90.deleted_interpolation/deleted_interpolation.pl
 perl scripts_pl/99.make_s2_models/make_s2_models.pl
@@ -1210,8 +1229,8 @@ have trained the models for Context-Dependent sub-word units
 (triphones) with untied states. These are called CD-untied models and
 are necessary for building decision trees in order to tie states. The
 jobs in <code>40.buildtrees</code> will build decision trees for each
-state of each sub-word unit<!--. The jobs in <code>06.prunetree</code>
-will --> prune the decision trees and tie the states. Following this, the
+state of each sub-word unit. The jobs in <code>45.prunetree</code>
+will prune the decision trees and tie the states. Following this, the
 jobs in <code>50.cd-hmm_tied</code> will train the final models for the
 triphones in your training corpus. These are called CD-tied
 models. The CD-tied models are trained in many stages. We begin with 1
