@@ -78,7 +78,7 @@ static ps_searchfuncs_t ngram_funcs = {
 static void
 ngram_search_update_widmap(ngram_search_t *ngs)
 {
-    char **words;
+    char const **words;
     int32 i, n_words;
 
     /* It's okay to include fillers since they won't be in the LM */
