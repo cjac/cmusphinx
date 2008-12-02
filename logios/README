@@ -28,5 +28,31 @@ Look for log files; locations will vary with the scheme you selected in 1)
 
 That's it.
 
-----------------------------------------------------------------------
+
+
+Extensions to the Phoenix Grammar Specification
+-----------------------------------------------
+
+1. You can specify extenal class files using 
+
+	%[CLASSNAME]%
+
+where CLASSNAME implies a CLASSNAME.class file in the GRAMMAR folder.
+.class files should have  class item in parentheses, one to a line. 
+You should have whitespace (say a tab) to start the line.
+For example:
+
+	(firstitem)
+	(second item)
+
+You can also specify an item probability:
+
+	(third_item)	#%%0.25%%
+
+Note that all class entries will be tokenized, e.g.:
+
+	(second item) --> (second_item)
+
+This makes entries conform to a constraint in the Sphinx decoder (which
+only handles a single lexical item as a class token).
 
