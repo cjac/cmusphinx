@@ -2,7 +2,7 @@
 
 # Make the user id configurable by the use of an environmental
 # variable SF_USER. Set it to current user, if not defined.
-if test x$SF_USER == x; then SF_USER=`whoami`; fi
+if test x$SF_USER == x; then SF_USER=`whoami`,cmusphinx; fi
 
 TMP=build$$
 
@@ -12,15 +12,15 @@ pushd $TMP > /dev/null
 
 svn export https://cmusphinx.svn.sourceforge.net/svnroot/cmusphinx/trunk/web  > /dev/null
 
-pushd web/cgi-bin > /dev/null
-svn log -v https://cmusphinx.svn.sourceforge.net/svnroot/cmusphinx > svn_history
-gzip -9f svn_history
-rsync -e ssh -auv --progress * $SF_USER@shell.sf.net:/home/groups/c/cm/cmusphinx/cgi-bin/ > /dev/null
-popd > /dev/null
+#pushd web/cgi-bin > /dev/null
+#svn log -v https://cmusphinx.svn.sourceforge.net/svnroot/cmusphinx > svn_history
+#gzip -9f svn_history
+#rsync -e ssh -auv --progress * $SF_USER@web.sourceforge.net:/home/groups/c/cm/cmusphinx/cgi-bin/ > /dev/null
+#popd > /dev/null
 
 pushd web/htdocs/html > /dev/null
 make > /dev/null
-rsync -e ssh -auv --progress --delete . $SF_USER@shell.sf.net:/home/groups/c/cm/cmusphinx/htdocs/html > /dev/null
+rsync -e ssh -auv --progress --delete . $SF_USER@web.sourceforge.net:/home/groups/c/cm/cmusphinx/htdocs/html > /dev/null
 rsync -e ssh -lptgoDuv --progress * fife.speech.cs.cmu.edu:/usr1/httpd/html/sphinx > /dev/null
 popd > /dev/null
 
@@ -28,7 +28,7 @@ for module in cmuclmtk sphinx2 sphinx3 sphinxbase SphinxTrain; do
     (
     svn export https://cmusphinx.svn.sourceforge.net/svnroot/cmusphinx/trunk/$module/doc $module > /dev/null
     cd $module > /dev/null
-    rsync -e ssh -auv --progress --delete . $SF_USER@shell.sf.net:/home/groups/c/cm/cmusphinx/htdocs/$module/doc > /dev/null
+    rsync -e ssh -auv --progress --delete . $SF_USER@web.sourceforge.net:/home/groups/c/cm/cmusphinx/htdocs/$module/doc > /dev/null
 )
 done
 
@@ -38,8 +38,8 @@ popd > /dev/null
 
 # Just in case, change group ownership and permissions
 
-ssh $SF_USER@shell.sf.net chgrp -R cmusphinx /home/groups/c/cm/cmusphinx/ > /dev/null 2>&1
-ssh $SF_USER@shell.sf.net chmod g+w -R cmusphinx /home/groups/c/cm/cmusphinx/ > /dev/null 2>&1
+#ssh $SF_USER@web.sourceforge.net chgrp -R cmusphinx /home/groups/c/cm/cmusphinx/ > /dev/null 2>&1
+#ssh $SF_USER@web.sourceforge.net chmod g+w -R cmusphinx /home/groups/c/cm/cmusphinx/ > /dev/null 2>&1
 
 # revision 1.7 2006/08/02 15:30:54 egouvea
 # Disabled section about sphinx-4.
