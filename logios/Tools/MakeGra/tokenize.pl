@@ -16,10 +16,10 @@ my ($inpath,$grafile,$project,$wordfile);
 my $usage="usage: tokenize -grammar <file> -project <name>\n";
 if (scalar @ARGV eq 0
     or not GetOptions (
-		       "inpath=s" => \$inpath,
-		       "grammar=s" => \$grafile,
-		       "project=s" => \$project,
-		      ) ) { die $usage; }
+    "inpath=s" => \$inpath,
+    "grammar=s" => \$grafile,
+    "project=s" => \$project,
+    ) ) { die $usage; }
 $probdefile = "$project.probdef";
 $tokenfile = "$project.token";
 $wordfile = "$project.words";
@@ -46,9 +46,9 @@ while (<GRA>) {
     if ( $tok =~ /%(\[.+?\])%/) { # keep protected net names, with their []'s
       # insert new ones into class net list, also treat them as "words" for lm
       if ( not defined $classes{$1} ) {
-	$classcount++;
-	$classes{$1} = sprintf "C%02d",$classcount;
-	print STDERR "tokenize: found $1 [class: $classes{$1}]\n";
+        $classcount++;
+        $classes{$1} = sprintf "C%02d",$classcount;
+        print STDERR "tokenize: found $1 [class: $classes{$1}]\n";
       }
       $wordlist{$1} = "c";  # remember type
     } elsif ( $tok =~ /^\[.+?\]/ ) { next; }  # non-class net, ignore
@@ -72,14 +72,10 @@ foreach $classfil (sort keys %classes) {
   while (<CLASS>) {
     chomp;
     $line = $_;
-    if ( /#/ ) { # has a comment, necessarily a prob
+    if ( /#/ ) { # has a comment, may include a probability
       ($text,$com) = split /\s*#\s*/,$line,2;
       if ( $com =~ /%%(\d\.\d+)%%/ ) { $prob = $1; }
-      else { # bad
-	print STDERR "tokenize: possible malformed probability in $classfil \"$line\" --> ignored\n";
-	$prob = undef;
-	$fault++;
-      }
+      else { $prob = undef; }
     } else { # unspecified: "implicit"
       $text = $line; $prob = undef;
     }
@@ -155,5 +151,3 @@ foreach $class (sort keys %classes) {
 }
 print CTL "}\n";
 close(CTL);
-
-#

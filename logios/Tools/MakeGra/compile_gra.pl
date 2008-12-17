@@ -44,13 +44,13 @@ my $outgra = "";
 my $absgra = "";
 
 if (not GetOptions(
-		   "tools:s" => \$tools,
-		   "class" => \@classf,
-		   "project:s" => \$project,
-		   "instance:s" => \$instance,
-		   "inpath:s" => \$inpath,
-		   "outpath:s" => \$outpath,
-		  ) )
+        "tools:s" => \$tools,
+        "class" => \@classf,
+        "project:s" => \$project,
+        "instance:s" => \$instance,
+        "inpath:s" => \$inpath,
+        "outpath:s" => \$outpath,
+        ) )
   { die "usage: compile_gra -tools <path> [-class <file>]* [-project <project> -instance <instance> -inpath <dir> -outpath <dir>\n"; }
 
 # can't do this earlier since we don't know where to look
@@ -61,7 +61,7 @@ my $ingra = File::Spec->catfile($inpath,"$project.gra");
 my $outgra = File::Spec->catfile($outpath,"$instance.gra");
 my $absgra = File::Spec->catfile($outpath,"${instance}_abs.gra");
 LogiosLog::say('compile_gra', "[in ",File::Spec->rel2abs(File::Spec->curdir),"]",
-               "$/\tingra->  $ingra",
+        "$/\tingra->  $ingra",
                "$/\toutgra-> $outgra",
                "$/\tclass->  ",join(" ",@classf));
 
@@ -129,5 +129,3 @@ LogiosLog::fail("tokenize.pl!") if
 
 # finally, remove any dynamic class files (to avoid littering with stealth classes)
 foreach $cf (@classd) { unlink(File::Spec($inpath,"$cf")); }
-
-#
