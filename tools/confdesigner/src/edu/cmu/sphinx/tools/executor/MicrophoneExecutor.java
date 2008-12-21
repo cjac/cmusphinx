@@ -5,8 +5,6 @@ import edu.cmu.sphinx.recognizer.Recognizer;
 import edu.cmu.sphinx.frontend.util.Microphone;
 import edu.cmu.sphinx.result.Result;
 
-import java.io.IOException;
-
 /**
  * DOCUMENT ME!
  *
@@ -28,35 +26,31 @@ public class MicrophoneExecutor implements Executable {
     public void doExecute() {
         Microphone microphone = getMicroPhone();
 
-        try {
-            /* allocate the resource necessary for the recognizer */
-            recognizer.allocate();
+        /* allocate the resource necessary for the recognizer */
+        recognizer.allocate();
 
-            // the microphone will keep recording until the program exits 
-            System.out.println("Please say something !");
-            if (microphone.startRecording()) {
+        // the microphone will keep recording until the program exits
+        System.out.println("Please say something !");
+        if (microphone.startRecording()) {
 
 
-                while (true) {
-                    System.out.println("Start speaking. Press Ctrl-C to quit.\n");
+            while (true) {
+                System.out.println("Start speaking. Press Ctrl-C to quit.\n");
 
-                    /*
-                     * This method will return when the end of speech
-                     * is reached. Note that the endpointer will determine
-                     * the end of speech.
-                     */
-                    Result result = recognizer.recognize();
+                /*
+                 * This method will return when the end of speech
+                 * is reached. Note that the endpointer will determine
+                 * the end of speech.
+                 */
+                Result result = recognizer.recognize();
 
-                    if (result != null) {
-                        String resultText = result.getBestFinalResultNoFiller();
-                        System.out.println("You said: " + resultText + "\n");
-                    } else {
-                        System.out.println("I can't hear what you said.\n");
-                    }
+                if (result != null) {
+                    String resultText = result.getBestFinalResultNoFiller();
+                    System.out.println("You said: " + resultText + "\n");
+                } else {
+                    System.out.println("I can't hear what you said.\n");
                 }
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
 
     }
