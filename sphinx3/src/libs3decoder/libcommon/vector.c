@@ -91,6 +91,8 @@
 #include <math.h>
 #include <float.h>
 #include <time.h>               /* RAH */
+#include <stdio.h>
+#include <string.h>
 
 #include "profile.h"
 #include "bitvec.h"
