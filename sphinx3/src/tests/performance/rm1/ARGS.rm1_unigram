@@ -1,0 +1,4 @@
+-lm RM.2845.unigram.arpa.DMP
+-lw 10
+-beam 1e-120
+-wbeam 1e-60

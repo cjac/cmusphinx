@@ -1,0 +1,25 @@
+Starting from sphinx 3.6.3, we would not distribute a separate command
+line help file.  For any executable in sphinx3, you could get command
+line information by simply typing command.
+
+e.g. in sphinx 3.6.3, if you do
+
+> sphinx3_decode
+
+will give you a summary which look like this. 
+
+Arguments list definition:
+[NAME]			[DEFLT]		[DESCR]
+-agc			none		Automatic gain control for c0 ('max' or 'none'); (max: c0 -= max-over-current-sentence(c0))
+-backtrace		1		Whether detailed backtrace information (word segmentation/scores) shown in log
+-beam			1.0e-55		Beam selecting active HMMs (relative to best) in each frame [0(widest)..1(narrowest)]
+-bestpath		0		Whether to run bestpath DAG search after forward Viterbi pass
+-bestpathlw				Language weight for bestpath DAG search (default: same as -lw)
+-bestscoredir				(Mode 3) Directory for writing best score/frame (used to set beamwidth; one file/utterance)
+-bestsenscrdir				When Best senone score directory.
+
+.
+.
+.
+.
+

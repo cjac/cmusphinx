@@ -1,0 +1,7 @@
+a b c d [[ => E ]]   <<Summary sent_insertion1 4 ref, 5 hyp, 1 err, 25.00%, 0 sub, 1 ins, 0 del; 4 corr, 100.00%>>
+====       4 ref,       5 hyp,       1 err,   25.000% (      0 sub,       1 ins,       0 del);       4 corr,  100.000%, sent_insertion1 ====
+a b c d [[ E => F ]]   <<Summary sent_substitution1 5 ref, 5 hyp, 1 err, 20.00%, 1 sub, 0 ins, 0 del; 4 corr, 80.00%>>
+====       9 ref,      10 hyp,       2 err,   22.222% (      1 sub,       1 ins,       0 del);       8 corr,   88.889%, sent_substitution1 ====
+a c d b [[ G => ]]   <<Summary sent_deletion1 5 ref, 4 hyp, 1 err, 20.00%, 0 sub, 0 ins, 1 del; 4 corr, 80.00%>>
+====      14 ref,      14 hyp,       3 err,   21.429% (      1 sub,       1 ins,       1 del);      12 corr,   85.714%, sent_deletion1 ====
+==== SUMMARY: 14 ref, 14 hyp, 3 err, 21.429% (1 sub, 1 ins, 1 del); 12 corr, 85.714% ====

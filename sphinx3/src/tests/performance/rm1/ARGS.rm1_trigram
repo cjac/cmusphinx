@@ -1,0 +1,4 @@
+-lm RM.2845.trigram.arpa.DMP
+-lw 14
+-beam 1e-140
+-wbeam 1e-100

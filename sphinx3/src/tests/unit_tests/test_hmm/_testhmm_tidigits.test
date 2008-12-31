@@ -1,0 +1,5 @@
+./testhmm \
+	../../../../model/hmm/tidigits/wd_dependent_phone.cd_continuous_8gau/mdef \
+	 ../../../../model/hmm/tidigits/wd_dependent_phone.cd_continuous_8gau/transition_matrices \
+	> _testhmm_tidigits.out 2>&1 
+diff ./_testhmm_tidigits.res ./_testhmm_tidigits.out
