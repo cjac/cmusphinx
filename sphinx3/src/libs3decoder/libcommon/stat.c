@@ -74,6 +74,8 @@
  *             start
  */
 
+#include <stdio.h>
+
 #include "stat.h"
 
 /** \file stat.c
