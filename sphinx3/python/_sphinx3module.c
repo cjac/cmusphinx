@@ -169,7 +169,7 @@ sphinx3_parse_argv(PyObject *self, PyObject *args)
 static PyObject *
 sphinx3_init(PyObject *self, PyObject *args)
 {
-	s3_decode_init(&decoder);
+	s3_decode_init(&decoder, cmd_ln_get());
 	fe = fe_init_auto();
 	Py_INCREF(Py_None);
 	return Py_None;
