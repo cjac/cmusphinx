@@ -95,11 +95,12 @@ void
 word_ugprob_free(word_ugprob_t ** wugp, int32 n)
 {
     int32 i;
+	word_ugprob_t *wp;
+
     for (i = 0; i < n; ++i) {
-        word_ugprob_t *wp;
         if (wugp[i] == NULL)
-            continue;
-        wp = wugp[i]->next;
+            continue;;
+        wp = wugp[i]->next;;
         ckd_free(wugp[i]);
         while (wp) {
             word_ugprob_t *p = wp;
