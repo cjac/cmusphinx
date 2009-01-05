@@ -9,6 +9,7 @@
 
 # [20071011] (air) refactored to separate functional units and to generalize
 # [20080812] (tkharris) refactored to use perl module
+# [20080919] (air) minor fixes
 
 use File::Spec;
 use Getopt::Long;
@@ -17,17 +18,19 @@ use strict;
 sub usage {
   return "usage: $0 [--resources <abspath>] [--samplesize <n>] [--source {local|web}]"
     ." --project <dname> --instance <pname> [--logfile <fname>] "
-      ." --logios <abspath> --olympus$/";
+      ." --logios <abspath> --olympus --force$/";
 }
 
 #process command line
-my ($SOURCE, $LOGIOS, $OLYMODE, $RESOURCES, $INPATH, $OUTPATH, $SAMPSIZE,
+my ($SOURCE, $LOGIOS, $OLYMODE, $RESOURCES, $INPATH, $OUTPATH, $SAMPSIZE, $FORCE,
     $PROJECT, $INSTANCE, $LOGFILE);
 if ( not GetOptions(
 	   "source=s", \$SOURCE,
 	   "logios=s", \$LOGIOS,
 
 	   "olympus!", \$OLYMODE,
+	   "force!",   \$FORCE,  # cause language to be always recompiled
+
 	   "resources=s", \$RESOURCES,  # needs to be an abs path to the root
 	   "inpath=s", \$INPATH,
 	   "outpath=s", \$OUTPATH,
@@ -45,6 +48,7 @@ require File::Spec->catfile($LOGIOS, 'scripts', 'Logios.pm');
 my $logios = new Logios('SOURCE' => $SOURCE,
                         'LOGIOS' => $LOGIOS,
                         'OLYMODE' => $OLYMODE,
+			'FORCE' => $FORCE,
                         'RESOURCES' => $RESOURCES,
                         'INPATH' => $INPATH,
                         'OUTPATH' => $OUTPATH,
@@ -57,3 +61,4 @@ $logios->compile_grammar;
 $logios->makelm;
 $logios->makedict;
 
+#
