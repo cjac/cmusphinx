@@ -1,0 +1,22 @@
+--- #YAML:1.0
+name                    : Speech::Recognizer::SPX
+version                 : 0.10
+abstract                : Perl bindings for pocketsphinx
+author:              
+  - David Huggins-Daines <dhuggins@cs.cmu.edu>
+
+license                 : bsd
+distribution_type       : module
+dynamic_config          : 1
+
+requires:     
+  Time::HiRes           :0
+
+resources:
+  homepage              : http://cmusphinx.sourceforge.net
+  license               : http://www.opensource.org/licenses/bsd-license.php
+  Repository            : http://sourceforge.net/projects/cmusphinx/
+
+meta-spec:
+  version               : 0.10
+  url                   : http://cmusphinx.sourceforge.net
