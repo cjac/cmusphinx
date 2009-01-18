@@ -14,6 +14,12 @@
 
 #include <prim_type.h>
 #include <fe.h>
+#include <cmd_ln.h>
+
+static const arg_t fe_args[] = {
+    waveform_to_cepstral_command_line_macro(),
+    { NULL, 0, NULL, NULL }
+};
 
 static int
 not_here(char *s)
@@ -61,12 +67,6 @@ constant(char *name, int arg)
 	if (strEQ(name, "DEFAULT_BB_UPPER_FILT_FREQ"))
 #ifdef DEFAULT_BB_UPPER_FILT_FREQ
 	    return DEFAULT_BB_UPPER_FILT_FREQ;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "DEFAULT_FB_TYPE"))
-#ifdef DEFAULT_FB_TYPE
-	    return DEFAULT_FB_TYPE;
 #else
 	    goto not_there;
 #endif
@@ -276,45 +276,45 @@ fe_init(class, param)
 	SV *		class
 	SV *		param
 	PREINIT:
-		param_t par;
+		cmd_ln_t* config;		
 		HV * hparm;
 		SV ** helm;
 	CODE:
 		if (!(SvROK(param) && SvTYPE(SvRV(param)) == SVt_PVHV))
 			croak("expected a hash reference");
-		memset(&par, 0, sizeof(par));
-		hparm = (HV *)SvRV(param);
+
+		config = cmd_ln_init(NULL, fe_args, TRUE, NULL);
+
+		hparm = (HV *)SvRV(param);		
 		if ((helm = hv_fetch(hparm, "sampling_rate",
 				     sizeof("sampling_rate"), 0)))
-     			par.SAMPLING_RATE = SvIV(*helm);
+     			cmd_ln_set_int_r(config, "-samprate", SvIV(*helm));
 		if ((helm = hv_fetch(hparm, "frame_rate",
 				     sizeof("frame_rate"), 0)))
-     			par.FRAME_RATE = SvIV(*helm);
+     			cmd_ln_set_int_r(config, "-frate", SvIV(*helm));
 		if ((helm = hv_fetch(hparm, "window_length",
 				     sizeof("window_length"), 0)))
-     			par.WINDOW_LENGTH = SvIV(*helm);
-		if ((helm = hv_fetch(hparm, "fb_type",
-				     sizeof("fb_type"), 0)))
-     			par.FB_TYPE = SvIV(*helm);
+     			cmd_ln_set_int_r(config, "-wlen", SvIV(*helm));
 		if ((helm = hv_fetch(hparm, "num_cepstra",
 				     sizeof("num_cepstra"), 0)))
-     			par.NUM_CEPSTRA = SvIV(*helm);
+     			cmd_ln_set_int_r(config, "-ncep", SvIV(*helm));
 		if ((helm = hv_fetch(hparm, "num_filters",
 				     sizeof("num_filters"), 0)))
-     			par.NUM_FILTERS = SvIV(*helm);
+     			cmd_ln_set_int_r(config, "-nfilt", SvIV(*helm));
 		if ((helm = hv_fetch(hparm, "fft_size",
 				     sizeof("fft_size"), 0)))
-     			par.FFT_SIZE = SvIV(*helm);
+     			cmd_ln_set_int_r(config, "-nfft", SvIV(*helm));
 		if ((helm = hv_fetch(hparm, "lower_filt_freq",
 				     sizeof("lower_filt_freq"), 0)))
-     			par.LOWER_FILT_FREQ = SvIV(*helm);
+     			cmd_ln_set_int_r(config, "-lowerf", SvIV(*helm));
 		if ((helm = hv_fetch(hparm, "upper_filt_freq",
 				     sizeof("upper_filt_freq"), 0)))
-     			par.UPPER_FILT_FREQ = SvIV(*helm);
+     			cmd_ln_set_int_r(config, "-upperf", SvIV(*helm));
 		if ((helm = hv_fetch(hparm, "pre_emphasis_alpha",
 				     sizeof("pre_emphasis_alpha"), 0)))
-     			par.PRE_EMPHASIS_ALPHA = SvIV(*helm);
-		RETVAL = fe_init(&par);
+     			cmd_ln_set_int_r(config, "-alpha", SvIV(*helm));
+
+		RETVAL = fe_init_auto_r(config);
 	OUTPUT:
 		RETVAL
 
@@ -329,9 +329,12 @@ fe_process_utt(fe, spch, nsamps)
 	fe_t *		fe
 	int16 *		spch
 	int32		nsamps
+
 	PREINIT:
 		float32 **cep;
 		int32 i, frame_count, output_frames;
+		int feat_dim;	
+
 	PPCODE:
 		if (fe_process_utt(fe, spch, nsamps, &cep, &output_frames) < 0)
 			goto out; /* empty list */
@@ -340,18 +343,19 @@ fe_process_utt(fe, spch, nsamps)
 			goto out; /* empty list */
 
 		EXTEND(sp, output_frames);
+		feat_dim = fe_get_output_size(fe);
 		for (i = 0; i < output_frames; ++i) {
 			SV ** svs;
 			AV * vec;
 			int j;
-
-			New(0xdeadbeef, svs, fe->NUM_CEPSTRA, SV *);
-			for (j = 0; j < fe->NUM_CEPSTRA; ++j)
+			
+			New(0xdeadbeef, svs, feat_dim, SV *);
+			for (j = 0; j < feat_dim; ++j)
 				svs[j] = newSVnv(cep[i][j]);
 
-			vec = av_make(fe->NUM_CEPSTRA, svs);
+			vec = av_make(feat_dim, svs);
 
-			for (j = 0; j < fe->NUM_CEPSTRA; ++j)
+			for (j = 0; j < feat_dim; ++j)
 				SvREFCNT_dec(svs[j]);
 			Safefree(svs);
 			PUSHs(sv_2mortal(newRV_noinc((SV *) vec)));
@@ -366,8 +370,11 @@ fe_end_utt(fe)
 	PREINIT:
 	int32 output_frames;
 	float32 *cepv;
+	int feat_dim;
 	CODE:
-		New(0xc0debabe, cepv, fe->NUM_CEPSTRA, float32);
+			
+		feat_dim = fe_get_output_size(fe);
+		New(0xc0debabe, cepv, feat_dim, float32);
 		if (fe_end_utt(fe, cepv, &output_frames) < 0)
 			output_frames = -1;
 
@@ -376,13 +383,13 @@ fe_end_utt(fe)
 			AV * vec;
 			int i;
 
-			New(0xdeadbeef, svs, fe->NUM_CEPSTRA, SV *);
-			for (i = 0; i < fe->NUM_CEPSTRA; ++i)
+			New(0xdeadbeef, svs, feat_dim, SV *);
+			for (i = 0; i < feat_dim; ++i)
 				svs[i] = newSVnv(cepv[i]);
 
-			vec = av_make(fe->NUM_CEPSTRA, svs);
+			vec = av_make(feat_dim, svs);
 
-			for (i = 0; i < fe->NUM_CEPSTRA; ++i)
+			for (i = 0; i < feat_dim; ++i)
 				SvREFCNT_dec(svs[i]);
 			Safefree(svs);
 
@@ -402,6 +409,7 @@ SYSRET
 DESTROY(fe)
 	fe_t *		fe
 	CODE:
-		RETVAL = fe_close(fe);
+		
+		RETVAL = fe_free(fe);
 	OUTPUT:
 		RETVAL

@@ -24,7 +24,6 @@ require DynaLoader;
 	      DEFAULT_BB_LOWER_FILT_FREQ
 	      DEFAULT_BB_NUM_FILTERS
 	      DEFAULT_BB_UPPER_FILT_FREQ
-	      DEFAULT_FB_TYPE
 	      DEFAULT_FFT_SIZE
 	      DEFAULT_FRAME_RATE
 	      DEFAULT_NB_FRAME_SHIFT
@@ -151,13 +150,6 @@ High end of filter band.
 =item C<pre_emphasis_alpha>
 
 Scaling factor for pre-emphasis of input audio data.
-
-=item C<fb_type>
-
-This is documented for completeness, but you should never use it.  It
-specifies the type of filter band to use in extraction - the options
-are (exportable constants) MEL_SCALE and LOG_LINEAR, but only
-MEL_SCALE is supported.
 
 =back
 
