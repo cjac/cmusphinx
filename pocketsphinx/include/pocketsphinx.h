@@ -581,6 +581,7 @@ void ps_get_all_time(ps_decoder_t *ps, double *out_nspeech,
 /**
  * Get backtrace and other debugging information for hte last utterance.
  */
+POCKETSPHINX_EXPORT
 char const *ps_get_backtrace(ps_decoder_t *ps);
 
 
