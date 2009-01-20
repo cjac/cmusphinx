@@ -191,6 +191,9 @@ struct ps_decoder_s {
     uint32 n_frame;     /**< Total number of frames processed. */
     char const *mfclogdir; /**< Log directory for MFCC files. */
     char const *rawlogdir; /**< Log directory for audio files. */
+
+    /* Hacks. */
+    char *backtrace; /**< Textual backtrace / debugging info. */
 };
 
 #endif /* __POCKETSPHINX_INTERNAL_H__ */

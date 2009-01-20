@@ -203,6 +203,7 @@ ps_init(cmd_ln_t *config)
 
     ps = ckd_calloc(1, sizeof(*ps));
     ps->refcount = 1;
+    ps->backtrace = ckd_malloc(4096);
     if (ps_reinit(ps, config) < 0) {
         ps_free(ps);
         return NULL;
@@ -240,6 +241,7 @@ ps_free(ps_decoder_t *ps)
     logmath_free(ps->lmath);
     cmd_ln_free_r(ps->config);
     ckd_free(ps->uttid);
+    ckd_free(ps->backtrace);
     ckd_free(ps);
     return 0;
 }
@@ -567,6 +569,100 @@ ps_process_cep(ps_decoder_t *ps,
     return n_searchfr;
 }
 
+size_t
+format_size(char *format, size_t size, va_list args)
+{
+	char *buf = ckd_malloc(size);
+	size_t n;
+
+	/* This loop will run until we get a proper size, or malloc()
+	 * fails, whichever comes first. */
+	while (1) {
+		n = vsnprintf(buf, size, format, args);
+		/* We have an answer! */
+		if (n >= 0) {
+			ckd_free(buf);
+			return n;
+		}
+		/* Broken old libc. */
+		else {
+			size *= 2;
+			buf = ckd_realloc(buf, size);
+		}
+	}
+	/* Won't get here. */
+	return 0;
+}
+
+/**
+ * Wrapper for snprintf() to give "stream-like" behaviour.
+ */
+void
+wrap_snprintf(char **outptr, size_t *total, size_t *bufsiz, char *format, ...)
+{
+	va_list args;
+	size_t n;
+
+	n = 0;
+	va_start(args, format);
+	if (*outptr)
+		n = vsnprintf(*outptr, *bufsiz, format, args);
+	if (n == -1 || *outptr == NULL) {
+		/* Add 1 here to work around some implementations of
+		 * vsnprintf() which will always return 0 if called
+		 * with size=0 */
+		n = format_size(format, *bufsiz + 1, args);
+	}
+	else {
+		/* Advance outptr as far as possible. */
+		if (n >= *bufsiz) {
+			*outptr += *bufsiz;
+			*bufsiz = 0;
+		}
+		else {
+			*outptr += n;
+			*bufsiz -= n;
+		}
+	}
+	*total += n;
+	va_end(args);
+}
+
+char const *
+ps_get_backtrace(ps_decoder_t *ps)
+{
+    char const *uttid, *hyp;
+    char *outptr;
+    ps_seg_t *seg;
+    int32 score;
+    size_t nbytes, bsiz;
+
+    hyp = ps_get_hyp(ps, &score, &uttid);
+
+    outptr = ps->backtrace;
+    bsiz = 4096;
+    nbytes = 0;
+    wrap_snprintf(&outptr, &nbytes, &bsiz,
+                  "%s: %s (%d)\n", uttid, hyp, score);
+    wrap_snprintf(&outptr, &nbytes, &bsiz,
+                  "%-20s %-5s %-5s %-5s %-10s %-10s %-3s\n",
+                  "word", "start", "end", "pprob", "ascr", "lscr", "lback");
+    for (seg = ps_seg_iter(ps, &score); seg;
+         seg = ps_seg_next(seg)) {
+        char const *word;
+        int sf, ef;
+        int32 post, lscr, ascr, lback;
+
+        word = ps_seg_word(seg);
+        ps_seg_frames(seg, &sf, &ef);
+        post = ps_seg_prob(seg, &ascr, &lscr, &lback);
+        wrap_snprintf(&outptr, &nbytes, &bsiz,
+                      "%-20s %-5d %-5d %-1.3f %-10d %-10d %-3d\n",
+                      word, sf, ef, logmath_exp(ps_get_logmath(ps), post), ascr, lscr, lback);
+    }
+    return ps->backtrace;
+}
+
 int
 ps_end_utt(ps_decoder_t *ps)
 {
@@ -584,26 +680,7 @@ ps_end_utt(ps_decoder_t *ps)
 
     /* Log a backtrace if requested. */
     if (cmd_ln_boolean_r(ps->config, "-backtrace")) {
-        char const *uttid, *hyp;
-        ps_seg_t *seg;
-        int32 score;
-
-        hyp = ps_get_hyp(ps, &score, &uttid);
-        E_INFO("%s: %s (%d)\n", uttid, hyp, score);
-        E_INFO_NOFN("%-20s %-5s %-5s %-5s %-10s %-10s %-3s\n",
-                    "word", "start", "end", "pprob", "ascr", "lscr", "lback");
-        for (seg = ps_seg_iter(ps, &score); seg;
-             seg = ps_seg_next(seg)) {
-            char const *word;
-            int sf, ef;
-            int32 post, lscr, ascr, lback;
-
-            word = ps_seg_word(seg);
-            ps_seg_frames(seg, &sf, &ef);
-            post = ps_seg_prob(seg, &ascr, &lscr, &lback);
-            E_INFO_NOFN("%-20s %-5d %-5d %-1.3f %-10d %-10d %-3d\n",
-                        word, sf, ef, logmath_exp(ps_get_logmath(ps), post), ascr, lscr, lback);
-        }
+        E_INFO("%s", ps_get_backtrace(ps));
     }
     return rv;
 }

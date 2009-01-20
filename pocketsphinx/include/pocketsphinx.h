@@ -579,6 +579,12 @@ void ps_get_all_time(ps_decoder_t *ps, double *out_nspeech,
                      double *out_ncpu, double *out_nwall);
 
 /**
+ * Get backtrace and other debugging information for hte last utterance.
+ */
+char const *ps_get_backtrace(ps_decoder_t *ps);
+
+
+/**
  * @mainpage PocketSphinx API Documentation
  * @author David Huggins-Daines <dhuggins@cs.cmu.edu>
  * @version 0.5
