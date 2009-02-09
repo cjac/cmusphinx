@@ -7,18 +7,20 @@
 #    d) .words (for lm wordlist)
 
 # [20070923] (air) Created.
+# [20090208] (air) Added the 'pocket' option to select .ctl lm path format
 
 use Getopt::Long;
 use File::Basename;
 use File::Spec;
 
-my ($inpath,$grafile,$project,$wordfile);
-my $usage="usage: tokenize -grammar <file> -project <name>\n";
+my ($inpath,$grafile,$project,$pocket_flag,$wordfile);
+my $usage="usage: tokenize -grammar <file> -project <name> [-pocket]\n";
 if (scalar @ARGV eq 0
     or not GetOptions (
-    "inpath=s" => \$inpath,
-    "grammar=s" => \$grafile,
-    "project=s" => \$project,
+	"inpath=s" => \$inpath,
+	"grammar=s" => \$grafile,
+	"project=s" => \$project,
+	'pocket' => \$pocket_flag,
     ) ) { die $usage; }
 $probdefile = "$project.probdef";
 $tokenfile = "$project.token";
@@ -144,7 +146,11 @@ close(TOK);
 
 # create a .ctl file
 open(CTL,">$project.ctl") or die "tokenize: can't write to .ctl file!\n";
-print CTL "{ LanguageModel\\$project.probdef }\nLanguageModel\\$project.arpa general {\n";
+if (pocket_flag) {  # pocketsphinx does not want the path specified, just the file names
+    print CTL "{ $project.probdef }\n$project.arpa general {\n";
+} else {  # sphinx3 expects a full path relative to the execution folder
+    print CTL "{ LanguageModel\\$project.probdef }\nLanguageModel\\$project.arpa general {\n";
+}
 foreach $class (sort keys %classes) {
   ($classname,$dirn,$suffix) = fileparse($class,qr/\.[^.]*/);
   print CTL "$classname\n";

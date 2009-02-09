@@ -17,6 +17,7 @@
 # [200710] (air) - based on cmp.pl
 # [200801] (air) untangled Tools and Resources, removed all cygwin dependencies
 # [20080422] (air) fixed win/linux differentiation
+# [20090208] (air) added -pocket flag passthrough to tokenize.pl
 
 use strict;
 use Getopt::Long;
@@ -40,6 +41,7 @@ my $cf;
 my $inpath = "";
 my $outpath = "";
 my $ingra = "";
+my $pocket_flag = "";
 my $outgra = "";
 my $absgra = "";
 
@@ -50,8 +52,9 @@ if (not GetOptions(
         "instance:s" => \$instance,
         "inpath:s" => \$inpath,
         "outpath:s" => \$outpath,
+	"pocket" => \$pocket_flag,
         ) )
-  { die "usage: compile_gra -tools <path> [-class <file>]* [-project <project> -instance <instance> -inpath <dir> -outpath <dir>\n"; }
+  { die "usage: compile_gra -tools <path> [-class <file>]* [-project <project> -instance <instance> -inpath <dir> -outpath <dir> [-pocket]\n"; }
 
 # can't do this earlier since we don't know where to look
 require File::Spec->catfile($tools, 'lib', 'LogiosLog.pm');
@@ -121,11 +124,15 @@ system($concept_cmd_line);
 
 # generate the class-grammar files
 #  .ctl and .prodef class files for decoder; .token for pronunciation; .words for lm
-LogiosLog::fail("tokenize.pl!") if
-  system("$^X \"".File::Spec->catfile($EXEDIR,"tokenize.pl")."\" -i \"$inpath\""
-                                                              ." -g \"$absgra\""
-                                                              ." -p $instance");
-
+my $cmd =
+    "\"".File::Spec->catfile($EXEDIR,"tokenize.pl")."\""
+    ." -inpath \"$inpath\""
+    ." -grammar \"$absgra\""
+    ." -project $instance"
+    .(($pocket_flag)? " -pocket": "")
+    ;
+    LogiosLog::fail("tokenize.pl: $cmd") if
+    system("$^X ".$cmd);
 
 # finally, remove any dynamic class files (to avoid littering with stealth classes)
 foreach $cf (@classd) { unlink(File::Spec($inpath,"$cf")); }

@@ -34,35 +34,37 @@ sub new {
   my $class = shift;
   my %params = @_;
 
-  my $objref = {#run in . by default
-                'RESOURCES' => File::Spec->rel2abs($params{'RESOURCES'} ||
-                                                   File::Spec->curdir),
-                # where to get pronunciation information; could also use lmtool from web
-                'SOURCE' => $params{'SOURCE'} || 'local',
-                #root of the Logios tools
-                'LOGIOS' => File::Spec->rel2abs($params{'LOGIOS'}),
-                #use Olympus folder-tree structure?
-                'OLYMODE' => $params{'OLYMODE'},
-                #if not, where to find stuff
-                'INPATH' => $params{'INPATH'},
-                #... where to put it
-                'OUTPATH' => $params{'OUTPATH'},
-                #size of the synthetic corpus
-                'SAMPSIZE' => $params{'SAMPSIZE'} || 30000,
-                #name of the project (domain, really) we're in
-                'PROJECT' => $params{'PROJECT'},
-                #list of any auxiliary grammars that should be mixed in with the 'PROJECT' grammar
-                'AUX_PROJECTS' => $params{'AUX_PROJECTS'},
-                #name of the particular language we're building here
-                'INSTANCE' => $params{'INSTANCE'},
-                #name of the log file
-                'LOGFILE' => $params{'LOGFILE'} || 'make_language.log',
-                #no interaction means that we don't want to wait for user key pressing etc
-                'NO_INTERACTION' => $params{'NO_INTERACTION'},
-                #force means rebuild even if targets are up-to-date with sources
-                'FORCE' => $params{'FORCE'}
-               };
-
+  my $objref = {
+      #run in . by default
+      'RESOURCES' => File::Spec->rel2abs($params{'RESOURCES'} || File::Spec->curdir),
+      # where to get pronunciation information; could also use lmtool from web
+      'SOURCE' => $params{'SOURCE'} || 'local',
+      #root of the Logios tools
+      'LOGIOS' => File::Spec->rel2abs($params{'LOGIOS'}),
+      #use Olympus folder-tree structure?
+      'OLYMODE' => $params{'OLYMODE'},
+      #if not, where to find stuff
+      'INPATH' => $params{'INPATH'},
+      #... where to put it
+      'OUTPATH' => $params{'OUTPATH'},
+      #size of the synthetic corpus
+      'SAMPSIZE' => $params{'SAMPSIZE'} || 30000,
+      #name of the project (domain, really) we're in
+      'PROJECT' => $params{'PROJECT'},
+      #list of any auxiliary grammars that should be mixed in with the 'PROJECT' grammar
+      'AUX_PROJECTS' => $params{'AUX_PROJECTS'},
+      #name of the particular language we're building here
+      'INSTANCE' => $params{'INSTANCE'},
+      #name of the log file
+      'LOGFILE' => $params{'LOGFILE'} || 'make_language.log',
+      #no interaction means that we don't want to wait for user key pressing etc
+      'NO_INTERACTION' => $params{'NO_INTERACTION'},
+      #force means rebuild even if targets are up-to-date with sources
+      'FORCE' => $params{'FORCE'},
+      #should the language model .ctl file use the pocketsphinx path format ?
+      'POCKET' => $params{'POCKET'},
+  };
+  
   die "Need to know the LOGIOS root." if !defined $objref->{'LOGIOS'};
   # can't do this earlier since we don't know where to look
   require File::Spec->catfile($objref->{'LOGIOS'}, 'Tools' , 'lib' , 'LogiosLog.pm');
@@ -216,7 +218,9 @@ sub compile_grammar {
     my $cmd = "$^X \"".File::Spec->catfile($self->{'MAKEGRA'},"compile_gra.pl").'"'
       ." --tools \"$self->{'TOOLS'}\""
       ." --project $self->{'PROJECT'} --instance $self->{'INSTANCE'}"
-      ." --inpath \"$self->{'GRAMMAR'}\" --outpath \"$self->{'OUTGRAM'}\"";
+      ." --inpath \"$self->{'GRAMMAR'}\" --outpath \"$self->{'OUTGRAM'}\""
+      .($self->{'POCKET'}? " -pocket": "")
+      ;
     # ." --class "
     &LogiosLog::fail("compile_gra.pl: $cmd") if system($cmd);
 
