@@ -7,7 +7,7 @@
 #    d) .words (for lm wordlist)
 
 # [20070923] (air) Created.
-# [20090208] (air) Added the 'pocket' option to select .ctl lm path format
+# [20090209] (air) check for empty class file; die if so.# [20090208] (air) Added the 'pocket' option to select .ctl lm path format
 
 use Getopt::Long;
 use File::Basename;
@@ -71,6 +71,7 @@ foreach $classfil (sort keys %classes) {
   open(CLASS,File::Spec->catfile($inpath,"$classfil.class")) or die "tokenize: class file $classfil not found";
   ($classname,$dirn,$suffix) = fileparse($classfil,qr/\.[^.]*/);
   my %lexset = ();
+  my $lexcount = 0;
   while (<CLASS>) {
     chomp;
     $line = $_;
@@ -85,8 +86,12 @@ foreach $classfil (sort keys %classes) {
     $text =~ s/\s+/=/g;  # tokenize the text by substituting spaces
     $tokens{"$text:$classid"}++;
     $lexset{"$text:$classid"} = $prob;
+    $lexcount++;
   }
   close(CLASS);
+  # if there's a class file, it must have at least one entry. If not, die.
+  # otherwise downstream processes will behave erratically.
+  if ( $lexcount eq 0 ) { die "tokenize: $classfil appears to be empty!\n"; }
 
   # evaluate probabilities
   $mass = 0.0; $empty = 0;
