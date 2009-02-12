@@ -53,7 +53,7 @@ cat $SIDEBAR |
 awk '{ bb=sprintf("href=\"'$fname'.php\">");
        if (index($0,bb) != 0)
        {
-          printf("<TABLE BORDER=0 WIDTH=100% CELLPADDING=2 CELLSPACING=0>\n");
+          printf("<TABLE BORDER=\"0\" WIDTH=\"100%%\" CELLPADDING=\"2 CELLSPACING=\"0\">\n");
           printf("<TR><td bgcolor=\"#F8EEF8\">\n");
           print $0
           printf("</TD></tr></TABLE>\n");
