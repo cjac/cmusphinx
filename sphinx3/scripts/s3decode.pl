@@ -54,15 +54,12 @@ use SphinxTrain::Util;
 
 $| = 1; # Turn on autoflushing
 
-die "USAGE: $0 <part> <npart>" if (($#ARGV != ($index + 1)) and ($#ARGV != ($index - 1)));
-
-if ($#ARGV == ($index + 1)) {
-  $part = $ARGV[$index];
-  $npart = $ARGV[$index + 1];
-} else {
-  $part = 1;
-  $npart = 1;
-}
+die "USAGE: $0 <part> <npart> [<exptid> <control>]" if @ARGV < 2;
+my ($part, $npart, $exptid, $ctlfile) = @ARGV;
+$part = 1 unless defined($part);
+$npart = 1 unless defined($npart);
+$exptid = $ST::DEC_CFG_EXPTNAME unless defined($exptid);
+$ctlfile = $ST::DEC_CFG_LISTOFFILES unless defined($ctlfile);
 
 $modelname = $ST::DEC_CFG_MODEL_NAME;
 $processname = "decode";
@@ -72,8 +69,8 @@ mkdir ($log_dir,0777) unless -d $log_dir;
 $result_dir = "$ST::DEC_CFG_RESULT_DIR";
 mkdir ($result_dir,0777) unless -d $result_dir;
 
-$logfile = "$log_dir/${ST::DEC_CFG_EXPTNAME}-${part}-${npart}.log";
-$matchfile = "$result_dir/${ST::DEC_CFG_EXPTNAME}-${part}-${npart}.match";
+$logfile = "$log_dir/${exptid}-${part}-${npart}.log";
+$matchfile = "$result_dir/${exptid}-${part}-${npart}.match";
 $statepdeffn = $ST::DEC_CFG_HMM_TYPE; # indicates the type of HMMs
 
 $hmm_dir = "$ST::DEC_CFG_BASE_DIR/model_parameters/$modelname";
@@ -102,7 +99,7 @@ my $rv = RunTool('sphinx3_decode', $logfile, $ctlcount,
 		 -fdict => $ST::DEC_CFG_FILLERDICT,
 		 -lm => $ST::DEC_CFG_LANGUAGEMODEL,
 		 -wip => $ST::DEC_CFG_WORDPENALTY,
-		 -ctl => $ST::DEC_CFG_LISTOFFILES,
+		 -ctl => $ctlfile,
 		 -ctloffset => $ctloffset,
 		 -ctlcount => $ctlcount,
 		 -cepdir => $ST::DEC_CFG_FEATFILES_DIR,
