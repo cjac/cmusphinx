@@ -267,6 +267,16 @@ s3_am_init(kbcore_t * kbc)
             E_FATAL("LDA initialization failed.\n");
     }
 
+    if (cmd_ln_str_r(config, "-svspec")) {
+        int32 **subvecs;
+        E_INFO("Using subvector specification %s\n", 
+               cmd_ln_str_r(config, "-svspec"));
+        if ((subvecs = parse_subvecs(cmd_ln_str_r(config, "-svspec"))) == NULL)
+	    E_FATAL("Subvector specification failed to parse.\n");
+        if ((feat_set_subvecs(kbcore_fcb(kbc), subvecs)) < 0)
+	    E_FATAL("Failed to set subvector specification.\n");
+    }
+
     E_INFO_NOFN("Reading HMM in Sphinx 3 Model format\n");
     E_INFO_NOFN("Model Definition File: %s\n", cmd_ln_str_r(config, "-mdef"));
     E_INFO_NOFN("Mean File: %s\n", cmd_ln_str_r(config, "-mean"));
