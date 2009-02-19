@@ -145,6 +145,7 @@ ms_mllr_read_regmat(const char *regmatfile,
 
     *A = lA;
     *B = lB;
+    *H = lH;
     *nclass = lnclass;
 
     fclose(fp);
@@ -218,7 +219,8 @@ ms_mllr_norm_mgau(float32 *** mean,
 
             for (l = 0; l < streamlen[s]; l++) {
                 mean[s][d][l] = (float32) temp[l];
-		var[s][d][l] *= H[s][class][l];
+		if (H)
+			var[s][d][l] *= H[s][class][l];
             }
         }
 
