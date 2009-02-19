@@ -125,6 +125,7 @@ typedef struct {
 
     float32*** regA; /** Regression matrices : the multiplcation term */
     float32** regB; /** Regression matrices : the bias term */
+    float32** regH; /** Regression matrices : scale factor for variance */
     int32 mllr_nclass; /** Number of regression matrices */
 } adapt_am_t ;
 

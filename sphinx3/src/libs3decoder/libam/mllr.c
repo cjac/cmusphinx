@@ -74,14 +74,15 @@
 #include "mllr.h"
 
 void
-mllr_dump(float32 *** A, float32 ** B, int32 veclen, int32 nclass)
+mllr_dump(float32 *** A, float32 ** B, float32 **H, 
+	  int32 veclen, int32 nclass)
 {
     int32 i, j, k;
     char *tmpstr;
     assert(A != NULL);
     assert(B != NULL);
 
-    tmpstr = ckd_calloc((veclen * 20), sizeof(char));
+    tmpstr = ckd_calloc((veclen * (veclen + 2) * 20), sizeof(char));
 
     for (i = 0; i < nclass; i++) {
         E_INFO("%d:\n", i);
@@ -99,6 +100,13 @@ mllr_dump(float32 *** A, float32 ** B, int32 veclen, int32 nclass)
             sprintf(tmpstr, "%s %f ", tmpstr, B[i][j]);
         }
         sprintf(tmpstr, "%s \n", tmpstr);
+
+        sprintf(tmpstr, "H\n");
+        for (j = 0; j < veclen; j++) {
+            sprintf(tmpstr, "%s %f ", tmpstr, H[i][j]);
+        }
+        sprintf(tmpstr, "%s \n", tmpstr);
+
         E_INFO("%s\n", tmpstr);
     }
 
@@ -108,11 +116,13 @@ mllr_dump(float32 *** A, float32 ** B, int32 veclen, int32 nclass)
 int32
 mllr_read_regmat(const char *regmatfile,
                  float32 **** A,
-                 float32 *** B, int32 * nclass, int32 ceplen)
+                 float32 *** B,
+		 float32 *** H,
+		 int32 * nclass, int32 ceplen)
 {
     int32 i, j, k, n, lnclass;
     FILE *fp;
-    float32 ***lA, **lB;
+    float32 ***lA, **lB, **lH;
 
     if ((fp = fopen(regmatfile, "r")) == NULL) {
         E_ERROR("fopen(%s,r) failed\n", regmatfile);
@@ -123,6 +133,7 @@ mllr_read_regmat(const char *regmatfile,
 
     lA = NULL;
     lB = NULL;
+    lH = NULL;
 
     if ((fscanf(fp, "%d", &n) != 1) || (n < 1))
         goto readerror;
@@ -135,6 +146,7 @@ mllr_read_regmat(const char *regmatfile,
     lA = (float32 ***) ckd_calloc_3d(lnclass, ceplen, ceplen,
                                      sizeof(float32));
     lB = (float32 **) ckd_calloc_2d(lnclass, ceplen, sizeof(float32));
+    lH = (float32 **) ckd_calloc_2d(lnclass, ceplen, sizeof(float32));
 
     for (i = 0; i < lnclass; i++) {
         /* We definitely do not allow different classes to have different
@@ -151,10 +163,15 @@ mllr_read_regmat(const char *regmatfile,
             if (fscanf(fp, "%f ", &lB[i][j]) != 1)
                 goto readerror;
         }
+        for (j = 0; j < ceplen; j++) {
+            if (fscanf(fp, "%f ", &lH[i][j]) != 1)
+                goto readerror;
+        }
     }
 
     *A = lA;
     *B = lB;
+    *H = lH;
     if (nclass)
         *nclass = lnclass;
 
@@ -166,21 +183,24 @@ mllr_read_regmat(const char *regmatfile,
     E_ERROR("Error reading MLLR file %s\n", regmatfile);
     ckd_free_3d((void ***) lA);
     ckd_free_2d((void **) lB);
+    ckd_free_2d((void **) lH);
 
     fclose(fp);
 
     *A = NULL;
     *B = NULL;
+    *H = NULL;
 
     return -1;
 }
 
 
 int32
-mllr_free_regmat(float32 *** A, float32 ** B)
+mllr_free_regmat(float32 *** A, float32 ** B, float32 ** H)
 {
     ckd_free_3d((void ***) A);
     ckd_free_2d((void **) B);
+    ckd_free_2d((void **) H);
     return 0;
 }
 
@@ -188,7 +208,8 @@ mllr_free_regmat(float32 *** A, float32 ** B)
 
 int32
 mllr_norm_mgau(mgau_model_t * mgauset,
-               float32 *** A, float32 ** B, int32 nclass, int32 * cb2mllr)
+               float32 *** A, float32 ** B,
+	       float32 ** H, int32 nclass, int32 * cb2mllr)
 {
     int32 d, c, l, m;
     int32 class;
@@ -224,6 +245,7 @@ mllr_norm_mgau(mgau_model_t * mgauset,
 
             for (l = 0; l < ceplen; l++) {
                 mgau[d].mean[c][l] = temp[l];
+		mgau[d].var[c][l] *= H[class][l];
             }
         }
     }

@@ -80,14 +80,15 @@ model_set_mllr(ms_mgau_model_t * msg, const char *mllrfile,
 	       const char *cb2mllrfile, feat_t * fcb, mdef_t * mdef,
 	       cmd_ln_t *config)
 {
-    float32 ****A, ***B;
+    float32 ****A, ***B, ***H;
     int32 *cb2mllr;
     int32 gid, sid, nclass;
     uint8 *mgau_xform;
 
     gauden_mean_reload(msg->g, cmd_ln_str_r(config, "-mean"));
+    gauden_var_reload(msg->g, cmd_ln_str_r(config, "-var"));
 
-    if (ms_mllr_read_regmat(mllrfile, &A, &B,
+    if (ms_mllr_read_regmat(mllrfile, &A, &B, &H,
                             fcb->stream_len, feat_n_stream(fcb),
                             &nclass) < 0)
         E_FATAL("ms_mllr_read_regmat failed\n");
@@ -123,17 +124,21 @@ model_set_mllr(ms_mgau_model_t * msg, const char *mllrfile,
         if (mdef->cd2cisen[sid] != sid) {       /* Otherwise it's a CI senone */
             gid = msg->s->mgau[sid];
             if (!mgau_xform[gid]) {
-                ms_mllr_norm_mgau(msg->g->mean[gid], msg->g->n_density, A,
-                                  B, fcb->stream_len, feat_n_stream(fcb),
+                ms_mllr_norm_mgau(msg->g->mean[gid],
+				  msg->g->var[gid],
+				  msg->g->n_density,
+				  A, B, H,
+				  fcb->stream_len, feat_n_stream(fcb),
                                   class);
                 mgau_xform[gid] = 1;
             }
         }
     }
 
+    gauden_dist_precompute(msg->g, cmd_ln_float32_r(config, "-varfloor"));
     ckd_free(mgau_xform);
 
-    ms_mllr_free_regmat(A, B, feat_n_stream(fcb));
+    ms_mllr_free_regmat(A, B, H, feat_n_stream(fcb));
     ckd_free(cb2mllr);
 
     return S3_SUCCESS;

@@ -316,7 +316,7 @@ gauden_param_free(vector_t *** p)
  * 	1/(2*var) in the exponent,
  * NOTE; The density computation is performed in log domain.
  */
-static int32
+int32
 gauden_dist_precompute(gauden_t * g, float32 varfloor)
 {
     int32 i, m, f, d, flen;
@@ -444,6 +444,27 @@ gauden_mean_reload(gauden_t * g, const char *meanfile)
     for (i = 0; i < g->n_feat; i++)
         if (g->featlen[i] != flen[i])
             E_FATAL("Feature lengths for original and new means differ\n");
+    ckd_free(flen);
+
+    return 0;
+}
+
+int32
+gauden_var_reload(gauden_t * g, const char *varfile)
+{
+    int32 i, m, f, d, *flen;
+
+    assert(g->var != NULL);
+
+    gauden_param_read(&(g->var), &m, &f, &d, &flen, varfile);
+
+    /* Verify original and new mean parameter dimensions */
+    if ((m != g->n_mgau) || (f != g->n_feat) || (d != g->n_density))
+        E_FATAL
+            ("Mixture-gaussians dimensions for original and new variances differ\n");
+    for (i = 0; i < g->n_feat; i++)
+        if (g->featlen[i] != flen[i])
+            E_FATAL("Feature lengths for original and new variances differ\n");
     ckd_free(flen);
 
     return 0;

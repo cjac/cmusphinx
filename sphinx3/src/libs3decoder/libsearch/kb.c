@@ -396,8 +396,8 @@ kb_free(kb_t * kb)
 
     /* This is awkward, currently, there are two routines to control MLLRs and I don't have time 
        to unify them yet. TBD */
-    if (kb->adapt_am->regA && kb->adapt_am->regB)
-        mllr_free_regmat(kb->adapt_am->regA, kb->adapt_am->regB);
+    if (kb->adapt_am->regA && kb->adapt_am->regB && kb->adapt_am->regH)
+        mllr_free_regmat(kb->adapt_am->regA, kb->adapt_am->regB, kb->adapt_am->regH);
     if (kb->adapt_am)
         adapt_am_free(kb->adapt_am);
 

@@ -110,18 +110,23 @@ adapt_set_mllr(adapt_am_t * ad, mgau_model_t * g, const char *mllrfile,
 
     /* Reread the gaussian mean from the file again */
     E_INFO("Reloading mean\n");
-
-    /* Read in the mllr matrix */
     mgau_mean_reload(g, cmd_ln_str_r(config, "-mean"));
+
+    /* Reread the gaussian variance from the file again */
+    E_INFO("Reloading variance\n");
+    mgau_var_reload(g, cmd_ln_str_r(config, "-var"));
 
 #if MLLR_DEBUG
     /*This generates huge amount of information */
     /*    mgau_dump(g,1); */
 #endif
 
+    /* Read in the mllr matrix */
     mllr_read_regmat(mllrfile,
                      &(ad->regA),
-                     &(ad->regB), &(ad->mllr_nclass), mgau_veclen(g));
+                     &(ad->regB),
+		     &(ad->regH),
+		     &(ad->mllr_nclass), mgau_veclen(g));
 
     if (cb2mllrname && strcmp(cb2mllrname, ".1cls.") != 0) {
         int32 ncb, nmllr;
@@ -139,14 +144,16 @@ adapt_set_mllr(adapt_am_t * ad, mgau_model_t * g, const char *mllrfile,
     else
         cb2mllr = NULL;
 
-    /* Transform all the mean vectors */
-
-    mllr_norm_mgau(g, ad->regA, ad->regB, ad->mllr_nclass, cb2mllr);
+    /* Transform mean and variance vectors */
+    mllr_norm_mgau(g, ad->regA, ad->regB, ad->regH, ad->mllr_nclass, cb2mllr);
     ckd_free(cb2mllr);
+
+    /* Re-precompute variance things */
+    mgau_precomp(g);
 
 #if MLLR_DEBUG
     /*#if 1 */
-    mllr_dump(ad->regA, ad->regB, mgau_veclen(g), g->mllr_class, cb2mllr);
+    mllr_dump(ad->regA, ad->regB, ad->regH, mgau_veclen(g), g->mllr_class, cb2mllr);
     /*This generates huge amount of information */
     /*mgau_dump(kbcore_mgau(kb->kbcore),1); */
 #endif

@@ -184,6 +184,21 @@ int32 gauden_mean_reload (gauden_t *g,		/**< In/Out: g->mean to be reloaded */
     );
 
 /**
+ * Reload mixture Gaussian variances from the given file.  The variances must have already
+ * been loaded at least once (using gauden_init).  Precomputation is not done.
+ * @return 0 if successful, -1 otherwise.
+ */
+int32 gauden_var_reload (gauden_t *g,		/**< In/Out: g->mean to be reloaded */
+			  const char *meanfile	/**< In: File to reload means from */
+    );
+
+/**
+ * Re-precompute variance related sufficient statistics.  You must
+ * call this after gauden_var_reload().
+ */
+int32 gauden_dist_precompute(gauden_t * g, float32 varfloor);
+
+/**
  * Compute gaussian density values for the given input observation vector wrt the
  * specified mixture gaussian codebook (which may consist of several feature streams).
  * Density values are left UNnormalized.

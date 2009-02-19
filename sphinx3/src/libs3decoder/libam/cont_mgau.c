@@ -441,6 +441,19 @@ mgau_mean_reload(mgau_model_t * g,      /**< In/Out: The GMM */
     return 0;
 }
 
+/** reload the mean file 
+ */
+
+int32
+mgau_var_reload(mgau_model_t * g,      /**< In/Out: The GMM */
+                const char *var_file_name       /**< In: file name for the mean file. */
+    )
+{
+    assert(g->mgau != NULL);
+    mgau_file_read(g, var_file_name, MGAU_VAR);
+    return 0;
+}
+
 int32
 mgau_dump(mgau_model_t * g, int32 type)
 {
@@ -839,7 +852,7 @@ mgau_var_nzvec_floor(mgau_model_t * g, float64 floor)
  * Some of the Mahalanobis distance computation (between Gaussian density means and given
  * vectors) can be carried out in advance.  (See comment in .h file.)
  */
-static int32
+int32
 mgau_precomp(mgau_model_t * g)
 {
     int32 m, c, i;

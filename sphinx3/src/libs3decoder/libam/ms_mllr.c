@@ -84,11 +84,12 @@ int32
 ms_mllr_read_regmat(const char *regmatfile,
                     float32 ***** A,
                     float32 **** B,
+                    float32 **** H,
                     int32 * streamlen, int32 n_stream, int32 * nclass)
 {
     int32 i, j, k, m, n, lnclass;
     FILE *fp;
-    float32 ****lA, ***lB;
+    float32 ****lA, ***lB, ***lH;
 
     if ((fp = fopen(regmatfile, "r")) == NULL) {
         E_ERROR("fopen(%s,r) failed\n", regmatfile);
@@ -106,12 +107,16 @@ ms_mllr_read_regmat(const char *regmatfile,
 
     lA = (float32 ****) ckd_calloc(n_stream, sizeof(float32 **));
     lB = (float32 ***) ckd_calloc(n_stream, sizeof(float32 *));
+    lH = (float32 ***) ckd_calloc(n_stream, sizeof(float32 *));
 
     for (i = 0; i < n_stream; ++i) {
         lA[i] =
             (float32 ***) ckd_calloc_3d(lnclass, streamlen[i],
                                         streamlen[i], sizeof(float32));
         lB[i] =
+            (float32 **) ckd_calloc_2d(lnclass, streamlen[i],
+                                       sizeof(float32));
+        lH[i] =
             (float32 **) ckd_calloc_2d(lnclass, streamlen[i],
                                        sizeof(float32));
     }
@@ -131,6 +136,10 @@ ms_mllr_read_regmat(const char *regmatfile,
                 if (fscanf(fp, "%f ", &lB[i][m][j]) != 1)
                     goto readerror;
             }
+            for (j = 0; j < streamlen[i]; ++j) {
+                if (fscanf(fp, "%f ", &lH[i][m][j]) != 1)
+                    goto readerror;
+            }
         }
     }
 
@@ -147,30 +156,35 @@ ms_mllr_read_regmat(const char *regmatfile,
     for (i = 0; i < n_stream; ++i) {
         ckd_free_3d((void ***) lA[i]);
         ckd_free_2d((void **) lB[i]);
+        ckd_free_2d((void **) lH[i]);
     }
     ckd_free(lA);
     ckd_free(lB);
+    ckd_free(lH);
     fclose(fp);
 
     *A = NULL;
     *B = NULL;
+    *H = NULL;
 
     return -1;
 }
 
 
 int32
-ms_mllr_free_regmat(float32 **** A, float32 *** B, int32 n_stream)
+ms_mllr_free_regmat(float32 **** A, float32 *** B, float32 *** H, int32 n_stream)
 {
     int32 i;
 
     for (i = 0; i < n_stream; i++) {
         ckd_free_3d((void ***) A[i]);
         ckd_free_2d((void **) B[i]);
+        ckd_free_2d((void **) H[i]);
     }
 
     ckd_free(A);
     ckd_free(B);
+    ckd_free(H);
 
     return 0;
 }
@@ -178,9 +192,11 @@ ms_mllr_free_regmat(float32 **** A, float32 *** B, int32 n_stream)
 
 int32
 ms_mllr_norm_mgau(float32 *** mean,
+		  float32 *** var,
                   int32 n_density,
                   float32 **** A,
                   float32 *** B,
+                  float32 *** H,
                   int32 * streamlen, int32 n_stream, int32 class)
 {
     int32 s, d, l, m;
@@ -202,6 +218,7 @@ ms_mllr_norm_mgau(float32 *** mean,
 
             for (l = 0; l < streamlen[s]; l++) {
                 mean[s][d][l] = (float32) temp[l];
+		var[s][d][l] *= H[s][class][l];
             }
         }
 

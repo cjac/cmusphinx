@@ -363,6 +363,21 @@ int32 mgau_mean_reload(mgau_model_t *g,  /**< In/Out : The mean which will be re
 		       const char* mean_file_name /**< In: The mean files */
     );
 
+/** 
+ * Reload the variances without precomputation. This is particularly
+ * useful for speaker adaptation.
+ */
+S3DECODER_EXPORT
+int32 mgau_var_reload(mgau_model_t * g,      /**< In/Out: The GMM */
+                      const char *var_file_name       /**< In: file name for the mean file. */
+    );
+
+/**
+ * Precompute things from the variances.  Not needed unless you explicitly call
+ * mgau_var_reload().
+ */
+int32 mgau_precomp(mgau_model_t * g);
+
 #if 0
 { /* Stop indent from complaining */
 #endif
