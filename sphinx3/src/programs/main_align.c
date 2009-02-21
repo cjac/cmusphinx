@@ -897,7 +897,7 @@ align_utt(char *sent,           /* In: Reference transcript */
         if (phsegdir)
             write_phseg(phsegdir, phseg, uttid, ctlspec);
         if (phlabdir)
-            write_phlab(phsegdir, phseg, uttid, ctlspec, cmd_ln_int32_r(kbc->config, "-frate"));
+            write_phlab(phlabdir, phseg, uttid, ctlspec, cmd_ln_int32_r(kbc->config, "-frate"));
         if (wdsegdir)
             write_wdseg(wdsegdir, wdseg, uttid, ctlspec);
         if (outsentfp)
