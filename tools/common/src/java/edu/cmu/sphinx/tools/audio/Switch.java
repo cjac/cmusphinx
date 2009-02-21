@@ -82,7 +82,7 @@ public class Switch extends BaseDataProcessor {
 
             case GOING_ON:
                 state = ON;
-                d = new DataStartSignal();
+                d = new DataStartSignal(16000);
                 break;
 
             case GOING_OFF:

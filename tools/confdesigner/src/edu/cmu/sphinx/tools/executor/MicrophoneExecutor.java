@@ -27,7 +27,12 @@ public class MicrophoneExecutor implements Executable {
         Microphone microphone = getMicroPhone();
 
         /* allocate the resource necessary for the recognizer */
-        recognizer.allocate();
+        try {
+            recognizer.allocate();
+        } catch (Exception e) {
+            System.out.println ("Failed to allocate recognizer");
+            e.printStackTrace();
+        }
 
         // the microphone will keep recording until the program exits
         System.out.println("Please say something !");

@@ -46,8 +46,6 @@ public class Recorder {
         try {
             microphone = (Microphone) cm.lookup("microphone");
             microphone.initialize();
-        } catch (InstantiationException e) {
-            throw new Error(e);
         } catch (PropertyException e) {
             throw new Error(e);
         }

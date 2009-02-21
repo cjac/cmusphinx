@@ -108,7 +108,7 @@
 	<javac debug="true"
 	       source="1.5"
  	       sourcepath="${src_path}"
-               srcdir="${src_dir}"
+               srcdir="${src_dir};${alt_src_dir}"
 	       deprecation="true"
 	       destdir="${classes_dir}">
             <patternset refid="${patternset_to_compile}"/>
@@ -146,6 +146,7 @@
              index="true"
              basedir="${classes_dir}">
              <zipfileset src="../../common/lib/sphinx4.jar"/>
+             <zipfileset src="../../common/lib/batch.jar"/>
              <zipfileset src="../../common/lib/forms_rt.jar"/>
              <zipfileset src="${data_dir}/WSJ_8gau_13dCep_16k_40mel_130Hz_6800Hz.jar"/>
         </jar>
