@@ -4,7 +4,10 @@
 #
 # path to a class file is notated as "%[File]%"  --> File.class
 # a file of that name should exist, in the folder with the .gra file
-# [20070923] (air)
+# [20070923] (air) started
+
+# [20090220] (air)
+# fixed a rather major bug due to multiple classes per line (only first was processed)
 
 use Getopt::Long;
 use File::Spec;
@@ -20,7 +23,7 @@ if ( scalar @ARGV eq 0 or
 print STDERR "resolve.pl  [in ",File::Spec->rel2abs(File::Spec->curdir),"]\n";
 print STDERR "\t> infile-> $infile\n\t> graex-> $expfile\n\t> grabs-> $absfile\n";
 open(IN,"$infile") or die "resolve: can't open infile: $infile!\n";
-open(OUT,">$expfile") or die "resolve: can't open expgra: $expfile!\n";
+open(FLAT,">$expfile") or die "resolve: can't open expgra: $expfile!\n";
 open(ABS,">$absfile") or die "resolve: can't open absgra: $absfile!\n";
 
 my $postscript = <<EOS;
@@ -40,39 +43,47 @@ my $preamble = <<EOS;
 
 EOS
 
-print OUT $preamble;
+print FLAT $preamble;
 print ABS $preamble;
 
+# pick out class nets, expand them
 while (<IN>) {
-  chomp;
-  if ( /(.+?)%\[(.+?)\]%(.*?)$/) {
-    $pre  = $1; $file=$2; $post=$3;
-    print OUT "$pre\[$file\]$post\n";
-    print ABS "$pre%\[$file\]%$post\n";  # pass the marker through
-  } else { print OUT "$_\n"; print ABS "$_\n";  next; }
-  if ( not defined $classnet{$file} ) {
-    print STDERR "resolve: defining '$file'\n";
-    open(CLASS,File::Spec->catfile($inpath,"$file.class")) or die "resolve: missing class file: $file.class\n";
-    my $classset = "\n[$file]\n";
-    while (<CLASS>) {
-      chomp;
-      if ( /#/ ) { ($text,$com) = split /\s*#\s*/,$_,2; $div="#"; }
-      else { $text = $_; $com = ""; $div = "";}
-      $text =~ s/^\s*(.+?)\s*$/$1/;
-      $classset .= "\t$text\t$div$com\n";
+    s/[\r\n]+$//;
+    $line = $_;
+    print ABS "$line\n";   # pass through
+    $flat = "";
+    while ( $line =~ /(.+?)%\[(.+?)\]%(.*?)$/ ) {   # resolve %[class]% markers in the line
+	$pre=$1; $classname=$2; $line=$3;
+	$flat .= "$pre\[$classname\]";
+    
+	if ( not defined $classnet{$classname} ) {
+	    print STDERR "resolve: defining '$classname'\n";
+	    open(CLASS,File::Spec->catfile($inpath,"$classname.class"))
+		or die "resolve: missing class file: $classname.class\n";
+	    my $classset = "\n[$classname]\n";
+	    while (<CLASS>) {
+		s/[\r\n]+$//;
+		if ( /#/ ) {
+		    ($text,$com) = split /\s*\#\s*/,$_,2; $div="#";
+		} else {
+		    $text = $_; $com = ""; $div = "";
+		}
+		$text =~ s/^\s*(.+?)\s*$/$1/;
+		$classset .= "\t$text\t$div$com\n";
+	    }
+	    $classset .= ";\n";
+	    $classnet{$classname} = $classset;
+	    close(CLASS);
+	}
     }
-    $classset .= ";\n";
-    $classnet{$file} = $classset;
-    close(CLASS);
-  }
+    if ( $flat eq "" ) { print FLAT "$line\n"; } else { print FLAT "$flat\n"; }
 }
 close(IN);
-
-# add class nets at the end of the file
-print OUT $postscript;
-foreach $net (sort keys %classnet) { print OUT $classnet{$net}; }
-close(OUT);
-
 close(ABS);
-
+    
+# add class nets at the end of the file
+print FLAT $postscript;
+foreach $net (sort keys %classnet) { print FLAT $classnet{$net}; }
+close(FLAT);
+    
 #

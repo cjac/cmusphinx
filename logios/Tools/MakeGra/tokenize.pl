@@ -7,7 +7,9 @@
 #    d) .words (for lm wordlist)
 
 # [20070923] (air) Created.
-# [20090209] (air) check for empty class file; die if so.# [20090208] (air) Added the 'pocket' option to select .ctl lm path format
+# [20090208] (air) Added the 'pocket' option to select .ctl lm path format
+# [20090209] (air) check for empty class file; die if so.
+# [20090220] (air) clean up how class names are manipulated (now works correctly for '.'s in class names)
 
 use Getopt::Long;
 use File::Basename;
@@ -65,11 +67,11 @@ close(GRA);
 
 # do each class
 open(PROB,">$probdefile") or die "tokenize: can't open $probdefile";
-foreach $classfil (sort keys %classes) {
-  $classid = $classes{$classfil};
-  $classfil =~ s/\[(.+?)\]/$1/;  # strip []'s
-  open(CLASS,File::Spec->catfile($inpath,"$classfil.class")) or die "tokenize: class file $classfil not found";
-  ($classname,$dirn,$suffix) = fileparse($classfil,qr/\.[^.]*/);
+foreach $classname (sort keys %classes) {
+  $classid = $classes{$classname};
+  $classname =~ s/\[(.+?)\]/$1/;  # strip []'s
+  $classfil = "$classname.class";  # get the file name itself
+  open(CLASS,File::Spec->catfile($inpath,$classfil)) or die "tokenize: class file $classfil not found";
   my %lexset = ();
   my $lexcount = 0;
   while (<CLASS>) {
@@ -83,15 +85,17 @@ foreach $classfil (sort keys %classes) {
       $text = $line; $prob = undef;
     }
     $text =~ s/^\s*\((.+?)\)\s*$/$1/;  # trim spaces from ends, strip ()'s
-    $text =~ s/\s+/=/g;  # tokenize the text by substituting spaces
-    $tokens{"$text:$classid"}++;
-    $lexset{"$text:$classid"} = $prob;
+    # tokenize the text by substituting spaces with '='s (to distinguish from dict ligatures)
+    $text =~ s/\s+/=/g;
+    # class-tag delimiter is ":::" (in case users put : or :: into their words)
+    $tokens{"${text}:::$classid"}++;
+    $lexset{"${text}:::$classid"} = $prob;
     $lexcount++;
   }
   close(CLASS);
   # if there's a class file, it must have at least one entry. If not, die.
   # otherwise downstream processes will behave erratically.
-  if ( $lexcount eq 0 ) { die "tokenize: $classfil appears to be empty!\n"; }
+  if ( $lexcount eq 0 ) { die "tokenize: $classname appears to be empty!\n"; }
 
   # evaluate probabilities
   $mass = 0.0; $empty = 0;
@@ -100,22 +104,22 @@ foreach $classfil (sort keys %classes) {
     else { $empty++; }
   }
   if ($mass<0.0 or $mass>1.0) {
-    print STDERR "tokenize: $classfil -> explicit probs add up to $mass!\n";
+    print STDERR "tokenize: $classname -> explicit probs add up to $mass!\n";
     $fault++;
   }
   # fix up the probabilities so that everything adds up right
   $adjust = 1.0; $dist = 0.0;
   if ($empty eq 0 and $mass gt 0.0 and $mass lt (1.0-$epsilon)) { # all probs explicit
     $adjust = 1.0 / $mass; # not enough mass: scale all probs upwards
-    print STDERR "tokenize: $classfil -> explicit probs scaled by $adjust\n";
+    print STDERR "tokenize: $classname -> explicit probs scaled by $adjust\n";
   } elsif ($mass lt 1.0 and $empty gt 0) {
     $dist = (1.0 - $mass)/$empty; # some probs not specified: split remaining mass
-    print STDERR "tokenize: $classfil -> token implicit probabilities set to $dist\n";
+    print STDERR "tokenize: $classname -> token implicit probabilities set to $dist\n";
   } elsif ( $mass gt 1.0) {  # something not right...
     $adjust = 1.0 / ($mass+($epsilon*$empty)); # too much mass: scale all probs down
-    print STDERR "tokenize: $classfil -> explicit probs scaled by $adjust\n";
+    print STDERR "tokenize: $classname -> explicit probs scaled by $adjust\n";
     $dist = $epsilon; # but set all other tokens to min prob
-    print STDERR "tokenize: $classfil -> $empty token probs set to $epsilon\n";
+    print STDERR "tokenize: $classname -> $empty token probs set to $epsilon\n";
   }
 
   # readjust the class member probabilities
@@ -156,9 +160,6 @@ if (pocket_flag) {  # pocketsphinx does not want the path specified, just the fi
 } else {  # sphinx3 expects a full path relative to the execution folder
     print CTL "{ LanguageModel\\$project.probdef }\nLanguageModel\\$project.arpa general {\n";
 }
-foreach $class (sort keys %classes) {
-  ($classname,$dirn,$suffix) = fileparse($class,qr/\.[^.]*/);
-  print CTL "$classname\n";
-}
+foreach $class (sort keys %classes) { print CTL "$class\n"; }
 print CTL "}\n";
 close(CTL);
