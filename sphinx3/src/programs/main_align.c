@@ -269,6 +269,10 @@ static arg_t defn[] = {
      ARG_STRING,
      NULL,
      "Output transcript file with exact pronunciation/transcription"},
+    {"-outctl",
+     ARG_STRING,
+     NULL,
+     "Output control file with ctl file entries for aligned files"},
     {"-stsegdir",
      ARG_STRING,
      NULL,
@@ -322,7 +326,9 @@ static float32 ***feat = NULL;  /* Speech feature data */
 static int32 ctloffset;
 
 static const char *outsentfile;
+static const char *outctlfile;
 static FILE *outsentfp = NULL;
+static FILE *outctlfp = NULL;
 
 static const char *sentfile;
 static FILE *sentfp = NULL;
@@ -786,6 +792,15 @@ write_outsent(FILE * fp, align_wdseg_t * wdseg, char *uttid)
     fflush(fp);
 }
 
+/* Write output ctlfile entry */
+static void
+write_outctl(FILE * fp, char *uttctl)
+{
+    fprintf(fp, "%s\n", uttctl);
+    fflush(fp);
+}
+
+
 
 /*
  * Find Viterbi alignment.
@@ -902,6 +917,8 @@ align_utt(char *sent,           /* In: Reference transcript */
             write_wdseg(wdsegdir, wdseg, uttid, ctlspec);
         if (outsentfp)
             write_outsent(outsentfp, wdseg, uttid);
+        if (outctlfp)
+            write_outctl(outctlfp, ctlspec);
     }
 
     align_destroy_sent_hmm();
@@ -1064,6 +1081,11 @@ main(int32 argc, char *argv[])
             E_FATAL("fopen(%s,r) failed\n", outsentfile);
     }
 
+    if ((outctlfile = cmd_ln_str_r(config, "-outctl")) != NULL) {
+        if ((outctlfp = fopen(outctlfile, "w")) == NULL)
+            E_FATAL("fopen(%s,r) failed\n", outctlfile);
+    }
+
     if ((cmd_ln_str_r(config, "-s2stsegdir") == NULL) &&
         (cmd_ln_str_r(config, "-stsegdir") == NULL) &&
         (cmd_ln_str_r(config, "-phlabdir") == NULL) &&
@@ -1127,6 +1149,8 @@ main(int32 argc, char *argv[])
 
     if (outsentfp)
         fclose(outsentfp);
+    if (outctlfp)
+        fclose(outctlfp);
     if (sentfp)
         fclose(sentfp);
 
