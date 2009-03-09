@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl -w
+#!perl -w
 
 #
 # ====================================================================
@@ -43,8 +43,13 @@
 # strip out stress marks from a cmudict, producing a "SphinxPhones_40" dictionary
 # [20080420] (air) Changed to pass comments.
 #                  Fixed output collation sequence; DOS eol's
+# [20090309] (air) fixed duplicate pron and collation bugs
 #
 
+
+my $dupl = 0;
+my $base = 0;
+my $varia = 0;
 
 if ( scalar @ARGV ne 2 ) { die "usage: make_baseform <input> <output>\n"; }
 
@@ -57,18 +62,25 @@ open(OUT,">$ARGV[1]") || die "can't open $ARGV[1] for writing!\n";
 
 get_dict(\%dict,\@header,IN);  # process the entries
 
+# what have we got?
+print STDERR "$base baseforms, $varia variants and $dupl duplicates found.\n";
+print STDERR "variant distribution:\n";
+foreach $var ( sort keys %histo ) {
+    print STDERR "$var\t$histo{$var}\n";
+}
+
 # print special comments (copyright, etc.)
 foreach $h (@header) { print OUT "$h\n"; }
 
 # print out each entry
 foreach $w (sort keys %dict) {
   $var=0;
-  foreach $p (keys %{$dict{$w}}) {
+  foreach $p ( @{$dict{$w}} ) {
     if ($var eq 0) {
       print  OUT "$w\t$p\n";
       $var++;
     }  else {
-      print  OUT "$w\t$p\n";
+      print  OUT "$w($var)\t$p\n";
       $var++;
     }
   }
@@ -94,8 +106,9 @@ sub get_dict {
     elsif ( $_ =~ /^;;;/ ) { next; }  # ignore plain comments
     elsif ( $_ =~ /^\s*$/ ) { next; }  # ignore blank lines
 
+    # extract the word,pron pair and prepare for processing
     ($word,$pron) = /(.+?)\s+(.+?)$/;
-    if (! defined $word) { print STDERR "$_\n"; next; }
+    if (! defined $word) { print STDERR "bad entry (no head word): $_\n"; next; }
     if ($word =~ /\)$/) { # variant
       ($root,$variant) = ($word =~ m/(.+?)\((.+?)\)/);
     } else {
@@ -103,16 +116,34 @@ sub get_dict {
       $variant = 0;
     }
     $pron = &strip_stress($pron);
-    if ($dict->{$root}{$pron}) {  # remove duplicate entries
-      print STDERR "duplicate entry: $root ($variant) $pron\n";
-    } elsif ( $variant eq 0 ) {
-      $dict->{$root}{$pron} = $variant;
-    } else {
-      $dict->{$root."($variant)"}{$pron} = $variant; # note the variant index
-      }
-    $histo{$variant}++;
+
+    # found a new baseform; set it up
+    if ( ! defined $dict->{$root} ) {
+	$dict->{$root}[0] = $pron;
+	$base++;
+	next;
+    }
+
+    # old baseform; see if, after removed stress, pron is a duplicate
+    foreach $var ( @{$dict->{$root}} ) {
+	if ( $var eq $pron ) {
+	    print STDERR "duplicate entry: $root ($variant) $pron\n";
+	    $dupl++;
+	    $pron = "";
+	    last;
+	}
+    }
+
+    # it's a new variant on an existing baseform, keep it
+    if ( $pron ne "" ) { 
+	push @{$dict->{$root}}, $pron;
+	$varia++;
+	$histo{scalar @{$dict->{$root}}}++;  # track variant stats
+	if ( scalar @{$dict->{$root}} > 4 ) { print STDERR "$root -- ",scalar @{$dict->{$root}},"\n"; }
+    }
   }
 }
+
 
 # strip stress marks from phonetic symbols
 sub strip_stress {

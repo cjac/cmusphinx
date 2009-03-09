@@ -1,3 +1,5 @@
-rem compile the dictionary
+:: compile the dictionary
+:: [20080422] (air) Compile cmudict into SPHINX_40 form
+:: make_baseforms.pl removes stress marks and eliminates resulting duplicates
 
-perl bin\make_baseform.pl cmudict.0.7a sphinxdict\cmudict.0.7a_SPHINX_40
+perl scripts\make_baseform.pl cmudict.0.7a sphinxdict\cmudict.0.7a_SPHINX_40
