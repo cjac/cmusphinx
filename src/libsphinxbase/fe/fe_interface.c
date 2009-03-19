@@ -535,7 +535,8 @@ fe_process_utt(fe_t * fe, int16 const * spch, size_t nsamps,
     rv = fe_process_frames(fe, &spch, &nsamps, cep, nframes);
     *cep_block = cep;
 
-    return rv;
+    /* Backward compatibility. */
+    return (rv >= 0) ? 0 : -1;
 }
 
 
@@ -559,7 +560,7 @@ fe_end_utt(fe_t * fe, mfcc_t * cepvector, int32 * nframes)
     fe->start_flag = 0;
 
     *nframes = frame_count;
-    return 0;
+    return frame_count;
 }
 
 fe_t *
