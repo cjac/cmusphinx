@@ -227,7 +227,11 @@ extern "C" {
   { "-verbose", \
     ARG_BOOLEAN, \
     "no", \
-    "Show input filenames" }
+          "Show input filenames" },                                     \
+  { "-pncc",                                                            \
+          ARG_BOOLEAN,                                                  \
+          "no",                                                         \
+          "Generate PNCC features" }
   
 #ifdef FIXED_POINT
 /** MFCC computation type. */

@@ -53,6 +53,8 @@ extern "C" {
 }
 #endif
 
+#include "online_vadmvn.h"
+
 #ifdef FIXED16
 /* Q15 format */
 typedef int16 frame_t;
@@ -155,6 +157,9 @@ struct fe_s {
     melfb_t *mel_fb;
     /* Half of a Hamming Window. */
     window_t *hamming_window;
+
+    /* Output normalization for PNCC. */
+    online_vadmvn_t *vadmvn;
 
     /* Temporary buffers for processing. */
     /* FIXME: too many of these. */
