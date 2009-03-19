@@ -64,12 +64,21 @@ static const arg_t fe_args[] = {
     { NULL, 0, NULL, NULL }
 };
 
+#define DEFAULT_VAD_LAMBDA 0.99
+#define DEFAULT_VAD_WINDOW 10
+
 int
 fe_parse_general_params(cmd_ln_t *config, fe_t * fe)
 {
     int j;
 
     fe->config = config;
+
+    if (cmd_ln_boolean_r(config, "-pncc"))
+        fe->cep_type = FE_PNCC;
+    else
+        fe->cep_type = FE_MFCC;
+
     fe->sampling_rate = cmd_ln_float32_r(config, "-samprate");
     fe->frame_rate = cmd_ln_int32_r(config, "-frate");
     if (cmd_ln_boolean_r(config, "-dither")) {
@@ -84,8 +93,15 @@ fe_parse_general_params(cmd_ln_t *config, fe_t * fe)
     fe->window_length = cmd_ln_float32_r(config, "-wlen");
     fe->pre_emphasis_alpha = cmd_ln_float32_r(config, "-alpha");
 
-    fe->num_cepstra = cmd_ln_int32_r(config, "-ncep");
-    fe->fft_size = cmd_ln_int32_r(config, "-nfft");
+    /* PNCC requires some hardcoded values for the time being. */
+    if (fe->cep_type == FE_PNCC) {
+        fe->num_cepstra = 13;
+        fe->fft_size = 1024;
+    }
+    else {
+        fe->num_cepstra = cmd_ln_int32_r(config, "-ncep");
+        fe->fft_size = cmd_ln_int32_r(config, "-nfft");
+    }
 
     /* Check FFT size, compute FFT order (log_2(n)) */
     for (j = fe->fft_size, fe->fft_order = 0; j > 1; j >>= 1, fe->fft_order++) {
@@ -104,15 +120,21 @@ fe_parse_general_params(cmd_ln_t *config, fe_t * fe)
 
     fe->remove_dc = cmd_ln_boolean_r(config, "-remove_dc");
 
-    if (0 == strcmp(cmd_ln_str_r(config, "-transform"), "dct"))
+    /* PNCC requires some hardcoded values for the time being. */
+    if (fe->cep_type == FE_PNCC) {
         fe->transform = DCT_II;
-    else if (0 == strcmp(cmd_ln_str_r(config, "-transform"), "legacy"))
-        fe->transform = LEGACY_DCT;
-    else if (0 == strcmp(cmd_ln_str_r(config, "-transform"), "htk"))
-        fe->transform = DCT_HTK;
+    }
     else {
-        E_ERROR("Invalid transform type (values are 'dct', 'legacy', 'htk')\n");
-        return -1;
+        if (0 == strcmp(cmd_ln_str_r(config, "-transform"), "dct"))
+            fe->transform = DCT_II;
+        else if (0 == strcmp(cmd_ln_str_r(config, "-transform"), "legacy"))
+            fe->transform = LEGACY_DCT;
+        else if (0 == strcmp(cmd_ln_str_r(config, "-transform"), "htk"))
+            fe->transform = DCT_HTK;
+        else {
+            E_ERROR("Invalid transform type (values are 'dct', 'legacy', 'htk')\n");
+            return -1;
+        }
     }
 
     if (cmd_ln_boolean_r(config, "-logspec"))
@@ -129,15 +151,22 @@ fe_parse_melfb_params(cmd_ln_t *config, fe_t *fe, melfb_t * mel)
     mel->sampling_rate = fe->sampling_rate;
     mel->fft_size = fe->fft_size;
     mel->num_cepstra = fe->num_cepstra;
-    mel->num_filters = cmd_ln_int32_r(config, "-nfilt");
+    /* PNCC requires some hardcoded values for the time being. */
+    if (fe->cep_type == FE_PNCC) {
+        mel->num_filters = 40;
+        mel->upper_filt_freq = 130;
+        mel->lower_filt_freq = 6800;
+    }
+    else {
+        mel->num_filters = cmd_ln_int32_r(config, "-nfilt");
+        mel->upper_filt_freq = cmd_ln_float32_r(config, "-upperf");
+        mel->lower_filt_freq = cmd_ln_float32_r(config, "-lowerf");
+    }
 
     if (fe->log_spec)
         fe->feature_dimension = mel->num_filters;
     else
         fe->feature_dimension = fe->num_cepstra;
-
-    mel->upper_filt_freq = cmd_ln_float32_r(config, "-upperf");
-    mel->lower_filt_freq = cmd_ln_float32_r(config, "-lowerf");
 
     mel->doublewide = cmd_ln_boolean_r(config, "-doublebw");
 
@@ -240,32 +269,25 @@ fe_init_auto_r(cmd_ln_t *config)
     fe_create_hamming(fe->hamming_window, fe->frame_size);
 
     /* init and fill appropriate filter structure */
-    if (cmd_ln_boolean_r(config, "-pncc")) {
-        CConfig *ccfg;
-        cmd_ln_set_int32_r(config, "-nfft", 1024);
-        fe->pcc = new CPCC;
-        ccfg = new CConfig;
-        ccfg->ParseCommandLine(config);
-        fe->pcc->Init(ccfg);
-        /* FIXME: Hardcoded values. */
-        fe->feature_dimension = 13;
-    }
-    else {
-        fe->mel_fb = (melfb_t *)ckd_calloc(1, sizeof(*fe->mel_fb));
+    fe->mel_fb = (melfb_t *)ckd_calloc(1, sizeof(*fe->mel_fb));
+    if (fe->cep_type == FE_PNCC)
+        fe->vadmvn = online_vadmvn_init(DEFAULT_VAD_LAMBDA,
+                                        fe->num_cepstra,
+                                        DEFAULT_VAD_WINDOW);
 
-        /* transfer params to mel fb */
-        fe_parse_melfb_params(config, fe, fe->mel_fb);
-        fe_build_melfilters(fe->mel_fb);
-        fe_compute_melcosine(fe->mel_fb);
+    /* transfer params to mel fb */
+    fe_parse_melfb_params(config, fe, fe->mel_fb);
+    fe_build_melfilters(fe->mel_fb);
+    fe_compute_melcosine(fe->mel_fb);
 
-        fe->spec = (powspec_t *)ckd_calloc(fe->fft_size, sizeof(*fe->spec));
-        fe->mfspec = (powspec_t *)ckd_calloc(fe->mel_fb->num_filters, sizeof(*fe->mfspec));
+    fe->spec = (powspec_t *)ckd_calloc(fe->fft_size, sizeof(*fe->spec));
+    fe->mfspec = (powspec_t *)ckd_calloc(fe->mel_fb->num_filters, sizeof(*fe->mfspec));
 
-        /* create twiddle factors */
-        fe->ccc = (frame_t *)ckd_calloc(fe->fft_size / 4, sizeof(*fe->ccc));
-        fe->sss = (frame_t *)ckd_calloc(fe->fft_size / 4, sizeof(*fe->sss));
-        fe_create_twiddle(fe);
-    }
+    /* create twiddle factors */
+    fe->ccc = (frame_t *)ckd_calloc(fe->fft_size / 4, sizeof(*fe->ccc));
+    fe->sss = (frame_t *)ckd_calloc(fe->fft_size / 4, sizeof(*fe->sss));
+    fe_create_twiddle(fe);
+
     /* Temporary buffers. */
     fe->spch = (int16 *)ckd_calloc(fe->frame_size, sizeof(*fe->spch));
     fe->frame = (frame_t *)ckd_calloc(fe->fft_size, sizeof(*fe->frame));
@@ -350,11 +372,11 @@ fe_process_frames(fe_t *fe,
                   int32 *inout_nframes)
 {
     int32 frame_count;
-    int i, n_overflow, orig_n_overflow;
+    int outidx, i, n, n_overflow, orig_n_overflow;
     int16 const *orig_spch;
 
     /* In the special case where there is no output buffer, return the
-     * number of frames which would be generated. */
+     * maximum number of frames which would be generated. */
     if (buf_cep == NULL) {
         if (*inout_nsamps + fe->num_overflow_samps < (size_t)fe->frame_size)
             *inout_nframes = 0;
@@ -362,7 +384,7 @@ fe_process_frames(fe_t *fe,
             *inout_nframes = 1
                 + ((*inout_nsamps + fe->num_overflow_samps - fe->frame_size)
                    / fe->frame_shift);
-        return 0;
+        return *inout_nframes;
     }
 
     /* Are there not enough samples to make at least 1 frame? */
@@ -397,6 +419,8 @@ fe_process_frames(fe_t *fe,
     /* Limit it to the number of output frames available. */
     if (frame_count > *inout_nframes)
         frame_count = *inout_nframes;
+    /* Index of output frame. */
+    outidx = 0;
 
     /* Start processing, taking care of any incoming overflow. */
     if (fe->num_overflow_samps) {
@@ -406,7 +430,9 @@ fe_process_frames(fe_t *fe,
         memcpy(fe->overflow_samps + fe->num_overflow_samps,
                *inout_spch, offset * sizeof(**inout_spch));
         fe_read_frame(fe, fe->overflow_samps, fe->frame_size);
-        fe_write_frame(fe, buf_cep[0]);
+        if ((n = fe_write_frame(fe, buf_cep[outidx])) < 0)
+            return -1;
+        outidx += n;
         /* Update input-output pointers and counters. */
         *inout_spch += offset;
         *inout_nsamps -= offset;
@@ -414,12 +440,16 @@ fe_process_frames(fe_t *fe,
     }
     else {
         fe_read_frame(fe, *inout_spch, fe->frame_size);
-        fe_write_frame(fe, buf_cep[0]);
+        if ((n = fe_write_frame(fe, buf_cep[outidx])) < 0)
+            return -1;
+        outidx += n;
         /* Update input-output pointers and counters. */
         *inout_spch += fe->frame_size;
         *inout_nsamps -= fe->frame_size;
     }
     /* Update the number of remaining frames. */
+    /* FIXME: Actually we might want to use this rather than
+     * frame_count to bound the loop below? */
     --*inout_nframes;
 
     /* Process all remaining frames. */
@@ -428,7 +458,9 @@ fe_process_frames(fe_t *fe,
         assert(*inout_nframes > 0);
 
         fe_shift_frame(fe, *inout_spch, fe->frame_shift);
-        fe_write_frame(fe, buf_cep[i]);
+        if ((n = fe_write_frame(fe, buf_cep[outidx])) < 0)
+            return -1;
+        outidx += n;
         /* Update input-output pointers and counters. */
         *inout_spch += fe->frame_shift;
         *inout_nsamps -= fe->frame_shift;
@@ -481,8 +513,8 @@ fe_process_frames(fe_t *fe,
     }
 
     /* Finally update the frame counter with the number of frames we procesed. */
-    *inout_nframes = frame_count;
-    return 0;
+    *inout_nframes = outidx; /* FIXME: Not sure why I wrote it this way... */
+    return outidx;
 }
 
 int
@@ -556,6 +588,8 @@ fe_free(fe_t * fe)
         ckd_free(fe->mel_fb->filt_coeffs);
         ckd_free(fe->mel_fb);
     }
+    if (fe->vadmvn)
+        online_vadmvn_free(fe->vadmvn);
     ckd_free(fe->spch);
     ckd_free(fe->frame);
     ckd_free(fe->ccc);

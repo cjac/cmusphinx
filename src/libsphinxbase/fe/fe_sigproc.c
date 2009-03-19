@@ -1010,6 +1010,17 @@ fe_mel_cep(fe_t * fe, mfcc_t *mfcep)
     return;
 }
 
+extern double const gammatone_1024FFT_40Ch_130L_6800H[40][512];
+void
+fe_compute_pncc(fe_t *fe, mfcc_t *fea)
+{
+    /* Apply gammatone filter bank. */
+
+    /* Apply power non-linearity. */
+
+    /* Do DCT. */
+}
+
 void
 fe_spec2cep(fe_t * fe, const powspec_t * mflogspec, mfcc_t * mfcep)
 {
@@ -1095,21 +1106,17 @@ fe_dct3(fe_t * fe, const mfcc_t * mfcep, powspec_t * mflogspec)
 int32
 fe_write_frame(fe_t * fe, mfcc_t * fea)
 {
-    if (fe->pcc) {
-	float *pcc_coeff = fe->pcc->Run(fe->frame);
-	int i;
-
-	for (i = 0; i < 13; ++i)
-	    fea[i] = FLOAT2MFCC(pcc_coeff[i]);
+    fe_spec_magnitude(fe);
+    if (fe->cep_type == FE_PNCC) {
+        fe_compute_pncc(fe, fea);
+        return online_vadmvn_run(fe->vadmvn, fea);
     }
     else {
-	fe_spec_magnitude(fe);
-	fe_mel_spec(fe);
+        fe_mel_spec(fe);
 	fe_mel_cep(fe, fea);
 	fe_lifter(fe, fea);
+        return 1;
     }
-
-    return 0;
 }
 
 void *

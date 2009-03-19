@@ -43,7 +43,9 @@ struct online_vadmvn_s {
 	// These are actually used for.. silence skipping
 	int iSilSkip; 
 	int iCountSil;
-	
+
+	float32 *pInFeat;
+
 	double* pdOnlineMean; 
 	// 0.99
 	double* pdOnlineShortMean;       // 0.9?
@@ -71,8 +73,6 @@ struct online_vadmvn_s {
 
 online_vadmvn_t * online_vadmvn_init(double dLamda, int iFeatVectLen, int iBufferSize);
 void online_vadmvn_free(online_vadmvn_t *self);
-int32 online_vadmvn_run(online_vadmvn_t *self,
-			float32* pOutFeat, int32 iOutFeatLen, 
-			float32* pInFeat, int32 iInFeatLen);
+int32 online_vadmvn_run(online_vadmvn_t *self, float32 *inout_feat);
 
 #endif /* __ONLINE_VADMVN_H__ */

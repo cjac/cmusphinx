@@ -122,6 +122,14 @@ struct melfb_s {
 /* sqrt(1/2), also used for unitary DCT-II/DCT-III */
 #define SQRT_HALF FLOAT2MFCC(0.707106781186548)
 
+/**
+ * Types of cepstra computed by this front-end
+ */
+enum fe_cep_type_e {
+    FE_MFCC,
+    FE_PNCC
+};
+
 /** Structure for the front-end computation. */
 struct fe_s {
     cmd_ln_t *config;
@@ -149,7 +157,7 @@ struct fe_s {
 
     int16 frame_counter;
     uint8 start_flag;
-    uint8 reserved;
+    uint8 cep_type; /* FE_MFCC or FE_PNCC */
 
     /* Twiddle factors for FFT. */
     frame_t *ccc, *sss;
