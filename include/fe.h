@@ -402,7 +402,7 @@ int fe_free(fe_t *fe);
  * @param spch Speech samples (signed 16-bit linear PCM)
  * @param nsamps Number of samples in <code>spch</code>
  * @param buf_cep Buffer which will receive one frame of features.
- * @return 0 for success, <0 for error (see enum fe_error_e)
+ * @return number of frames computed or <0 for error (see enum fe_error_e)
  */
 SPHINXBASE_EXPORT
 int fe_process_frame(fe_t *fe, int16 const *spch,
@@ -445,14 +445,15 @@ int fe_process_frame(fe_t *fe, int16 const *spch,
  *                     process.
  *                     Output: Number of samples remaining in input buffer.
  * @param buf_cep Two-dimensional buffer (allocated with
- *                ckd_calloc_2d()) which will receive frames of output data.
- *                If NULL, no actual processing will be done, and the number
- *                of output frames which would be generated is returned in
+ *                ckd_calloc_2d()) which will receive frames of output
+ *                data.  If NULL, no actual processing will be done,
+ *                and the maximum number of output frames which would
+ *                be generated is returned in
  *                <code>*inout_nframes</code>.
  * @param inout_nframes Input: Pointer to maximum number of frames to
  *                      generate.
  *                      Output: Number of frames actually generated.
- * @return 0 for success, <0 for failure (see enum fe_error_e)
+ * @return number of frames generated or <0 for failure (see enum fe_error_e)
  */
 SPHINXBASE_EXPORT
 int fe_process_frames(fe_t *fe,
