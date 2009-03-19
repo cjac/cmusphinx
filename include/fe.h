@@ -453,7 +453,7 @@ int fe_process_frame(fe_t *fe, int16 const *spch,
  * @param inout_nframes Input: Pointer to maximum number of frames to
  *                      generate.
  *                      Output: Number of frames actually generated.
- * @return number of frames generated or <0 for failure (see enum fe_error_e)
+ * @return 0 for success <0 for failure (see enum fe_error_e)
  */
 SPHINXBASE_EXPORT
 int fe_process_frames(fe_t *fe,

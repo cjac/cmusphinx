@@ -514,7 +514,7 @@ fe_process_frames(fe_t *fe,
 
     /* Finally update the frame counter with the number of frames we procesed. */
     *inout_nframes = outidx; /* FIXME: Not sure why I wrote it this way... */
-    return outidx;
+    return 0;
 }
 
 int
@@ -536,31 +536,28 @@ fe_process_utt(fe_t * fe, int16 const * spch, size_t nsamps,
     *cep_block = cep;
 
     /* Backward compatibility. */
-    return (rv >= 0) ? 0 : -1;
+    return rv;
 }
 
 
 int32
 fe_end_utt(fe_t * fe, mfcc_t * cepvector, int32 * nframes)
 {
-    int32 frame_count;
-
     /* Process any remaining data. */
     if (fe->num_overflow_samps > 0) {
         fe_read_frame(fe, fe->overflow_samps, fe->num_overflow_samps);
         fe_write_frame(fe, cepvector);
-        frame_count = 1;
+        *nframes = 1;
     }
     else {
-        frame_count = 0;
+        *nframes = 0;
     }
 
     /* reset overflow buffers... */
     fe->num_overflow_samps = 0;
     fe->start_flag = 0;
 
-    *nframes = frame_count;
-    return frame_count;
+    return 0;
 }
 
 fe_t *
