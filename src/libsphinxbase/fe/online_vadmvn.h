@@ -68,7 +68,6 @@ struct online_vadmvn_s {
 	double* pdMeanSubFeat;
 	
 	int     iFrameCount;
-	int     iFeatVecLen;
 };
 
 online_vadmvn_t * online_vadmvn_init(double dLamda, int iFeatVectLen, int iBufferSize);

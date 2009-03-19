@@ -154,12 +154,8 @@ online_vadmvn_init(double dLamda,
     self->iCountSil = 0;
     self->iFeatVectLen  = iFeatVectLen;
     self->iBufferSize   = iBufferSize;
-
-    if (iBufferSize > 0)
-    {
-	self->ppfCepBuffer = ckd_calloc_2d(iBufferSize, self->iFeatVecLen,
+    self->ppfCepBuffer = ckd_calloc_2d(iBufferSize, self->iFeatVectLen,
 					   sizeof(*self->ppfCepBuffer));
-    }
 
 #define ALLOC(member, count)				\
     member = ckd_calloc((count), sizeof(*member))
@@ -173,12 +169,15 @@ online_vadmvn_init(double dLamda,
     ALLOC(self->pdOnlineLongMean, iFeatVectLen);
     ALLOC(self->pdOnlineVar, iFeatVectLen);
 
-    return (0);
+    return self;
 }
 
 void
 online_vadmvn_free(online_vadmvn_t *self)
 {
+    if (self == NULL)
+	return;
+
     ckd_free(self->pInFeat);
     ckd_free(self->pdOnlineMean);
     ckd_free(self->pdOnlineLongMean);
@@ -212,27 +211,28 @@ int32 online_vadmvn_run(online_vadmvn_t *self, float32* inout_feat)
     }
 
     // Look-ahead buffer
-    if (self->iBufferSize > 0)
+    // Storing the values in the buffer...
+    if (self->iFrameCount < self->iBufferSize)
     {
-	// Storing the values in the buffer...
-	if (self->iFrameCount < self->iBufferSize)
-	{
-	    // Let's just put in the buffer
-	    memcpy(self->ppfCepBuffer[self->iFrameCount], self->pInFeat, sizeof(float32) * self->iFeatVectLen);
-	}
-	else
-	{
-	    // Let's update the buffer..
-	    for (i = 0; i < self->iBufferSize - 1; i++)
-	    {
-		memcpy(self->ppfCepBuffer[i], self->ppfCepBuffer[i + 1], sizeof(float32) * self->iFeatVectLen);
-	    }
-
-	    memcpy(self->ppfCepBuffer[self->iBufferSize - 1], self->pInFeat, sizeof(float32) * self->iFeatVectLen);
-	}
+	// Let's just put in the buffer
+	memcpy(self->ppfCepBuffer[self->iFrameCount], self->pInFeat,
+	       sizeof(float32) * self->iFeatVectLen);
     }
+    else
+    {
+	// Let's update the buffer..
+	for (i = 0; i < self->iBufferSize - 1; i++)
+	{
+	    memcpy(self->ppfCepBuffer[i], self->ppfCepBuffer[i + 1],
+		   sizeof(float32) * self->iFeatVectLen);
+	}
+
+	memcpy(self->ppfCepBuffer[self->iBufferSize - 1], self->pInFeat,
+	       sizeof(float32) * self->iFeatVectLen);
+    }
+
     // If we do not use the previous stat information
-    if (self->iFrameCount == self->iBufferSize && self->iBufferSize > 0)
+    if (self->iFrameCount == self->iBufferSize)
     {
 	// Online mean is just mean of the previous data.
 	for (i = 0; i < self->iFeatVectLen; i++)
@@ -379,15 +379,8 @@ int32 online_vadmvn_run(online_vadmvn_t *self, float32* inout_feat)
 
 	    if (self->iFrameCount >= self->iBufferSize)
 	    {
-		if (self->iBufferSize > 0)
-		{
-		    /* FIXME: Chanwoo's error here, should be adStdPCC? */
-		    inout_feat[i] =  (float32)( (self->ppfCepBuffer[0][i] - self->pdOnlineMean[i]) / sqrt(self->pdOnlineVar[i]) * ms_adStdMFCC[i] * 2 );
-		}
-		else
-		{
-		    inout_feat[i] =  (float32)((self->pInFeat[i] - inout_feat[i]) / sqrt(self->pdOnlineVar[i]) * ms_adStdPCC[i]) * 0.2;
-		}
+		/* FIXME: Chanwoo's error here, should be adStdPCC? */
+		inout_feat[i] =  (float32)( (self->ppfCepBuffer[0][i] - self->pdOnlineMean[i]) / sqrt(self->pdOnlineVar[i]) * ms_adStdMFCC[i] * 2 );
 	    }
 			
 	} // for

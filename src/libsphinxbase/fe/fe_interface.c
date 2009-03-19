@@ -154,8 +154,8 @@ fe_parse_melfb_params(cmd_ln_t *config, fe_t *fe, melfb_t * mel)
     /* PNCC requires some hardcoded values for the time being. */
     if (fe->cep_type == FE_PNCC) {
         mel->num_filters = 40;
-        mel->upper_filt_freq = 130;
-        mel->lower_filt_freq = 6800;
+        mel->lower_filt_freq = 130;
+        mel->upper_filt_freq = 6800;
     }
     else {
         mel->num_filters = cmd_ln_int32_r(config, "-nfilt");
