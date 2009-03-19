@@ -1001,9 +1001,9 @@ fe_mel_cep(fe_t * fe, mfcc_t *mfcep)
         }
     }
     else if (fe->transform == DCT_II)
-        fe_dct2(fe, mfspec, mfcep, 0);
+        fe_dct2(fe, mfspec, mfcep, FALSE);
     else if (fe->transform == DCT_HTK)
-        fe_dct2(fe, mfspec, mfcep, 1);
+        fe_dct2(fe, mfspec, mfcep, TRUE);
     else
         fe_spec2cep(fe, mfspec, mfcep);
 
@@ -1012,13 +1012,24 @@ fe_mel_cep(fe_t * fe, mfcc_t *mfcep)
 
 extern double const gammatone_1024FFT_40Ch_130L_6800H[40][512];
 void
-fe_compute_pncc(fe_t *fe, mfcc_t *fea)
+fe_compute_pncc(fe_t *fe, mfcc_t *pncc)
 {
-    /* Apply gammatone filter bank. */
+    int j, k;
 
-    /* Apply power non-linearity. */
+    /* Apply gammatone filter bank. */
+    for (j = 0; j < 40; ++j) {
+        fe->mfspec[j] = 0.0;
+        for (k = 0; k < 512; ++k) {
+            fe->mfspec[j] += fe->spec[k]
+                * gammatone_1024FFT_40Ch_130L_6800H[j][k]
+                * gammatone_1024FFT_40Ch_130L_6800H[j][k];
+        }
+        /* Apply power non-linearity. */
+        fe->mfspec[j] = pow(fe->mfspec[j], 0.1);
+    }
 
     /* Do DCT. */
+    fe_dct2(fe, fe->mfspec, pncc, FALSE);
 }
 
 void
