@@ -10,7 +10,9 @@ libsphinxfe_la_SOURCES =			\
 	fixlog.c                                \
 	yin.c					\
 	gammatone_1024_40_130_6800.c		\
-	online_vadmvn.c
+	online_vadmvn.c				\
+	complex_fft.c				\
+	phase_itd.c
 
 noinst_HEADERS =				\
 	fe_internal.h				\
@@ -18,7 +20,8 @@ noinst_HEADERS =				\
 	fe_warp.h				\
 	fe_warp_inverse_linear.h		\
 	fe_warp_piecewise_linear.h		\
-	online_vadmvn.h
+	online_vadmvn.h				\
+	complex_fft.h
 
 INCLUDES = -I$(top_srcdir)/include \
            -I$(top_builddir)/include 

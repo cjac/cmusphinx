@@ -188,6 +188,7 @@ online_vadmvn_free(online_vadmvn_t *self)
     ckd_free(self->pdOnlineMinusMean);
     ckd_free(self->pdOnlinePlusMean);
     ckd_free_2d(self->ppfCepBuffer);
+    ckd_free(self);
 }
 
 // Programmed by Chanwoo Kim

@@ -1,6 +1,6 @@
-check_PROGRAMS = test_fe test_pitch
+check_PROGRAMS = test_fe test_pitch test_pncc
 
-TESTS = test_fe test_pitch
+TESTS = test_fe test_pitch test_pncc
 INCLUDES = \
 	-I$(top_srcdir)/include \
 	-I$(top_builddir)/include \
