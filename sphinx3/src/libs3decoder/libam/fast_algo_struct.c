@@ -157,7 +157,7 @@ beam_free(beam_t * b)
 }
 
 pl_t *
-pl_init(int32 pheurtype, int32 pl_beam, int32 n_ciphone, logmath_t *logmath)
+pl_init(int32 pheurtype, float64 pl_beam, int32 n_ciphone, logmath_t *logmath)
 {
     pl_t *pl;
     pl = (pl_t *) ckd_calloc(1, sizeof(pl_t));

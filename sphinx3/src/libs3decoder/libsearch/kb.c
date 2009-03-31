@@ -233,7 +233,7 @@ kb_init(kb_t * kb, cmd_ln_t *config)
     /* STRUCTURE INITIALIZATION: Initialize the phoneme lookahead data structure */
     if (cmd_ln_exists_r(config, "-pl_beam")) {
         kb->pl = pl_init(cmd_ln_int32_r(config, "-pheurtype"),
-                         cmd_ln_int32_r(config, "-pl_beam"), mdef_n_ciphone(mdef),
+                         cmd_ln_float64_r(config, "-pl_beam"), mdef_n_ciphone(mdef),
                          kbcore->logmath
             );
 

@@ -357,7 +357,7 @@ void fast_gmm_free (fast_gmm_t *fg /**< Input: structure to free*/
  * @return an initialized phoneme lookahead data structure
  */
 pl_t* pl_init(int32 pheurtype, /**< Input: Phoneme lookahead heuristic types TBD: (NOT DETAIL ENOUGH)*/
-	      int32 pl_beam,  /**< Input: Phoneme lookahead beam */
+	      float64 pl_beam,  /**< Input: Phoneme lookahead beam */
 	      int32 n_ciphone, /**< Input: Number of CI phones used in the cache size. */
 	      logmath_t *logmath
     );
