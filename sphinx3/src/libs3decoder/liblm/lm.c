@@ -2142,9 +2142,8 @@ swap_tg32(tg32_t * t32)
 int32
 lm_rawscore(lm_t * lm, int32 score)
 {
-
     score -= lm->wip;
-    score /= (int32) lm->lw;
+    score /= lm->lw;
 
     return score;
 }
