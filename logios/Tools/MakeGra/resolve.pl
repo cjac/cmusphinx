@@ -76,7 +76,7 @@ while (<IN>) {
 	    close(CLASS);
 	}
     }
-    if ( $flat eq "" ) { print FLAT "$line\n"; } else { print FLAT "$flat\n"; }
+    if ( $flat eq "" ) { print FLAT "$line\n"; } else { print FLAT "$flat$line\n"; }
 }
 close(IN);
 close(ABS);
