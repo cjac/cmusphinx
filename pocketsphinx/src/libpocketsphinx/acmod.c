@@ -74,14 +74,7 @@ static int32 acmod_process_mfcbuf(acmod_t *acmod);
 static int
 acmod_init_am(acmod_t *acmod)
 {
-    char const *mdeffn, *tmatfn, *featparams;
-
-    /* Look for feat.params in acoustic model dir. */
-    if ((featparams = cmd_ln_str_r(acmod->config, "-featparams"))) {
-        if (cmd_ln_parse_file_r(acmod->config, feat_defn, featparams, FALSE) != NULL) {
-	    E_INFO("Parsed model-specific feature parameters from %s\n", featparams);
-        }
-    }
+    char const *mdeffn, *tmatfn;
 
     /* Read model definition. */
     if ((mdeffn = cmd_ln_str_r(acmod->config, "-mdef")) == NULL) {
@@ -171,7 +164,8 @@ acmod_init_feat(acmod_t *acmod)
                           cmd_ln_float32_r(acmod->config, "-agcthresh"));
     }
 
-    if (cmd_ln_exists_r(acmod->config, "-cmninit")) {
+    if (acmod->fcb->cmn_struct
+        && cmd_ln_exists_r(acmod->config, "-cmninit")) {
         char *c, *cc, *vallist;
         int32 nvals;
 
@@ -227,9 +221,14 @@ acmod_init(cmd_ln_t *config, logmath_t *lmath, fe_t *fe, feat_t *fcb)
     acmod->lmath = lmath;
     acmod->state = ACMOD_IDLE;
 
-    /* Load acoustic model parameters. */
-    if (acmod_init_am(acmod) < 0)
-        goto error_out;
+    char const *featparams;
+
+    /* Look for feat.params in acoustic model dir. */
+    if ((featparams = cmd_ln_str_r(acmod->config, "-featparams"))) {
+        if (cmd_ln_parse_file_r(acmod->config, feat_defn, featparams, FALSE) != NULL) {
+	    E_INFO("Parsed model-specific feature parameters from %s\n", featparams);
+        }
+    }
 
     if (fe) {
         if (acmod_fe_mismatch(acmod, fe))
@@ -255,6 +254,10 @@ acmod_init(cmd_ln_t *config, logmath_t *lmath, fe_t *fe, feat_t *fcb)
         if (acmod_init_feat(acmod) < 0)
             goto error_out;
     }
+
+    /* Load acoustic model parameters. */
+    if (acmod_init_am(acmod) < 0)
+        goto error_out;
 
     /* The MFCC buffer needs to be at least as large as the dynamic
      * feature window.  */
