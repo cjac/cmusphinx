@@ -132,7 +132,7 @@ main(int32 argc, char *argv[])
 
     config = cmd_ln_get();
 
-    logmath = logs3_init(cmd_ln_float32_r(config, "-logbase"), 1, cmd_ln_int32_r(config, "-log3table"));      /*Report Progress, use log table */
+    logmath = logs3_init(cmd_ln_float64_r(config, "-logbase"), 1, cmd_ln_int32_r(config, "-log3table"));      /*Report Progress, use log table */
 
     /* Load means/vars but DO NOT precompute variance inverses or determinants */
     mgau = mgau_init(cmd_ln_str_r(config, "-mean"),

@@ -174,7 +174,7 @@ main(int _argc, char **_argv)
 
     n_ceps = cmd_ln_int32_r(config, "-ncep");
     frate = cmd_ln_int32_r(config, "-frate");
-    logmath = logs3_init(cmd_ln_float32_r(config, "-logbase"), 0, 0);
+    logmath = logs3_init(cmd_ln_float64_r(config, "-logbase"), 0, 0);
 
     s3_endpointer_init(&ep, cmd_ln_str_r(config, "-mean"), cmd_ln_str_r(config, "-var"), cmd_ln_float32_r(config, "-varfloor"), cmd_ln_str_r(config, "-mixw"), cmd_ln_float32_r(config, "-mixwfloor"), cmd_ln_str_r(config, "-senmgau"), 1, /* post classify.  fixed at TRUE for now */
                        cmd_ln_int32_r(config, "-begin_window"),

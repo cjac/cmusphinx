@@ -465,7 +465,7 @@ kbcore_init(cmd_ln_t *config)
         ckd_free(pfile);
     }
 
-    if ((kb->logmath = logmath_init(cmd_ln_float32_r(config, "-logbase"), 0,
+    if ((kb->logmath = logmath_init(cmd_ln_float64_r(config, "-logbase"), 0,
                                     cmd_ln_int32_r(config, "-log3table"))) == NULL)
         E_FATAL("Error in logmath_init, exit\n");
 

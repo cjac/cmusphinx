@@ -346,7 +346,7 @@ main(int argc, char *argv[])
 
     config = cmd_ln_get();
 
-    logmath = logs3_init((float64) cmd_ln_float32_r(config, "-logbase"), 1,
+    logmath = logs3_init(cmd_ln_float64_r(config, "-logbase"), 1,
                          cmd_ln_int32_r(config, "-log3table"));
 
     E_INFO("Value of base %f \n", cmd_ln_float32_r(config, "-logbase"));
