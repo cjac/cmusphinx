@@ -1254,6 +1254,18 @@ all files need to decode with SPHINX-2.
 </p>
 
 <p>
+During training a few noncritical errors will appear like:
+<pre>
+This step had 6 ERROR messages and 2 WARNING messages. Please check the log file for details. 
+</pre>
+Don't care about them, it's perfectly fine to have several alignment errors in
+a database. The main sources of errors are small amount of data like in
+an4 and the bad quality of recordings. This cause "final state not reached"
+errors in the log or "mgau less then zero" errors. If there are too many errors, it 
+means something goes wrong though and it's time to check the training setup.
+</p>
+
+<p>
 </p>
 
 <h2><a name="prelimdecode"></a>How to perform a preliminary decode</h2>
