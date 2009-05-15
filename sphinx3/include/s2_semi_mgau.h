@@ -42,13 +42,17 @@
 #ifndef __S2_SEMI_MGAU_H__
 #define __S2_SEMI_MGAU_H__
 
+/* SphinxBase headesr. */
+#include <fe.h>
+#include <feat.h>
 #include <logmath.h>
+#include <mmio.h>
+
+/* Local headers. */
 #include "s3types.h"
-#include "fe.h"
 #include "ascr.h"
 #include "fast_algo_struct.h"
 #include "kdtree.h"
-
 
 #ifdef __cplusplus
 extern "C" {
@@ -58,73 +62,60 @@ extern "C" {
 }
 #endif
 
-#define S2_NUM_ALPHABET	256
-#define S2_NUM_FEATURES	4
-#define S2_MAX_TOPN	6	/* max number of TopN codewords */
+#define SENSCR_SHIFT 10
 
-typedef struct {
-    union {
-        int32	score;
-        int32	dist;	/* distance to next closest vector */
-    } val;
-    int32 codeword;		/* codeword (vector index) */
-} vqFeature_t;
-typedef vqFeature_t *vqFrame_t;
-
-typedef float32 mean_t;
-typedef float32 var_t;
-#define GMMSUB(a,b) ((a)-(b))
-#define GMMADD(a,b) ((a)+(b))
+typedef struct vqFeature_s vqFeature_t;
 
 typedef struct s2_semi_mgau_s s2_semi_mgau_t;
 struct s2_semi_mgau_s {
-    logmath_t *logmath;
-    int32   detArr[S2_NUM_FEATURES*S2_NUM_ALPHABET];	/* storage for det vectors */
-    int32   *dets[S2_NUM_FEATURES];	/* det values foreach feature */
-    mean_t  *means[S2_NUM_FEATURES];	/* mean vectors foreach feature */
-    var_t   *vars[S2_NUM_FEATURES];	/* var vectors foreach feature */
+    int frame_idx;      /**< frame counter. */
+    cmd_ln_t *config;   /* configuration parameters */
 
-    unsigned char **OPDF_8B[4]; /* mixture weights */
+    mfcc_t  **means;	/* mean vectors foreach feature */
+    mfcc_t  **vars;	/* inverse var vectors foreach feature */
+    mfcc_t  **dets;	/* det values foreach feature */
 
-    int32 topN;
-    int32 CdWdPDFMod;
+    uint8 ***mixw;     /* mixture weight distributions */
+    mmio_file_t *sendump_mmap;/* memory map for mixw (or NULL if not mmap) */
+
+    int32 *veclen;	/* Length of feature streams */
+    int16 n_feat;	/* Number of feature streams */
+    int16 n_density;	/* Number of mixtures per codebook */
+    int32 n_sen;	/* Number of senones */
+    uint8 *topn_beam;   /* Beam for determining per-frame top-N densities */
+    int16 max_topn;
+    int16 ds_ratio;
 
     kd_tree_t **kdtrees;
     uint32 n_kdtrees;
     uint32 kd_maxdepth;
     int32 kd_maxbbi;
-    float64 dcep80msWeight;
-    int32 use20ms_diff_pow;
 
-    int32 num_frames;
-    int32 frame_ds_ratio;
+    vqFeature_t ***topn_hist; /**< Top-N scores and codewords for past frames. */
+    uint8 **topn_hist_n;      /**< Variable top-N for past frames. */
+    vqFeature_t **f;          /**< Topn-N for currently scoring frame. */
+    int n_topn_hist;          /**< Number of past frames tracked. */
 
-    vqFeature_t f[S2_NUM_FEATURES][S2_MAX_TOPN];
-    vqFeature_t lcfrm[S2_MAX_TOPN];
-    vqFeature_t ldfrm[S2_MAX_TOPN];
-    vqFeature_t lxfrm[S2_MAX_TOPN];
-    vqFeature_t vtmp;
+    /* Log-add table for compressed values. */
+    logmath_t *lmath_8b;
+    /* Log-add object for reloading means/variances. */
+    logmath_t *lmath;
 };
 
-s2_semi_mgau_t *s2_semi_mgau_init(const char *mean_path, const char *var_path,
-				  float64 varfloor, const char *mixw_path,
-				  float64 mixwfloor, int32 topn, logmath_t *logmath);
-
-void s2_semi_mgau_free(s2_semi_mgau_t *s);
-
 S3DECODER_EXPORT
-int32 s2_semi_mgau_frame_eval(s2_semi_mgau_t *s,
-			      ascr_t *ascr,
-			      fast_gmm_t *fgmm,
-			      mfcc_t **feat,
-			      int32 frame);
-
-int32 s2_semi_mgau_load_kdtree(s2_semi_mgau_t *s, const char *kdtree_path,
-			       uint32 maxdepth, int32 maxbbi);
-
-#ifdef __cplusplus
-}
-#endif
+s2_semi_mgau_t *s2_semi_mgau_init(cmd_ln_t *config, logmath_t *lmath,
+                                  feat_t *fcb, mdef_t *mdef);
+S3DECODER_EXPORT
+void s2_semi_mgau_free(s2_semi_mgau_t *s);
+S3DECODER_EXPORT
+int s2_semi_mgau_frame_eval(s2_semi_mgau_t *s,
+                            ascr_t *ascr,
+                            fast_gmm_t *fgmm,
+                            mfcc_t **feat,
+                            int32 frame);
+S3DECODER_EXPORT
+int s2_semi_mgau_load_kdtree(s2_semi_mgau_t *s, const char *kdtree_path,
+                             uint32 maxdepth, int32 maxbbi);
 
 
 #endif /*  __S2_SEMI_MGAU_H__ */

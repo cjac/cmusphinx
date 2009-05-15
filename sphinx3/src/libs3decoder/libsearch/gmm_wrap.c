@@ -136,7 +136,7 @@ s3_cd_gmm_compute_sen(void *srch, float32 ** feat, int32 wav_idx)
 
     /* Always use the first buffer in the cache */
     if (kbcore->ms_mgau) {
-        s->senscale = ms_cont_mgau_frame_eval(ascr, ms_mgau, mdef, feat);
+        s->senscale = ms_cont_mgau_frame_eval(ascr, ms_mgau, mdef, feat, wav_idx);
         /* FIXME: Statistics is not correctly updated */
     }
     else if (kbcore->s2_mgau) {

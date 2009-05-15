@@ -55,6 +55,7 @@
 #include "ckd_alloc.h"
 #include "s2_semi_mgau.h"
 
+#define S2_NUM_ALPHABET 256
 #define KDTREE_VERSION 1
 
 static int32

@@ -168,7 +168,8 @@ S3DECODER_EXPORT
 int32 ms_cont_mgau_frame_eval (ascr_t *ascr,   /**< In: An ascr object*/
 			       ms_mgau_model_t *msg, /**< In: A multi-stream mgau mode */
 			       mdef_t *mdef,   /**< In: A mdef */
-			       float32** feat
+			       float32** feat,
+                               int32 frame
     );
 
 

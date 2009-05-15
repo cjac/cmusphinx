@@ -858,7 +858,7 @@ align_utt(char *sent,           /* In: Reference transcript */
         if (kbc->ms_mgau) {
             ms_cont_mgau_frame_eval(ascr,
 				    kbc->ms_mgau,
-				    kbc->mdef, feat[i]);
+				    kbc->mdef, feat[i], i);
         }
         else if (kbc->s2_mgau) {
             s2_semi_mgau_frame_eval(kbc->s2_mgau,

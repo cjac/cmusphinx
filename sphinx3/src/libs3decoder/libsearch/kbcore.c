@@ -318,18 +318,14 @@ s3_am_init(kbcore_t * kbc)
     else if (strcmp(fn, ".s2semi.") == 0) {
         /* SC_VQ initialization. */
         E_INFO("Using Sphinx2 multi-stream GMM computation\n");
-        kbc->s2_mgau = s2_semi_mgau_init(cmd_ln_str_r(config, "-mean"),
-                                         cmd_ln_str_r(config, "-var"),
-                                         cmd_ln_float32_r(config, "-varfloor"),
-                                         cmd_ln_str_r(config, "-mixw"),
-                                         cmd_ln_float32_r(config, "-mixwfloor"),
-                                         cmd_ln_int32_r(config, "-topn"),
-                                         kbc->logmath);
+        kbc->s2_mgau = s2_semi_mgau_init(config, kbc->logmath,
+					 kbcore_fcb(kbc),
+					 kbcore_mdef(kbc));
         if (kbc->mdef && kbc->s2_mgau) {
             /* Verify senone parameters against model definition parameters */
-            if (kbc->mdef->n_sen != kbc->s2_mgau->CdWdPDFMod)
+            if (kbc->mdef->n_sen != kbc->s2_mgau->n_sen)
                 E_FATAL("Mdef #senones(%d) != s2_semi_mgau #PDFs(%d)\n",
-                        kbc->mdef->n_sen, kbc->s2_mgau->CdWdPDFMod);
+                        kbc->mdef->n_sen, kbc->s2_mgau->n_sen);
         }
         /* FIXME: This should probably move as soon as we support kd-trees
          * for other model types. */

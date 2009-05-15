@@ -160,7 +160,11 @@ us a better architecture.
     { "-mixwfloor",\
       ARG_FLOAT32,\
       "0.0000001",\
-      "Senone mixture weights floor (applied to data from -mixw file)" }
+      "Senone mixture weights floor (applied to data from -mixw file)" }, \
+{ "-sendump",                                                           \
+      ARG_STRING,                                                               \
+      NULL,                                                                     \
+      "(S2 GMM computation only) Senone dump (compressed mixture weights) input file" }
 
 #define acoustic_model_command_line_macro() \
     gmm_command_line_macro(), \
@@ -191,7 +195,11 @@ us a better architecture.
     { "-topn", \
       ARG_INT32, \
       "4", \
-      "(S3.0 GMM Computation only) No. of top scoring densities computed in each mixture gaussian codebook (semi-continuous models only)" }
+      "(S3.0 GMM Computation only) No. of top scoring densities computed in each mixture gaussian codebook (semi-continuous models only)" }, \
+{ "-topn_beam",                                                                 \
+      ARG_STRING,                                                               \
+      "0",                                                                     \
+      "(S2 GMM Computation only) Beam width used to determine top-N Gaussians (or a list, per-feature)" }
 
 #define language_model_command_line_macro() \
     { "-lm", \

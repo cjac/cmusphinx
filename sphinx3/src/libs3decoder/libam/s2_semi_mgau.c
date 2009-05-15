@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -33,861 +34,562 @@
  * ====================================================================
  *
  */
-/*
- *
- * HISTORY
- * 
- * $Log$
- * Revision 1.2  2006/04/06  14:03:02  dhdfu
- * Prevent confusion among future generations by calling this s2_semi_mgau instead of sc_vq
- * 
- * Revision 1.1  2006/04/05 20:14:26  dhdfu
- * Add cut-down support for Sphinx-2 fast GMM computation (from
- * PocketSphinx).  This does *not* support Sphinx2 format models, but
- * rather semi-continuous Sphinx3 models.  I'll try to write a model
- * converter at some point soon.
- *
- * Unfortunately the smallest models I have for testing don't do so well
- * on the AN4 test sentence (should use AN4 models, maybe...) so it comes
- * with a "don't panic" warning.
- *
- * Revision 1.4  2006/04/04 15:31:31  dhuggins
- * Remove redundant acoustic score scaling in senone computation.
- *
- * Revision 1.3  2006/04/04 15:24:29  dhuggins
- * Get the meaning of LOG_BASE right (oops!).  Seems to work fine now, at
- * least at logbase=1.0001.
- *
- * Revision 1.2  2006/04/04 14:54:40  dhuggins
- * Add support for s2_semi_mgau - it doesn't crash, but it doesn't work either :)
- *
- * Revision 1.1  2006/04/04 04:25:17  dhuggins
- * Add a cut-down version of sphinx2 fast GMM computation (SCVQ) from
- * PocketSphinx.  Not enabled or tested yet.  Doesn't support Sphinx2
- * models (write an external conversion tool instead, please).  Hopefully
- * this will put an end to me complaining about Sphinx3 being too slow :-)
- *
- * Revision 1.12  2004/12/10 16:48:56  rkm
- * Added continuous density acoustic model handling
- *
- * 
- * 22-Nov-2004  M K Ravishankar (rkm@cs) at Carnegie-Mellon University
- * 		Moved best senone score and best senone within phone
- * 		computation out of here and into senscr module, for
- * 		integrating continuous  models into sphinx2.
- * 
- * 19-Nov-97  M K Ravishankar (rkm@cs) at Carnegie-Mellon University
- * 	Added ability to read power variance file if it exists.
- * 
- * 19-Jun-95  M K Ravishankar (rkm@cs) at Carnegie-Mellon University
- * 	Added scvq_set_psen() and scvq_set_bestpscr().  Modified SCVQScores_all to
- * 	also compute best senone score/phone.
- * 
- * 19-May-95  M K Ravishankar (rkm@cs) at Carnegie-Mellon University
- * 	Added check for bad VQ scores in SCVQScores and SCVQScores_all.
- * 
- * 01-Jul-94  M K Ravishankar (rkm@cs) at Carnegie-Mellon University
- * 	In SCVQScores, returned result from SCVQComputeScores_opt().
- * 
- * 01-Nov-93  M K Ravishankar (rkm@cs) at Carnegie-Mellon University
- * 	Added compressed, 16-bit senone probs option.
- * 
- *  6-Apr-92  Fil Alleva (faa) at Carnegie-Mellon University
- *	- added SCVQAgcSet() and agcType.
- *
- * 08-Oct-91  Eric Thayer (eht) at Carnegie-Mellon University
- *	Created from system by Xuedong Huang
- * 22-Oct-91  Eric Thayer (eht) at Carnegie-Mellon University
- *	Installed some efficiency improvements to acoustic scoring
- */
 
+/* System headers */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 #include <limits.h>
 #include <math.h>
+#include <sys/types.h>
 
-#include "s3types.h"
-#include "logs3.h"
+#ifndef M_PI 
+#define M_PI 3.14159265358979323846 
+#endif
+
+/* SphinxBase headers */
+#include <sphinx_config.h>
+#include <cmd_ln.h>
+#include <fixpoint.h>
+#include <ckd_alloc.h>
+#include <bio.h>
+#include <err.h>
+#include <prim_type.h>
+#include <vector.h>
+
+/* Local headers */
 #include "s2_semi_mgau.h"
-#include "err.h"
 #include "kdtree.h"
 #include "ckd_alloc.h"
 #include "bio.h"
-#include "vector.h"
 
 #define MGAU_MIXW_VERSION	"1.0"   /* Sphinx-3 file format version for mixw */
 #define MGAU_PARAM_VERSION	"1.0"   /* Sphinx-3 file format version for mean/var */
-
-/* centered 5 frame difference of c[0]...c[12] with centered 9 frame
- * of c[1]...c[12].  Don't ask me why it was designed this way! */
-#define DCEP_VECLEN	25
-#define DCEP_LONGWEIGHT	0.5
-#define POW_VECLEN	3       /* pow, diff pow, diff diff pow */
-
-#define CEP_VECLEN	13
-#define POW_VECLEN	3
-#define CEP_SIZE	CEP_VECLEN
-#define POW_SIZE	POW_VECLEN
-
 #define NONE		-1
 #define WORST_DIST	(int32)(0x80000000)
-#define BTR		>
-#define NEARER		>
-#define WORSE		<
-#define FARTHER		<
 
-enum { CEP_FEAT = 0, DCEP_FEAT = 1, POW_FEAT = 2, DDCEP_FEAT = 3 };
-static int32 fLenMap[S2_NUM_FEATURES] = {
-    CEP_VECLEN, DCEP_VECLEN, POW_VECLEN, CEP_VECLEN
+struct vqFeature_s {
+    int32 score; /* score or distance */
+    int32 codeword; /* codeword (vector index) */
 };
 
-/*
- * In terms of already shifted and negated quantities (i.e. dealing with
- * 8-bit quantized values):
- */
-#define LOG_ADD(p1,p2)	(logadd_tbl[(p1<<8)+(p2)])
-
-extern unsigned char logadd_tbl[];
+/** Subtract GMM component b (assumed to be positive) and saturate */
+#ifdef FIXED_POINT
+#define GMMSUB(a,b) \
+	(((a)-(b) > a) ? (INT_MIN) : ((a)-(b)))
+/** Add GMM component b (assumed to be positive) and saturate */
+#define GMMADD(a,b) \
+	(((a)+(b) < a) ? (INT_MAX) : ((a)+(b)))
+#else
+#define GMMSUB(a,b) ((a)-(b))
+#define GMMADD(a,b) ((a)+(b))
+#endif
 
 #ifndef MIN
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
 #endif
 
-/*
- * Compute senone scores.
+
+#if defined(__STDC_VERSION__) && (__STDC_VERSION__ == 199901L)
+#define LOGMATH_INLINE inline
+#elif defined(__GNUC__)
+#define LOGMATH_INLINE static inline
+#elif defined(_MSC_VER)
+#define LOGMATH_INLINE __inline
+#else
+#define LOGMATH_INLINE static
+#endif
+
+/* Allocate 0..159 for negated quantized mixture weights and 0..96 for
+ * negated normalized acoustic scores, so that the combination of the
+ * two (for a single mixture) can never exceed 255. */
+#define MAX_NEG_MIXW 159 /**< Maximum negated mixture weight value. */
+#define MAX_NEG_ASCR 96  /**< Maximum negated acoustic score value. */
+
+/**
+ * Quickly log-add two negated log probabilities.
+ *
+ * @param lmath The log-math object
+ * @param mlx A negative log probability (0 < mlx < 255)
+ * @param mly A negative log probability (0 < mly < 255)
+ * @return -log(exp(-mlx)+exp(-mly))
+ *
+ * We can do some extra-fast log addition since we know that
+ * mixw+ascr is always less than 256 and hence x-y is also always less
+ * than 256.  This relies on some cooperation from logmath_t which
+ * will never produce a logmath table smaller than 256 entries.
+ *
+ * Note that the parameters are *negated* log probabilities (and
+ * hence, are positive numbers), as is the return value.  This is the
+ * key to the "fastness" of this function.
  */
-static int32 SCVQComputeScores(s2_semi_mgau_t * s, ascr_t * ascr);
-
-/*
- * Optimization for various topN cases, PDF-size(#bits) cases of
- * SCVQCoomputeScores() and SCVQCoomputeScores_all().
- */
-static int32 get_scores4_8b(s2_semi_mgau_t * s, ascr_t * ascr);
-static int32 get_scores2_8b(s2_semi_mgau_t * s, ascr_t * ascr);
-static int32 get_scores1_8b(s2_semi_mgau_t * s, ascr_t * ascr);
-static int32 get_scores_8b(s2_semi_mgau_t * s, ascr_t * ascr);
-
-static void
-cepDist0(s2_semi_mgau_t * s, fast_gmm_t * fgmm, int32 frame, mfcc_t * z)
+LOGMATH_INLINE int
+fast_logmath_add(logmath_t *lmath, int mlx, int mly)
 {
-    register int32 i, j, k, cw;
-    vqFeature_t *worst, *best, *topn, *cur;     /*, *src; */
-    mean_t diff, sqdiff, compl; /* diff, diff^2, component likelihood */
-    mfcc_t *obs;
-    mean_t *mean;
-    var_t *var = s->vars[(int32) CEP_FEAT];
-    int32 *det = s->dets[(int32) CEP_FEAT], *detP;
-    int32 *detE = det + S2_NUM_ALPHABET;
-    var_t d;
-    kd_tree_node_t *node;
-    vqFeature_t vtmp;
+    logadd_t *t = LOGMATH_TABLE(lmath);
+    int d, r;
 
-    best = topn = s->f[CEP_FEAT];
-    assert(z != NULL);
-    assert(topn != NULL);
-    memcpy(topn, s->lcfrm, sizeof(vqFeature_t) * s->topN);
-    worst = topn + (s->topN - 1);
-    if (s->kdtrees)
-        node =
-            eval_kd_tree(s->kdtrees[(int32) CEP_FEAT], z, s->kd_maxdepth);
-    else
-        node = NULL;
-    /* initialize topn codewords to topn codewords from previous frame */
-    for (i = 0; i < s->topN; i++) {
-        cw = topn[i].codeword;
-        mean = s->means[(int32) CEP_FEAT] + cw * CEP_VECLEN + 1;
-        var = s->vars[(int32) CEP_FEAT] + cw * CEP_VECLEN + 1;
-        d = det[cw];
-        obs = z;
-        for (j = 1; j < CEP_VECLEN; j++) {
-            diff = *obs++ - *mean++;
-            sqdiff = MFCCMUL(diff, diff);
-            compl = MFCCMUL(sqdiff, *var);
-            d = GMMSUB(d, compl);
-            ++var;
-        }
-        topn[i].val.dist = (int32) d;
-        if (i == 0)
-            continue;
-        vtmp = topn[i];
-        for (j = i - 1; j >= 0 && (int32) d > topn[j].val.dist; j--) {
-            topn[j + 1] = topn[j];
-        }
-        topn[j + 1] = vtmp;
-    }
-    if (frame % fgmm->downs->ds_ratio)
-        return;
-    if (node) {
-        uint32 maxbbi = s->kd_maxbbi == -1 ? node->n_bbi : MIN(node->n_bbi,
-                                                               s->
-                                                               kd_maxbbi);
-        for (i = 0; i < maxbbi; ++i) {
-            cw = node->bbi[i];
-            mean = s->means[(int32) CEP_FEAT] + cw * CEP_VECLEN + 1;
-            var = s->vars[(int32) CEP_FEAT] + cw * CEP_VECLEN + 1;
-            d = det[cw];
-            obs = z;
-            for (j = 1; (j < CEP_VECLEN) && (d >= worst->val.dist); j++) {
-                diff = *obs++ - *mean++;
-                sqdiff = MFCCMUL(diff, diff);
-                compl = MFCCMUL(sqdiff, *var);
-                d = GMMSUB(d, compl);
-                ++var;
-            }
-            if (j < CEP_VECLEN)
-                continue;
-            if (d < worst->val.dist)
-                continue;
-            for (k = 0; k < s->topN; k++) {
-                /* already there, so don't need to insert */
-                if (topn[k].codeword == cw)
-                    break;
-            }
-            if (k < s->topN)
-                continue;       /* already there.  Don't insert */
-            /* remaining code inserts codeword and dist in correct spot */
-            for (cur = worst - 1; cur >= best && d >= cur->val.dist; --cur)
-                memcpy(cur + 1, cur, sizeof(vqFeature_t));
-            ++cur;
-            cur->codeword = cw;
-            cur->val.dist = (int32) d;
-        }
+    /* d must be positive, obviously. */
+    if (mlx > mly) {
+        d = (mlx - mly);
+        r = mly;
     }
     else {
-        mean = s->means[(int32) CEP_FEAT];
-        var = s->vars[(int32) CEP_FEAT];
-        for (detP = det, ++mean, ++var; detP < detE; detP++, ++mean, ++var) {
-            d = *detP;
-            obs = z;
-            cw = detP - det;
-            for (j = 1; (j < CEP_VECLEN) && (d >= worst->val.dist); j++) {
-                diff = *obs++ - *mean++;
-                sqdiff = MFCCMUL(diff, diff);
-                compl = MFCCMUL(sqdiff, *var);
-                d = GMMSUB(d, compl);
-                ++var;
-            }
-            if (j < CEP_VECLEN) {
-                /* terminated early, so not in topn */
-                mean += (CEP_VECLEN - j);
-                var += (CEP_VECLEN - j);
-                continue;
-            }
-            if (d < worst->val.dist)
-                continue;
-            for (i = 0; i < s->topN; i++) {
-                /* already there, so don't need to insert */
-                if (topn[i].codeword == cw)
-                    break;
-            }
-            if (i < s->topN)
-                continue;       /* already there.  Don't insert */
-            /* remaining code inserts codeword and dist in correct spot */
-            for (cur = worst - 1; cur >= best && d >= cur->val.dist; --cur)
-                memcpy(cur + 1, cur, sizeof(vqFeature_t));
-            ++cur;
-            cur->codeword = cw;
-            cur->val.dist = (int32) d;
-        }
+        d = (mly - mlx);
+        r = mlx;
     }
 
-    memcpy(s->lcfrm, topn, sizeof(vqFeature_t) * s->topN);
-}
-
-
-static void
-dcepDist0(s2_semi_mgau_t * s, fast_gmm_t * fgmm, int32 frame, mfcc_t * dzs,
-          mfcc_t * dzl)
-{
-    register int32 i, j, k, cw;
-    vqFeature_t *worst, *best, *topn, *cur;     /* , *src; */
-    mean_t diff, sqdiff, compl;
-    mfcc_t *obs1, *obs2;
-    mean_t *mean;
-    var_t *var;
-    int32 *det = s->dets[(int32) DCEP_FEAT], *detP;
-    int32 *detE = det + S2_NUM_ALPHABET;        /*, tmp; */
-    var_t d;
-    kd_tree_node_t *node;
-    vqFeature_t vtmp;
-
-    best = topn = s->f[DCEP_FEAT];
-    assert(dzs != NULL);
-    assert(dzl != NULL);
-    assert(topn != NULL);
-
-    if (s->kdtrees) {
-        mfcc_t dceps[(CEP_VECLEN - 1) * 2];
-        memcpy(dceps, dzs, (CEP_VECLEN - 1) * sizeof(*dzs));
-        memcpy(dceps + CEP_VECLEN - 1, dzl,
-               (CEP_VECLEN - 1) * sizeof(*dzl));
-        node =
-            eval_kd_tree(s->kdtrees[(int32) DCEP_FEAT], dceps,
-                         s->kd_maxdepth);
-    }
-    else
-        node = NULL;
-
-    memcpy(topn, s->ldfrm, sizeof(vqFeature_t) * s->topN);
-    worst = topn + (s->topN - 1);
-    /* initialize topn codewords to topn codewords from previous frame */
-    for (i = 0; i < s->topN; i++) {
-        cw = topn[i].codeword;
-        mean = s->means[(int32) DCEP_FEAT] + cw * DCEP_VECLEN + 1;
-        var = s->vars[(int32) DCEP_FEAT] + cw * DCEP_VECLEN + 1;
-        d = det[cw];
-        obs1 = dzs;
-        obs2 = dzl;
-        for (j = 1; j < CEP_VECLEN; j++, obs1++, obs2++, mean++, var++) {
-            diff = *obs1 - *mean;
-            sqdiff = MFCCMUL(diff, diff);
-            compl = MFCCMUL(sqdiff, *var);
-            d = GMMSUB(d, compl);
-            diff =
-                MFCCMUL((*obs2 - mean[CEP_VECLEN - 1]), s->dcep80msWeight);
-            sqdiff = MFCCMUL(diff, diff);
-            compl = MFCCMUL(sqdiff, var[CEP_VECLEN - 1]);
-            d = GMMSUB(d, compl);
-        }
-        topn[i].val.dist = (int32) d;
-        if (i == 0)
-            continue;
-        vtmp = topn[i];
-        for (j = i - 1; j >= 0 && (int32) d > topn[j].val.dist; j--) {
-            topn[j + 1] = topn[j];
-        }
-        topn[j + 1] = vtmp;
-    }
-    if (frame % fgmm->downs->ds_ratio)
-        return;
-    if (node) {
-        uint32 maxbbi = s->kd_maxbbi == -1 ? node->n_bbi : MIN(node->n_bbi,
-                                                               s->
-                                                               kd_maxbbi);
-        for (i = 0; i < maxbbi; ++i) {
-            cw = node->bbi[i];
-            mean = s->means[(int32) DCEP_FEAT] + cw * DCEP_VECLEN + 1;
-            var = s->vars[(int32) DCEP_FEAT] + cw * DCEP_VECLEN + 1;
-            d = det[cw];
-            obs1 = dzs;
-            obs2 = dzl;
-            for (j = 1; j < CEP_VECLEN && (d NEARER worst->val.dist);
-                 j++, obs1++, obs2++, mean++, var++) {
-                diff = *obs1 - *mean;
-                sqdiff = MFCCMUL(diff, diff);
-                compl = MFCCMUL(sqdiff, *var);
-                d = GMMSUB(d, compl);
-                diff =
-                    MFCCMUL((*obs2 - mean[CEP_VECLEN - 1]),
-                            s->dcep80msWeight);
-                sqdiff = MFCCMUL(diff, diff);
-                compl = MFCCMUL(sqdiff, var[CEP_VECLEN - 1]);
-                d = GMMSUB(d, compl);
-            }
-            if (j < CEP_VECLEN)
-                continue;
-            if (d < worst->val.dist)
-                continue;
-            for (k = 0; k < s->topN; k++) {
-                /* already there, so don't need to insert */
-                if (topn[k].codeword == cw)
-                    break;
-            }
-            if (k < s->topN)
-                continue;       /* already there.  Don't insert */
-            /* remaining code inserts codeword and dist in correct spot */
-            for (cur = worst - 1;
-                 cur >= best && (int32) d >= cur->val.dist; --cur)
-                memcpy(cur + 1, cur, sizeof(vqFeature_t));
-            ++cur;
-            cur->codeword = cw;
-            cur->val.dist = (int32) d;
-        }
-    }
-    else {
-        mean = s->means[(int32) DCEP_FEAT];
-        var = s->vars[(int32) DCEP_FEAT];
-        /* one distance value for each codeword */
-        for (detP = det; detP < detE; detP++) {
-            d = *detP;
-            obs1 = dzs;         /* reset observed */
-            obs2 = dzl;         /* reset observed */
-            cw = detP - det;
-            for (j = 1, ++mean, ++var;
-                 (j < CEP_VECLEN) && (d NEARER worst->val.dist);
-                 j++, obs1++, obs2++, mean++, var++) {
-                diff = *obs1 - *mean;
-                sqdiff = MFCCMUL(diff, diff);
-                compl = MFCCMUL(sqdiff, *var);
-                d = GMMSUB(d, compl);
-                diff =
-                    MFCCMUL((*obs2 - mean[CEP_VECLEN - 1]),
-                            s->dcep80msWeight);
-                sqdiff = MFCCMUL(diff, diff);
-                compl = MFCCMUL(sqdiff, var[CEP_VECLEN - 1]);
-                d = GMMSUB(d, compl);
-            }
-            mean += CEP_VECLEN - 1;
-            var += CEP_VECLEN - 1;
-            if (j < CEP_VECLEN) {
-                mean += (CEP_VECLEN - j);
-                var += (CEP_VECLEN - j);
-                continue;
-            }
-            if (d < worst->val.dist)
-                continue;
-            for (i = 0; i < s->topN; i++) {
-                /* already there, so don't need to insert */
-                if (topn[i].codeword == cw)
-                    break;
-            }
-            if (i < s->topN)
-                continue;       /* already there.  Don't insert */
-            /* remaining code inserts codeword and dist in correct spot */
-            for (cur = worst - 1;
-                 cur >= best && (int32) d >= cur->val.dist; --cur)
-                memcpy(cur + 1, cur, sizeof(vqFeature_t));
-            ++cur;
-            cur->codeword = cw;
-            cur->val.dist = (int32) d;
-        }
-    }
-    memcpy(s->ldfrm, topn, sizeof(vqFeature_t) * s->topN);
+    return r - (((uint8 *)t->table)[d]);
 }
 
 static void
-ddcepDist0(s2_semi_mgau_t * s, fast_gmm_t * fgmm, int32 frame, mfcc_t * z)
+eval_topn(s2_semi_mgau_t *s, int32 feat, mfcc_t *z)
 {
-    register int32 i, j, k, cw;
-    vqFeature_t *worst, *best, *topn, *cur;     /*, *src; */
-    mean_t diff, sqdiff, compl;
-    mfcc_t *obs;
-    mean_t *mean;
-    var_t *var;
-    int32 *det = s->dets[(int32) DDCEP_FEAT];
-    int32 *detE = det + S2_NUM_ALPHABET;
-    int32 *detP;                /*, tmp; */
-    var_t d;
-    kd_tree_node_t *node;
-    vqFeature_t vtmp;
-
-    best = topn = s->f[DDCEP_FEAT];
-    assert(z != NULL);
-    assert(topn != NULL);
-
-    if (s->kdtrees)
-        node =
-            eval_kd_tree(s->kdtrees[(int32) DDCEP_FEAT], z,
-                         s->kd_maxdepth);
-    else
-        node = NULL;
-
-    memcpy(topn, s->lxfrm, sizeof(vqFeature_t) * s->topN);
-    worst = topn + (s->topN - 1);
-    /* initialize topn codewords to topn codewords from previous frame */
-    for (i = 0; i < s->topN; i++) {
-        cw = topn[i].codeword;
-        mean = s->means[(int32) DDCEP_FEAT] + cw * CEP_VECLEN + 1;
-        var = s->vars[(int32) DDCEP_FEAT] + cw * CEP_VECLEN + 1;
-        d = det[cw];
-        obs = z;
-        for (j = 1; j < CEP_VECLEN; j++) {
-            diff = *obs++ - *mean++;
-            sqdiff = MFCCMUL(diff, diff);
-            compl = MFCCMUL(sqdiff, *var);
-            d = GMMSUB(d, compl);
-            ++var;
-        }
-        topn[i].val.dist = (int32) d;
-        if (i == 0)
-            continue;
-        vtmp = topn[i];
-        for (j = i - 1; j >= 0 && (int32) d > topn[j].val.dist; j--) {
-            topn[j + 1] = topn[j];
-        }
-        topn[j + 1] = vtmp;
-    }
-    if (frame % fgmm->downs->ds_ratio)
-        return;
-    if (node) {
-        uint32 maxbbi = s->kd_maxbbi == -1 ? node->n_bbi : MIN(node->n_bbi,
-                                                               s->
-                                                               kd_maxbbi);
-        for (i = 0; i < maxbbi; ++i) {
-            cw = node->bbi[i];
-            mean = s->means[(int32) DDCEP_FEAT] + cw * CEP_VECLEN + 1;
-            var = s->vars[(int32) DDCEP_FEAT] + cw * CEP_VECLEN + 1;
-            d = det[cw];
-            obs = z;
-            for (j = 1; (j < CEP_VECLEN) && (d >= worst->val.dist); j++) {
-                diff = *obs++ - *mean++;
-                sqdiff = MFCCMUL(diff, diff);
-                compl = MFCCMUL(sqdiff, *var);
-                d = GMMSUB(d, compl);
-                ++var;
-            }
-            if (j < CEP_VECLEN)
-                continue;
-            if (d < worst->val.dist)
-                continue;
-            for (k = 0; k < s->topN; k++) {
-                /* already there, so don't need to insert */
-                if (topn[k].codeword == cw)
-                    break;
-            }
-            if (k < s->topN)
-                continue;       /* already there.  Don't insert */
-            /* remaining code inserts codeword and dist in correct spot */
-            for (cur = worst - 1;
-                 cur >= best && (int32) d >= cur->val.dist; --cur)
-                memcpy(cur + 1, cur, sizeof(vqFeature_t));
-            ++cur;
-            cur->codeword = cw;
-            cur->val.dist = (int32) d;
-        }
-    }
-    else {
-        mean = s->means[(int32) DDCEP_FEAT];
-        var = s->vars[(int32) DDCEP_FEAT];
-        for (detP = det, ++mean, ++var; detP < detE; detP++, ++mean, ++var) {
-            d = *detP;
-            obs = z;
-            cw = detP - det;
-            for (j = 1; (j < CEP_VECLEN) && (d >= worst->val.dist); j++) {
-                diff = *obs++ - *mean++;
-                sqdiff = MFCCMUL(diff, diff);
-                compl = MFCCMUL(sqdiff, *var);
-                d = GMMSUB(d, compl);
-                ++var;
-            }
-            if (j < CEP_VECLEN) {
-                /* terminated early, so not in topn */
-                mean += (CEP_VECLEN - j);
-                var += (CEP_VECLEN - j);
-                continue;
-            }
-            if (d < worst->val.dist)
-                continue;
-
-            for (i = 0; i < s->topN; i++) {
-                /* already there, so don't need to insert */
-                if (topn[i].codeword == cw)
-                    break;
-            }
-            if (i < s->topN)
-                continue;       /* already there.  Don't insert */
-            /* remaining code inserts codeword and dist in correct spot */
-            for (cur = worst - 1;
-                 cur >= best && (int32) d >= cur->val.dist; --cur)
-                memcpy(cur + 1, cur, sizeof(vqFeature_t));
-            ++cur;
-            cur->codeword = cw;
-            cur->val.dist = (int32) d;
-        }
-    }
-
-    memcpy(s->lxfrm, topn, sizeof(vqFeature_t) * s->topN);
-}
-
-static void
-powDist(s2_semi_mgau_t * s, fast_gmm_t * fgmm, int32 frame, mfcc_t * pz)
-{
-    register int32 i, j, cw;
+    int32 i, ceplen;
     vqFeature_t *topn;
-    var_t nextBest;
-    var_t dist[S2_NUM_ALPHABET];
-    mean_t diff, sqdiff, compl;
-    var_t *dP, *dE = dist + S2_NUM_ALPHABET;
-    mfcc_t *obs;
-    mean_t *mean = s->means[(int32) POW_FEAT];
-    var_t *var = s->vars[(int32) POW_FEAT];
-    int32 *det = s->dets[(int32) POW_FEAT];
-    var_t d;
 
-    if (frame % fgmm->downs->ds_ratio)
-        return;
+    topn = s->f[feat];
+    ceplen = s->veclen[feat];
 
-    topn = s->f[POW_FEAT];
-    assert(pz != NULL);
-    assert(topn != NULL);
+    for (i = 0; i < s->max_topn; i++) {
+        mfcc_t *mean, diff, sqdiff, compl; /* diff, diff^2, component likelihood */
+        vqFeature_t vtmp;
+        mfcc_t *var, d;
+        mfcc_t *obs;
+        int32 cw, j;
 
-    /* one distance value for each codeword */
-    for (dP = dist; dP < dE; dP++) {
-        cw = dP - dist;
-        d = 0;
-        obs = pz;
-        for (j = 0; j < POW_VECLEN; j++, obs++, mean++, var++) {
-            diff = *obs - *mean;
+        cw = topn[i].codeword;
+        mean = s->means[feat] + cw * ceplen;
+        var = s->vars[feat] + cw * ceplen;
+        d = s->dets[feat][cw];
+        obs = z;
+        for (j = 0; j < ceplen; j++) {
+            diff = *obs++ - *mean++;
             sqdiff = MFCCMUL(diff, diff);
             compl = MFCCMUL(sqdiff, *var);
-            d = GMMADD(d, compl);
+            d = GMMSUB(d, compl);
+            ++var;
         }
-        *dP = *det++ - d;
+        topn[i].score = (int32)d;
+        if (i == 0)
+            continue;
+        vtmp = topn[i];
+        for (j = i - 1; j >= 0 && (int32)d > topn[j].score; j--) {
+            topn[j + 1] = topn[j];
+        }
+        topn[j + 1] = vtmp;
     }
-    /* compute top N codewords */
-    for (i = 0; i < s->topN; i++) {
-        dP = dist;
-        nextBest = *dP++;
-        cw = 0;
-        for (; dP < dE; dP++) {
-            if (*dP NEARER nextBest) {
-                nextBest = *dP;
-                cw = dP - dist;
-            }
-        }
-        topn[i].codeword = cw;
-        topn[i].val.dist = (int32) nextBest;
+}
 
-        dist[cw] = WORST_DIST;
+static void
+eval_cb_kdtree(s2_semi_mgau_t *s, int32 feat, mfcc_t *z,
+               kd_tree_node_t *node, uint32 maxbbi)
+{
+    vqFeature_t *worst, *best, *topn;
+    int32 i, ceplen;
+
+    best = topn = s->f[feat];
+    worst = topn + (s->max_topn - 1);
+    ceplen = s->veclen[feat];
+
+    for (i = 0; i < maxbbi; ++i) {
+        mfcc_t *mean, diff, sqdiff, compl; /* diff, diff^2, component likelihood */
+        mfcc_t *var, d;
+        mfcc_t *obs;
+        vqFeature_t *cur;
+        int32 cw, j, k;
+
+        cw = node->bbi[i];
+        mean = s->means[feat] + cw * ceplen;
+        var = s->vars[feat] + cw * ceplen;
+        d = s->dets[feat][cw];
+        obs = z;
+        for (j = 0; (j < ceplen) && (d >= worst->score); j++) {
+            diff = *obs++ - *mean++;
+            sqdiff = MFCCMUL(diff, diff);
+            compl = MFCCMUL(sqdiff, *var);
+            d = GMMSUB(d, compl);
+            ++var;
+        }
+        if (j < ceplen)
+            continue;
+        if ((int32)d < worst->score)
+            continue;
+        for (k = 0; k < s->max_topn; k++) {
+            /* already there, so don't need to insert */
+            if (topn[k].codeword == cw)
+                break;
+        }
+        if (k < s->max_topn)
+            continue;       /* already there.  Don't insert */
+        /* remaining code inserts codeword and dist in correct spot */
+        for (cur = worst - 1; cur >= best && (int32)d >= cur->score; --cur)
+            memcpy(cur + 1, cur, sizeof(vqFeature_t));
+        ++cur;
+        cur->codeword = cw;
+        cur->score = (int32)d;
+    }
+}
+
+static void
+eval_cb(s2_semi_mgau_t *s, int32 feat, mfcc_t *z)
+{
+    vqFeature_t *worst, *best, *topn;
+    mfcc_t *mean;
+    mfcc_t *var, *det, *detP, *detE;
+    int32 i, ceplen;
+
+    best = topn = s->f[feat];
+    worst = topn + (s->max_topn - 1);
+    mean = s->means[feat];
+    var = s->vars[feat];
+    det = s->dets[feat];
+    detE = det + s->n_density;
+    ceplen = s->veclen[feat];
+
+    for (detP = det; detP < detE; ++detP) {
+        mfcc_t diff, sqdiff, compl; /* diff, diff^2, component likelihood */
+        mfcc_t d;
+        mfcc_t *obs;
+        vqFeature_t *cur;
+        int32 cw, j;
+
+        d = *detP;
+        obs = z;
+        cw = detP - det;
+        for (j = 0; (j < ceplen) && (d >= worst->score); ++j) {
+            diff = *obs++ - *mean++;
+            sqdiff = MFCCMUL(diff, diff);
+            compl = MFCCMUL(sqdiff, *var);
+            d = GMMSUB(d, compl);
+            ++var;
+        }
+        if (j < ceplen) {
+            /* terminated early, so not in topn */
+            mean += (ceplen - j);
+            var += (ceplen - j);
+            continue;
+        }
+        if ((int32)d < worst->score)
+            continue;
+        for (i = 0; i < s->max_topn; i++) {
+            /* already there, so don't need to insert */
+            if (topn[i].codeword == cw)
+                break;
+        }
+        if (i < s->max_topn)
+            continue;       /* already there.  Don't insert */
+        /* remaining code inserts codeword and dist in correct spot */
+        for (cur = worst - 1; cur >= best && (int32)d >= cur->score; --cur)
+            memcpy(cur + 1, cur, sizeof(vqFeature_t));
+        ++cur;
+        cur->codeword = cw;
+        cur->score = (int32)d;
+    }
+}
+
+static void
+mgau_dist(s2_semi_mgau_t * s, int32 frame, int32 feat, mfcc_t * z)
+{
+    eval_topn(s, feat, z);
+
+    /* If this frame is skipped, do nothing else. */
+    if (frame % s->ds_ratio)
+        return;
+
+    /* Evaluate the rest of the codebook (or subset thereof). */
+    if (s->kdtrees) {
+        kd_tree_node_t *node;
+        uint32 maxbbi;
+
+        node =
+            eval_kd_tree(s->kdtrees[feat], z, s->kd_maxdepth);
+        maxbbi = s->kd_maxbbi == -1 ? node->n_bbi : MIN(node->n_bbi,
+                                                        s->
+                                                        kd_maxbbi);
+        eval_cb_kdtree(s, feat, z, node, maxbbi);
+    }
+    else {
+        eval_cb(s, feat, z);
+    }
+}
+
+static int
+mgau_norm(s2_semi_mgau_t *s, int feat)
+{
+    int32 norm;
+    int j;
+
+    /* Compute quantized normalizing constant. */
+    norm = s->f[feat][0].score >> SENSCR_SHIFT;
+
+    /* Normalize the scores, negate them, and clamp their dynamic range. */
+    for (j = 0; j < s->max_topn; ++j) {
+        s->f[feat][j].score = -((s->f[feat][j].score >> SENSCR_SHIFT) - norm);
+        if (s->f[feat][j].score > MAX_NEG_ASCR)
+            s->f[feat][j].score = MAX_NEG_ASCR;
+        if (s->topn_beam[feat] && s->f[feat][j].score > s->topn_beam[feat])
+            break;
+    }
+    return j;
+}
+
+static int32
+get_scores_8b_feat_6(s2_semi_mgau_t * s, int i,
+                     int32 *senone_scores, uint8 *senone_active)
+{
+    int32 j;
+    uint8 *pid_cw0, *pid_cw1, *pid_cw2, *pid_cw3, *pid_cw4, *pid_cw5;
+
+    pid_cw0 = s->mixw[i][s->f[i][0].codeword];
+    pid_cw1 = s->mixw[i][s->f[i][1].codeword];
+    pid_cw2 = s->mixw[i][s->f[i][2].codeword];
+    pid_cw3 = s->mixw[i][s->f[i][3].codeword];
+    pid_cw4 = s->mixw[i][s->f[i][4].codeword];
+    pid_cw5 = s->mixw[i][s->f[i][5].codeword];
+
+    for (j = 0; j < s->n_sen; j++) {
+        int32 tmp;
+
+        if (!senone_active[j]) continue;
+        tmp = pid_cw0[j] + s->f[i][0].score;
+        tmp = fast_logmath_add(s->lmath_8b, tmp,
+                               pid_cw1[j] + s->f[i][1].score);
+        tmp = fast_logmath_add(s->lmath_8b, tmp,
+                               pid_cw2[j] + s->f[i][2].score);
+        tmp = fast_logmath_add(s->lmath_8b, tmp,
+                               pid_cw3[j] + s->f[i][3].score);
+        tmp = fast_logmath_add(s->lmath_8b, tmp,
+                               pid_cw4[j] + s->f[i][4].score);
+        tmp = fast_logmath_add(s->lmath_8b, tmp,
+                               pid_cw5[j] + s->f[i][5].score);
+
+        senone_scores[j] -= (tmp << SENSCR_SHIFT);
+    }
+    return 0;
+}
+
+static int32
+get_scores_8b_feat_5(s2_semi_mgau_t * s, int i,
+                     int32 *senone_scores, uint8 *senone_active)
+{
+    int32 j;
+    uint8 *pid_cw0, *pid_cw1, *pid_cw2, *pid_cw3, *pid_cw4;
+
+    pid_cw0 = s->mixw[i][s->f[i][0].codeword];
+    pid_cw1 = s->mixw[i][s->f[i][1].codeword];
+    pid_cw2 = s->mixw[i][s->f[i][2].codeword];
+    pid_cw3 = s->mixw[i][s->f[i][3].codeword];
+    pid_cw4 = s->mixw[i][s->f[i][4].codeword];
+
+    for (j = 0; j < s->n_sen; j++) {
+        int32 tmp;
+
+        if (!senone_active[j]) continue;
+        tmp = pid_cw0[j] + s->f[i][0].score;
+        tmp = fast_logmath_add(s->lmath_8b, tmp,
+                               pid_cw1[j] + s->f[i][1].score);
+        tmp = fast_logmath_add(s->lmath_8b, tmp,
+                               pid_cw2[j] + s->f[i][2].score);
+        tmp = fast_logmath_add(s->lmath_8b, tmp,
+                               pid_cw3[j] + s->f[i][3].score);
+        tmp = fast_logmath_add(s->lmath_8b, tmp,
+                               pid_cw4[j] + s->f[i][4].score);
+
+        senone_scores[j] -= (tmp << SENSCR_SHIFT);
+    }
+    return 0;
+}
+
+static int32
+get_scores_8b_feat_4(s2_semi_mgau_t * s, int i,
+                     int32 *senone_scores, uint8 *senone_active)
+{
+    int32 j;
+    uint8 *pid_cw0, *pid_cw1, *pid_cw2, *pid_cw3;
+
+    pid_cw0 = s->mixw[i][s->f[i][0].codeword];
+    pid_cw1 = s->mixw[i][s->f[i][1].codeword];
+    pid_cw2 = s->mixw[i][s->f[i][2].codeword];
+    pid_cw3 = s->mixw[i][s->f[i][3].codeword];
+
+    for (j = 0; j < s->n_sen; j++) {
+        int32 tmp;
+
+        if (!senone_active[j]) continue;
+        tmp = pid_cw0[j] + s->f[i][0].score;
+        tmp = fast_logmath_add(s->lmath_8b, tmp,
+                               pid_cw1[j] + s->f[i][1].score);
+        tmp = fast_logmath_add(s->lmath_8b, tmp,
+                               pid_cw2[j] + s->f[i][2].score);
+        tmp = fast_logmath_add(s->lmath_8b, tmp,
+                               pid_cw3[j] + s->f[i][3].score);
+
+        senone_scores[j] -= (tmp << SENSCR_SHIFT);
+    }
+    return 0;
+}
+
+static int32
+get_scores_8b_feat_3(s2_semi_mgau_t * s, int i,
+                     int32 *senone_scores, uint8 *senone_active)
+{
+    int32 j;
+    uint8 *pid_cw0, *pid_cw1, *pid_cw2;
+
+    pid_cw0 = s->mixw[i][s->f[i][0].codeword];
+    pid_cw1 = s->mixw[i][s->f[i][1].codeword];
+    pid_cw2 = s->mixw[i][s->f[i][2].codeword];
+
+    for (j = 0; j < s->n_sen; j++) {
+        int32 tmp;
+
+        if (!senone_active[j]) continue;
+        tmp = pid_cw0[j] + s->f[i][0].score;
+        tmp = fast_logmath_add(s->lmath_8b, tmp,
+                               pid_cw1[j] + s->f[i][1].score);
+        tmp = fast_logmath_add(s->lmath_8b, tmp,
+                               pid_cw2[j] + s->f[i][2].score);
+
+        senone_scores[j] -= (tmp << SENSCR_SHIFT);
+    }
+    return 0;
+}
+
+static int32
+get_scores_8b_feat_2(s2_semi_mgau_t * s, int i,
+                     int32 *senone_scores, uint8 *senone_active)
+{
+    int32 j;
+    uint8 *pid_cw0, *pid_cw1;
+
+    pid_cw0 = s->mixw[i][s->f[i][0].codeword];
+    pid_cw1 = s->mixw[i][s->f[i][1].codeword];
+
+    for (j = 0; j < s->n_sen; j++) {
+        int32 tmp;
+
+        if (!senone_active[j]) continue;
+        tmp = pid_cw0[j] + s->f[i][0].score;
+        tmp = fast_logmath_add(s->lmath_8b, tmp,
+                               pid_cw1[j] + s->f[i][1].score);
+
+        senone_scores[j] -= (tmp << SENSCR_SHIFT);
+    }
+    return 0;
+}
+
+static int32
+get_scores_8b_feat_1(s2_semi_mgau_t * s, int i,
+                     int32 *senone_scores, uint8 *senone_active)
+{
+    int32 j;
+    uint8 *pid_cw0;
+
+    pid_cw0 = s->mixw[i][s->f[i][0].codeword];
+    for (j = 0; j < s->n_sen; j++) {
+        int32 tmp;
+
+        if (!senone_active[j]) continue;
+        tmp = pid_cw0[j] + s->f[i][0].score;
+        senone_scores[j] -= (tmp << SENSCR_SHIFT);
+    }
+    return 0;
+}
+
+static int32
+get_scores_8b_feat_any(s2_semi_mgau_t * s, int i, int topn,
+                       int32 *senone_scores, uint8 *senone_active)
+{
+    int32 j, k;
+
+    for (j = 0; j < s->n_sen; j++) {
+        uint8 *pid_cw;
+        int32 tmp;
+
+        if (!senone_active[j]) continue;
+        pid_cw = s->mixw[i][s->f[i][0].codeword];
+        tmp = pid_cw[j] + s->f[i][0].score;
+        for (k = 1; k < topn; ++k) {
+            pid_cw = s->mixw[i][s->f[i][k].codeword];
+            tmp = fast_logmath_add(s->lmath_8b, tmp,
+                                   pid_cw[j] + s->f[i][k].score);
+        }
+        senone_scores[j] -= (tmp << SENSCR_SHIFT);
+    }
+    return 0;
+}
+
+static int32
+get_scores_8b_feat(s2_semi_mgau_t * s, int i, int topn,
+                   int32 *senone_scores, uint8 *senone_active)
+{
+    switch (topn) {
+    case 6:
+        return get_scores_8b_feat_6(s, i, senone_scores, senone_active);
+    case 5:
+        return get_scores_8b_feat_5(s, i, senone_scores, senone_active);
+    case 4:
+        return get_scores_8b_feat_4(s, i, senone_scores, senone_active);
+    case 3:
+        return get_scores_8b_feat_3(s, i, senone_scores, senone_active);
+    case 2:
+        return get_scores_8b_feat_2(s, i, senone_scores, senone_active);
+    case 1:
+        return get_scores_8b_feat_1(s, i, senone_scores, senone_active);
+    default:
+        return get_scores_8b_feat_any(s, i, topn, senone_scores, senone_active);
     }
 }
 
 /*
  * Compute senone scores for the active senones.
  */
-int32
-s2_semi_mgau_frame_eval(s2_semi_mgau_t * s,
-                        ascr_t * ascr,
-                        fast_gmm_t * fgmm, mfcc_t ** feat, int32 frame)
+int
+s2_semi_mgau_frame_eval(s2_semi_mgau_t *s,
+                        ascr_t *ascr,
+                        fast_gmm_t *fgmm,
+                        mfcc_t **featbuf,
+                        int32 frame)
 {
-    int i, j;
-    int32 tmp[S2_NUM_FEATURES];
+    int i, topn_idx;
 
-    cepDist0(s, fgmm, frame, feat[CEP_FEAT]);
-
-    dcepDist0(s, fgmm, frame, feat[DCEP_FEAT],
-              feat[DCEP_FEAT] + CEP_VECLEN - 1);
-
-    powDist(s, fgmm, frame, feat[POW_FEAT]);
-
-    ddcepDist0(s, fgmm, frame, feat[DDCEP_FEAT]);
-
-    /* normalize the topN feature scores */
-    for (j = 0; j < S2_NUM_FEATURES; j++) {
-        tmp[j] = s->f[j][0].val.score;
-    }
-    for (i = 1; i < s->topN; i++)
-        for (j = 0; j < S2_NUM_FEATURES; j++) {
-            tmp[j] = logmath_add(s->logmath, tmp[j], s->f[j][i].val.score);
+    memset(ascr->senscr, 0, s->n_sen * sizeof(*ascr->senscr));
+    /* No bounds checking is done here, which just means you'll get
+     * semi-random crap if you request a frame in the future or one
+     * that's too far in the past. */
+    topn_idx = frame % s->n_topn_hist;
+    s->f = s->topn_hist[topn_idx];
+    for (i = 0; i < s->n_feat; ++i) {
+        /* For past frames this will already be computed. */
+        if (frame >= s->frame_idx) {
+            vqFeature_t **lastf;
+            if (topn_idx == 0)
+                lastf = s->topn_hist[s->n_topn_hist-1];
+            else
+                lastf = s->topn_hist[topn_idx-1];
+            memcpy(s->f[i], lastf[i], sizeof(vqFeature_t) * s->max_topn);
+            mgau_dist(s, frame, i, featbuf[i]);
+            s->topn_hist_n[topn_idx][i] = mgau_norm(s, i);
         }
-    for (i = 0; i < s->topN; i++)
-        for (j = 0; j < S2_NUM_FEATURES; j++) {
-            s->f[j][i].val.score -= tmp[j];
-            if (s->f[j][i].val.score > 0)
-                s->f[j][i].val.score = INT_MIN; /* tkharris++ */
-            /* E_FATAL("**ERROR** VQ score= %d\n", f[j][i].val.score); */
-        }
-
-
-    SCVQComputeScores(s, ascr);
-    return 0;
-}
-
-
-static int32
-SCVQComputeScores(s2_semi_mgau_t * s, ascr_t * ascr)
-{
-    switch (s->topN) {
-    case 4:
-        return get_scores4_8b(s, ascr);
-        break;
-    case 2:
-        return get_scores2_8b(s, ascr);
-        break;
-    case 1:
-        return get_scores1_8b(s, ascr);
-        break;
-    default:
-        return get_scores_8b(s, ascr);
-        break;
+        get_scores_8b_feat(s, i, s->topn_hist_n[topn_idx][i],
+                           ascr->senscr, ascr->sen_active);
     }
-}
 
-static int32
-get_scores_8b(s2_semi_mgau_t * s, ascr_t * ascr)
-{
-    E_FATAL("get_scores_8b() not implemented\n");
-    return 0;
-}
-
-/*
- * Like get_scores4, but uses OPDF_8B with FAST8B:
- *     LogProb(feature f, codeword c, senone s) =
- *         OPDF_8B[f]->prob[c][s]
- * Also, uses true 8-bit probs, so addition in logspace is an easy lookup.
- */
-static int32
-get_scores4_8b(s2_semi_mgau_t * s, ascr_t * ascr)
-{
-    register int32 j, n;
-    int32 tmp1, tmp2;
-    unsigned char *pid_cw0, *pid_cw1, *pid_cw2, *pid_cw3;
-    int32 w0, w1, w2, w3;       /* weights */
-
-    memset(ascr->senscr, 0, s->CdWdPDFMod * sizeof(*ascr->senscr));
-    for (j = 0; j < S2_NUM_FEATURES; j++) {
-        /* ptrs to senone prob ids */
-        pid_cw0 = s->OPDF_8B[j][s->f[j][0].codeword];
-        pid_cw1 = s->OPDF_8B[j][s->f[j][1].codeword];
-        pid_cw2 = s->OPDF_8B[j][s->f[j][2].codeword];
-        pid_cw3 = s->OPDF_8B[j][s->f[j][3].codeword];
-
-        w0 = s->f[j][0].val.score;
-        w1 = s->f[j][1].val.score;
-        w2 = s->f[j][2].val.score;
-        w3 = s->f[j][3].val.score;
-
-        /* Floor w0..w3 to 256<<10 - 162k */
-        if (w3 < -99000)
-            w3 = -99000;
-        if (w2 < -99000)
-            w2 = -99000;
-        if (w1 < -99000)
-            w1 = -99000;
-        if (w0 < -99000)
-            w0 = -99000;        /* Condition should never be TRUE */
-
-        /* Quantize */
-        w3 = (511 - w3) >> 10;
-        w2 = (511 - w2) >> 10;
-        w1 = (511 - w1) >> 10;
-        w0 = (511 - w0) >> 10;
-
-        /* NOTE: Iterating over all senones will probably make this
-         * slower than Sphinx2. */
-        for (n = 0; n < ascr->n_sen; n++) {
-            if (!ascr->sen_active[n])
-                continue;
-
-            tmp1 = pid_cw0[n] + w0;
-            tmp2 = pid_cw1[n] + w1;
-            tmp1 = LOG_ADD(tmp1, tmp2);
-            tmp2 = pid_cw2[n] + w2;
-            tmp1 = LOG_ADD(tmp1, tmp2);
-            tmp2 = pid_cw3[n] + w3;
-            tmp1 = LOG_ADD(tmp1, tmp2);
-
-            ascr->senscr[n] -= tmp1 << 10;
-        }
-    }
-    return 0;
-}
-
-static int32
-get_scores2_8b(s2_semi_mgau_t * s, ascr_t * ascr)
-{
-    register int32 n;
-    int32 tmp1, tmp2;
-    unsigned char *pid_cw00, *pid_cw10, *pid_cw01, *pid_cw11,
-        *pid_cw02, *pid_cw12, *pid_cw03, *pid_cw13;
-    int32 w00, w10, w01, w11, w02, w12, w03, w13;
-
-    memset(ascr->senscr, 0, s->CdWdPDFMod * sizeof(*ascr->senscr));
-    /* ptrs to senone prob ids */
-    pid_cw00 = s->OPDF_8B[0][s->f[0][0].codeword];
-    pid_cw10 = s->OPDF_8B[0][s->f[0][1].codeword];
-    pid_cw01 = s->OPDF_8B[1][s->f[1][0].codeword];
-    pid_cw11 = s->OPDF_8B[1][s->f[1][1].codeword];
-    pid_cw02 = s->OPDF_8B[2][s->f[2][0].codeword];
-    pid_cw12 = s->OPDF_8B[2][s->f[2][1].codeword];
-    pid_cw03 = s->OPDF_8B[3][s->f[3][0].codeword];
-    pid_cw13 = s->OPDF_8B[3][s->f[3][1].codeword];
-
-    w00 = s->f[0][0].val.score;
-    w10 = s->f[0][1].val.score;
-    w01 = s->f[1][0].val.score;
-    w11 = s->f[1][1].val.score;
-    w02 = s->f[2][0].val.score;
-    w12 = s->f[2][1].val.score;
-    w03 = s->f[3][0].val.score;
-    w13 = s->f[3][1].val.score;
-
-    /* Floor w0..w3 to 256<<10 - 162k */
-    /* Condition should never be TRUE */
-    if (w10 < -99000)
-        w10 = -99000;
-    if (w00 < -99000)
-        w00 = -99000;
-    if (w11 < -99000)
-        w11 = -99000;
-    if (w01 < -99000)
-        w01 = -99000;
-    if (w12 < -99000)
-        w12 = -99000;
-    if (w02 < -99000)
-        w02 = -99000;
-    if (w13 < -99000)
-        w13 = -99000;
-    if (w03 < -99000)
-        w03 = -99000;
-
-    /* Quantize */
-    w10 = (511 - w10) >> 10;
-    w00 = (511 - w00) >> 10;
-    w11 = (511 - w11) >> 10;
-    w01 = (511 - w01) >> 10;
-    w12 = (511 - w12) >> 10;
-    w02 = (511 - w02) >> 10;
-    w13 = (511 - w13) >> 10;
-    w03 = (511 - w03) >> 10;
-
-    for (n = 0; n < ascr->n_sen; n++) {
-        if (!ascr->sen_active[n])
-            continue;
-        tmp1 = pid_cw00[n] + w00;
-        tmp2 = pid_cw10[n] + w10;
-        tmp1 = LOG_ADD(tmp1, tmp2);
-        ascr->senscr[n] -= tmp1 << 10;
-        tmp1 = pid_cw01[n] + w01;
-        tmp2 = pid_cw11[n] + w11;
-        tmp1 = LOG_ADD(tmp1, tmp2);
-        ascr->senscr[n] -= tmp1 << 10;
-        tmp1 = pid_cw02[n] + w02;
-        tmp2 = pid_cw12[n] + w12;
-        tmp1 = LOG_ADD(tmp1, tmp2);
-        ascr->senscr[n] -= tmp1 << 10;
-        tmp1 = pid_cw03[n] + w03;
-        tmp2 = pid_cw13[n] + w13;
-        tmp1 = LOG_ADD(tmp1, tmp2);
-        ascr->senscr[n] -= tmp1 << 10;
-    }
-    return 0;
-}
-
-static int32
-get_scores1_8b(s2_semi_mgau_t * s, ascr_t * ascr)
-{
-    int32 j;
-    unsigned char *pid_cw0, *pid_cw1, *pid_cw2, *pid_cw3;
-
-    /* Ptrs to senone prob values for the top codeword of all codebooks */
-    pid_cw0 = s->OPDF_8B[0][s->f[0][0].codeword];
-    pid_cw1 = s->OPDF_8B[1][s->f[1][0].codeword];
-    pid_cw2 = s->OPDF_8B[2][s->f[2][0].codeword];
-    pid_cw3 = s->OPDF_8B[3][s->f[3][0].codeword];
-
-    for (j = 0; j < ascr->n_sen; j++) {
-        if (!ascr->sen_active[j])
-            continue;
-
-        /* ** HACK!! ** <<10 hardwired!! */
-        ascr->senscr[j] =
-            -((pid_cw0[j] + pid_cw1[j] + pid_cw2[j] + pid_cw3[j]) << 10);
-    }
     return 0;
 }
 
 int32
-s2_semi_mgau_load_kdtree(s2_semi_mgau_t * s, const char *kdtree_path,
+s2_semi_mgau_load_kdtree(s2_semi_mgau_t * ps, const char *kdtree_path,
                          uint32 maxdepth, int32 maxbbi)
 {
+    s2_semi_mgau_t *s = (s2_semi_mgau_t *)ps;
     if (read_kd_trees(kdtree_path, &s->kdtrees, &s->n_kdtrees,
                       maxdepth, maxbbi) == -1)
         E_FATAL("Failed to read kd-trees from %s\n", kdtree_path);
-    if (s->n_kdtrees != S2_NUM_FEATURES)
-        E_FATAL("Number of kd-trees != %d\n", S2_NUM_FEATURES);
+    if (s->n_kdtrees != s->n_feat)
+        E_FATAL("Number of kd-trees != %d\n", s->n_feat);
 
     s->kd_maxdepth = maxdepth;
     s->kd_maxbbi = maxbbi;
@@ -895,7 +597,122 @@ s2_semi_mgau_load_kdtree(s2_semi_mgau_t * s, const char *kdtree_path,
 }
 
 static int32
-read_dists_s3(s2_semi_mgau_t * s, char const *file_name, double SmoothMin)
+read_sendump(s2_semi_mgau_t *s, mdef_t *mdef, char const *file)
+{
+    FILE *fp;
+    char line[1000];
+    int32 i, n;
+    int32 do_swap, do_mmap;
+    size_t filesize, offset;
+    int n_clust = 256;          /* Number of clusters (if zero, we are just using
+                                 * 8-bit quantized weights) */
+    int r = s->n_density;
+    int c = mdef_n_sen(mdef);
+
+    s->n_sen = c;
+    do_mmap = cmd_ln_boolean_r(s->config, "-mmap");
+
+    if ((fp = fopen(file, "rb")) == NULL)
+        return -1;
+
+    E_INFO("Loading senones from dump file %s\n", file);
+    /* Read title size, title */
+    fread(&n, sizeof(int32), 1, fp);
+    /* This is extremely bogus */
+    do_swap = 0;
+    if (n < 1 || n > 999) {
+        SWAP_INT32(&n);
+        if (n < 1 || n > 999) {
+            E_FATAL("Title length %x in dump file %s out of range\n", n, file);
+        }
+        do_swap = 1;
+    }
+    if (fread(line, sizeof(char), n, fp) != n)
+        E_FATAL("Cannot read title\n");
+    if (line[n - 1] != '\0')
+        E_FATAL("Bad title in dump file\n");
+    E_INFO("%s\n", line);
+
+    /* Read header size, header */
+    fread(&n, 1, sizeof(n), fp);
+    if (do_swap) SWAP_INT32(&n);
+    if (fread(line, sizeof(char), n, fp) != n)
+        E_FATAL("Cannot read header\n");
+    if (line[n - 1] != '\0')
+        E_FATAL("Bad header in dump file\n");
+
+    /* Read other header strings until string length = 0 */
+    for (;;) {
+        fread(&n, 1, sizeof(n), fp);
+        if (do_swap) SWAP_INT32(&n);
+        if (n == 0)
+            break;
+        if (fread(line, sizeof(char), n, fp) != n)
+            E_FATAL("Cannot read header\n");
+        /* Look for a cluster count, if present */
+        if (!strncmp(line, "cluster_count ", strlen("cluster_count "))) {
+            n_clust = atoi(line + strlen("cluster_count "));
+        }
+    }
+
+    /* Read #codewords, #pdfs */
+    fread(&r, 1, sizeof(r), fp);
+    if (do_swap) SWAP_INT32(&r);
+    fread(&c, 1, sizeof(c), fp);
+    if (do_swap) SWAP_INT32(&c);
+    E_INFO("Rows: %d, Columns: %d\n", r, c);
+
+    if (n_clust) {
+	E_ERROR ("Dump file is incompatible with PocketSphinx\n");
+	fclose(fp);
+	return -1;
+    }
+    if (do_mmap) {
+            E_INFO("Using memory-mapped I/O for senones\n");
+    }
+    offset = ftell(fp);
+    fseek(fp, 0, SEEK_END);
+    filesize = ftell(fp);
+    fseek(fp, offset, SEEK_SET);
+
+    /* Allocate memory for pdfs (or memory map them) */
+    if (do_mmap)
+        s->sendump_mmap = mmio_file_read(file);
+
+    /* Otherwise, set up all pointers, etc. */
+    if (s->sendump_mmap) {
+        s->mixw = ckd_calloc(s->n_feat, sizeof(*s->mixw));
+        for (i = 0; i < s->n_feat; i++) {
+            /* Pointers into the mmap()ed 2d array */
+	    s->mixw[i] = ckd_calloc(r, sizeof(**s->mixw));
+        }
+
+        for (n = 0; n < s->n_feat; n++) {
+            for (i = 0; i < r; i++) {
+                s->mixw[n][i] = ((uint8 *) mmio_file_ptr(s->sendump_mmap)) + offset;
+                offset += c;
+            }
+        }
+    }
+    else {
+        s->mixw = ckd_calloc_3d(s->n_feat, r, c, sizeof(***s->mixw));
+        /* Read pdf values and ids */
+        for (n = 0; n < s->n_feat; n++) {
+            for (i = 0; i < r; i++) {
+                if (fread(s->mixw[n][i], sizeof(***s->mixw), c, fp) != (size_t) c) {
+                    E_ERROR("Failed to read %d bytes from sendump\n", c);
+                    return -1;
+                }
+            }
+        }
+    }
+
+    fclose(fp);
+    return 0;
+}
+
+static int32
+read_mixw(s2_semi_mgau_t * s, char const *file_name, double SmoothMin)
 {
     char **argname, **argval;
     char eofchk;
@@ -944,27 +761,21 @@ read_dists_s3(s2_semi_mgau_t * s, char const *file_name, double SmoothMin)
         || (bio_fread(&n, sizeof(int32), 1, fp, byteswap, &chksum) != 1)) {
         E_FATAL("bio_fread(%s) (arraysize) failed\n", file_name);
     }
-    if (n_feat != 4)
-        E_FATAL("#Features streams(%d) != 4\n", n_feat);
+    if (n_feat != s->n_feat)
+        E_FATAL("#Features streams(%d) != %d\n", n_feat, s->n_feat);
     if (n != n_sen * n_feat * n_comp) {
         E_FATAL
             ("%s: #float32s(%d) doesn't match header dimensions: %d x %d x %d\n",
              file_name, i, n_sen, n_feat, n_comp);
     }
 
+    /* n_sen = number of mixture weights per codeword, which is
+     * fixed at the number of senones since we have only one codebook.
+     */
+    s->n_sen = n_sen;
+
     /* Quantized mixture weight arrays. */
-    s->OPDF_8B[0] =
-        (unsigned char **) ckd_calloc_2d(S2_NUM_ALPHABET, n_sen,
-                                         sizeof(unsigned char));
-    s->OPDF_8B[1] =
-        (unsigned char **) ckd_calloc_2d(S2_NUM_ALPHABET, n_sen,
-                                         sizeof(unsigned char));
-    s->OPDF_8B[2] =
-        (unsigned char **) ckd_calloc_2d(S2_NUM_ALPHABET, n_sen,
-                                         sizeof(unsigned char));
-    s->OPDF_8B[3] =
-        (unsigned char **) ckd_calloc_2d(S2_NUM_ALPHABET, n_sen,
-                                         sizeof(unsigned char));
+    s->mixw = ckd_calloc_3d(s->n_feat, s->n_density, n_sen, sizeof(***s->mixw));
 
     /* Temporary structure to read in floats before conversion to (int32) logs3 */
     pdf = (float32 *) ckd_calloc(n_comp, sizeof(float32));
@@ -984,19 +795,14 @@ read_dists_s3(s2_semi_mgau_t * s, char const *file_name, double SmoothMin)
             vector_floor(pdf, n_comp, SmoothMin);
             vector_sum_norm(pdf, n_comp);
 
-            /* Convert to logs3, quantize, and transpose */
+            /* Convert to LOG, quantize, and transpose */
             for (c = 0; c < n_comp; c++) {
                 int32 qscr;
 
-                qscr = logs3(s->logmath, pdf[c]);
-                /* ** HACK!! ** hardwired threshold!!! */
-                if (qscr < -161900)
-                    E_FATAL("**ERROR** Too low senone PDF value: %d\n",
-                            qscr);
-                qscr = (511 - qscr) >> 10;
-                if ((qscr > 255) || (qscr < 0))
-                    E_FATAL("scr(%d,%d,%d) = %d\n", f, c, i, qscr);
-                s->OPDF_8B[f][c][i] = qscr;
+                qscr = -logmath_log(s->lmath_8b, pdf[c]);
+                if ((qscr > MAX_NEG_MIXW) || (qscr < 0))
+                    qscr = MAX_NEG_MIXW;
+                s->mixw[f][c][i] = qscr;
             }
         }
     }
@@ -1019,8 +825,8 @@ read_dists_s3(s2_semi_mgau_t * s, char const *file_name, double SmoothMin)
 
 
 /* Read a Sphinx3 mean or variance file. */
-int32
-s3_read_mgau(const char *file_name, float32 ** cb)
+static int32
+s3_read_mgau(s2_semi_mgau_t *s, const char *file_name, float32 ***out_cb)
 {
     char tmp;
     FILE *fp;
@@ -1028,7 +834,7 @@ s3_read_mgau(const char *file_name, float32 ** cb)
     int32 n_mgau;
     int32 n_feat;
     int32 n_density;
-    int32 veclen[4];
+    int32 *veclen;
     int32 byteswap, chksum_present;
     char **argname, **argval;
     uint32 chksum;
@@ -1062,28 +868,43 @@ s3_read_mgau(const char *file_name, float32 ** cb)
     /* #Codebooks */
     if (bio_fread(&n_mgau, sizeof(int32), 1, fp, byteswap, &chksum) != 1)
         E_FATAL("fread(%s) (#codebooks) failed\n", file_name);
-    if (n_mgau != 1)
-        E_FATAL("%s: #codebooks (%d) != 1\n", file_name, n_mgau);
+    if (n_mgau != 1) {
+        E_ERROR("%s: #codebooks (%d) != 1\n", file_name, n_mgau);
+        fclose(fp);
+        return -1;
+    }
 
     /* #Features/codebook */
     if (bio_fread(&n_feat, sizeof(int32), 1, fp, byteswap, &chksum) != 1)
         E_FATAL("fread(%s) (#features) failed\n", file_name);
-    if (n_feat != 4)
-        E_FATAL("#Features streams(%d) != 4\n", n_feat);
+    if (s->n_feat == 0)
+        s->n_feat = n_feat;
+    else if (n_feat != s->n_feat)
+        E_FATAL("#Features streams(%d) != %d\n", n_feat, s->n_feat);
 
     /* #Gaussian densities/feature in each codebook */
-    if (bio_fread(&n_density, sizeof(int32), 1, fp, byteswap, &chksum) !=
-        1)
+    if (bio_fread(&n_density, sizeof(int32), 1, fp,
+                  byteswap, &chksum) != 1)
         E_FATAL("fread(%s) (#density/codebook) failed\n", file_name);
-    if (n_density != S2_NUM_ALPHABET)
+    if (s->n_density == 0)
+        s->n_density = n_density;
+    else if (n_density != s->n_density)
         E_FATAL("%s: Number of densities per feature(%d) != %d\n",
-                file_name, n_mgau, S2_NUM_ALPHABET);
+                file_name, n_mgau, s->n_density);
 
     /* Vector length of feature stream */
-    if (bio_fread(&veclen, sizeof(int32), 4, fp, byteswap, &chksum) != 4)
+    veclen = ckd_calloc(s->n_feat, sizeof(int32));
+    if (bio_fread(veclen, sizeof(int32), s->n_feat,
+                  fp, byteswap, &chksum) != s->n_feat)
         E_FATAL("fread(%s) (feature vector-length) failed\n", file_name);
-    for (i = 0, blk = 0; i < 4; ++i)
+    for (i = 0, blk = 0; i < s->n_feat; ++i) {
+        if (s->veclen[i] == 0)
+            s->veclen[i] = veclen[i];
+        else if (veclen[i] != s->veclen[i])
+            E_FATAL("feature stream length %d is inconsistent (%d != %d)\n",
+                    i, veclen[i], s->veclen[i]);
         blk += veclen[i];
+    }
 
     /* #Floats to follow; for the ENTIRE SET of CODEBOOKS */
     if (bio_fread(&n, sizeof(int32), 1, fp, byteswap, &chksum) != 1)
@@ -1093,37 +914,19 @@ s3_read_mgau(const char *file_name, float32 ** cb)
             ("%s: #float32s(%d) doesn't match dimensions: %d x %d x %d\n",
              file_name, n, n_mgau, n_density, blk);
 
-    /* This gets a bit tricky, as SCVQ expects C0 to exist in
-     * the three cepstra streams even though it isn't used (this can
-     * be fixed but isn't yet). */
-    for (i = 0; i < 4; ++i) {
-        int j;
-
-        cb[i] =
-            (float32 *) ckd_calloc(S2_NUM_ALPHABET * fLenMap[i],
+    *out_cb = ckd_calloc(s->n_feat, sizeof(float32 *));
+    for (i = 0; i < s->n_feat; ++i) {
+        (*out_cb)[i] =
+            (float32 *) ckd_calloc(n_density * veclen[i],
                                    sizeof(float32));
-
-        if (veclen[i] == fLenMap[i]) {  /* Not true except for POW_FEAT */
-            if (bio_fread
-                (cb[i], sizeof(float32), S2_NUM_ALPHABET * fLenMap[i], fp,
-                 byteswap, &chksum) != S2_NUM_ALPHABET * fLenMap[i])
-                E_FATAL("fread(%s, %d) of feat %d failed\n", file_name,
-                        S2_NUM_ALPHABET * fLenMap[i], i);
-        }
-        else if (veclen[i] < fLenMap[i]) {
-            for (j = 0; j < S2_NUM_ALPHABET; ++j) {
-                if (bio_fread
-                    ((cb[i] + j * fLenMap[i]) + (fLenMap[i] - veclen[i]),
-                     sizeof(float32), veclen[i], fp, byteswap,
-                     &chksum) != veclen[i])
-                    E_FATAL("fread(%s, %d) in feat %d failed\n", file_name,
-                            veclen[i], i);
-            }
-        }
-        else
-            E_FATAL("%s: feature %d length %d is not <= expected %d\n",
-                    file_name, i, veclen[i], fLenMap[i]);
+        if (bio_fread
+            ((*out_cb)[i], sizeof(float32),
+             n_density * veclen[i], fp,
+             byteswap, &chksum) != n_density * veclen[i])
+            E_FATAL("fread(%s, %d) of feat %d failed\n", file_name,
+                    n_density * veclen[i], i);
     }
+    ckd_free(veclen);
 
     if (chksum_present)
         bio_verify_chksum(fp, byteswap, chksum);
@@ -1133,52 +936,44 @@ s3_read_mgau(const char *file_name, float32 ** cb)
 
     fclose(fp);
 
-    E_INFO("%d mixture Gaussians, %d components, veclen %d\n", n_mgau,
-           n_density, blk);
+    E_INFO("%d mixture Gaussians, %d components, %d feature streams, veclen %d\n", n_mgau,
+           n_density, n_feat, blk);
 
     return n;
 }
 
 static int32
-s3_precomp(mean_t ** means, var_t ** vars, int32 ** dets, float32 vFloor, logmath_t * logmath)
+s3_precomp(s2_semi_mgau_t *s, logmath_t *lmath, float32 vFloor)
 {
     int feat;
-    float64 log_base = log(logmath_get_base(logmath));
 
-    for (feat = 0; feat < 4; ++feat) {
+    for (feat = 0; feat < s->n_feat; ++feat) {
         float32 *fmp;
-        mean_t *mp;
-        var_t *vp;
-        int32 *dp, vecLen, i;
+        mfcc_t *mp;
+        mfcc_t *vp, *dp;
+        int32 vecLen, i;
 
-        vecLen = fLenMap[(int32) feat];
-        fmp = (float32 *) means[feat];
-        mp = means[feat];
-        vp = vars[feat];
-        dp = dets[feat];
+        vecLen = s->veclen[feat];
+        fmp = (float32 *) s->means[feat];
+        mp = s->means[feat];
+        vp = s->vars[feat];
+        dp = s->dets[feat];
 
-        for (i = 0; i < S2_NUM_ALPHABET; ++i) {
-            int32 d, j;
+        for (i = 0; i < s->n_density; ++i) {
+            mfcc_t d;
+            int32 j;
 
             d = 0;
             for (j = 0; j < vecLen; ++j, ++vp, ++mp, ++fmp) {
                 float64 fvar;
 
-#ifdef FIXED_POINT
-                *mp = FLOAT2FIX(*fmp);
-#endif
-                /* Omit C0 for cepstral features (but not pow_feat!) */
-                if (j == 0 && feat != POW_FEAT) {
-                    *vp = 0;
-                    continue;
-                }
-
+                *mp = FLOAT2MFCC(*fmp);
                 /* Always do these pre-calculations in floating point */
                 fvar = *(float32 *) vp;
                 if (fvar < vFloor)
                     fvar = vFloor;
-                d += logs3(logmath, 1 / sqrt(fvar * 2.0 * M_PI));
-                *vp = (var_t) (1.0 / (2.0 * fvar * log_base));
+                d += (mfcc_t)logmath_log(lmath, 1 / sqrt(fvar * 2.0 * M_PI));
+                *vp = (mfcc_t)logmath_ln_to_log(lmath, 1.0 / (2.0 * fvar));
             }
             *dp++ = d;
         }
@@ -1186,67 +981,161 @@ s3_precomp(mean_t ** means, var_t ** vars, int32 ** dets, float32 vFloor, logmat
     return 0;
 }
 
+int
+split_topn(char const *str, uint8 *out, int nfeat)
+{
+    char *topn_list = ckd_salloc(str);
+    char *c, *cc;
+    int i, maxn;
+
+    c = topn_list;
+    i = 0;
+    maxn = 0;
+    while (i < nfeat && (cc = strchr(c, ',')) != NULL) {
+        *cc = '\0';
+        out[i] = atoi(c);
+        if (out[i] > maxn) maxn = out[i];
+        c = cc + 1;
+        ++i;
+    }
+    if (i < nfeat && *c != '\0') {
+        out[i] = atoi(c);
+        if (out[i] > maxn) maxn = out[i];
+        ++i;
+    }
+    while (i < nfeat)
+        out[i++] = maxn;
+
+    ckd_free(topn_list);
+    return maxn;
+}
+
+
 s2_semi_mgau_t *
-s2_semi_mgau_init(const char *mean_path, const char *var_path,
-                  float64 varfloor, const char *mixw_path,
-                  float64 mixwfloor, int32 topn, logmath_t *logmath)
+s2_semi_mgau_init(cmd_ln_t *config, logmath_t *lmath, feat_t *fcb, mdef_t *mdef)
 {
     s2_semi_mgau_t *s;
+    char const *sendump_path;
+    float32 **fgau;
     int i;
 
     s = ckd_calloc(1, sizeof(*s));
+    s->config = config;
 
-    s->use20ms_diff_pow = FALSE;
-    s->logmath = logmath;
-
-    for (i = 0; i < S2_MAX_TOPN; i++) {
-        s->lxfrm[i].val.dist = s->ldfrm[i].val.dist =
-            s->lcfrm[i].val.dist = WORST_DIST;
-        s->lxfrm[i].codeword = s->ldfrm[i].codeword =
-            s->lcfrm[i].codeword = i;
+    s->lmath = logmath_retain(lmath);
+    /* Log-add table. */
+    s->lmath_8b = logmath_init(logmath_get_base(lmath), SENSCR_SHIFT, TRUE);
+    if (s->lmath_8b == NULL) {
+        s2_semi_mgau_free(s);
+        return NULL;
     }
+    /* Ensure that it is only 8 bits wide so that fast_logmath_add() works. */
+    if (logmath_get_width(s->lmath_8b) != 1) {
+        E_ERROR("Log base %f is too small to represent add table in 8 bits\n",
+                logmath_get_base(s->lmath_8b));
+        s2_semi_mgau_free(s);
+        return NULL;
+    }
+
+    /* Inherit stream dimensions from acmod, will be checked below. */
+    s->n_feat = feat_dimension1(fcb);
+    s->veclen = ckd_calloc(s->n_feat, sizeof(int32));
+    for (i = 0; i < s->n_feat; ++i)
+        s->veclen[i] = feat_dimension2(fcb, i);
 
     /* Read means and variances. */
-    if (s3_read_mgau(mean_path, s->means) < 0) {
-        ckd_free(s);
+    if (s3_read_mgau(s, cmd_ln_str_r(s->config, "-mean"), &fgau) < 0) {
+        s2_semi_mgau_free(s);
         return NULL;
     }
-    if (s3_read_mgau(var_path, s->vars) < 0) {
-        ckd_free(s);
+    s->means = (mfcc_t **)fgau;
+    if (s3_read_mgau(s, cmd_ln_str_r(s->config, "-var"), &fgau) < 0) {
+        s2_semi_mgau_free(s);
         return NULL;
     }
-    /* Precompute means, variances, and determinants. */
-    for (i = 0; i < 4; ++i)
-        s->dets[i] = s->detArr + i * S2_NUM_ALPHABET;
-    s3_precomp(s->means, s->vars, s->dets, varfloor, logmath);
+    s->vars = (mfcc_t **)fgau;
 
-    /* Read mixture weights (gives us CdWdPDFMod = number of
-     * mixture weights per codeword, which is fixed at the number
-     * of senones since we have only one codebook) */
-    s->CdWdPDFMod = read_dists_s3(s, mixw_path, mixwfloor);
-    s->topN = topn;
+    /* Precompute (and fixed-point-ize) means, variances, and determinants. */
+    s->dets = (mfcc_t **)ckd_calloc_2d(s->n_feat, s->n_density, sizeof(**s->dets));
+    s3_precomp(s, s->lmath, cmd_ln_float32_r(s->config, "-varfloor"));
+
+    /* Read mixture weights */
+    if ((sendump_path = cmd_ln_str_r(s->config, "-sendump")))
+        read_sendump(s, mdef, sendump_path);
+    else
+        read_mixw(s, cmd_ln_str_r(s->config, "-mixw"),
+                  cmd_ln_float32_r(s->config, "-mixwfloor"));
+    s->ds_ratio = cmd_ln_int32_r(s->config, "-ds");
+
+    /* Determine top-N for each feature */
+    s->topn_beam = ckd_calloc(s->n_feat, sizeof(*s->topn_beam));
+    s->max_topn = cmd_ln_int32_r(s->config, "-topn");
+    split_topn(cmd_ln_str_r(s->config, "-topn_beam"), s->topn_beam, s->n_feat);
+    E_INFO("Maximum top-N: %d ", s->max_topn);
+    E_INFOCONT("Top-N beams:");
+    for (i = 0; i < s->n_feat; ++i) {
+        E_INFOCONT(" %d", s->topn_beam[i]);
+    }
+    E_INFOCONT("\n");
+
+    /* Top-N scores from recent frames */
+    s->n_topn_hist = cmd_ln_int32_r(s->config, "-pl_window") + 2;
+    s->topn_hist = (vqFeature_t ***)
+        ckd_calloc_3d(s->n_topn_hist, s->n_feat, s->max_topn,
+                      sizeof(***s->topn_hist));
+    s->topn_hist_n = ckd_calloc_2d(s->n_topn_hist, s->n_feat,
+                                   sizeof(**s->topn_hist_n));
+    for (i = 0; i < s->n_topn_hist; ++i) {
+        int j;
+        for (j = 0; j < s->n_feat; ++j) {
+            int k;
+            for (k = 0; k < s->max_topn; ++k) {
+                s->topn_hist[i][j][k].score = WORST_DIST;
+                s->topn_hist[i][j][k].codeword = k;
+            }
+        }
+    }
 
     return s;
 }
 
 void
-s2_semi_mgau_free(s2_semi_mgau_t * s)
+s2_semi_mgau_free(s2_semi_mgau_t *ps)
 {
-    /* FIXME: Need to free stuff. */
-    ckd_free_2d(s->OPDF_8B[0]);
-    ckd_free_2d(s->OPDF_8B[1]);
-    ckd_free_2d(s->OPDF_8B[2]);
-    ckd_free_2d(s->OPDF_8B[3]);
+    s2_semi_mgau_t *s = (s2_semi_mgau_t *)ps;
+    uint32 i;
 
-    ckd_free(s->means[0]);
-    ckd_free(s->means[1]);
-    ckd_free(s->means[2]);
-    ckd_free(s->means[3]);
-
-    ckd_free(s->vars[0]);
-    ckd_free(s->vars[1]);
-    ckd_free(s->vars[2]);
-    ckd_free(s->vars[3]);
-
+    logmath_free(s->lmath);
+    logmath_free(s->lmath_8b);
+    if (s->sendump_mmap) {
+        for (i = 0; i < s->n_feat; ++i) {
+            ckd_free(s->mixw[i]);
+        }
+        ckd_free(s->mixw); 
+       mmio_file_unmap(s->sendump_mmap);
+    }
+    else {
+        ckd_free_3d(s->mixw);
+    }
+    if (s->means) {
+	for (i = 0; i < s->n_feat; ++i) {
+            ckd_free(s->means[i]);
+	}
+        ckd_free(s->means);
+    }
+    if (s->vars) {
+	for (i = 0; i < s->n_feat; ++i) {
+    	    ckd_free(s->vars[i]);
+    	}
+        ckd_free(s->vars);
+    }
+    for (i = 0; i < s->n_kdtrees; ++i)
+        free_kd_tree(s->kdtrees[i]);
+    ckd_free(s->kdtrees);
+    ckd_free(s->veclen);
+    ckd_free(s->topn_beam);
+    ckd_free_2d(s->topn_hist_n);
+    ckd_free_3d((void **)s->topn_hist);
+    ckd_free_2d((void **)s->dets);
     ckd_free(s);
 }

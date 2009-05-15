@@ -215,7 +215,7 @@ void linksilences(lm_t* l, kbcore_t *kbc, dict_t *d);
 /*#define kbcore_n_mgau(k)	((k)->mgau ? mgau_n_mgau((k)->mgau) : (k)->ms_mgau->s->n_sen)
  */
 #define kbcore_n_mgau(k)	((k)->mgau ? mgau_n_mgau((k)->mgau) \
-                                : ((k)->s2_mgau ? (k)->s2_mgau->CdWdPDFMod \
+                                : ((k)->s2_mgau ? (k)->s2_mgau->n_sen \
                                    : (k)->ms_mgau->s->n_sen))
 #define kbcore_logmath(k)	((k)->logmath)
 
