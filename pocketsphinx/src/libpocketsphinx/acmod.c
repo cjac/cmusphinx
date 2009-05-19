@@ -215,13 +215,12 @@ acmod_t *
 acmod_init(cmd_ln_t *config, logmath_t *lmath, fe_t *fe, feat_t *fcb)
 {
     acmod_t *acmod;
+    char const *featparams;
 
     acmod = ckd_calloc(1, sizeof(*acmod));
     acmod->config = config;
     acmod->lmath = lmath;
     acmod->state = ACMOD_IDLE;
-
-    char const *featparams;
 
     /* Look for feat.params in acoustic model dir. */
     if ((featparams = cmd_ln_str_r(acmod->config, "-featparams"))) {
