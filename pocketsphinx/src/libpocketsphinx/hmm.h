@@ -136,7 +136,7 @@ extern "C" {
 typedef struct hmm_context_s {
     int32 n_emit_state;     /**< Number of emitting states in this set of HMMs. */
     uint8 ** const *tp;	    /**< State transition scores tp[id][from][to] (logs3 values). */
-    int16 const *senscore;  /**< State emission scores senscore[senid]
+    int32 const *senscore;  /**< State emission scores senscore[senid]
                                (negated scaled logs3 values). */
     uint16 * const *sseq;   /**< Senone sequence mapping. */
     int32 *st_sen_scr;      /**< Temporary array of senone scores (for some topologies). */
@@ -208,7 +208,7 @@ typedef struct hmm_s {
  **/
 hmm_context_t *hmm_context_init(int32 n_emit_state,
                                 uint8 ** const *tp,
-                                int16 const *senscore,
+                                int32 const *senscore,
                                 uint16 * const *sseq);
 
 /**

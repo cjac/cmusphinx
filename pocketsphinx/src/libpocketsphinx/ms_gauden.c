@@ -537,10 +537,16 @@ gauden_dist(gauden_t * g,
     assert((n_top > 0) && (n_top <= g->n_density));
 
     for (f = 0; f < g->n_feat; f++) {
+        mfcc_t norm;
+        int j;
         compute_dist(out_dist[f], n_top,
                      obs[f], g->featlen[f],
                      g->mean[mgau][f], g->var[mgau][f], g->det[mgau][f],
                      g->n_density);
+        norm = out_dist[f][0].dist;
+        for (j = 0; j < n_top; ++j) {
+            out_dist[f][j].dist -= norm;
+        }
     }
 
     return 0;

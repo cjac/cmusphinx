@@ -170,7 +170,7 @@ ms_mgau_mllr_transform(ps_mgau_t *s,
 
 int32
 ms_cont_mgau_frame_eval(ps_mgau_t * mg,
-			int16 *senscr,
+			int32 *senscr,
 			uint8 *senone_active,
 			int32 n_senone_active,
                         mfcc_t ** feat,
@@ -248,10 +248,12 @@ ms_cont_mgau_frame_eval(ps_mgau_t * mg,
 	for (i = 0; i < n_senone_active; i++) {
 	    int32 s = senone_active[i] + n;
 	    int32 bs = senscr[s] - best;
+#if 0
 	    if (bs > 32767)
 		bs = 32767;
 	    if (bs < -32768)
 		bs = -32768;
+#endif
 	    senscr[s] = bs;
 	    n = s;
 	}

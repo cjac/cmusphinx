@@ -107,8 +107,8 @@ acmod_init_am(acmod_t *acmod)
     }
 
     E_INFO("Attempting to use SCHMM computation module\n");
-    acmod->mgau = s2_semi_mgau_init(acmod);
-    if (acmod->mgau) {
+    //acmod->mgau = s2_semi_mgau_init(acmod);
+    if (0 && acmod->mgau) {
         char const *kdtreefn = cmd_ln_str_r(acmod->config, "-kdtree");
         if (kdtreefn)
             s2_semi_mgau_load_kdtree(acmod->mgau, kdtreefn,
@@ -772,7 +772,7 @@ acmod_advance(acmod_t *acmod)
     return ++acmod->output_frame;
 }
 
-int16 const *
+int32 const *
 acmod_score(acmod_t *acmod,
 	    int *inout_frame_idx)
 {
@@ -838,7 +838,7 @@ acmod_best_score(acmod_t *acmod, int *out_best_senid)
         }
     }
     else {
-        int16 *senscr;
+        int32 *senscr;
         senscr = acmod->senone_scores;
         for (i = 0; i < acmod->n_senone_active; ++i) {
             senscr += acmod->senone_active[i];

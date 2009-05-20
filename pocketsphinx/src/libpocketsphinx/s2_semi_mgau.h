@@ -94,7 +94,7 @@ struct s2_semi_mgau_s {
 ps_mgau_t *s2_semi_mgau_init(acmod_t *acmod);
 void s2_semi_mgau_free(ps_mgau_t *s);
 int s2_semi_mgau_frame_eval(ps_mgau_t *s,
-                            int16 *senone_scores,
+                            int32 *senone_scores,
                             uint8 *senone_active,
                             int32 n_senone_active,
                             mfcc_t **featbuf,

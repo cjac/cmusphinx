@@ -663,7 +663,7 @@ eval_word_chan(ngram_search_t *ngs, int frame_idx)
 }
 
 static int32
-evaluate_channels(ngram_search_t *ngs, int16 const *senone_scores, int frame_idx)
+evaluate_channels(ngram_search_t *ngs, int32 const *senone_scores, int frame_idx)
 {
     int32 bs;
 
@@ -1385,7 +1385,7 @@ deactivate_channels(ngram_search_t *ngs, int frame_idx)
 int
 ngram_fwdtree_search(ngram_search_t *ngs, int frame_idx)
 {
-    int16 const *senscr;
+    int32 const *senscr;
 
     /* Activate our HMMs for the current frame if need be. */
     if (!ps_search_acmod(ngs)->compallsen)

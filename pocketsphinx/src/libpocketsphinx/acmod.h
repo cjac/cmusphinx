@@ -93,7 +93,7 @@ typedef struct ps_mgaufuncs_s {
     char const *name;
 
     int (*frame_eval)(ps_mgau_t *mgau,
-                      int16 *senscr,
+                      int32 *senscr,
                       uint8 *senone_active,
                       int32 n_senone_active,
                       mfcc_t ** feat,
@@ -156,7 +156,7 @@ struct acmod_s {
     ps_mllr_t *mllr;           /**< Speaker transformation. */
 
     /* Senone scoring: */
-    int16 *senone_scores;      /**< GMM scores for current frame. */
+    int32 *senone_scores;      /**< GMM scores for current frame. */
     bitvec_t *senone_active_vec; /**< Active GMMs in current frame. */
     uint8 *senone_active;      /**< Array of deltas to active GMMs. */
     int senscr_frame;          /**< Frame index for senone_scores. */
@@ -351,7 +351,7 @@ int acmod_process_feat(acmod_t *acmod,
  *         data pointed to persists only until the next call to
  *         acmod_score() or acmod_advance().
  */
-int16 const *acmod_score(acmod_t *acmod,
+int32 const *acmod_score(acmod_t *acmod,
                          int *inout_frame_idx);
 
 /**

@@ -178,7 +178,7 @@ renormalize_hmms(phone_loop_search_t *pls, int frame_idx, int32 norm)
 }
 
 static int32
-evaluate_hmms(phone_loop_search_t *pls, int16 const *senscr, int frame_idx)
+evaluate_hmms(phone_loop_search_t *pls, int32 const *senscr, int frame_idx)
 {
     int32 bs = WORST_SCORE;
     int i, bi;
@@ -270,7 +270,7 @@ phone_loop_search_step(ps_search_t *search, int frame_idx)
 {
     phone_loop_search_t *pls = (phone_loop_search_t *)search;
     acmod_t *acmod = ps_search_acmod(search);
-    int16 const *senscr;
+    int32 const *senscr;
     int i;
 
     /* All CI senones are active all the time. */

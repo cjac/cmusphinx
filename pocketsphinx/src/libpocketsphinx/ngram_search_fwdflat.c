@@ -706,7 +706,7 @@ fwdflat_renormalize_scores(ngram_search_t *ngs, int frame_idx, int32 norm)
 int
 ngram_fwdflat_search(ngram_search_t *ngs, int frame_idx)
 {
-    int16 const *senscr;
+    int32 const *senscr;
     int32 nf, i, j;
     int32 *nawl;
 

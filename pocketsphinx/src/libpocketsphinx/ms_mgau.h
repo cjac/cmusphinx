@@ -140,7 +140,7 @@ typedef struct {
 ps_mgau_t* ms_mgau_init(cmd_ln_t *config, logmath_t *lmath);
 void ms_mgau_free(ps_mgau_t *g);
 int32 ms_cont_mgau_frame_eval(ps_mgau_t * msg,
-                              int16 *senscr,
+                              int32 *senscr,
                               uint8 *senone_active,
                               int32 n_senone_active,
                               mfcc_t ** feat,
