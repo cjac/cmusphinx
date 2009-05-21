@@ -45,6 +45,7 @@
 /* Local headers. */
 #include "ms_senone.h"
 
+#define dprintf(x)
 
 #define MIXW_PARAM_VERSION	"1.0"
 #define SPDEF_PARAM_VERSION	"1.2"
@@ -204,9 +205,6 @@ senone_mixw_read(senone_t * s, char const *file_name, logmath_t *lmath)
     if ((s->mixwfloor <= 0.0) || (s->mixwfloor >= 1.0))
         E_FATAL("mixwfloor (%e) not in range (0, 1)\n", s->mixwfloor);
 
-    /* Use a fixed shift for compatibility with everything else. */
-    E_INFO("Truncating senone logs3(pdf) values by %d bits\n", SENSCR_SHIFT);
-
     /*
      * Allocate memory for senone PDF data.  Organize normally or transposed depending on
      * s->n_gauden.
@@ -244,17 +242,13 @@ senone_mixw_read(senone_t * s, char const *file_name, logmath_t *lmath)
             vector_floor(pdf, s->n_cw, s->mixwfloor);
             vector_sum_norm(pdf, s->n_cw);
 
-            /* Convert to logs3, truncate to 8 bits, and store in s->pdf */
+            /* Convert to logs3 and store in s->pdf */
             for (c = 0; c < s->n_cw; c++) {
-                p = -(logmath_log(lmath, pdf[c]));
-                p += (1 << (SENSCR_SHIFT - 1)) - 1; /* Rounding before truncation */
-
+		p = logmath_log(lmath, pdf[c]);
                 if (s->n_gauden > 1)
-                    s->pdf[i][f][c] =
-                        (p < (255 << SENSCR_SHIFT)) ? (p >> SENSCR_SHIFT) : 255;
+                    s->pdf[i][f][c] = p;
                 else
-                    s->pdf[f][c][i] =
-                        (p < (255 << SENSCR_SHIFT)) ? (p >> SENSCR_SHIFT) : 255;
+                    s->pdf[f][c][i] = p;
             }
         }
     }
@@ -287,7 +281,7 @@ senone_init(gauden_t *g, char const *mixwfile, char const *sen2mgau_map_file,
     int32 n = 0, i;
 
     s = (senone_t *) ckd_calloc(1, sizeof(senone_t));
-    s->lmath = logmath_init(logmath_get_base(lmath), SENSCR_SHIFT, TRUE);
+    s->lmath = logmath_retain(lmath);
     s->mixwfloor = mixwfloor;
 
     s->n_gauden = g->n_mgau;
@@ -351,7 +345,6 @@ senone_free(senone_t * s)
 
 /*
  * Compute senone score for one senone.
- * NOTE:  Remember that senone PDF tables contain SCALED, NEGATED logs3 values.
  * NOTE:  Remember also that PDF data may be transposed or not depending on s->n_gauden.
  */
 int32
@@ -373,28 +366,29 @@ senone_eval(senone_t * s, int id, gauden_dist_t ** dist, int32 n_top)
         fdist = dist[f];
 
         /* Top codeword for feature f */
-	fden = ((int32)fdist[0].dist + ((1<<SENSCR_SHIFT) - 1)) >> SENSCR_SHIFT;
+	fden = (int32)fdist[0].dist;
         fscr = (s->n_gauden > 1)
-	    ? (fden + -s->pdf[id][f][fdist[0].id])  /* untransposed */
-	    : (fden + -s->pdf[f][fdist[0].id][id]); /* transposed */
+	    ? (fden + s->pdf[id][f][fdist[0].id])  /* untransposed */
+	    : (fden + s->pdf[f][fdist[0].id][id]); /* transposed */
+	dprintf(("score(%d,%d,0) = %d + %d = %d\n",
+		 id, f, fden,
+		 s->pdf[f][fdist[0].id][id],
+		 fscr));
 
         /* Remaining of n_top codewords for feature f */
         for (t = 1; t < n_top; t++) {
-	    fden = ((int32)fdist[t].dist + ((1<<SENSCR_SHIFT) - 1)) >> SENSCR_SHIFT;
+	    fden = (int32)fdist[t].dist;
             fwscr = (s->n_gauden > 1) ?
-                (fden + -s->pdf[id][f][fdist[t].id]) :
-                (fden + -s->pdf[f][fdist[t].id][id]);
+                (fden + s->pdf[id][f][fdist[t].id]) :
+                (fden + s->pdf[f][fdist[t].id][id]);
             fscr = logmath_add(s->lmath, fscr, fwscr);
+	    dprintf(("score(%d,%d,%d) = %d + %d = %d => %d\n",
+		     id, f, t, fden,
+		     -s->pdf[f][fdist[t].id][id],
+		     fwscr, fscr));
         }
-	/* Senone scores are also scaled, negated logs3 values.  Hence
-	 * we have to negate the stuff we calculated above. */
-        scr -= fscr;
+        scr += fscr;
     }
 
-    /* Avoid overflowing int16 */
-    if (scr > 32767)
-      scr = 32767;
-    if (scr < -32768)
-      scr = -32768;
     return scr;
 }

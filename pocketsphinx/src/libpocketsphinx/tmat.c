@@ -157,7 +157,7 @@ tmat_chk_uppertri(tmat_t * tmat, logmath_t *lmath)
     for (i = 0; i < tmat->n_tmat; i++) {
         for (dst = 0; dst < tmat->n_state; dst++)
             for (src = dst + 1; src < tmat->n_state; src++)
-                if (tmat->tp[i][src][dst] < 255) {
+                if (tmat->tp[i][src][dst] > TMAT_WORST_SCORE) {
                     E_ERROR("tmat[%d][%d][%d] = %d\n",
                             i, src, dst, tmat->tp[i][src][dst]);
                     return -1;
@@ -176,7 +176,7 @@ tmat_chk_1skip(tmat_t * tmat, logmath_t *lmath)
     for (i = 0; i < tmat->n_tmat; i++) {
         for (src = 0; src < tmat->n_state; src++)
             for (dst = src + 3; dst <= tmat->n_state; dst++)
-                if (tmat->tp[i][src][dst] < 255) {
+                if (tmat->tp[i][src][dst] > TMAT_WORST_SCORE) {
                     E_ERROR("tmat[%d][%d][%d] = %d\n",
                             i, src, dst, tmat->tp[i][src][dst]);
                     return -1;
@@ -280,17 +280,8 @@ tmat_init(char const *file_name, logmath_t *lmath, float64 tpfloor, int32 brepor
 
             /* Convert to logs3. */
             for (k = 0; k < n_dst; k++) {
-                int ltp;
-#if 0 /* No, don't do this!  It will subtly break 3-state HMMs. */
-                /* For these ones, we floor them even if they are
-                 * zero, otherwise HMM evaluation goes nuts. */
-                if (k >= j && k-j < 3 && tp[j][k] == 0.0f)
-                    tp[j][k] = tpfloor;
-#endif
-                /* Log and quantize them. */
-                ltp = -logmath_log(lmath, tp[j][k]) >> SENSCR_SHIFT;
-                if (ltp > 255) ltp = 255;
-                t->tp[i][j][k] = (uint8)ltp;
+                t->tp[i][j][k] =
+                    (tp[j][k] == 0.0) ? TMAT_WORST_SCORE : logmath_log(lmath, tp[j][k]);
             }
         }
     }

@@ -54,7 +54,7 @@
 
 hmm_context_t *
 hmm_context_init(int32 n_emit_state,
-		 uint8 ** const *tp,
+		 int32 ** const *tp,
 		 int32 const *senscore,
 		 uint16 * const *sseq)
 {
@@ -216,14 +216,14 @@ hmm_normalize(hmm_t *h, int32 bestscr)
         hmm_out_score(h) -= bestscr;
 }
 
-#define hmm_tprob_5st(i, j) (-tp[(i)*6+(j)] << SENSCR_SHIFT)
-#define nonmpx_senscr(i) (-senscore[sseq[i]] << SENSCR_SHIFT)
+#define hmm_tprob_5st(i, j) (tp[(i)*6+(j)])
+#define nonmpx_senscr(i) (senscore[sseq[i]])
 
 static int32
 hmm_vit_eval_5st_lr(hmm_t * hmm)
 {
     int32 const *senscore = hmm->ctx->senscore;
-    uint8 const *tp = hmm->ctx->tp[hmm->tmatid][0];
+    int32 const *tp = hmm->ctx->tp[hmm->tmatid][0];
     uint16 const *sseq = hmm->senid;
     int32 s5, s4, s3, s2, s1, s0, t2, t1, t0, bestScore;
 
@@ -350,12 +350,12 @@ hmm_vit_eval_5st_lr(hmm_t * hmm)
 }
 
 #define mpx_senid(st) sseq[ssid[st]][st]
-#define mpx_senscr(st) (-senscore[mpx_senid(st)] << SENSCR_SHIFT)
+#define mpx_senscr(st) (senscore[mpx_senid(st)])
 
 static int32
 hmm_vit_eval_5st_lr_mpx(hmm_t * hmm)
 {
-    uint8 const *tp = hmm->ctx->tp[hmm->tmatid][0];
+    int32 const *tp = hmm->ctx->tp[hmm->tmatid][0];
     int32 const *senscore = hmm->ctx->senscore;
     uint16 * const *sseq = hmm->ctx->sseq;
     uint16 *ssid = hmm->senid;
@@ -524,13 +524,13 @@ hmm_vit_eval_5st_lr_mpx(hmm_t * hmm)
     return bestScore;
 }
 
-#define hmm_tprob_3st(i, j) (-tp[(i)*4+(j)] << SENSCR_SHIFT)
+#define hmm_tprob_3st(i, j) (tp[(i)*4+(j)])
 
 static int32
 hmm_vit_eval_3st_lr(hmm_t * hmm)
 {
     int32 const *senscore = hmm->ctx->senscore;
-    uint8 const *tp = hmm->ctx->tp[hmm->tmatid][0];
+    int32 const *tp = hmm->ctx->tp[hmm->tmatid][0];
     uint16 const *sseq = hmm->senid;
     int32 s3, s2, s1, s0, t2, t1, t0, bestScore;
 
@@ -609,7 +609,7 @@ hmm_vit_eval_3st_lr(hmm_t * hmm)
 static int32
 hmm_vit_eval_3st_lr_mpx(hmm_t * hmm)
 {
-    uint8 const *tp = hmm->ctx->tp[hmm->tmatid][0];
+    int32 const *tp = hmm->ctx->tp[hmm->tmatid][0];
     int32 const *senscore = hmm->ctx->senscore;
     uint16 * const *sseq = hmm->ctx->sseq;
     uint16 *ssid = hmm->senid;

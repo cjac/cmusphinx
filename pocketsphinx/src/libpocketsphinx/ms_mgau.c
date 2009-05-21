@@ -71,6 +71,8 @@
 /* Local headers. */
 #include "ms_mgau.h"
 
+#define dprintf(x)
+
 static ps_mgaufuncs_t ms_mgau_funcs = {
     "ms",
     &ms_cont_mgau_frame_eval, /* frame_eval */
@@ -194,22 +196,20 @@ ms_cont_mgau_frame_eval(ps_mgau_t * mg,
 	for (gid = 0; gid < g->n_mgau; gid++)
 	    gauden_dist(g, gid, topn, feat, msg->dist[gid]);
 
-	best = (int32) 0x7fffffff;
+	best = (int32) 0x80000000;
+
 	for (s = 0; s < sen->n_sen; s++) {
 	    senscr[s] = senone_eval(sen, s, msg->dist[sen->mgau[s]], topn);
-	    if (best > senscr[s]) {
+	    if (best < senscr[s]) {
 		best = senscr[s];
 	    }
 	}
 
+	dprintf(("frame %d best %d\n", frame, best));
 	/* Normalize senone scores */
 	for (s = 0; s < sen->n_sen; s++) {
-	    int32 bs = senscr[s] - best;
-	    if (bs > 32767)
-		bs = 32767;
-	    if (bs < -32768)
-		bs = -32768;
-	    senscr[s] = bs;
+	    senscr[s] -= best;	
+	    dprintf(("senscr[%d] = %d\n", s, senscr[s]));
 	}
     }
     else {
@@ -232,12 +232,12 @@ ms_cont_mgau_frame_eval(ps_mgau_t * mg,
 		gauden_dist(g, gid, topn, feat, msg->dist[gid]);
 	}
 
-	best = (int32) 0x7fffffff;
+	best = (int32) 0x80000000;
 	n = 0;
 	for (i = 0; i < n_senone_active; i++) {
 	    int32 s = senone_active[i] + n;
 	    senscr[s] = senone_eval(sen, s, msg->dist[sen->mgau[s]], topn);
-	    if (best > senscr[s]) {
+	    if (best < senscr[s]) {
 		best = senscr[s];
 	    }
 	    n = s;
@@ -247,14 +247,7 @@ ms_cont_mgau_frame_eval(ps_mgau_t * mg,
 	n = 0;
 	for (i = 0; i < n_senone_active; i++) {
 	    int32 s = senone_active[i] + n;
-	    int32 bs = senscr[s] - best;
-#if 0
-	    if (bs > 32767)
-		bs = 32767;
-	    if (bs < -32768)
-		bs = -32768;
-#endif
-	    senscr[s] = bs;
+	    senscr[s] -= best;
 	    n = s;
 	}
     }

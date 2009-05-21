@@ -134,14 +134,13 @@ extern "C" {
 } /* Fool Emacs into not indenting things. */
 #endif
 
-typedef uint8 senprob_t;	/**< Senone logs3-probs, truncated to 8 bits */
+typedef int32 senprob_t;	/**< Senone logs3-probs */
 
 /**
  * \struct senone_t
- * \brief 8-bit senone PDF structure. 
  * 
- * 8-bit senone PDF structure.  Senone pdf values are normalized, floored, converted to
- * logs3 domain, and finally truncated to 8 bits precision to conserve memory space.
+ * senone PDF structure.  Senone pdf values are normalized, floored, converted to
+ * logs3 domain.
  */
 typedef struct {
     senprob_t ***pdf;		/**< gaussian density mixture weights, organized two possible
@@ -165,7 +164,7 @@ typedef struct {
 /**
  * Load a set of senones (mixing weights and mixture gaussian codebook mappings) from
  * the given files.  Normalize weights for each codebook, apply the given floor, convert
- * PDF values to logs3 domain and quantize to 8-bits.
+ * PDF values to logs3 domain.
  * @return pointer to senone structure created.  Caller MUST NOT change its contents.
  */
 senone_t *senone_init (gauden_t *g,             /**< In: codebooks */
