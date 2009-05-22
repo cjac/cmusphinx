@@ -20,7 +20,7 @@ sub new {
   my $class = shift;
   my %params = @_;
 
-  my $objref = {'SOURCE' => $params{'SOUCRCE'} || 'loc',
+  my $objref = {'SOURCE' => $params{'SOURCE'} || 'loc',
                 'PRONOUNCE' => ($params{'SOURCE'} eq 'web'? undef:
                                 File::Spec->catfile($params{'TOOLS'}, 'MakeDict', 'bin',
                                                     (($^O =~ /win32/i or $^O =~ /cygwin/)?
@@ -65,7 +65,8 @@ sub up_to_date {
       LogiosLog::warn("Source '$srcfn' doesn't exist!");
       return 0;
     }
-    my $mtime = stat($srcfn)->mtime;
+    my $mtime = stat($srcfn)->mtime; print "$srcfn mtime $mtime\n";
+#    if ( not defined $latest_source ) { $latest_source = $mtime; }
     $latest_source = $mtime if $mtime > $latest_source;
   }
   if (!defined $latest_source) {
@@ -80,6 +81,7 @@ sub up_to_date {
       return 0;
     }
     my $mtime = stat($targetfn)->mtime;
+#    if ( not defined $earliest_target ) { $earliest_target = $mtime; }
     $earliest_target = $mtime if $mtime > $earliest_target;
   }
   return 0 if !defined $earliest_target;
@@ -90,10 +92,10 @@ sub up_to_date {
 sub do_pronounce {
   my $self = shift;
 
-  if(!$self->{'FORCE'} && $self->up_to_date) {
-    &LogiosLog::say('Pronounce', "up-to-date");
-    return;
-  }
+#  if(!$self->{'FORCE'} && $self->up_to_date) {
+#    &LogiosLog::say('Pronounce', "up-to-date");
+#    return;
+#  }
   $self->clean_wordfile;
   return $self->get_dic_web if $self->{'SOURCE'} eq 'web';
   return $self->get_dic_loc if $self->{'SOURCE'} eq 'loc';
@@ -127,8 +129,9 @@ sub get_dic_loc {
                         '-e', $self->{'LOGFILE'},  # logging data
                         '-v',  # verbose output
                        );
-  push(@pronounce_args, '-H', $self->{'HANDDICT'}) if -e $self->{'HANDDICT'};
-
+  if ( defined $self->{'HANDDICT'} ) {
+      push(@pronounce_args, '-H', $self->{'HANDDICT'}) if -e $self->{'HANDDICT'};
+       }
   &LogiosLog::say('Pronounce', join(" ", @pronounce_args));
   return system($self->{'PRONOUNCE'}, @pronounce_args);
 }

@@ -1,25 +1,3 @@
-;;;  $URL$
-;;;  $Id$
-;;; 
-;;; 
-;;;  CMUdict  --  Major Version: 0.07a
-;;; 
-;;;  $Rev$  -- note this is the repository count, *not* the dictionary revision count
-;;;  $Date$
-;;;  $Author$
-;;; 
-;;;
-;;;
-;;;  NOTES  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; 
-;;;  [20080401] (air)
-:::   New dict file format introduced 
-;;;   - comments (like this section) allowed
-;;;   - file name not version-dependent; vers/rev information is now in this header
-;;;
-;;; 
-
-;;;  lexical items for dictation applications (also some contractions, for now)
 !EXCLAMATION-POINT	EH K S K L AH M EY SH AH N P OY N T
 "CLOSE-QUOTE	K L OW Z K W OW T
 "DOUBLE-QUOTE	D AH B AH L K W OW T
@@ -83,9 +61,6 @@
 ;SEMI-COLON	S EH M IY K OW L AH N
 ;SEMI-COLON(1)	S EH M IH K OW L AH N
 ?QUESTION-MARK	K W EH S CH AH N M AA R K
-
-;;; Main Dictionary
-;;; 
 A	AH
 A'S	EY Z
 A(1)	EY
@@ -6113,9 +6088,7 @@ ASININE	AE S AH N AY N
 ASK	AE S K
 ASKA	AE S K AH
 ASKANCE	AH S K AE N S
-ASKED	AO S K T
-ASKED(1)	AE S K T
-ASKED(30	AE S T
+ASKED	AE S K T
 ASKER	AE S K ER
 ASKER'S	AE S K ER Z
 ASKERS	AE S K ER Z
@@ -31573,10 +31546,9 @@ DIDIER	D IH D IY ER
 DIDINIUM	D IH D IH N IY AH M
 DIDION	D IH D IY AH N
 DIDION'S	D IH D IY AH N Z
-DIDN'T	D IH N T
+DIDN'T	D IH D N T
 DIDN'T(1)	D IH D AH N
-DIDN'T(2)	D IH D N T
-DIDN'T(3)	D IH D AH N T
+DIDN'T(2)	D IH D AH N T
 DIDO	D AY D OW
 DIDOMENICO	D IH D OW M EH N IH K OW
 DIDONATO	D IH D OW N AA T OW

@@ -34,6 +34,8 @@ my $pronounce = Pronounce->new('TOOLS' => $toolsdir,
                                'VOCFN' => $words,
                                'HANDICFN' => $handdict,
                                'OUTFN' => $dict,
-                               'LOGFN' => 'pronunciation.log');
+                               'LOGFN' => 'pronunciation.log',
+			       'SOURCE' => "",
+    );
 $pronounce->do_pronounce;
 
