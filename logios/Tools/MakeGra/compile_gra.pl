@@ -102,12 +102,13 @@ close TTFORMS; close FORMS;
 # compile Phoenix grammar
 LogiosLog::say('compile_gra', "doing Phoenix compile");
 my $COMPILE = File::Spec->catfile($EXEDIR,$bindir,"compile_grammar").$exten;
-my $phoenix_cmd_line = "\"$COMPILE\" -SymBufSize 200000 -MaxSymbol 30000 -TokBufSize 200000 -g . -f $instance";
+my $phoenix_cmd_line = "\"$COMPILE\" -SymBufSize 2000000 -MaxSymbol 300000 -TokBufSize 20000000 -g . -f $instance";
 LogiosLog::fail("Phoenix compilation: $phoenix_cmd_line")
   if not defined open(COMPILE, "$phoenix_cmd_line|");
 open(LOG, ">".File::Spec->catfile($outpath,"compile_gra.log")); print LOG <COMPILE>; close LOG;
 close COMPILE;
 
+# the following code doesn't look right: frames will appear the first file then stay there...
 if(!-e 'frames' && -e 'forms') {
 # concept leaf needs a 'frames' file, but that file might be called 'forms'
   open(FRAMES, '>frames'); open(FORMS, 'forms');
@@ -116,7 +117,7 @@ if(!-e 'frames' && -e 'forms') {
 }
 my $CONCEPT_LEAF = File::Spec->catfile($EXEDIR,$bindir,"concept_leaf").$exten;
 LogiosLog::say('compile_gra', "doing Phoenix concept_leaf");
-my $concept_cmd_line = "\"$CONCEPT_LEAF\" -SymBufSize 200000 -grammar $instance.net";
+my $concept_cmd_line = "\"$CONCEPT_LEAF\" -SymBufSize 200000000 -grammar $instance.net";
 #Bug! concept leaf fails!
 #LogiosLog::fail("Phoenix concept_leaf: $concept_cmd_line") if 
 system($concept_cmd_line);
@@ -124,15 +125,10 @@ system($concept_cmd_line);
 
 # generate the class-grammar files
 #  .ctl and .prodef class files for decoder; .token for pronunciation; .words for lm
-my $cmd =
-    "\"".File::Spec->catfile($EXEDIR,"tokenize.pl")."\""
-    ." -inpath \"$inpath\""
-    ." -grammar \"$absgra\""
-    ." -project $instance"
-    .(($pocket_flag)? " -pocket": "")
-    ;
-    LogiosLog::fail("tokenize.pl: $cmd") if
-    system("$^X ".$cmd);
+LogiosLog::fail("tokenize.pl!") if
+  system("$^X \"".File::Spec->catfile($EXEDIR,"tokenize.pl")."\" -i \"$inpath\""
+                                                              ." -grammar \"$absgra\""
+                                                              ." -project $instance");
 
 # finally, remove any dynamic class files (to avoid littering with stealth classes)
 foreach $cf (@classd) { unlink(File::Spec($inpath,"$cf")); }
