@@ -686,7 +686,7 @@ srch_allphone_init(kb_t *kb, void *srch)
 	    allp->ci2lmwid[i] = lm_wid(allp->lm,
 				       (char *) mdef_ciphone_str(allp->mdef, i));
 	    /* Map filler phones to silence if not found */
-	    if (allp->ci2lmwid[i] == -1 && mdef_is_fillerphone(allp->mdef, i))
+	    if (allp->ci2lmwid[i] == BAD_LMWID(allp->lm) && mdef_is_fillerphone(allp->mdef, i))
 		allp->ci2lmwid[i] = lm_wid(allp->lm,
 				       (char *) mdef_ciphone_str(allp->mdef,
 								 mdef_silphone(allp->mdef)));
@@ -699,10 +699,19 @@ srch_allphone_init(kb_t *kb, void *srch)
 
     /* Make sure all phones are in the dictionary */
     for (i = 0; i < allp->mdef->n_ciphone; i++) {
-	if (dict_wordid(dict, (char *)mdef_ciphone_str(allp->mdef, i)) == BAD_S3WID)
+	if (dict_wordid(dict, (char *)mdef_ciphone_str(allp->mdef, i)) == BAD_S3WID) {
+            /*
+             * This is just pure paranoia since missing fillers were already added by dict_init()
+             * But being prepared for surprises (like dict_init() wasn't called with an mdef)
+             *  is always a good idea
+             */
+            if (mdef_is_fillerphone(allp->mdef, i))
+                E_FATAL("Filler phone %s is not in the filler dictionary!\n", mdef_ciphone_str(allp->mdef, i));
+
 	    dict_add_word(dict,
 			  (char *)mdef_ciphone_str(allp->mdef, i),
 			  &i, 1);
+        }
     }
 
     allp->beam = logs3(kbcore_logmath(kbc), cmd_ln_float64_r(kbcore_config(kbc), "-beam"));
