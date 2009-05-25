@@ -41,7 +41,9 @@ pass() {
 
 fail() {
     title="$1"
+    echo "============="
     echo "$title FAILED"
+    echo "============="
     failures="$failures,$title"
 }
 
@@ -60,6 +62,7 @@ report_failures() {
 	echo "All sub-tests passed"
 	exit 0
     else
+	echo $failures >>failures
 	echo "Sub-tests failed:$failures" | sed -e 's/,/ /g'
 	exit 1
     fi

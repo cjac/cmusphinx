@@ -29,7 +29,8 @@ TESTS = \
 	test-dag-clm.sh \
 	test-gausubvq.sh \
 	test-ep.sh \
-	test-conf.sh
+	test-conf.sh \
+	print-summary.sh
 
 DISABLED_TESTS = \
 	test-decode-noncomp.sh \
