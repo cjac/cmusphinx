@@ -404,6 +404,7 @@ dict_init(mdef_t * mdef, const char *dictfile, const char *fillerfile, const cha
 {
     FILE *fp, *fp2;
     int32 n;
+    int proper = 1;
     char line[1024];
     dict_t *d;
 
@@ -485,6 +486,29 @@ dict_init(mdef_t * mdef, const char *dictfile, const char *fillerfile, const cha
         fclose(fp2);
         E_INFO("%d words read\n", d->n_word - d->filler_start);
     }
+    if (mdef) {
+        s3cipid_t i;
+        for (n = i = 0; i < mdef->n_ciphone; ++i) {
+            if (mdef_is_fillerphone(mdef, i) &&
+                dict_wordid(d, (char *)mdef_ciphone_str(mdef, i)) == BAD_S3WID) {
+                dict_add_word(d, (char *)mdef_ciphone_str(mdef, i), &i, 1);
+                ++n;
+            }
+        }
+        E_INFO("Added %d fillers from mdef file\n", n);
+        if (dict_wordid(d, S3_START_WORD) == BAD_S3WID) {
+            dict_add_word(d, S3_START_WORD, &mdef_silphone(mdef), 1);
+        }
+        if (dict_wordid(d, S3_FINISH_WORD) == BAD_S3WID) {
+            dict_add_word(d, S3_FINISH_WORD, &mdef_silphone(mdef), 1);
+        }
+        if (dict_wordid(d, S3_SILENCE_WORD) == BAD_S3WID) {
+            dict_add_word(d, S3_SILENCE_WORD, &mdef_silphone(mdef), 1);
+        }
+    } else if (fillerfile == NULL) {
+        E_WARN("Neither an mdef nor a filler dictionary is specified\n");
+    }
+
     d->filler_end = d->n_word - 1;
 
     /* Initialize distinguished word-ids */
@@ -495,18 +519,22 @@ dict_init(mdef_t * mdef, const char *dictfile, const char *fillerfile, const cha
 
     /* This imposes the constraints of <s> </s> <sil> for the dictionary and filler dictionary */
     /* HACK!! Make sure SILENCE_WORD, START_WORD and FINISH_WORD are in dictionary */
-    if (NOT_S3WID(d->startwid))
-        E_WARN("%s not in dictionary\n", S3_START_WORD);
-    if (NOT_S3WID(d->finishwid))
-        E_WARN("%s not in dictionary\n", S3_FINISH_WORD);
-    if (NOT_S3WID(d->silwid))
-        E_WARN("%s not in dictionary\n", S3_SILENCE_WORD);
+    if (NOT_S3WID(d->startwid)) {
+        E_ERROR("%s not in dictionary\n", S3_START_WORD);
+        proper = 0;
+    }
+    if (NOT_S3WID(d->finishwid)) {
+        E_ERROR("%s not in dictionary\n", S3_FINISH_WORD);
+        proper = 0;
+    }
+    if (NOT_S3WID(d->silwid)) {
+        E_ERROR("%s not in dictionary\n", S3_SILENCE_WORD);
+        proper = 0;
+    }
 
-    if (NOT_S3WID(d->silwid) || NOT_S3WID(d->startwid)
-        || NOT_S3WID(d->finishwid)) {
+    if (! proper)
         E_FATAL("%s, %s, or %s missing from dictionary\n", S3_SILENCE_WORD,
                 S3_START_WORD, S3_FINISH_WORD);
-    }
 
     if ((d->filler_start > d->filler_end)
         || (!dict_filler_word(d, d->silwid)))
@@ -521,8 +549,6 @@ dict_init(mdef_t * mdef, const char *dictfile, const char *fillerfile, const cha
         n = dict_build_comp(d, comp_sep);
         E_INFO("%d compound words\n", n);
     }
-
-
 
     return d;
 }
