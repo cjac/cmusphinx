@@ -683,6 +683,9 @@ mdef_init(char *mdeffile, int32 breport)
     sseq_compress(m);
     fclose(fp);
 
+    if (breport)
+        mdef_report(m);
+
     return m;
 }
 
