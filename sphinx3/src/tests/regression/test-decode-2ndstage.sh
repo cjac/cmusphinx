@@ -46,6 +46,15 @@ rm -f *.lat.gz *.nbest.gz
 
 run_program sphinx3_decode $margs $lmargs > $tmpout 2>&1
 
+grep "BSTPTH:" $tmpout 
+grep "BSTXCT" $tmpout 
+
+if grep "BSTPTH:" $tmpout |grep "P I T T S B U R G H" > /dev/null 2>&1; then
+    pass "DECODE 2nd stage test"
+else
+    fail "DECODE 2nd stage test"
+fi
+
 #Next try to read the lattices with dag and see whether dag could read it. 
 
 margs="-mdef $hub4am/mdef \
