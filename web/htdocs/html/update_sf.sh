@@ -20,15 +20,15 @@ svn export https://cmusphinx.svn.sourceforge.net/svnroot/cmusphinx/trunk/web  > 
 
 pushd web/htdocs/html > /dev/null
 make > /dev/null
-rsync -e ssh -auv --progress --delete . $SF_USER@web.sourceforge.net:/home/groups/c/cm/cmusphinx/htdocs/html > /dev/null
-rsync -e ssh -lptgoDuv --progress * fife.speech.cs.cmu.edu:/usr1/httpd/html/sphinx > /dev/null
+rsync -e ssh -auv --delete . $SF_USER@web.sourceforge.net:/home/groups/c/cm/cmusphinx/htdocs/html > /dev/null
+rsync -e ssh -lptgoDuv * www.speech.cs.cmu.edu:/usr1/httpd/html/sphinx > /dev/null
 popd > /dev/null
 
 for module in cmuclmtk sphinx2 sphinx3 sphinxbase SphinxTrain; do
     (
     svn export https://cmusphinx.svn.sourceforge.net/svnroot/cmusphinx/trunk/$module/doc $module > /dev/null
     cd $module > /dev/null
-    rsync -e ssh -auv --progress --delete . $SF_USER@web.sourceforge.net:/home/groups/c/cm/cmusphinx/htdocs/$module/doc > /dev/null
+    rsync -e ssh -auv --delete . $SF_USER@web.sourceforge.net:/home/groups/c/cm/cmusphinx/htdocs/$module/doc > /dev/null
 )
 done
 
