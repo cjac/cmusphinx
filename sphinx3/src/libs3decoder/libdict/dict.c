@@ -488,22 +488,40 @@ dict_init(mdef_t * mdef, const char *dictfile, const char *fillerfile, const cha
     }
     if (mdef) {
         s3cipid_t i;
+        s3cipid_t sil = mdef_silphone(mdef);
         for (n = i = 0; i < mdef->n_ciphone; ++i) {
-            if (mdef_is_fillerphone(mdef, i) &&
-                dict_wordid(d, (char *)mdef_ciphone_str(mdef, i)) == BAD_S3WID) {
-                dict_add_word(d, (char *)mdef_ciphone_str(mdef, i), &i, 1);
-                ++n;
+            /*
+             * SIL is disguised as <sil>
+             */
+            if (i != sil && mdef_is_fillerphone(mdef, i)) {
+                /*
+                 * Add as a filler word, like ++NOISE++
+                 */
+                snprintf(line, sizeof(line), "+%s+", mdef_ciphone_str(mdef, i));
+                if (dict_wordid(d, line) == BAD_S3WID) {
+                    E_INFO("Adding filler word: %s\n", line);
+                    dict_add_word(d, line, &i, 1);
+                    ++n;
+                }
+                /*
+                 * Add as a pure filler phone for the allphone decoder
+                 */
+                if (dict_wordid(d, mdef_ciphone_str(mdef, i)) == BAD_S3WID) {
+                    E_INFO("Adding filler phone: %s\n", mdef_ciphone_str(mdef, i));
+                    dict_add_word(d, (char*)mdef_ciphone_str(mdef, i), &i, 1);
+                    ++n;
+                }
             }
         }
         E_INFO("Added %d fillers from mdef file\n", n);
         if (dict_wordid(d, S3_START_WORD) == BAD_S3WID) {
-            dict_add_word(d, S3_START_WORD, &mdef_silphone(mdef), 1);
+            dict_add_word(d, S3_START_WORD, &sil, 1);
         }
         if (dict_wordid(d, S3_FINISH_WORD) == BAD_S3WID) {
-            dict_add_word(d, S3_FINISH_WORD, &mdef_silphone(mdef), 1);
+            dict_add_word(d, S3_FINISH_WORD, &sil, 1);
         }
         if (dict_wordid(d, S3_SILENCE_WORD) == BAD_S3WID) {
-            dict_add_word(d, S3_SILENCE_WORD, &mdef_silphone(mdef), 1);
+            dict_add_word(d, S3_SILENCE_WORD, &sil, 1);
         }
     } else if (fillerfile == NULL) {
         E_WARN("Neither an mdef nor a filler dictionary is specified\n");
