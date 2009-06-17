@@ -375,7 +375,7 @@ models_init(cmd_ln_t *config)
     /* Dictionary */
     dict = dict_init(kbc->mdef, cmd_ln_str_r(config, "-dict"),
                      cmd_ln_str_r(config, "-fdict"), 
-                     '_',      /* Compound word separator.  Default: none. */
+                     NULL,      /* Compound word separator.  Default: none. */
                      cmd_ln_int32_r(config, "-lts_mismatch"), 1);
 
 
