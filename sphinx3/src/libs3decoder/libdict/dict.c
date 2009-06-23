@@ -108,6 +108,9 @@
 #define DELIM	" \t\n"         /* Set of field separator characters */
 #define DEFAULT_NUM_PHONE	(MAX_S3CIPID+1)
 
+#if WIN32
+#define snprintf sprintf_s
+#endif 
 
 extern const char *const cmu6_lts_phone_table[];
 
