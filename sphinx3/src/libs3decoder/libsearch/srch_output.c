@@ -58,7 +58,6 @@ compute_scale(int32 sf, int32 ef, int32 * scalearray)
     for (i = sf; i < ef; i++)
         hypscale += scalearray[i];
     return hypscale;
-
 }
 
 /*
@@ -200,7 +199,8 @@ match_detailed(FILE * fp, glist_t hyp, char *uttid, char *LBL, char *lbl,
             if (h->id < 0 || (h->sf == h->ef))
                 continue;
 
-            scl += compute_scale(h->sf, h->ef, senscale);
+            if (senscale)
+                scl += compute_scale(h->sf, h->ef, senscale);
 
             if (senscale) {
                 fprintf(fp, "%s:%s> %20s %5d %5d %12d %10d %10d %10d \n",
