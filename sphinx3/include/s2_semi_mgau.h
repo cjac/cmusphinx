@@ -117,5 +117,8 @@ S3DECODER_EXPORT
 int s2_semi_mgau_load_kdtree(s2_semi_mgau_t *s, const char *kdtree_path,
                              uint32 maxdepth, int32 maxbbi);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /*  __S2_SEMI_MGAU_H__ */
