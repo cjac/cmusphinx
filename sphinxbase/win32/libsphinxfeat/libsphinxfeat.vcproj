@@ -162,6 +162,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copy to Solution lib folder"
+				CommandLine="copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\lib\x86-nt&quot;"
 			/>
 		</Configuration>
 	</Configurations>
