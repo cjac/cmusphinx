@@ -8,7 +8,7 @@ uncompiled version.
 
 To produce a new version of the SPHINX dictionary do (in cmudict/):
 
-perl ./bin/make_baseform.pl <cmudict.VERSION> sphinxdict/cmudict.VERSION_SPHINX_40
+perl ./scripts/make_baseform.pl <cmudict.VERSION> sphinxdict/cmudict.VERSION_SPHINX_40
 Stress removal results in some duplicate pronunciations being removed.
 This is noted in the STDERR output.
 

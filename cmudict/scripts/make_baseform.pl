@@ -44,9 +44,12 @@
 # [20080420] (air) Changed to pass comments.
 #                  Fixed output collation sequence; DOS eol's
 # [20090309] (air) fixed duplicate pron and collation bugs
+# [20090331] (air) restored standard collation order (since other stuff deppends on it)
+# [20090629] (air) do not put comments into SPHINX_40 version; not all software deals
 #
 
 
+my $basecount = 0;
 my $dupl = 0;
 my $base = 0;
 my $varia = 0;
@@ -63,6 +66,7 @@ open(OUT,">$ARGV[1]") || die "can't open $ARGV[1] for writing!\n";
 get_dict(\%dict,\@header,IN);  # process the entries
 
 # what have we got?
+print STDERR "$basecount forms processed\n";
 print STDERR "$base baseforms, $varia variants and $dupl duplicates found.\n";
 print STDERR "variant distribution:\n";
 foreach $var ( sort keys %histo ) {
@@ -70,20 +74,26 @@ foreach $var ( sort keys %histo ) {
 }
 
 # print special comments (copyright, etc.)
-foreach $h (@header) { print OUT "$h\n"; }
+# removed since it messes some things up...
+# foreach $h (@header) { print OUT "$h\n"; }
 
 # print out each entry
+%dict_out = ();
 foreach $w (sort keys %dict) {
-  $var=0;
+  $var=1;  # variants will number starting with 2
   foreach $p ( @{$dict{$w}} ) {
-    if ($var eq 0) {
-      print  OUT "$w\t$p\n";
+    if ($var eq 1) {
+	$dict_out{$w} = $p;
       $var++;
     }  else {
-      print  OUT "$w($var)\t$p\n";
+      $dict_out{"$w($var)"} = $p;
       $var++;
     }
   }
+}
+
+foreach $entry ( sort keys %dict_out ) {
+    print OUT "$entry\t$dict_out{$entry}\n";
 }
 
 close(IN);
@@ -95,7 +105,7 @@ close(OUT);
 sub get_dict {
   my $dict = shift;  # data structure with dictionary entries
   my $header = shift;
-  my $target = shift;  # input file
+  my $target = shift;  # input file handle
 
   while (<$target>) {
     s/[\r\n]+$//g;  # DOS-robust chomp;
@@ -109,6 +119,9 @@ sub get_dict {
     # extract the word,pron pair and prepare for processing
     ($word,$pron) = /(.+?)\s+(.+?)$/;
     if (! defined $word) { print STDERR "bad entry (no head word): $_\n"; next; }
+
+    $basecount++;
+
     if ($word =~ /\)$/) { # variant
       ($root,$variant) = ($word =~ m/(.+?)\((.+?)\)/);
     } else {
