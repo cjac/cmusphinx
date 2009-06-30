@@ -68,7 +68,6 @@ typedef struct phmm_s {
     s3cipid_t ci;       /**< Parent basephone for this PHMM */
     uint32 *lc;         /**< Set (bit-vector) of left context phones seen for this PHMM */
     uint32 *rc;         /**< Set (bit-vector) of right context phones seen for this PHMM */
-    int32 in_tscore;    /**< Incoming transition score from predecessor PHMMs */
     struct phmm_s *next;        /**< Next unique PHMM for same parent basephone */
     struct plink_s *succlist;   /**< List of predecessor PHMM nodes */
 } phmm_t;
@@ -435,6 +434,8 @@ phmm_exit(allphone_t *allp, int32 best)
     mdef_t *mdef;
     int32 curfrm;
     phmm_t **ci_phmm;
+    s3lmwid32_t *ci2lmwid;
+    lm_t *lm;
 
     th = best + allp->pbeam;
 
@@ -442,6 +443,8 @@ phmm_exit(allphone_t *allp, int32 best)
     mdef = allp->mdef;
     curfrm = allp->curfrm;
     ci_phmm = allp->ci_phmm;
+    ci2lmwid = allp->ci2lmwid;
+    lm = allp->lm;
 
     frm_hist[curfrm] = NULL;
     nf = curfrm + 1;
@@ -457,15 +460,31 @@ phmm_exit(allphone_t *allp, int32 best)
                     if (hmm_out_score(p) >= allp->pbeam) { /* pbeam, not th
 							      because scores scaled */
                         h = listelem_malloc(allp->history_alloc);
-                        h->score = hmm_out_score(p);
-                        /* FIXME: This isn't going to be the correct
-                         * transition score, for reasons I don't
-                         * totally understand (dhuggins@cs,
-                         * 2006-02-07). */
-                        h->tscore = p->in_tscore;
                         h->ef = curfrm;
                         h->phmm = p;
                         h->hist = hmm_out_histobj(p);
+                        h->score = hmm_out_score(p);
+                        if (lm == NULL)
+                            h->tscore = allp->inspen;
+                        else if (h->hist) {
+                            if (h->hist->hist)
+                                h->tscore = lm_tg_score(lm,
+                                        ci2lmwid[h->hist->hist->phmm->ci],
+                                        ci2lmwid[h->hist->phmm->ci],
+                                        ci2lmwid[p->ci],
+                                        ci2lmwid[p->ci]);
+                            else
+                                h->tscore = lm_bg_score(lm,
+                                        ci2lmwid[h->hist->phmm->ci],
+                                        ci2lmwid[p->ci],
+                                        ci2lmwid[p->ci]);
+                        }
+                        else
+                            /*
+                             * This is the beginning SIL and in srch_allphone_begin()
+                             * it's inscore is set to 0.
+                             */
+                            h->tscore = 0;
                         h->next = frm_hist[curfrm];
                         frm_hist[curfrm] = h;
                         allp->n_histnode++;
@@ -512,7 +531,7 @@ phmm_trans(allphone_t *allp)
 	    /* If they are not in the LM, kill this
 	     * transition. */
 	    else if (ci2lmwid[to->ci] == BAD_LMWID(lm))
-		tscore = S3_LOGPROB_ZERO;
+		continue;
 	    else {
 		if (h->hist && h->hist->phmm) {
 		    tscore = lm_tg_score(lm,
@@ -531,7 +550,6 @@ phmm_trans(allphone_t *allp)
             newscore = h->score + tscore;
             if ((newscore > allp->beam) && (newscore > hmm_in_score(to))) {
 		hmm_enter_obj((hmm_t *)to, newscore, h, nf);
-                to->in_tscore = tscore;
             }
         }
     }
@@ -596,10 +614,24 @@ write_phseg(srch_t *s, const char *dir, const char *uttid, phseg_t * phseg)
 static int32
 seg_score_scale(allphone_t *allp, int32 sf, int32 ef)
 {
-    int32 scale, s;
+    int32 scale;
 
-    for (s = sf, scale = 0; s <= ef; s++, scale += allp->score_scale[s]);
+    for (scale = 0; sf <= ef; scale += allp->score_scale[sf++]) ;
     return scale;
+}
+
+static int32
+ascore(allphone_t *allp, history_t *h)
+{
+    int32 score = h->score;
+    int32 sf = 0;
+
+    if (h->hist) {
+        score -= h->hist->score;
+        sf = h->hist->ef + 1;
+    }
+
+    return score - h->tscore + seg_score_scale(allp, sf, h->ef);
 }
 
 static phseg_t *
@@ -629,11 +661,8 @@ allphone_backtrace(allphone_t *allp, int32 f)
             s->ci = h->phmm->ci;
             s->sf = (h->hist) ? h->hist->ef + 1 : 0;
             s->ef = h->ef;
-            s->score = h->score;
+            s->score = ascore(allp, h);
             s->tscore = h->tscore;
-            if (h->hist)
-                s->score -= h->hist->score;
-            s->score += seg_score_scale(allp, s->sf, s->ef);
 
             s->next = phseg;
             phseg = s;
@@ -1084,7 +1113,7 @@ srch_allphone_gen_dag(void *srch,         /**< a pointer of srch_t */
                 for (gn3 = sfwid[sf]; gn3; gn3 = gnode_next(gn3)) {
                     dn2 = (dagnode_t *) gnode_ptr(gn3);
                     if (dn2->seqid >= 0) {
-			dag_link(dag, dn, dn2, ve->score,
+			dag_link(dag, dn, dn2, ascore(allp, ve),
 				 ve->tscore, ve->ef, NULL);
                     }
                 }
