@@ -168,7 +168,7 @@ sub get_dic_web {
 
   if ($result =~ /\!-- DIC.*ct\/\/(.*)\">/) {
 
-    my $blah = "http://fife.speech.cs.cmu.edu/tools/product//$1";
+    my $blah = "http://www.speech.cs.cmu.edu/tools/product//$1";
     $res = $ua->request(GET $blah);
 
     if ($res->is_success) {
