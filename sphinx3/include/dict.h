@@ -131,11 +131,6 @@ typedef struct {
     int32 pronlen;	/**< Pronunciation length */
     s3wid_t alt;	/**< Next alternative pronunciation id, NOT_S3WID if none */
     s3wid_t basewid;	/**< Base pronunciation id */
-    int32 n_comp;	/**< If this is a compound word, no. of component words; else 0.
-			   (Compound words are concatenations of other words, such as
-			   GOING_TO, whose pronunciation is quite different from the
-			   mere concatenation of their components.) */
-    s3wid_t *comp;	/**< If n_comp > 0, its components */
 } dictword_t;
 
 /** 
@@ -154,9 +149,6 @@ typedef struct {
     int32 n_word;	/**< #Occupied entries in dict; ie, excluding empty slots */
     int32 filler_start;	/**< First filler word id (read from filler dict) */
     int32 filler_end;	/**< Last filler word id (read from filler dict) */
-    s3wid_t *comp_head;	/**< comp_head[w] = wid of a compound word with 1st component = w;
-                           comp_head[comp_head[w]] = next such compound word, and so on,
-                           until we hit BAD_S3WID.  NULL if no compound word in dict. */
     s3wid_t startwid;	/**< FOR INTERNAL-USE ONLY */
     s3wid_t finishwid;	/**< FOR INTERNAL-USE ONLY */
     s3wid_t silwid;	/**< FOR INTERNAL-USE ONLY */
@@ -175,8 +167,6 @@ dict_t *dict_init (mdef_t *mdef,	/**< For looking up CI phone IDs; NULL if none,
 					   in which case CI phones kept internally */
 		   const char *dictfile,	/**< Main dictionary file */
 		   const char *fillerfile,	/**< Filler dictionary file */
-		   const char comp_sep,	/**< Compound word separator character, or 0 if
-					   no compound words */
 		   int useLTS,          /**< Whether to use letter-to-sound rules */
 		   int breport          /**< Whether we should report the progress */
     );
@@ -202,15 +192,6 @@ s3wid_t dict_add_word (dict_t *d,  /**< The dictionary structure */
 		       char *word, /**< The word */
 		       s3cipid_t *p, 
 		       int32 np
-    );
-
-/**
- * Look for a compound word that matches the given word-id sequence.
- * Return value: Base ID of compound word if found, else BAD_S3WID.
- */
-s3wid_t dict_wids2compwid (dict_t *d,		/**< In: Dictionary to look up */
-			   s3wid_t *wid,	/**< In: Component words to look for */
-			   int32 len		/**< In: No. of component words */
     );
 
 /**

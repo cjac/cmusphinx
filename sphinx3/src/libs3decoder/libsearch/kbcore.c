@@ -518,23 +518,13 @@ kbcore_init(cmd_ln_t *config)
     assert(kb->mdef != NULL);
 
     if ((str = cmd_ln_str_r(config, "-dict"))) {
-        char const *compsep = cmd_ln_exists_r(config, "-compsep")
-            ? cmd_ln_str_r(config, "-compsep") : NULL;
         char const *fdictfile = cmd_ln_str_r(config, "-fdict");
 
-        if (!compsep)
-            compsep = "";
-        else if ((compsep[0] != '\0') && (compsep[1] != '\0')) {
-            E_FATAL
-                ("Compound word separator(%s) must be empty or single character string\n",
-                 compsep);
-        }
         if ((kb->dict =
-             dict_init(kb->mdef, str, fdictfile, compsep[0],
+             dict_init(kb->mdef, str, fdictfile,
                        cmd_ln_int32_r(config, "-lts_mismatch"),
                        REPORT_KBCORE)) == NULL)
-            E_FATAL("dict_init(%s,%s,%s) failed\n", str,
-                    fdictfile ? fdictfile : "", compsep);
+            E_FATAL("dict_init(%s,%s) failed\n", str, fdictfile ? fdictfile : "");
     }
     else {
         E_FATAL("Dictionary file is not specified. \n");

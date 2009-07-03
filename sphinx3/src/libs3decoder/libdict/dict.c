@@ -197,8 +197,6 @@ dict_add_word(dict_t * d, char *word, s3cipid_t * p, int32 np)
     }
     wordp->alt = BAD_S3WID;
     wordp->basewid = d->n_word;
-    wordp->n_comp = 0;
-    wordp->comp = NULL;
 
     /* Determine base/alt wids */
     if ((len = dict_word2basestr(word)) > 0) {
@@ -311,99 +309,8 @@ dict_read(FILE * fp, dict_t * d)
     return 0;
 }
 
-
-static s3wid_t *
-dict_comp_head(dict_t * d)
-{
-    int32 w;
-    s3wid_t *comp_head;
-
-    comp_head = (s3wid_t *) ckd_calloc(d->n_word, sizeof(s3wid_t));     /* freed in dict_free */
-
-    for (w = 0; w < d->n_word; w++)
-        comp_head[w] = BAD_S3WID;
-    for (w = 0; w < d->n_word; w++) {
-        if (d->word[w].n_comp > 0) {
-            comp_head[w] = comp_head[d->word[w].comp[0]];
-            comp_head[d->word[w].comp[0]] = w;
-        }
-    }
-
-    return comp_head;
-}
-
-
-/*
- * Scan the dictionary for compound words.  This function should be called just after
- * loading the dictionary.  For the moment, compound words in a compound word are
- * assumed to be separated by the given sep character, (underscore in the CMU dict).
- * Return value: #compound words found in dictionary.
- */
-static int32
-dict_build_comp(dict_t * d, const char sep)
-{                               /* Separator character */
-    char wd[4096];
-    int32 w, cwid;
-    dictword_t *wordp;
-    int32 nc;                   /* # compound words in dictionary */
-    int32 i, j, l, n;
-
-    nc = 0;
-    for (w = 0; w < d->n_word; w++) {
-        wordp = d->word + dict_basewid(d, w);
-        strcpy(wd, wordp->word);
-        l = strlen(wd);
-        if ((wd[0] == sep) || (wd[l - 1] == sep))
-            E_FATAL
-                ("Bad compound word %s: leading or trailing separator\n",
-                 wordp->word);
-
-        /* Count no. of components in this word */
-        n = 1;
-        for (i = 1; i < l - 1; i++)     /* 0 and l-1 already checked above */
-            if (wd[i] == sep)
-                n++;
-        if (n == 1)
-            continue;           /* Not a compound word */
-        nc++;
-
-        if ((w == d->startwid) || (w == d->finishwid)
-            || dict_filler_word(d, w))
-            E_FATAL("Compound special/filler word (%s) not allowed\n",
-                    wordp->word);
-
-        /* Allocate and fill in component word info */
-        wordp->n_comp = n;
-        wordp->comp = (s3wid_t *) ckd_calloc(n, sizeof(s3wid_t));       /* freed in dict_free */
-
-        /* Parse word string into components */
-        n = 0;
-        for (i = 0; i < l; i++) {
-            for (j = i; (i < l) && (wd[i] != sep); i++);
-            if (j == i)
-                E_FATAL("Bad compound word %s: successive separators\n",
-                        wordp->word);
-
-            wd[i] = '\0';
-            cwid = dict_wordid(d, wd + j);
-            if (NOT_S3WID(cwid))
-                E_FATAL("Component word %s of %s not in dictionary\n",
-                        wd + j, wordp->word);
-            wordp->comp[n] = cwid;
-            n++;
-        }
-    }
-
-    if (nc > 0)
-        d->comp_head = dict_comp_head(d);
-
-    return nc;
-}
-
-
 dict_t *
-dict_init(mdef_t * mdef, const char *dictfile, const char *fillerfile, const char comp_sep,
-          int useLTS, int breport)
+dict_init(mdef_t * mdef, const char *dictfile, const char *fillerfile, int useLTS, int breport)
 {
     FILE *fp, *fp2;
     int32 n;
@@ -466,9 +373,6 @@ dict_init(mdef_t * mdef, const char *dictfile, const char *fillerfile, const cha
 
     /* Create new hash table for word strings; case-insensitive word strings */
     d->ht = hash_table_new(d->max_words, 1 /* no-case */ );
-
-    /* Initialize with no compound words */
-    d->comp_head = NULL;
 
     d->lts_rules = NULL;
     if (useLTS)
@@ -564,13 +468,6 @@ dict_init(mdef_t * mdef, const char *dictfile, const char *fillerfile, const cha
 
     /* No check that alternative pronunciations for filler words are in filler range!! */
 
-    /* Identify compound words if indicated */
-    if (comp_sep) {
-        E_INFO("Building compound words (separator = '%c')\n", comp_sep);
-        n = dict_build_comp(d, comp_sep);
-        E_INFO("%d compound words\n", n);
-    }
-
     return d;
 }
 
@@ -634,33 +531,6 @@ dict_filler_word(dict_t * d, s3wid_t w)
 }
 
 
-s3wid_t
-dict_wids2compwid(dict_t * d, s3wid_t * wid, int32 len)
-{
-    s3wid_t w;
-    int32 i;
-
-    if (!d->comp_head)
-        return BAD_S3WID;
-
-    assert(len > 1);
-
-    for (w = d->comp_head[wid[0]]; IS_S3WID(w); w = d->comp_head[w]) {
-        /* w is a compound word beginning with wid[0]; check if rest matches */
-        assert(d->word[w].n_comp > 1);
-        assert(d->word[w].comp[0] == wid[0]);
-
-        if (d->word[w].n_comp == len) {
-            for (i = 0; (i < len) && (d->word[w].comp[i] == wid[i]); i++);
-            if (i == len)
-                return (dict_basewid(d, w));
-        }
-    }
-
-    return BAD_S3WID;
-}
-
-
 int32
 dict_word2basestr(char *word)
 {
@@ -698,8 +568,6 @@ dict_free(dict_t * d)
                 ckd_free((void *) word->word);
             if (word->ciphone)
                 ckd_free((void *) word->ciphone);
-            if (word->comp)
-                ckd_free((void *) word->comp);
         }
 
         if (d->word)
@@ -708,8 +576,6 @@ dict_free(dict_t * d)
             if (d->ciphone_str[i])
                 ckd_free((void *) d->ciphone_str[i]);
         }
-        if (d->comp_head)
-            ckd_free((void *) d->comp_head);
         if (d->ciphone_str)
             ckd_free((void *) d->ciphone_str);
         if (d->pht)
