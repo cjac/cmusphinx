@@ -134,6 +134,22 @@ static float64 min_density;     /* Density values, once converted to (int32)logs
                                    can underflow (or overflow?), causing headaches all
                                    around.  To avoid underflow, use this floor value */
 
+/*
+ * FIXME: This breaks reentrancy and thread safety!
+ * Temporary structure for computing density values.  The only difference between
+ * this and gauden_dist_t is the use of float64 for dist.
+ */
+
+
+typedef struct {
+    int32 id;
+    float64 dist;               /* Can probably use float32 */
+} dist_t;
+
+static dist_t *dist;
+static int32 n_dist = 0;
+
+
 void
 gauden_dump(const gauden_t * g)
 {
@@ -425,6 +441,8 @@ gauden_free(gauden_t * g)
         ckd_free_3d((void *) g->det);
     if (g->featlen)
         ckd_free(g->featlen);
+    if (dist)
+        ckd_free(dist);
     ckd_free(g);
 }
 
@@ -469,21 +487,6 @@ gauden_var_reload(gauden_t * g, const char *varfile)
 
     return 0;
 }
-
-/*
- * Temporary structure for computing density values.  The only difference between
- * this and gauden_dist_t is the use of float64 for dist.
- */
-
-
-typedef struct {
-    int32 id;
-    float64 dist;               /* Can probably use float32 */
-} dist_t;
-
-static dist_t *dist;
-static int32 n_dist = 0;
-
 
 /* See compute_dist below */
 static int32

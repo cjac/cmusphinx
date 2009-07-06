@@ -234,8 +234,14 @@ ms_mgau_free(ms_mgau_model_t * msg)
         return;
 
     g = ms_mgau_gauden(msg);
-    for (i = 0; i < g->n_mgau; ++i)
-        ckd_free(msg->mgau2sen[i]);
+    for (i = 0; i < g->n_mgau; ++i) {
+        mgau2sen_t *m2s = msg->mgau2sen[i];
+        while (m2s) {
+            mgau2sen_t *tmp = m2s->next;
+            ckd_free(m2s);
+            m2s = tmp;
+        }
+    }
     ckd_free(msg->mgau2sen);
     gauden_free(msg->g);
     senone_free(msg->s);
