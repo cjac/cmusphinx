@@ -1219,11 +1219,10 @@ lm_bg32list(lm_t * lm, s3lmwid32_t w1, bg32_t ** bgptr, int32 * bowt)
 
 /*
  *  This function look-ups the bigram score of p(lw2|lw1)
- *  The information for lw2 and w2 are repeated because the legacy 
- *  implementation(since s3.2) of vithist used only LM wid rather 
- *  than dictionary wid.  
+ *  The information for lw2 and w2 are repeated because the
+ *  class based language model implementation uses the dictionary wid
+ *  to look up the within class probability.
  */
-
 int32
 lm_bg_score(lm_t * lm, s3lmwid32_t lw1, s3lmwid32_t lw2, s3wid_t w2)
 {
@@ -1272,7 +1271,7 @@ lm_bg_score(lm_t * lm, s3lmwid32_t lw1, s3lmwid32_t lw2, s3wid_t w2)
         if (lm->inclass_ugscore) {      /*Only add within class prob if class information exists.
                                            Is actually ok to just add the score because if the word
                                            is not within-class. The returning scores will be 0. I just
-                                           love to safe-guard it :-). 
+                                           love to safe-guard it :-).
                                          */
             score += lm->inclass_ugscore[w2];
         }
@@ -1283,6 +1282,13 @@ lm_bg_score(lm_t * lm, s3lmwid32_t lw1, s3lmwid32_t lw2, s3wid_t w2)
         lm->n_bg_bo++;
         lm->access_type = 1;
         score = lm->ug[lw1].bowt.l + lm->ug[lw2].prob.l;
+        if (lm->inclass_ugscore) {      /*Only add within class prob if class information exists.
+                                           Is actually ok to just add the score because if the word
+                                           is not within-class. The returning scores will be 0. I just
+                                           love to safe-guard it :-).
+                                         */
+            score += lm->inclass_ugscore[w2];
+        }
     }
 
     return (score);
@@ -1630,17 +1636,15 @@ lm_tg32list(lm_t * lm, s3lmwid32_t lw1, s3lmwid32_t lw2, tg32_t ** tgptr,
 /*
  *  This function look-ups the trigram score of p(lw3|lw2,lw1)
  *  and compute the in-class ug probability of w3.
- *  The information for lw3 and w3 are repeated because the legacy 
- *  implementation(since s3.2) of vithist used only LM wid rather 
- *  than dictionary wid.  
- *  
+ *  The information for lw3 and w3 are repeated because the
+ *  class based language model implementation uses the dictionary wid
+ *  to look up the within class probability.
  */
-
 int32
 lm_tg_score(lm_t * lm, s3lmwid32_t lw1, s3lmwid32_t lw2, s3lmwid32_t lw3,
             s3wid_t w3)
 {
-    int32 i, h, n, score;
+    int32 i, h, n, score, inclass_ugscore = 0;
     tg_t *tg;
     tginfo_t *tginfo, *prev_tginfo;
     tg32_t *tg32;
@@ -1678,13 +1682,20 @@ lm_tg_score(lm_t * lm, s3lmwid32_t lw1, s3lmwid32_t lw2, s3lmwid32_t lw3,
     h %= LM_TGCACHE_SIZE;
 
 
+    if (lm->inclass_ugscore)
+        inclass_ugscore = lm->inclass_ugscore[w3];
+
+    /*
+     * Have to add within class score to the cached language score since
+     *  the former cannot be cached.
+     */
     if (is32bits) {
         if ((lm->tgcache32[h].lwid[0] == lw1) &&
             (lm->tgcache32[h].lwid[1] == lw2) &&
             (lm->tgcache32[h].lwid[2] == lw3)) {
 
             lm->n_tgcache_hit++;
-            return lm->tgcache32[h].lscr;
+            return lm->tgcache32[h].lscr + inclass_ugscore;
         }
 
         prev_tginfo32 = NULL;
@@ -1702,7 +1713,7 @@ lm_tg_score(lm_t * lm, s3lmwid32_t lw1, s3lmwid32_t lw2, s3lmwid32_t lw3,
             (lm->tgcache[h].lwid[2] == lw3)) {
 
             lm->n_tgcache_hit++;
-            return lm->tgcache[h].lscr;
+            return lm->tgcache[h].lscr + inclass_ugscore;
         }
 
         prev_tginfo = NULL;
@@ -1762,32 +1773,29 @@ lm_tg_score(lm_t * lm, s3lmwid32_t lw1, s3lmwid32_t lw2, s3lmwid32_t lw3,
         else
             score = lm->tgprob[tg[i].probid].l;
 
-        if (lm->inclass_ugscore) {      /*Only add within class prob if class information exists.
-                                           Is actually ok to just add the score because if the word
-                                           is not within-class. The returning scores will be 0. 
-                                         */
-            score += lm->inclass_ugscore[w3];
-        }
+        score += inclass_ugscore;
         lm->access_type = 3;
     }
     else {
         lm->n_tg_bo++;
         score = is32bits ? tginfo32->bowt : tginfo->bowt;
         score += lm_bg_score(lm, lw2, lw3, w3);
-
     }
 
+    /*
+     * Have to subtract within class score since it cannot be cached
+     */
     if (is32bits) {
         lm->tgcache32[h].lwid[0] = lw1;
         lm->tgcache32[h].lwid[1] = lw2;
         lm->tgcache32[h].lwid[2] = lw3;
-        lm->tgcache32[h].lscr = score;
+        lm->tgcache32[h].lscr = score - inclass_ugscore;
     }
     else {
         lm->tgcache[h].lwid[0] = lw1;
         lm->tgcache[h].lwid[1] = lw2;
         lm->tgcache[h].lwid[2] = lw3;
-        lm->tgcache[h].lscr = score;
+        lm->tgcache[h].lscr = score - inclass_ugscore;
     }
 
 
