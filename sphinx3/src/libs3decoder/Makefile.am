@@ -2,7 +2,7 @@ SUBDIRS = libam libconfidence libcommon  libdict libep liblm libsearch libAPI li
 
 lib_LTLIBRARIES = libs3decoder.la
 
-libs3decoder_la_LDFLAGS = -version-info 0:6:0
+#libs3decoder_la_LDFLAGS = -version-info 0:6:0
 libs3decoder_la_SOURCES = 
 
 libs3decoder_la_LIBADD = \

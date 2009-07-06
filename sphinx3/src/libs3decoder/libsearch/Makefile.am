@@ -2,7 +2,7 @@ ARCH   = `uname -m | sed s/i.86/i386/`_`uname -s | tr A-Z a-z`
 
 noinst_LTLIBRARIES = libsearch.la
 
-libsearch_la_LDFLAGS = -version-info 0:6:0
+#libsearch_la_LDFLAGS = -version-info 0:6:0
 
 libsearch_la_SOURCES = \
 	ascr.c \
@@ -32,7 +32,6 @@ libsearch_la_SOURCES = \
 	vithist.c \
 	whmm.c \
 	word_fsg.c \
-	word_graph.c \
 	word_ugprob.c
 
 noinst_HEADERS = \
