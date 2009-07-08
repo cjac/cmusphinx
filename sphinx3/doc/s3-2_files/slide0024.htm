@@ -1,0 +1,285 @@
+<html xmlns:v="urn:schemas-microsoft-com:vml"
+xmlns:o="urn:schemas-microsoft-com:office:office"
+xmlns:p="urn:schemas-microsoft-com:office:powerpoint"
+xmlns="http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=windows-1252">
+<meta name=ProgId content=PowerPoint.Slide>
+<meta name=Generator content="Microsoft PowerPoint 9">
+<link id=Main-File rel=Main-File href="../s3-2.htm">
+<link rel=Preview href=preview.wmf>
+<!--[if !mso]>
+<style>
+v\:* {behavior:url(#default#VML);}
+o\:* {behavior:url(#default#VML);}
+p\:* {behavior:url(#default#VML);}
+.shape {behavior:url(#default#VML);}
+v\:textbox {display:none;}
+</style>
+<![endif]-->
+<title>No Slide Title</title>
+<meta name=Description content="7-Feb-01: Bigram Backoff Language Model">
+<link rel=Stylesheet href="master03_stylesheet.css">
+<![if !ppt]>
+<style media=print>
+<!--.sld
+	{left:0px !important;
+	width:6.0in !important;
+	height:4.5in !important;
+	font-size:107% !important;}
+-->
+</style>
+<script src=script.js></script><script><!--
+gId="slide0024.htm"
+if( !IsNts() ) Redirect( "PPTSld", gId );
+//-->
+</script><!--[if vml]><script>g_vml = 1;
+</script><![endif]--><script for=window event=onload><!--
+if( !IsSldOrNts() ) return;
+if( MakeNotesVis() ) return;
+LoadSld( gId );
+MakeSldVis(0);
+//-->
+</script><![endif]><o:shapelayout v:ext="edit">
+ <o:idmap v:ext="edit" data="41"/>
+ <o:rules v:ext="edit">
+  <o:r id="V:Rule4" type="connector" idref="#_x0000_s41998">
+   <o:proxy start="" idref="#_x0000_s41989" connectloc="5"/>
+   <o:proxy end="" idref="#_x0000_s41990" connectloc="1"/>
+  </o:r>
+  <o:r id="V:Rule6" type="connector" idref="#_x0000_s41999">
+   <o:proxy start="" idref="#_x0000_s41991" connectloc="7"/>
+   <o:proxy end="" idref="#_x0000_s41990" connectloc="3"/>
+  </o:r>
+ </o:rules>
+</o:shapelayout>
+</head>
+
+<body lang=EN-US style='margin:0px;background-color:black'
+onclick="DocumentOnClick()" onresize="_RSW()" onkeypress="_KPH()">
+
+<div id=SlideObj class=sld style='position:absolute;top:0px;left:0px;
+width:534px;height:400px;font-size:16px;background-color:black;clip:rect(0%, 101%, 101%, 0%);
+visibility:hidden'><p:slide coordsize="720,540"
+ colors="#000000,#FFFFFF,#393939,#CCFFFF,#B2B2B2,#FF3300,#33CCFF,#DDDDDD"
+ masterhref="master03.xml">
+ <p:shaperange href="master03.xml#_x0000_s1025"/><![if !ppt]><p:shaperange
+  href="master03.xml#_x0000_s1026"/><![if !vml]><img border=0
+ v:shapes="_x0000_s1026" src="master03_image002.gif" style='position:absolute;
+ top:13.0%;left:2.24%;width:95.88%;height:1.25%'><![endif]><p:shaperange
+  href="master03.xml#_x0000_s1033"/>
+ <div v:shape="_x0000_s1033" class=O style='position:absolute;top:95.25%;
+ left:3.55%;width:10.48%;height:2.75%'><span style='font-size:50%'><i>19 Nov
+ 1999</i></span><span style='font-family:Arial;font-size:50%;mso-special-format:
+ lastCR;display:none'>&#13;</span></div>
+ <p:shaperange href="master03.xml#_x0000_s1034"/>
+ <div v:shape="_x0000_s1034" class=O style='text-align:center;position:absolute;
+ top:95.25%;left:16.85%;width:65.73%;height:2.75%'><span style='font-size:50%'><i>Sphinx
+ Speech Group, CMU-SCS (rkm@cs.cmu.edu)</i></span><span style='font-size:58%;
+ mso-special-format:lastCR;display:none'>&#13;</span></div>
+ <![endif]><p:shaperange href="master03.xml#_x0000_m1027"/><v:shape id="_x0000_s41986"
+  type="#_x0000_m1027" style='position:absolute;left:18pt;top:21pt;width:684pt;
+  height:51pt'>
+  <v:fill o:detectmouseclick="f"/>
+  <v:stroke o:forcedash="f"/>
+  <p:placeholder type="title"/></v:shape><p:shaperange
+  href="master03.xml#_x0000_m1028"/><v:shape id="_x0000_s41987" type="#_x0000_m1028"
+  style='position:absolute;left:18pt;top:84pt;width:684pt;height:420pt'>
+  <v:fill o:detectmouseclick="f"/>
+  <v:stroke o:forcedash="f"/>
+  <p:placeholder type="body" position="1"/></v:shape><v:group id="_x0000_s42014"
+  style='position:absolute;left:84pt;top:294pt;width:540pt;height:162pt'
+  coordorigin="960,2016" coordsize="4320,1296">
+  <v:rect id="_x0000_s41988" style='position:absolute;left:2976;top:2016;
+   width:576;height:1296;mso-wrap-style:none;v-text-anchor:middle' filled="f"
+   fillcolor="#b2b2b2 [4]" strokecolor="white [1]" strokeweight="1pt">
+   <v:fill color2="black [0]"/>
+   <v:shadow color="#393939 [2]"/>
+  </v:rect><v:oval id="_x0000_s41989" style='position:absolute;left:1248;top:2112;
+   width:192;height:192;mso-wrap-style:none;v-text-anchor:middle' filled="f"
+   fillcolor="#b2b2b2 [4]" strokecolor="red" strokeweight="1pt">
+   <v:fill color2="black [0]"/>
+   <v:shadow color="#393939 [2]"/>
+  </v:oval><v:oval id="_x0000_s41990" style='position:absolute;left:1920;top:2496;
+   width:192;height:192;mso-wrap-style:none;v-text-anchor:middle' filled="f"
+   fillcolor="#b2b2b2 [4]" strokecolor="white [1]" strokeweight="1pt">
+   <v:fill color2="black [0]"/>
+   <v:shadow color="#393939 [2]"/>
+  </v:oval><v:oval id="_x0000_s41991" style='position:absolute;left:1248;top:2880;
+   width:192;height:192;mso-wrap-style:none;v-text-anchor:middle' filled="f"
+   fillcolor="#b2b2b2 [4]" strokecolor="#0cf" strokeweight="1pt">
+   <v:fill color2="black [0]"/>
+   <v:shadow color="#393939 [2]"/>
+  </v:oval><v:line id="_x0000_s41993" style='position:absolute;flip:y;
+   mso-wrap-style:none;v-text-anchor:middle' from="1440,2112" to="2976,2208"
+   strokecolor="red" strokeweight="1pt">
+   <v:shadow color="#393939 [2]"/>
+  </v:line><v:line id="_x0000_s41994" style='position:absolute;
+   mso-wrap-style:none;v-text-anchor:middle' from="1440,2208" to="2976,2496"
+   strokecolor="red" strokeweight="1pt">
+   <v:shadow color="#393939 [2]"/>
+  </v:line><v:line id="_x0000_s41995" style='position:absolute;flip:y;
+   mso-wrap-style:none;v-text-anchor:middle' from="1440,2880" to="2976,2976"
+   strokecolor="#0cf" strokeweight="1pt">
+   <v:shadow color="#393939 [2]"/>
+  </v:line><v:line id="_x0000_s41996" style='position:absolute;
+   mso-wrap-style:none;v-text-anchor:middle' from="1440,2976" to="2976,3168"
+   strokecolor="#0cf" strokeweight="1pt">
+   <v:shadow color="#393939 [2]"/>
+  </v:line><v:shapetype id="_x0000_t38" coordsize="21600,21600" o:spt="38"
+   o:oned="t" path="m0,0c@0,0@1,5400@1,10800@1,16200@2,21600,21600,21600e"
+   filled="f">
+   <v:formulas>
+    <v:f eqn="mid #0 0"/>
+    <v:f eqn="val #0"/>
+    <v:f eqn="mid #0 21600"/>
+   </v:formulas>
+   <v:path arrowok="t" fillok="f" o:connecttype="none"/>
+   <v:handles>
+    <v:h position="#0,center"/>
+   </v:handles>
+   <o:lock v:ext="edit" shapetype="t"/>
+  </v:shapetype><v:shape id="_x0000_s41998" type="#_x0000_t38" style='position:absolute;
+   left:1556;top:2132;width:248;height:536;rotation:90;flip:x;mso-wrap-style:none;
+   v-text-anchor:middle' o:connectortype="curved" adj="10800,91719,-122981"
+   strokecolor="white [1]" strokeweight="1pt">
+   <v:stroke endarrow="block"/>
+   <v:shadow color="#393939 [2]"/>
+  </v:shape><v:shape id="_x0000_s41999" type="#_x0000_t38" style='position:absolute;
+   left:1556;top:2516;width:248;height:536;rotation:270;mso-wrap-style:none;
+   v-text-anchor:middle' o:connectortype="curved" adj="10800,-117188,-122981"
+   strokecolor="white [1]" strokeweight="1pt">
+   <v:stroke endarrow="block"/>
+   <v:shadow color="#393939 [2]"/>
+  </v:shape><v:line id="_x0000_s42000" style='position:absolute;flip:y;
+   mso-wrap-style:none;v-text-anchor:middle' from="2112,2016" to="2976,2592"
+   strokecolor="white [1]" strokeweight="1pt">
+   <v:shadow color="#393939 [2]"/>
+  </v:line><v:line id="_x0000_s42001" style='position:absolute;
+   mso-wrap-style:none;v-text-anchor:middle' from="2112,2592" to="2976,3312"
+   strokecolor="white [1]" strokeweight="1pt">
+   <v:shadow color="#393939 [2]"/>
+  </v:line><v:shapetype id="_x0000_t202" coordsize="21600,21600" o:spt="202"
+   path="m0,0l0,21600,21600,21600,21600,0xe">
+   <v:stroke joinstyle="miter"/>
+   <v:path gradientshapeok="t" o:connecttype="rect"/>
+  </v:shapetype><v:shape id="_x0000_s42003" type="#_x0000_t202" style='position:absolute;
+   left:960;top:2457;width:960;height:231' filled="f" fillcolor="#b2b2b2 [4]"
+   stroked="f" strokecolor="white [1]" strokeweight="1pt">
+   <v:fill color2="black [0]"/>
+   <v:shadow color="#393939 [2]"/>
+   <v:textbox style='mso-fit-shape-to-text:t'/>
+  </v:shape><v:line id="_x0000_s42004" style='position:absolute;
+   mso-wrap-style:none;v-text-anchor:middle' from="3600,2112" to="3696,2304"
+   strokecolor="white [1]" strokeweight="1pt">
+   <v:shadow color="#393939 [2]"/>
+  </v:line><v:line id="_x0000_s42005" style='position:absolute;flip:x;
+   mso-wrap-style:none;v-text-anchor:middle' from="3600,2304" to="3696,2496"
+   strokecolor="white [1]" strokeweight="1pt">
+   <v:shadow color="#393939 [2]"/>
+  </v:line><v:line id="_x0000_s42006" style='position:absolute;
+   mso-wrap-style:none;v-text-anchor:middle' from="3600,2880" to="3696,3024"
+   strokecolor="white [1]" strokeweight="1pt">
+   <v:shadow color="#393939 [2]"/>
+  </v:line><v:line id="_x0000_s42007" style='position:absolute;flip:x;
+   mso-wrap-style:none;v-text-anchor:middle' from="3600,3024" to="3696,3168"
+   strokecolor="white [1]" strokeweight="1pt">
+   <v:shadow color="#393939 [2]"/>
+  </v:line><v:shape id="_x0000_s42008" type="#_x0000_t202" style='position:absolute;
+   left:3696;top:2160;width:1584;height:231' filled="f" fillcolor="#b2b2b2 [4]"
+   stroked="f" strokecolor="white [1]" strokeweight="1pt">
+   <v:fill color2="black [0]"/>
+   <v:shadow color="#393939 [2]"/>
+   <v:textbox style='mso-fit-shape-to-text:t'/>
+  </v:shape><v:shape id="_x0000_s42009" type="#_x0000_t202" style='position:absolute;
+   left:3696;top:2880;width:1584;height:231' filled="f" fillcolor="#b2b2b2 [4]"
+   stroked="f" strokecolor="white [1]" strokeweight="1pt">
+   <v:fill color2="black [0]"/>
+   <v:shadow color="#393939 [2]"/>
+   <v:textbox style='mso-fit-shape-to-text:t'/>
+  </v:shape><v:line id="_x0000_s42010" style='position:absolute;
+   mso-wrap-style:none;v-text-anchor:middle' from="2976,2112" to="3552,2112"
+   strokecolor="red" strokeweight="1pt">
+   <v:stroke dashstyle="1 1"/>
+   <v:shadow color="#393939 [2]"/>
+  </v:line><v:line id="_x0000_s42011" style='position:absolute;
+   mso-wrap-style:none;v-text-anchor:middle' from="2976,2496" to="3552,2496"
+   strokecolor="red" strokeweight="1pt">
+   <v:stroke dashstyle="1 1"/>
+   <v:shadow color="#393939 [2]"/>
+  </v:line><v:line id="_x0000_s42012" style='position:absolute;
+   mso-wrap-style:none;v-text-anchor:middle' from="2976,2880" to="3552,2880"
+   strokecolor="#0cf" strokeweight="1pt">
+   <v:stroke dashstyle="1 1"/>
+   <v:shadow color="#393939 [2]"/>
+  </v:line><v:line id="_x0000_s42013" style='position:absolute;
+   mso-wrap-style:none;v-text-anchor:middle' from="2976,3168" to="3552,3168"
+   strokecolor="#0cf" strokeweight="1pt">
+   <v:stroke dashstyle="1 1"/>
+   <v:shadow color="#393939 [2]"/>
+  </v:line></v:group><![if !vml]><img border=0
+ v:shapes="_x0000_s42014,_x0000_s41988,_x0000_s41989,_x0000_s41990,_x0000_s41991,_x0000_s41993,_x0000_s41994,_x0000_s41995,_x0000_s41996,_x0000_s41998,_x0000_s41999,_x0000_s42000,_x0000_s42001,_x0000_s42003,_x0000_s42004,_x0000_s42005,_x0000_s42006,_x0000_s42007,_x0000_s42008,_x0000_s42009,_x0000_s42010,_x0000_s42011,_x0000_s42012,_x0000_s42013"
+ src="slide0024_image037.gif" style='position:absolute;top:54.25%;left:11.61%;
+ width:75.28%;height:30.75%'><![endif]>
+ <div v:shape="_x0000_s41986" class=T style='position:absolute;top:5.0%;
+ left:3.55%;width:93.63%;height:7.75%'>Bigram Backoff Language Model</div>
+ <div v:shape="_x0000_s41987">
+ <div class=B style='position:absolute;top:16.5%;left:3.55%;width:93.25%;
+ height:5.25%'><span style='position:absolute;top:0%;left:4.01%;width:95.98%'><span
+ style='font-weight:normal'><span style='mso-special-format:bullet;color:#FF3300;
+ mso-color-index:5;position:absolute;left:-4.18%;font-family:Symbol'>·</span></span>Two
+ issues with large vocabulary bigram LMs:&#13;</span></div>
+ <div class=B1><span style='position:absolute;top:22.75%;left:11.61%;
+ width:99.25%'><span style='font-weight:normal'><span style='mso-special-format:
+ bullet;color:#FF3300;mso-color-index:5;position:absolute;left:-3.2%;
+ font-family:Symbol'>·</span></span>With vocabulary size <span
+ style='font-family:"Times New Roman"'><b><i>V</i></b></span> and <span
+ style='font-family:"Times New Roman"'><b><i>N</i></b></span> word exits per
+ frame, <span style='font-family:"Times New Roman"'><b><i>N</i></b></span>x<span
+ style='font-family:"Times New Roman"'><b><i>V</i></b></span> cross-</span><span
+ style='position:absolute;top:27.0%;left:11.61%;width:85.01%'>word transitions
+ per frame&#13;</span></div>
+ <div class=B1 style='position:absolute;top:32.5%;left:8.42%;width:103.74%;
+ height:4.5%'><span style='position:absolute;top:0%;left:3.06%;width:97.11%'><span
+ style='font-weight:normal'><span style='mso-special-format:bullet;color:#FF3300;
+ mso-color-index:5;position:absolute;left:-3.15%;font-family:Symbol'>·</span></span>Bigram
+ probabilities very sparse; mostly “backoff” to unigrams&#13;</span></div>
+ <div class=B style='mso-line-spacing:"110 20 0";position:absolute;top:38.5%;
+ left:3.55%;width:108.05%;height:5.25%'><span style='position:absolute;
+ top:0%;left:3.46%;width:96.53%'><span style='font-weight:normal'><span
+ style='mso-special-format:bullet;color:#FF3300;mso-color-index:5;position:
+ absolute;left:-3.59%;font-family:Symbol'>·</span></span>Optimize cross-word
+ transitions using “backoff<b><i> </i></b>node”:&#13;</span></div>
+ <div class=B1 style='mso-line-spacing:"110 20 0";position:absolute;top:45.0%;
+ left:8.42%;width:105.05%;height:4.5%'><span style='position:absolute;
+ top:0%;left:3.03%;width:97.14%'><span style='font-weight:normal'><span
+ style='mso-special-format:bullet;color:#FF3300;mso-color-index:5;position:
+ absolute;left:-3.11%;font-family:Symbol'>·</span></span>Viterbi decision at
+ backoff node selects single-best predecessor</span></div>
+ </div>
+ <div v:shape="_x0000_s41988" class=O style='text-align:center;position:absolute;
+ top:67.75%;left:46.44%;width:10.48%;height:4.0%'><span style='font-family:
+ Arial;font-size:75%'>Lexicon</span></div>
+ <div v:shape="_x0000_s41989" class=O style='text-align:center;position:absolute;
+ top:57.25%;left:17.41%;width:2.05%;height:4.0%'><span style='font-size:75%'><i>A</i></span><span
+ style='font-family:Arial;font-size:75%;mso-special-format:lastCR;display:none'>&#13;</span></div>
+ <div v:shape="_x0000_s41991" class=O style='text-align:center;position:absolute;
+ top:75.0%;left:17.41%;width:2.05%;height:4.0%'><span style='font-size:75%'><i>B</i></span><span
+ style='font-family:Arial;font-size:75%;mso-special-format:lastCR;display:none'>&#13;</span></div>
+ <div v:shape="_x0000_s42003" class=O style='mso-line-spacing:"100 50 0";
+ position:absolute;top:65.5%;left:12.73%;width:17.79%;height:4.0%'><span
+ style='font-family:Arial;font-size:75%'>Backoff node</span></div>
+ <div v:shape="_x0000_s42008" class=O style='mso-line-spacing:"100 50 0";
+ position:absolute;top:58.75%;left:60.11%;width:29.96%;height:4.0%'><span
+ style='font-size:75%'><i>A</i></span><span style='font-family:Arial;
+ font-size:75%'>’s bigram successors</span></div>
+ <div v:shape="_x0000_s42009" class=O style='mso-line-spacing:"100 50 0";
+ position:absolute;top:75.25%;left:60.11%;width:29.96%;height:4.0%'><span
+ style='font-size:75%'><i>B</i></span><span style='font-family:Arial;
+ font-size:75%'>’s bigram successors</span></div>
+</p:slide></div>
+
+</body>
+
+</html>

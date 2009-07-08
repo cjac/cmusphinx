@@ -1,0 +1,14 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+libs=@LIBS@
+
+Name: Sphinx3
+Description: Large vocabulary continuous speech recognition system
+Version: @VERSION@
+URL: http://www.cmusphinx.org/
+Requires: sphinxbase >= 0.4
+Libs: -L${libdir} -ls3decoder
+Libs.private: ${libs}
+Cflags: -I${includedir}/sphinxbase -I${includedir}/sphinx3

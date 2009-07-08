@@ -1,0 +1,6 @@
+-upperf	6800
+-lowerf	130
+-nfilt	40
+-nfft 512
+-samprate 16000
+-input_endian 1 

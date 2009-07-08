@@ -1,0 +1,306 @@
+latest Update : 20040202  Arthur Chan, explain the search structure. Also add a detail version of description of utt_decode. 
+latest Update : 20040127  Arthur Chan, add many functions description in lextree
+first created : 20040116  Arthur Chan, first created
+
+decode.c's main
+  ->cmd_ln_parse (in libutil/cmd_ln.c)
+     ->cmd_ln_print_help
+  ->kb_init (in libs3decoder/kb.c)
+     ->kbcore_init
+	-> logs3_init 
+	-> feat_init
+	-> mdef_init
+	-> dict_init
+	-> lm_read
+	-> fillpen_init
+	-> mgau_init
+	-> subvq_init
+	-> tmat_init
+	-> wid_dict_lm_map (in libs3decoder/wid.c)
+	-> dict2pid_build (in libs3decoder/dict2pid.c)
+     ->kbcore_mdef
+     ->kbcore_lm
+     ->kbcore_dict2pid
+     ->tm_chk_1skip 
+     ->lm_lmwid2dictwid
+     ->lm_ug_wordprob
+     ->wid_wordprob2alt
+     ->mdef_silphone
+     ->lextree_build <- V. imp function to trace coz it contains the main data structure that was used in the search.
+     ->lextree_type
+     ->lextree_dump
+     ->ascr_init
+     ->beam_init
+     ->vithist_init
+  ->ctl_process (in libs3decoder/corpus.c)
+  ->utt_decode (in libs3decoder/utt.c)
+     ->feat_s2mfc2feat (in libs3decoder/feat.c)
+        -> fcb->compute_feat (a function pointer itself, depends on the type of the cepstrum)
+     ->utt_begin ( a function that do the initialization of the utt)
+	-> vithist_utt_begin ( a function that initialize the vithist data structure
+	-> lextree_n_next_active 
+	-> lextree_enter (a function that enter the lexical tree)
+	-> kb_lextree_active_swap (swap to use the active state in next frames)
+	    ->lextree_active_swap
+     ->lextree_ssid_active  (a function that determines whether a senone is active)
+     ->mmdef_sseq2sen_active
+     ->dict2pd_comsseq2sen_active
+     ->subvq_frame_eval (in s3.4, it is replaced by approx_cont_mgau_frame_eval)
+	if (vq is specified)
+	->mgau_eval
+	->mgau_n_comp
+	else
+	->subvq_gautbl_eval_logs3
+	   ->vector_gautbl_eval_logs3
+	->subvq_mgau_shortlist
+	->mgau_eval
+     ->dict2pid_comsenscr
+     ->lextree_hmm_eval
+	->hmm_dump_vit_val
+	->hmm_vit_eval_3st
+	->hmm_vit_eval_5st
+     ->lextree_hmm_histbin
+     ->lextree_hmm_propagate
+	->hmm_clear
+	->vithist_rescore
+	    ->vithist_enter - This update the scores for viterbi history. 
+		->vithist_lmstate_find - Find whether the lm state is there
+		->vithist_entry_alloc
+	        ->vithist_lmstate_enter - Book keeping the different possible LM state 
+	    ->lm_tg_score
+     ->visthist_prune
+     ->utt_word_trans -> a function which propagate the search by entering the tree again. 
+     ->vithist_frame_windup
+     ->kb_lextree_active_swap
+     ->utt_end
+	->vithist_utt_end
+	->vithist_dump
+	->vithist_backtrace
+	->matchseg_write
+	->match_write
+	->vithist_dag_write
+
+Dictionary of functions: This is a glossary of functions 
+cmd_ln_print_help : This print out the command line options of the program.
+kbcore_init : Initialize the knowledge base. 
+logs3_init : Initialize the log table. 
+tm_chk_1skip : Check whether the model has skip more than 1 state. 
+lextree_build : This is the key function which build the unigram lexical tree data structure, 
+the key to understand this function is that, the root node can actually be duplicated to represent
+states of different left-context. 
+lextree_hmm_eval : The functions that evaluate all hmms in all active nodes. 
+
+utt_begin : This is a function that initialize the decoding
+	What it does
+	1, Create a dummy vithist node
+	2, enter the normal[0] and filler[0] lexical tree's root node. This is done by a special input to function lextree_enter;
+	3, Start to use the active swap. 
+Notice even in this function, beam is applied 
+
+utt_decode : This is the guts of decoding in s3.3.  Backbone functions are
+	(Missing the composite senone's description here)
+	-utt_begin
+	   initialize the Viterbi, enter the ordinary-tree and the filler tree
+		for every frame
+		-The loop calls lextree_ssid_active, mmdef_sseq2sen_active and dict2pid_comseq3sen_active
+		   from the search, determine which senones are active
+        	-subvq_frame_eval 
+	           actual routine for the computations of the senones.  All tricks of fast likelihood computation 
+		   can be done here. 
+		   (A new functions name approx_frame_eval is currently being tested.  This will replace
+		    the subvq_frame_eval functions. 
+		-The loop calls lextree_hmm_eval 
+		   compute the scores for all nodes which are active
+		-The loop calls lextree_hmm_histbin
+		   use histogram-based pruning to decide the beam
+		   (Othe ways of pruning can be done here)
+		-The loop calls lextree_hmm_propagate
+		   actual routine that propagate the tree in the non-root nodes. It also determines whether the node
+		   shoudl be active in next frame
+		-utt_word_trans
+		   the routine that propagate the tree at the root nodes. 
+		   Tricks in fast-match can possibly be implemented here. 
+		-vithist_prune
+		   limit the number of viterbi history in the search. 
+		end for every frame
+	-utt_end
+	    doing inventory, backracing and generate DAG if necessary. 
+
+A more detail version of utt_decode:
+
+0, For uninitiated, s3.3 decoder used tree lexicon but it doesn't
+really use tree copies as an implementation.  For all the leave nodes,
+only token with best score in a particular will be survived.  In a
+nutshell, this is a unigram search with LM rescoring in the leaf node.
+These arrangment will cause 1) cross-word triphone becomes hard to
+use, 2) for a particular word, the actual predecessor of it may not
+survive because earlier winner always beat it (See doc/s3.3.ppt) .
+The first problem was not addressed. The second problems is mainly
+solve by putting entries to different tree to allow more surviving
+paths with correct predecessor of a word. 
+
+
+I, Initialization : (see also utt_begin)
+   a, create a dummy viterbi history node
+   b, enter ugram[0] and fillertree[0] lexical tree's root node
+   c, swap and start to use the active-state in next frame
+
+II, Inside the loop
+   A, Determine which senone is active
+      a, Determine which senone sequence (HMM) is active ->lextree_ssid_active
+	 -If we determine that there is HMM which is active, then instead of just one senone is active, there will be an active senone sequence. 
+      b, Determine active senones from active senones sequence ->mdef_sseq2sen_active
+	 -Translate the active senone sequence to active senone
+      c, Determine the composite senone to be active. (Please refer to the data structure initialization)
+   B, Compute the GMM scores for the frame
+      subvq_frame_eval (will be replaced by approx_mgau_cont_frame_eval)
+      a, if there is no sub vq,
+	 just called mgau_eval to compute the scores ->mgau_eval
+      b, else
+	 find the shortlist using sub vector quantization ->subvq_mgau_shortlist
+	 and compute the GMM ->mgau_eval
+      c, No matter we use which method, normalize it with the best score 
+	 (So that everything would be negative)
+      dict2pid_comsenscr
+      d, From the senone score , compute the composite senone score
+	 ->dict2pid_comsenscr
+   C, Evaluation the hmm in the lexical tree
+      For every tree 
+      a, for active hmms of the lexical tree, compute the hmm scores, based on the senone scores. Right now it only supports 3-state hmm and 5-state hmm. All of them are implemented using integer. It is also Ravi's intention to let hmm-evaluation routines not preventing underflow. This will allow developer to know that whether certain algorithm will have some strange numerical property. 
+   D, Histogram-based beam determination
+	This only happened when the number of hmm per frame is larger than 1.5 times maxhmmpf
+	or else the default word, phone transition and hmm beam will be used. 
+	What is does is to renormlize the bw by computing the score histograms of all active states.(in lextree_hmm_histbin) Note that currently lextree_hmm_histbin only order the active senone node in an approximate order
+   E, Propage scores in the lexical tree -lextrsee_hmm_propagate
+	(Also see the description of lextree_hmm_propagate)
+	for all active node, update the score and history, if it is leave node(word exit),
+	bookkeep and rescore the viterbi history (or token list)
+   F, Prune the Viterbi history to a specified max
+	(Also see vithist_prune)
+   G, Cross Word Tranitions ->utt_word_trans
+	a, Find the best word exit for each distint word-final CIphone
+	b, Transition to the unigram lexical tree.  There is some clever mechanism to enter mutliple entries of the tree. The main reason to that is to allow possible correct predecessor to survive.  Please read doc/s3.3.ppt to understand more detail. 
+   H, Complete one cycle, start to wrap-up the computation. 
+	a, reset the LMstate , reinitialize the scores. vithist_frame_windup
+	d, start to use the active hmms of next frame. 
+
+III, utt_end
+   a, terminate the vithist ->vithist_utt_end (Well, add the last trigrams scores. ...)
+   b, (Optional)if require dumping back-pointer table -bptbldir, dump it
+   c, backtrace the Viterbi history
+   d, (Optional) dump to match file (word hypothesis) and match seg file (word hypothesis with time info)
+   e, (Optional) dump the lattice if outlatdir is specified. 
+   f, Display the recognition sentence to the screen .
+	
+	
+lextree_hmm_propagate :
+    for all active node in the lexical tree,
+        if the best score is larget than the beam threshold
+	    actiavte this node in next frame. 
+	else deactivate this node
+	if it is not a word id (THIS IS NOT A LEAVE NODE)
+	   if is score is larger than the phone threshold
+    	      Transition to each node. 
+	      (in.score is the entry score of the hmm, 
+	       out.score is the exit score of an hmm
+	   else
+	      Do nothing
+	else (THIS IS A LEAVE NODE)
+	   if the score is larger than the word threshold
+	      Do rescoring -> vithist_rescore
+
+vithist_rescore :
+Description : there can be multiple word exits in each frame. Each word can have different
+previous histories.  We only want to retain the best history for each word.  But why do we arrange in the tree form. I don't know yet. 
+	-Initialize a new vithist_entry unit with 
+	 acostic score equal to the hmm.out.score - node->prob - pve->score
+	-Compute the start index and final index. 
+	if it is a filler word
+	 lscr = filler penality
+	 score = hmm.out.score - node->prob + lscr
+	 lmstate be the same
+	
+vector_gautbl_eval_logs3: the actualy place that compute sub-vector scores in subvector quantization 
+
+subvq_mgau_shortlist : use the approximate scores to threshold which gaussians should be gone. 	
+
+Some notes on lexical tree:
+Got from lextree.h , pretty instructive. 
+
+/*
+ * A lextree can be built for a specific history (e.g., for all bigram successors of a given
+ * word or trigram successors of a word-pair in a given LM).  The history provides a set of left
+ * context CIphones (if the final history word has multiple pronunciations; and there is always
+ * <sil>).
+ * A lextree is usually a set of trees, one for each distinct root model for the given set of
+ * words.  Furthermore, the root node of each tree can itself actually be a SET of nodes,
+ * required by the different left contexts.  If there is no history (i.e., the unigram lextree),
+ * any CIphone is a potential left-context.  But this can explode the number of root nodes.
+ * So, the root nodes of the unigram lextree use COMPOSITE models (see dict2pid.h), merging
+ * different contexts into one.  Similarly, the right context (at the leaves of any lextree) is
+ * always unknown.  So, all leaf nodes also use composite models.
+ * Lextrees are formed by sharing as much of the HMM models as possible (based on senone-seq ID),
+ * before having to diverge.  But the leaf nodes are always distinct for each word.
+ * Finally, each node has a (language model) probability, given its history.  It is the max. of
+ * the LM probability of all the words reachable from that node.  (Strictly speaking, it should
+ * be their sum instead of max, but practically it makes little difference.)
+ */
+
+Another key thing to know about the lexical tree is that the tree structure actually maintain a list
+of active node, so there is not need to search the whole tree to get all active nodes. 
+
+
+Here is some description of the lextree data structure:
+There are two types of nodes in the lextree structure, lextree_lcroot_t and lextree_node_t. 
+
+lextree_node_t
+^^^^^^^^^^^^^^
+typedef struct {
+    hmm_t hmm;		/* HMM states */
+    glist_t children;	/* Its data.ptr are children (lextree_node_t *) */
+    int32 wid;		/* Dictionary word-ID if a leaf node; BAD_S3WID otherwise */
+    int32 prob;		/* LM probability of this node (of all words leading from this node) */
+    int32 ssid;		/* Senone-sequence ID (or composite state-seq ID if composite) */
+    s3ssid_t *ssid_lc;	/* Array of ssid's (composite or not) for each left context CIphone;
+			   READ-ONLY structure */
+    s3cipid_t ci;	/* CIphone id for this node */
+    int8 composite;	/* Whether it is a composite model (merging many left/right contexts) */
+    s3frmid_t frame;	/* Frame in which this node was last active; <0 if inactive */
+} lextree_node_t;
+
+lextree_note_t is the basic unit of the lexical tree.  As most tree implementation, it maintains
+a set of children nodes.  It will also link to all linguistic information for the search. That includes
+the hmm id, phone id, wid.  The last info will be valid iff the node is a leaf node (that means we found
+a word end).  There are are also other more implicit information being stored, the senone score id, which
+was used only when composite model was used.l  Also no matter whether the node is composite or not, the list
+off ssids will be stored. 
+
+typedef struct {
+    s3cipid_t lc;	/* Left context CIphone */
+    glist_t root;	/* Its data.ptr are the root nodes (lextree_node_t *) of interest; subset
+			   of the entire lextree roots */
+} lextree_lcroot_t;
+
+<FILL IN! NOT COMPLETED>
+
+typedef struct {
+    int32 type;		/* For use by other modules; NOT maintained here.  For example:
+			   N-gram type; 0: unigram lextree, 1: 2g, 2: 3g lextree... */
+    glist_t root;	/* The entire set of root nodes (lextree_node_t) for this lextree */
+    lextree_lcroot_t *lcroot;	/* Lists of subsets of root nodes; a list for each left context;
+				   NULL if n_lc == 0 (i.e., no specific left context) */
+    int32 n_lc;		/* No. of separate left contexts being maintained, if any */
+    int32 n_node;	/* No. of nodes in this lextree */
+    lextree_node_t **active;		/* Nodes active in any frame */
+    lextree_node_t **next_active;	/* Like active, but temporary space for constructing the
+					   active list for the next frame using the current */
+    int32 n_active;		/* No. of nodes active in current frame */
+    int32 n_next_active;	/* No. of nodes active in current frame */
+    
+    int32 best;		/* Best HMM state score in current frame (for pruning) */
+    int32 wbest;	/* Best wordexit HMM state score in current frame (for pruning) */
+} lextree_t;
+
+<FILL IN! NOT COMPLETED>
+
+lm_read_dump : What is the difference between lm_read_dump and lm_read?

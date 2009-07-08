@@ -1,0 +1,5 @@
+-lw   21
+-beam     1e-160
+-wbeam   1e-100
+-lm     /lab/speech/sphinx4/data/wsj0/bcb20onp.Z.DMP
+
