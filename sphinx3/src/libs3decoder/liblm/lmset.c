@@ -68,6 +68,7 @@
  *
  */
 
+#define OLD_LM_API
 #include <string.h>
 
 #include <lm.h>

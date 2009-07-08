@@ -106,6 +106,11 @@
 #include <s3types.h>
 #include <cmd_ln.h>
 #include <logmath.h>
+#ifdef OLD_LM_API
+#include "lm.h"
+#else
+#include <ngram_model.h>
+#endif
 #include "feat.h"
 #include "cont_mgau.h"
 #include "ms_mgau.h"
@@ -114,7 +119,6 @@
 #include "dict.h"
 #include "dict2pid.h"
 #include "fillpen.h"
-#include "lm.h"
 #include "tmat.h"
 #include "subvq.h"
 #include "gs.h"
@@ -138,8 +142,12 @@ typedef struct {
     dict_t *dict; /**< Dictionary structure */
     dict2pid_t *dict2pid; /**< Conversion of dictionary to Phoneme ID */
 
+#ifdef OLD_LM_API
     lmset_t *lmset; /**< LM Set. ARCHAN, since sphinx 3.6, it is used whenever an lm is allocated. 
                        This unified the internal data structure. */
+#else
+    ngram_model_t *ngram;
+#endif
 
     /*Specified either one of them when using kbcore.h.  It is not yet very nice now. */
     mgau_model_t *mgau; /**< Acoustic Model for single stream */
@@ -173,6 +181,13 @@ kbcore_t *New_kbcore(cmd_ln_t *config);
 S3DECODER_EXPORT
 void s3_am_init(kbcore_t *kbc);
 
+S3DECODER_EXPORT
+#ifdef OLD_LM_API
+lmset_t* lm_init(cmd_ln_t *config, dict_t *dict, logmath_t *logmath);
+#else
+ngram_model_t* lm_init(cmd_ln_t *config, dict_t *dict, logmath_t *logmath);
+#endif
+
 
 /**
  * Initialize one or more of all the major models:  pronunciation dictionary, acoustic models,
@@ -192,9 +207,15 @@ void kbcore_free (kbcore_t *kbcore  /**< The kbcore structure */
    behavior.  Called in mode 3, 4 and 5 to make sure different code
    works.  FIXME: This is dumb.
 */
+#ifdef OLD_LM_API
 void unlinksilences(lm_t* l, kbcore_t *kbc, dict_t *d);
 
 void linksilences(lm_t* l, kbcore_t *kbc, dict_t *d);
+#else
+void unlinksilences(ngram_model_t* l, kbcore_t *kbc, dict_t *d);
+
+void linksilences(ngram_model_t* l, kbcore_t *kbc, dict_t *d);
+#endif
 
 /** Access macros; not meant for arbitrary use */
 #define kbcore_config(k)	((k)->config)
@@ -202,7 +223,13 @@ void linksilences(lm_t* l, kbcore_t *kbc, dict_t *d);
 #define kbcore_mdef(k)		((k)->mdef)
 #define kbcore_dict(k)		((k)->dict)
 #define kbcore_dict2pid(k)	((k)->dict2pid)
+#ifdef OLD_LM_API
 #define kbcore_lm(k)		((k)->lmset ? (k)->lmset->cur_lm : NULL)
+#define kbcore_lmset(k)		((k)->lmset)
+#else
+#define kbcore_lm(k)            ((k)->ngram)
+#define kbcore_lmset(k)         ((k)->ngram)
+#endif
 #define kbcore_fillpen(k)	((k)->fillpen)
 #define kbcore_dict2lmwid(k,w)	((k)->dict2lmwid[w])
 #define kbcore_mgau(k)		((k)->mgau)
@@ -211,7 +238,6 @@ void linksilences(lm_t* l, kbcore_t *kbc, dict_t *d);
 #define kbcore_svq(k)		((k)->svq)
 #define kbcore_gs(k)		((k)->gs)
 #define kbcore_tmat(k)		((k)->tmat)
-#define kbcore_lmset(k)		((k)->lmset)
 /*#define kbcore_n_mgau(k)	((k)->mgau ? mgau_n_mgau((k)->mgau) : (k)->ms_mgau->s->n_sen)
  */
 #define kbcore_n_mgau(k)	((k)->mgau ? mgau_n_mgau((k)->mgau) \

@@ -69,6 +69,11 @@
  */
 
 
+
+/*
+ * Unconditionally enable OLD_LM_API, lmset.c needs wid_dict_lm_map()
+ */
+#define OLD_LM_API
 #include "wid.h"
 
 
@@ -83,6 +88,7 @@
 */
 
 
+#ifdef OLD_LM_API
 s3lmwid32_t *
 wid_dict_lm_map(dict_t * dict, lm_t * lm, int32 lw)
 {
@@ -359,3 +365,4 @@ wid_wordprob2alt(dict_t * dict, wordprob_t * wp, int32 n)
 
     return j;
 }
+#endif

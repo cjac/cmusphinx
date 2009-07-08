@@ -107,9 +107,15 @@ match_write(FILE * fp, glist_t hyp, char *uttid, dict_t * dict, char *hdr)
 
 
 void
+#ifdef OLD_LM_API
 matchseg_write(FILE * fp, glist_t hyp, char *uttid, char *hdr,
                lm_t * lm, dict_t * dict, int32 num_frm, int32 * ascale,
                int32 unnorm)
+#else
+matchseg_write(FILE * fp, glist_t hyp, char *uttid, char *hdr,
+               ngram_model_t * lm, dict_t * dict, int32 num_frm, int32 * ascale,
+               int32 unnorm)
+#endif
 {
     gnode_t *gn;
     srch_hyp_t *h;
@@ -130,7 +136,11 @@ matchseg_write(FILE * fp, glist_t hyp, char *uttid, char *hdr,
 
         if (h->sf != h->ef) {   /* FSG outputs zero-width hyps */
             ascr += h->ascr;
+#ifdef OLD_LM_API
             lscr += lm ? lm_rawscore(lm, h->lscr) : h->lscr;
+#else
+            lscr += lm ? ngram_score_to_prob(lm, h->lscr) : h->lscr;
+#endif
 
             if (unnorm)
                 global_hypscale += compute_scale(h->sf, h->ef, ascale);
@@ -154,7 +164,11 @@ matchseg_write(FILE * fp, glist_t hyp, char *uttid, char *hdr,
 
 
                 fprintf(fp, " %d %d %d %s", h->sf, h->ascr + hypscale,
+#ifdef OLD_LM_API
                         lm ? lm_rawscore(lm, h->lscr) : h->lscr,
+#else
+                        lm ? ngram_score_to_prob(lm, h->lscr) : h->lscr,
+#endif
                         dict_wordstr(dict, h->id));
             }
     }
@@ -286,7 +300,11 @@ log_hypseg(char *uttid, FILE * fp,      /* Out: output file */
            int32 scl,           /* In: Acoustic scaling for entire utt */
            float64 lwf,         /* In: LM score scale-factor (in dagsearch) */
            dict_t * dict,       /* In: dictionary */
+#ifdef OLD_LM_API
            lm_t * lm, int32 unnorm
+#else
+           ngram_model_t * lm, int32 unnorm
+#endif
                                 /**< Whether unscaled the score back */
     )
 {
@@ -300,7 +318,11 @@ log_hypseg(char *uttid, FILE * fp,      /* Out: output file */
     for (h = hypptr; h; h = h->next) {
         ascr += h->ascr;
         if (dict_basewid(dict, h->id) != dict->startwid) {
+#ifdef OLD_LM_API
             lscr += lm_rawscore(lm, h->lscr);
+#else
+            lscr += ngram_score_to_prob(lm, h->lscr);
+#endif
         }
         else {
             assert(h->lscr == 0);
@@ -316,7 +338,11 @@ log_hypseg(char *uttid, FILE * fp,      /* Out: output file */
         for (h = hypptr; h; h = h->next) {
             lscr =
                 (dict_basewid(dict, h->id) !=
+#ifdef OLD_LM_API
                  dict->startwid) ? lm_rawscore(lm, h->lscr) : 0;
+#else
+                 dict->startwid) ? ngram_score_to_prob(lm, h->lscr) : 0;
+#endif
             fprintf(fp, " %d %d %d %s", h->sf, h->ascr, lscr,
                     dict_wordstr(dict, h->id));
         }
@@ -414,8 +440,13 @@ uttid          totascr+totlscr      totascr      totlscr   sf   ascr  lscr  word
 */
 
 int
+#ifdef OLD_LM_API
 read_s3hypseg_line(char *line, seg_hyp_line_t * seg_hyp_line, lm_t * lm,
                    dict_t * dict)
+#else
+read_s3hypseg_line(char *line, seg_hyp_line_t * seg_hyp_line, ngram_model_t * lm,
+                   dict_t * dict)
+#endif
 {
     char *p, str[128];
     conf_srch_hyp_t *hyp_word, *tail, *g, *h;

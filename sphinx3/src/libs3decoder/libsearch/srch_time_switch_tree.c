@@ -138,19 +138,25 @@
  *             Started. This replaced utt.c starting from Sphinx 3.6. 
  */
 
+#include "cmd_ln.h"
+#include "hash_table.h"
 #include "srch.h"
 #include "gmm_wrap.h"
 #include "astar.h"
 #include "dict.h"
-#include "cmd_ln.h"
 #include "corpus.h"
 
 #define REPORT_SRCH_TST 1
+#define LMSET_NAME "lmset"
 
 #include "s3types.h"
 #include "kb.h"
 #include "lextree.h"
+#ifdef OLD_LM_API
 #include "lm.h"
+#else
+#include "ngram_model.h"
+#endif
 #include "vithist.h"
 
 /** 
@@ -240,12 +246,15 @@ typedef struct {
     int32 n_lextree;		/**< Number of lexical tree for time switching: n_lextree */
     lextree_t **curugtree;        /**< The current unigram tree that used in the search for this utterance. */
 
+#ifdef OLD_LM_API
     lextree_t **ugtree;           /**< The pool of trees that stores all word trees. */
+#else
+    hash_table_t *ugtree;
+#endif
     lextree_t **fillertree;       /**< The pool of trees that stores all filler trees. */
     int32 n_lextrans;		/**< #Transitions to lextree (root) made so far */
     int32 epl ;                   /**< The number of entry per lexical tree */
 
-    lmset_t* lmset;               /**< The LM set */
     int32 isLMLA;  /**< Is LM lookahead used?*/
 
     histprune_t *histprune; /**< Structure that wraps up parameters related to  */
@@ -254,30 +263,123 @@ typedef struct {
 
 } srch_TST_graph_t ;
 
+#ifndef OLD_LM_API
+static lextree_t **
+create_lextree(kbcore_t *kbc, srch_TST_graph_t *tstg, ngram_model_t *lm, const char *lmname, ptmr_t *tm_build)
+{
+    int j;
+    lextree_t **lextree;
+
+    lextree = (lextree_t **)ckd_calloc(tstg->n_lextree, sizeof(lextree_t *));
+    hash_table_enter(tstg->ugtree, lmname, lextree);
+    for (j = 0; j < tstg->n_lextree; ++j) {
+        if (tm_build)
+            ptmr_start(tm_build);
+
+        lextree[j] = lextree_init(kbc, lm,
+                                  lmname,
+                                  tstg->isLMLA, REPORT_SRCH_TST,
+                                  LEXTREE_TYPE_UNIGRAM);
+
+        if (tm_build)
+            ptmr_stop(tm_build);
+
+        if (lextree[j] == NULL) {
+            int i;
+            E_INFO
+                ("Failed to allocate lexical tree for lm %s and lextree %d\n",
+                 lmname, j);
+
+            for (i = j - 1; i >= 0; --i)
+                lextree_free(lextree[i]);
+            ckd_free(lextree);
+
+            return NULL;
+        }
+        if (REPORT_SRCH_TST) {
+            E_INFO
+                ("Lextree (%d) for lm \"%s\" has %d nodes(ug)\n",
+                 j, lmname, lextree_n_node(lextree[j]));
+        }
+    }
+
+    lextree_report(lextree[0]);
+
+    return lextree;
+}
+
+static void
+srch_TST_free(srch_TST_graph_t *tstg)
+{
+    if (tstg == NULL)
+        return;
+
+    if (tstg->ugtree) {
+        hash_iter_t *hiter = hash_table_iter(tstg->ugtree);
+        if (hiter)
+            do {
+                lextree_t **lextree = (lextree_t**)hash_entry_val(hiter->ent);
+                if (lextree) {
+                    int j;
+                    for (j = 0; j < tstg->n_lextree; ++j)
+                        lextree_free(lextree[j]);
+                }
+            } while ((hiter = hash_table_iter_next(hiter)));
+        hash_table_free(tstg->ugtree);
+    }
+
+    ckd_free(tstg->curugtree);
+    if (tstg->fillertree) {
+        int32 j;
+        for (j = 0; j < tstg->n_lextree; ++j)
+            lextree_free(tstg->fillertree[j]);
+        ckd_free(tstg->fillertree);
+    }
+
+    if (tstg->vithist)
+        vithist_free(tstg->vithist);
+
+    if (tstg->histprune)
+        histprune_free(tstg->histprune);
+
+    ckd_free(tstg);
+}
+#endif
+
 int
 srch_TST_init(kb_t * kb, void *srch)
 {
-
     int32 n_ltree;
     kbcore_t *kbc;
     srch_TST_graph_t *tstg;
     int32 i, j;
     srch_t *s;
     ptmr_t tm_build;
+#ifndef OLD_LM_API
+    ngram_model_set_iter_t *lmset_iter;
+    lextree_t **lextree = NULL;
+#endif
 
     kbc = kb->kbcore;
     s = (srch_t *) srch;
 
     ptmr_init(&(tm_build));
 
-    if (kbc->lmset == NULL) {
+    if (kbcore_lmset(kbc) == NULL) {
         E_ERROR("TST search requires a language model, please specify one with -lm or -lmctl\n");
         return SRCH_FAILURE;
     }
 
     /* Unlink silences */
+#ifdef OLD_LM_API
     for (i = 0; i < kbc->lmset->n_lm; i++)
         unlinksilences(kbc->lmset->lmarray[i], kbc, kbc->dict);
+#else
+    for (lmset_iter = ngram_model_set_iter(kbcore_lmset(kbc)); lmset_iter; lmset_iter = ngram_model_set_iter_next(lmset_iter)) {
+        const char *model_name;
+        unlinksilences(ngram_model_set_iter_model(lmset_iter, &model_name), kbc, kbc->dict);
+    }
+#endif
 
     if (cmd_ln_int32_r(kbcore_config(kbc), "-Nstalextree"))
         E_WARN("-Nstalextree is omitted in TST search.\n");
@@ -304,8 +406,12 @@ srch_TST_init(kb_t * kb, void *srch)
        initialization is followed.  */
 
     tstg->ugtree =
+#ifdef OLD_LM_API
         (lextree_t **) ckd_calloc(kbc->lmset->n_lm * n_ltree,
                                   sizeof(lextree_t *));
+#else
+        hash_table_new(ngram_model_set_count(kbcore_lmset(kbc)), HASH_CASE_YES);
+#endif
 
     /* curugtree is a pointer pointing the current unigram tree which
        were being used. */
@@ -316,6 +422,7 @@ srch_TST_init(kb_t * kb, void *srch)
     /* Just allocate pointers */
 
     ptmr_reset(&(tm_build));
+#ifdef OLD_LM_API
     for (i = 0; i < kbc->lmset->n_lm; i++) {
         for (j = 0; j < n_ltree; j++) {
             /*     ptmr_reset(&(tm_build)); */
@@ -329,15 +436,15 @@ srch_TST_init(kb_t * kb, void *srch)
 
             ptmr_stop(&tm_build);
 
-            /* Just report the lexical tree parameters for the first tree */
-            lextree_report(tstg->ugtree[0]);
-
             if (tstg->ugtree[i * n_ltree + j] == NULL) {
                 E_INFO
                     ("Fail to allocate lexical tree for lm %d and lextree %d\n",
                      i, j);
                 return SRCH_FAILURE;
             }
+
+            /* Just report the lexical tree parameters for the first tree */
+            lextree_report(tstg->ugtree[0]);
 
             if (REPORT_SRCH_TST) {
                 E_INFO
@@ -347,19 +454,30 @@ srch_TST_init(kb_t * kb, void *srch)
             }
         }
     }
+#else
+    /*
+     * Only create the lextree for the entire language model set
+     * specific ones will be created in srch_TST_set_lm()
+     */
+    if ((lextree = create_lextree(kbc, tstg, kbcore_lmset(kbc), LMSET_NAME, &tm_build)) == NULL) {
+        srch_TST_free(tstg);
+        return SRCH_FAILURE;
+    }
+    for (j = 0; j < n_ltree; ++j)
+        tstg->curugtree[j] = lextree[j];
+#endif
+
     E_INFO("Time for building trees, %4.4f CPU %4.4f Clk\n",
            tm_build.t_cpu, tm_build.t_elapsed);
 
-
-
+#ifdef OLD_LM_API
     /* By default, curugtree will be pointed to the first sets of tree */
     for (j = 0; j < n_ltree; j++)
         tstg->curugtree[j] = tstg->ugtree[j];
-
+#endif
 
     /* STRUCTURE: Create filler lextrees */
     /* ARCHAN : only one filler tree is supposed to be built even for dynamic LMs */
-    /* Get the number of lexical tree */
     tstg->fillertree =
         (lextree_t **) ckd_calloc(n_ltree, sizeof(lextree_t *));
 
@@ -375,15 +493,33 @@ srch_TST_init(kb_t * kb, void *srch)
     }
 
     if (cmd_ln_int32_r(kbcore_config(kbc), "-lextreedump")) {
+#ifdef OLD_LM_API
         for (i = 0; i < kbc->lmset->n_lm; i++) {
+#else
+        for (lmset_iter = ngram_model_set_iter(kbcore_lmset(kbc)); lmset_iter; lmset_iter = ngram_model_set_iter_next(lmset_iter)) {
+            const char *model_name;
+            ngram_model_set_iter_model(lmset_iter, &model_name);
+            hash_table_lookup(tstg->ugtree, model_name, (void*)&lextree);
+#endif
             for (j = 0; j < n_ltree; j++) {
+#ifdef OLD_LM_API
                 E_INFO("LM %d name %s UGTREE %d\n", i,
                         lmset_idx_to_name(kbc->lmset, i), j);
                 lextree_dump(tstg->ugtree[i * n_ltree + j], kbc->dict,
                              kbc->mdef, stderr,
                              cmd_ln_int32_r(kbcore_config(kbc), "-lextreedump"));
+#else
+                E_INFO("LM name: \'%s\' UGTREE: %d\n",
+                        model_name, j);
+                lextree_dump(lextree[j], kbcore_dict(kbc),
+                             kbcore_mdef(kbc), stderr,
+                             cmd_ln_int32_r(kbcore_config(kbc), "-lextreedump"));
+#endif
             }
         }
+#ifndef OLD_LM_API
+        ngram_model_set_iter_free(lmset_iter);
+#endif
         for (i = 0; i < n_ltree; i++) {
             E_INFO("FILLERTREE %d\n", i);
             lextree_dump(tstg->fillertree[i], kbc->dict, kbc->mdef, stderr,
@@ -395,8 +531,7 @@ srch_TST_init(kb_t * kb, void *srch)
                                      cmd_ln_int32_r(kbcore_config(kbc), "-maxhistpf"),
                                      cmd_ln_int32_r(kbcore_config(kbc), "-maxwpf"),
                                      cmd_ln_int32_r(kbcore_config(kbc), "-hmmhistbinsize"),
-                                     (tstg->curugtree[0]->n_node +
-                                      tstg->fillertree[0]->n_node) *
+                                     (tstg->curugtree[0]->n_node + tstg->fillertree[0]->n_node) *
                                      tstg->n_lextree);
 
     /* Viterbi history structure */
@@ -409,21 +544,18 @@ srch_TST_init(kb_t * kb, void *srch)
     s->grh->graph_type = GRAPH_STRUCT_TST;
 
 
-    tstg->lmset = kbc->lmset;
-
     return SRCH_SUCCESS;
-
 }
 
 int
 srch_TST_uninit(void *srch)
 {
+    srch_t *s = (srch_t*)srch;
+#ifdef OLD_LM_API
     srch_TST_graph_t *tstg;
-    srch_t *s;
     int32 i, j;
     kbcore_t *kbc;
 
-    s = (srch_t *) srch;
     kbc = s->kbc;
 
     tstg = (srch_TST_graph_t *) s->grh->graph_struct;
@@ -431,9 +563,11 @@ srch_TST_uninit(void *srch)
     for (i = 0; i < kbc->lmset->n_lm; i++) {
         for (j = 0; j < tstg->n_lextree; j++) {
             lextree_free(tstg->ugtree[i * tstg->n_lextree + j]);
-            lextree_free(tstg->fillertree[i * tstg->n_lextree + j]);
         }
     }
+
+    for (j = 0; j < tstg->n_lextree; ++j)
+        lextree_free(tstg->fillertree[j]);
 
     ckd_free(tstg->ugtree);
     ckd_free(tstg->curugtree);
@@ -447,6 +581,9 @@ srch_TST_uninit(void *srch)
     }
 
     ckd_free(tstg);
+#else
+    srch_TST_free((srch_TST_graph_t *) s->grh->graph_struct);
+#endif
 
     return SRCH_SUCCESS;
 }
@@ -540,8 +677,10 @@ srch_TST_end(void *srch)
         lextree_utt_end(tstg->fillertree[i], s->kbc);
     }
 
+#ifdef OLD_LM_API
     lm_cache_stats_dump(kbcore_lm(s->kbc));
     lm_cache_reset(kbcore_lm(s->kbc));
+#endif
 
     if (s->exit_id >= 0)
         return SRCH_SUCCESS;
@@ -550,35 +689,46 @@ srch_TST_end(void *srch)
 }
 
 int
+#ifdef OLD_LM_API
 srch_TST_add_lm(void *srch, lm_t * lm, const char *lmname)
+#else
+srch_TST_add_lm(void *srch, ngram_model_t * lm, const char *lmname)
+#endif
 {
+#ifdef OLD_LM_API
     lmset_t *lms;
+    int32 idx;
+    int32 n_lm;
+    int32 j;
+#else
+    ngram_model_t *lms;
+#endif
     srch_t *s;
     srch_TST_graph_t *tstg;
     kbcore_t *kbc;
     int32 n_ltree;
-    int32 j;
-    int32 idx;
 
     s = (srch_t *) srch;
     tstg = (srch_TST_graph_t *) s->grh->graph_struct;
 
     kbc = s->kbc;
-    lms = kbc->lmset;
+    lms = kbcore_lmset(kbc);
 
     n_ltree = tstg->n_lextree;
 
     /* 1, Add a new LM */
+#ifdef OLD_LM_API
     lmset_add_lm(lms, lm, lmname);      /* No. of lm will be increased by 1 */
+    n_lm = lms->n_lm;
+    idx = n_lm - 1;
 
     /* 2, Create a new set of trees for this LM. */
 
     tstg->ugtree =
         (lextree_t **) ckd_realloc(tstg->ugtree,
-                                   (lms->n_lm * n_ltree) *
+                                   (n_lm * n_ltree) *
                                    sizeof(lextree_t *));
 
-    idx = lms->n_lm - 1;
     for (j = 0; j < n_ltree; j++) {
         tstg->ugtree[(idx) * n_ltree + j] = lextree_init(kbc,
                                                          lms->lmarray[idx],
@@ -602,6 +752,13 @@ srch_TST_add_lm(void *srch, lm_t * lm, const char *lmname)
                  lextree_n_node(tstg->ugtree[idx * n_ltree + j]));
         }
     }
+#else
+    ngram_model_set_add(lms, lm, lmname, 1.0, 0);
+    /*
+     * FIXME: either recreate the lextree for the set or add the words
+     * that are only in this LM
+     */
+#endif
 
     return SRCH_SUCCESS;
 }
@@ -609,41 +766,64 @@ srch_TST_add_lm(void *srch, lm_t * lm, const char *lmname)
 int
 srch_TST_delete_lm(void *srch, const char *lmname)
 {
+#ifdef OLD_LM_API
     lmset_t *lms;
+    int i;
+    int32 lmidx;
+#else
+    ngram_model_t *lms;
+    lextree_t **lextree;
+#endif
     kbcore_t *kbc = NULL;
     srch_t *s;
     srch_TST_graph_t *tstg;
-    int32 lmidx;
     int32 n_ltree;
-    int i, j;
+    int j;
 
     s = (srch_t *) srch;
     tstg = (srch_TST_graph_t *) s->grh->graph_struct;
     kbc = s->kbc;
-    lms = kbc->lmset;
+    lms = kbcore_lmset(kbc);
+
     n_ltree = tstg->n_lextree;
 
-    /* Get the index of a the lm name */
+#ifdef OLD_LM_API
+    /* Get the index of the lm name */
     lmidx = lmset_name_to_idx(lms, lmname);
 
     /* Free the n_ltree copies of tree */
     for (j = 0; j < n_ltree; j++) {
-        lextree_free(tstg->curugtree[lmidx * n_ltree + j]);
-        tstg->curugtree[lmidx * n_ltree + j] = NULL;
+        lextree_free(tstg->ugtree[lmidx * n_ltree + j]);
+        tstg->ugtree[lmidx * n_ltree + j] = NULL;
     }
 
     /* Shift the pointer by one in the trees */
     for (i = lmidx; i < kbc->lmset->n_lm; i++) {
         for (j = 0; j < n_ltree; j++) {
-            tstg->curugtree[i * n_ltree + j] =
-                tstg->curugtree[(i + 1) * n_ltree + j];
+            tstg->ugtree[i * n_ltree + j] =
+                tstg->ugtree[(i + 1) * n_ltree + j];
         }
     }
-    /* Tree is handled, now also handled the lmset */
+    /* Tree is handled, now also handle the lmset */
 
     /* Delete the LM */
     /* Remember that the n_lm is minus by 1 at this point */
     lmset_delete_lm(lms, lmname);
+#else
+    if ((lextree = hash_table_delete(tstg->ugtree, lmname))) {
+        for (j = 0; j < n_ltree; ++j)
+            lextree_free(lextree[j]);
+        ckd_free(lextree);
+    }
+    /*
+     * FIXME: either recreate the lextree for the set or remove the words
+     * that are only in this LM
+     */
+    /* Tree is handled, now also handle the lmset */
+
+    /* Delete the LM */
+    ngram_model_set_remove(lms, lmname, 0);
+#endif
 
     return SRCH_SUCCESS;
 }
@@ -651,30 +831,38 @@ srch_TST_delete_lm(void *srch, const char *lmname)
 int
 srch_TST_set_lm(void *srch, const char *lmname)
 {
+#ifdef OLD_LM_API
     lmset_t *lms;
     lm_t *lm;
+    int idx;
+    int32 n_ug;
+#else
+    ngram_model_t *lms;
+    ngram_model_t *lm;
+    lextree_t **lextree;
+#endif
     kbcore_t *kbc = NULL;
     int j;
-    int idx;
     srch_t *s;
     srch_TST_graph_t *tstg;
-
-    /*  s3wid_t dictid; */
 
     s = (srch_t *) srch;
     tstg = (srch_TST_graph_t *) s->grh->graph_struct;
     kbc = s->kbc;
-    lms = kbc->lmset;
-
-    kbc->lmset->cur_lm = NULL;
-
-    for (j = 0; j < tstg->n_lextree; j++) {
-        tstg->curugtree[j] = NULL;
-    }
+    lms = kbcore_lmset(kbc);
 
     assert(lms != NULL);
-    assert(lms->lmarray != NULL);
     assert(lmname != NULL);
+
+#ifdef OLD_LM_API
+    assert(lms->lmarray != NULL);
+
+    /* Don't switch LM if we are already using this one. */
+    if (lms->cur_lm == lms->lmarray[idx]) {     /* What if idx=0 and the first LM is not initialized? The previous assert safe-guard this. */
+        return SRCH_SUCCESS;
+    }
+
+    kbc->lmset->cur_lm = NULL;
 
     idx = lmset_name_to_idx(lms, lmname);
 
@@ -684,27 +872,47 @@ srch_TST_set_lm(void *srch, const char *lmname)
         idx = 0;
     }
 
-    /* Don't switch LM if we are already using this one. */
-    if (lms->cur_lm == lms->lmarray[idx]) {     /* What if idx=0 and the first LM is not initialized? The previous assert safe-guard this. */
-        return SRCH_SUCCESS;
-    }
-
     lmset_set_curlm_widx(lms, idx);
+    lm = kbc->lmset->cur_lm;
 
     for (j = 0; j < tstg->n_lextree; j++) {
         tstg->curugtree[j] = tstg->ugtree[idx * tstg->n_lextree + j];
     }
 
-    lm = kbc->lmset->cur_lm;
-
+    n_ug = lm_n_ug(lm);
     if ((tstg->vithist->lms2vh_root =
          (vh_lms2vh_t **) ckd_realloc(tstg->vithist->lms2vh_root,
-                                      lm_n_ug(lm) * sizeof(vh_lms2vh_t *)
+                                      n_ug * sizeof(vh_lms2vh_t *)
          )) == NULL) {
-        E_FATAL("failed to allocate memory for vithist\n");
+        E_FATAL("Failed to allocate memory for vithist\n");
     }
     memset(tstg->vithist->lms2vh_root, 0,
-           lm_n_ug(lm) * sizeof(vh_lms2vh_t *));
+           n_ug * sizeof(vh_lms2vh_t *));
+
+#else
+    hash_table_lookup(tstg->ugtree, lmname, (void*)&lextree);
+    /* Don't switch LM if we are already using this one. */
+    if (ngram_model_set_current(lms) && strcmp(lmname, ngram_model_set_current(lms)) == 0 && lextree && tstg->curugtree[0] == lextree[0]) {
+        return SRCH_SUCCESS;
+    }
+
+    lm = ngram_model_set_select(lms, lmname);
+    if (lm == NULL) {
+        E_ERROR("LM name %s cannot be found\n", lmname);
+        return SRCH_FAILURE;
+    }
+    if (hash_table_lookup(tstg->ugtree, lmname, (void*)&lextree)) {
+        E_INFO("Creating lextree for %s\n", lmname);
+        if ((lextree = create_lextree(kbc, tstg, lm, lmname, NULL)) == NULL) {
+            E_ERROR("Cannot create lextree for LM %s\n", lmname);
+            return SRCH_FAILURE;
+        }
+    }
+
+    for (j = 0; j < tstg->n_lextree; ++j) {
+        tstg->curugtree[j] = lextree[j];
+    }
+#endif
 
     histprune_update_histbinsize(tstg->histprune,
                                  tstg->histprune->hmm_hist_binsize,
@@ -714,10 +922,18 @@ srch_TST_set_lm(void *srch, const char *lmname)
 
 
     if (REPORT_SRCH_TST) {
+#ifdef OLD_LM_API
         E_INFO("Current LM name %s\n", lmset_idx_to_name(kbc->lmset, idx));
         E_INFO("LM ug size %d\n", lm->n_ug);
         E_INFO("LM bg size %d\n", lm->n_bg);
         E_INFO("LM tg size %d\n", lm->n_tg);
+#else
+        const int32 *counts = ngram_model_get_counts(lm);
+        E_INFO("Current LM name %s\n", lmname);
+        E_INFO("LM ug size %d\n", counts[0]);
+        E_INFO("LM bg size %d\n", counts[1]);
+        E_INFO("LM tg size %d\n", counts[2]);
+#endif
         E_INFO("HMM history bin size %d\n",
                tstg->histprune->hmm_hist_bins + 1);
 
@@ -907,14 +1123,12 @@ srch_TST_hmm_compute_lv2(void *srch, int32 frmno)
 int
 srch_TST_propagate_graph_ph_lv1(void *srch)
 {
-
     return SRCH_SUCCESS;
 }
 
 int
 srch_TST_propagate_graph_wd_lv1(void *srch)
 {
-
     return SRCH_SUCCESS;
 }
 
@@ -1097,11 +1311,7 @@ srch_utt_word_trans(srch_t * s, int32 cf)
     mdef_t *mdef;
     srch_TST_graph_t *tstg;
 
-
     /* Call the rescoring routines at all word end */
-
-
-
 
     maxpscore = MAX_NEG_INT32;
     bm = s->beam;
@@ -1259,7 +1469,6 @@ srch_TST_shift_one_cache_frame(void *srch, int32 win_efv)
 int
 srch_TST_select_active_gmm(void *srch)
 {
-
     ascr_t *ascr;
     int32 n_ltree;              /* Local version of number of lexical trees used */
     srch_t *s;
@@ -1414,6 +1623,7 @@ srch_TST_bestpath_impl(void *srch,          /**< A void pointer to a search stru
      * we don't do this then bestpath search will fail because
      * trigrams ending in </s> can't be scored. */
     linksilences(kbcore_lm(s->kbc), s->kbc, kbcore_dict(s->kbc));
+
     bph = dag_search(dag, s->uttid,
                      lwf,
                      dag->end,
@@ -1433,7 +1643,6 @@ srch_TST_bestpath_impl(void *srch,          /**< A void pointer to a search stru
     else {
         return NULL;
     }
-
 }
 
 glist_t

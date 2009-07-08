@@ -210,7 +210,11 @@ srch_FSG_set_lm(void *srch, const char *lmname)
 }
 
 int
+#ifdef OLD_LM_API
 srch_FSG_add_lm(void *srch, lm_t * lm, const char *lmname)
+#else
+srch_FSG_add_lm(void *srch, ngram_model_t * lm, const char *lmname)
+#endif
 {
     return SRCH_SUCCESS;
 

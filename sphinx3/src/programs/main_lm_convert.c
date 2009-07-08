@@ -78,10 +78,16 @@
  *
  */
 
+#define OLD_LM_API
 #include <string.h>
 
 #include "info.h"
+#ifdef OLD_LM_API
 #include "lm.h"
+#else
+#include <ngram_model.h>
+#include <logmath.h>
+#endif
 #include "s3types.h"
 #include "cmd_ln.h"
 #include "cmdln_macro.h"
@@ -89,6 +95,7 @@
 
 static arg_t arg[] = {
     common_application_properties_command_line_macro(),
+    log_table_command_line_macro(),
     {"-i",
      REQARG_STRING,
      NULL,
@@ -133,13 +140,22 @@ main(int argc, char *argv[])
     const char *outputfn;
     char *local_outputfn;
     const char *inputfmt;
+#ifdef OLD_LM_API
     const char *outputfmt;
+#else
+    ngram_file_type_t outputfmt;
+#endif
     const char *inputenc;
     const char *outputenc;
     const char *outputdir;
     char *outputpath;
     int outputfnfree = FALSE;
+#ifdef OLD_LM_API
     lm_t *lm;
+#else
+    ngram_model_t *lm;
+    logmath_t *logmath;
+#endif
     char separator[2];
     cmd_ln_t *config;
 
@@ -151,24 +167,35 @@ main(int argc, char *argv[])
     inputfn = NULL;
     outputfn = local_outputfn = NULL;
     inputfmt = NULL;
+#ifdef OLD_LM_API
     outputfmt = NULL;
+#endif
     outputdir = NULL;
 
     inputfn = cmd_ln_str_r(config, "-i");
     outputfn = cmd_ln_str_r(config, "-o");
 
     inputfmt = cmd_ln_str_r(config, "-ifmt");
+#ifdef OLD_LM_API
     outputfmt = cmd_ln_str_r(config, "-ofmt");
+#endif
 
     inputenc = cmd_ln_str_r(config, "-ienc");
     outputenc = cmd_ln_str_r(config, "-oenc");
 
     outputdir = cmd_ln_str_r(config, "-odir");
 
+#ifdef OLD_LM_API
     if (!strcmp(inputfmt, outputfmt) && !strcmp(inputenc, outputenc))
-        E_FATAL
+#else
+    if (!strcmp(inputfmt, cmd_ln_str_r(config, "-ofmt")) && !strcmp(inputenc, outputenc))
+#endif
+    {
+        unlimit();
+        E_WARN
             ("Input and Output file formats and encodings are the same (%s, %s). Do nothing\n",
              inputfmt, inputenc);
+    }
 
     if (!encoding_resolve
         (cmd_ln_str_r(config, "-ienc"), cmd_ln_str_r(config, "-oenc")))
@@ -177,16 +204,36 @@ main(int argc, char *argv[])
 
 
     /* Read LM */
+#ifdef OLD_LM_API
     if ((lm =
          lm_read_advance2(inputfn, "default", 1.0, 0.1, 1.0, 0, inputfmt,
                           0, 1, NULL)) == NULL)
         E_FATAL("Fail to read inputfn %s in inputfmt %s\n", inputfn,
                 inputfmt);
+#else
+    static const char *name = "default";
+    logmath = logmath_init(cmd_ln_float64_r(config, "-logbase"), 0, cmd_ln_boolean_r(config, "-log3table"));
+    lm = ngram_model_read(config, inputfn, NGRAM_AUTO, logmath);
+    if (lm == NULL) {
+        E_FATAL("Failed to read language model file: %s\n", inputfn);
+    }
+#if 0
+    lmset = ngram_model_set_init(config, &lm, (char**)&name, NULL, 1);
+    if (lmset == NULL) {
+        E_FATAL("Failed to initialize language model set\n");
+    }
+#endif
+#endif
 
     if (outputfn == NULL) {
       /* Length = strlen(inputfn) + 1 + strlen(outputfmt) + 5 (For safety) */
+#ifdef OLD_LM_API
       outputfn = local_outputfn = (char *) ckd_calloc(strlen(inputfn) + strlen(outputfmt) + 5, sizeof(char));
       sprintf(local_outputfn, "%s.%s", inputfn, outputfmt);
+#else
+      outputfn = local_outputfn = (char *) ckd_calloc(strlen(inputfn) + strlen(cmd_ln_str_r(config, "-ofmt")) + 5, sizeof(char));
+      sprintf(local_outputfn, "%s.%s", inputfn, cmd_ln_str_r(config, "-ofmt"));
+#endif
       outputfnfree = TRUE;
     }
 
@@ -203,7 +250,18 @@ main(int argc, char *argv[])
 #endif
 
     sprintf(outputpath, "%s%s%s", outputdir, separator, outputfn);
+#ifdef OLD_LM_API
     lm_write(lm, outputpath, inputfn, outputfmt);
+#else
+    if (strcmp("TXT", cmd_ln_str_r(config, "-ofmt")) == 0 ||
+        strcmp("TXT32", cmd_ln_str_r(config, "-ofmt")) == 0)
+        outputfmt = NGRAM_ARPA;
+    else if (strcmp("DMP", cmd_ln_str_r(config, "-ofmt")) == 0)
+        outputfmt = NGRAM_DMP;
+    else
+        E_FATAL("Unimplemented LMWRITE\n");
+    ngram_model_write(lm, outputpath, outputfmt);
+#endif
 
 
     if (local_outputfn) {
@@ -211,7 +269,12 @@ main(int argc, char *argv[])
     }
     ckd_free(outputpath);
 
+#ifdef OLD_LM_API
     lm_free(lm);
+#else
+    ngram_model_free(lm);
+    logmath_free(logmath);
+#endif
     cmd_ln_free_r(config);
     return 0;
 }

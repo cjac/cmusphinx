@@ -493,7 +493,11 @@ srch_WST_set_lm(void *srch_struct, const char *lmname)
 }
 
 int
+#ifdef OLD_LM_API
 srch_WST_add_lm(void *srch, lm_t * lm, const char *lmname)
+#else
+srch_WST_add_lm(void *srch, ngram_model_t * lm, const char *lmname)
+#endif
 {
     E_INFO("In Mode 5, currently the function add LM is not supported\n");
     return SRCH_FAILURE;

@@ -186,7 +186,11 @@
 #include <s3types.h>
 #include <glist.h>
 #include "dag.h"
+#ifdef OLD_LM_API
 #include "lm.h"
+#else
+#include <ngram_model.h>
+#endif
 #include "ascr.h"
 #include "adaptor.h"
 #include "stat.h"
@@ -563,7 +567,11 @@ typedef struct srch_funcs_s {
 
     /** Add LM operation */ 
     int (*add_lm)(void* srch_struct, /**< a pointer of srch_t */
+#ifdef OLD_LM_API
                   lm_t* lm,          /**< A new lm */
+#else
+                  ngram_model_t* lm,          /**< A new lm */
+#endif
                   const char *lmname /**< The LM name */
         );
 

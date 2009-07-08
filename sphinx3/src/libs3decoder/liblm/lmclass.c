@@ -60,6 +60,7 @@
 #include <assert.h>
 #include <math.h>
 
+#define OLD_LM_API
 #include "strfuncs.h"
 #include "lmclass.h"
 #include "logs3.h"

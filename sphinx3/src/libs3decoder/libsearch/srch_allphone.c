@@ -53,6 +53,11 @@
 #include "s3types.h"
 #include "corpus.h"
 #include "logs3.h"
+#ifdef OLD_LM_API
+#include "lm.h"
+#else
+#include <ngram_model.h>
+#endif
 
 /**
  * \struct phmm_t
@@ -115,10 +120,15 @@ typedef struct allphone_s {
     listelem_alloc_t *plink_alloc; /**< Allocator for phmm links. */
     history_t **frm_hist;    /**< List of history nodes allocated in each frame */
     listelem_alloc_t *history_alloc; /**< Allocator for history nodes. */
-    s3lmwid32_t *ci2lmwid;   /**< Mapping from CI-phone-id to LM-word-id */
 
     mdef_t *mdef;	     /**< Model definition (linked from kbcore) */
+#ifdef OLD_LM_API
+    s3lmwid32_t *ci2lmwid;   /**< Mapping from CI-phone-id to LM-word-id */
     lm_t *lm;   	     /**< Language model (linked from kbcore) */
+#else
+    int32    *ci2lmwid;   /**< Mapping from CI-phone-id to LM-word-id */
+    ngram_model_t *lm;    /**< Language model (linked from kbcore) */
+#endif
 
     int32 curfrm;            /**< Current frame */
     int32 beam, pbeam, inspen;
@@ -434,8 +444,14 @@ phmm_exit(allphone_t *allp, int32 best)
     mdef_t *mdef;
     int32 curfrm;
     phmm_t **ci_phmm;
+#ifdef OLD_LM_API
     s3lmwid32_t *ci2lmwid;
     lm_t *lm;
+#else
+    int32 *ci2lmwid;
+    int32 n_used;
+    ngram_model_t *lm;
+#endif
 
     th = best + allp->pbeam;
 
@@ -468,6 +484,7 @@ phmm_exit(allphone_t *allp, int32 best)
                             h->tscore = allp->inspen;
                         else if (h->hist) {
                             if (h->hist->hist)
+#ifdef OLD_LM_API
                                 h->tscore = lm_tg_score(lm,
                                         ci2lmwid[h->hist->hist->phmm->ci],
                                         ci2lmwid[h->hist->phmm->ci],
@@ -478,6 +495,18 @@ phmm_exit(allphone_t *allp, int32 best)
                                         ci2lmwid[h->hist->phmm->ci],
                                         ci2lmwid[p->ci],
                                         ci2lmwid[p->ci]);
+#else
+                                h->tscore = ngram_tg_score(lm,
+                                        ci2lmwid[p->ci],
+                                        ci2lmwid[h->hist->phmm->ci],
+                                        ci2lmwid[h->hist->hist->phmm->ci],
+                                        &n_used);
+                            else
+                                h->tscore = ngram_bg_score(lm,
+                                        ci2lmwid[p->ci],
+                                        ci2lmwid[h->hist->phmm->ci],
+                                        &n_used);
+#endif
                         }
                         else
                             /*
@@ -510,8 +539,13 @@ phmm_trans(allphone_t *allp)
     phmm_t *from, *to;
     plink_t *l;
     int32 newscore, nf, curfrm;
+#ifdef OLD_LM_API
     s3lmwid32_t *ci2lmwid;
     lm_t *lm;
+#else
+    int32 *ci2lmwid;
+    ngram_model_t *lm;
+#endif
 
     curfrm = allp->curfrm;
     nf = curfrm + 1;
@@ -530,21 +564,40 @@ phmm_trans(allphone_t *allp)
 		tscore = allp->inspen;
 	    /* If they are not in the LM, kill this
 	     * transition. */
+#ifdef OLD_LM_API
 	    else if (ci2lmwid[to->ci] == BAD_LMWID(lm))
+#else
+	    else if (ci2lmwid[to->ci] == NGRAM_INVALID_WID)
+#endif
 		continue;
 	    else {
 		if (h->hist && h->hist->phmm) {
+#ifdef OLD_LM_API
 		    tscore = lm_tg_score(lm,
 					 ci2lmwid[h->hist->phmm->ci],
 					 ci2lmwid[from->ci],
 					 ci2lmwid[to->ci],
 					 ci2lmwid[to->ci]);
+#else
+		    tscore = ngram_tg_score(lm,
+					    ci2lmwid[to->ci],
+					    ci2lmwid[from->ci],
+					    ci2lmwid[h->hist->phmm->ci],
+					    &tscore);
+#endif
 		}
 		else
+#ifdef OLD_LM_API
 		    tscore = lm_bg_score(lm,
 					 ci2lmwid[from->ci],
 					 ci2lmwid[to->ci],
 					 ci2lmwid[to->ci]);
+#else
+		    tscore = ngram_bg_score(lm,
+					    ci2lmwid[to->ci],
+					    ci2lmwid[from->ci],
+					    &tscore);
+#endif
 	    }
 
             newscore = h->score + tscore;
@@ -710,15 +763,31 @@ srch_allphone_init(kb_t *kb, void *srch)
     /* Build mapping of CI phones to LM and dictionary word IDs. */
     dict = kbcore_dict(kbc);
     if (allp->lm) {
+#ifdef OLD_LM_API
 	allp->ci2lmwid = ckd_calloc(allp->mdef->n_ciphone, sizeof(s3lmwid32_t));
+#else
+        allp->ci2lmwid = ckd_calloc(allp->mdef->n_ciphone, sizeof(int32));
+#endif
 	for (i = 0; i < allp->mdef->n_ciphone; i++) {
+#ifdef OLD_LM_API
 	    allp->ci2lmwid[i] = lm_wid(allp->lm,
 				       (char *) mdef_ciphone_str(allp->mdef, i));
+#else
+	    allp->ci2lmwid[i] = ngram_wid(allp->lm,
+				       (char *) mdef_ciphone_str(allp->mdef, i));
+#endif
 	    /* Map filler phones to silence if not found */
+#ifdef OLD_LM_API
 	    if (allp->ci2lmwid[i] == BAD_LMWID(allp->lm) && mdef_is_fillerphone(allp->mdef, i))
 		allp->ci2lmwid[i] = lm_wid(allp->lm,
 				       (char *) mdef_ciphone_str(allp->mdef,
 								 mdef_silphone(allp->mdef)));
+#else
+	    if (allp->ci2lmwid[i] == NGRAM_INVALID_WID && mdef_is_fillerphone(allp->mdef, i))
+		allp->ci2lmwid[i] = ngram_wid(allp->lm,
+				       (char *) mdef_ciphone_str(allp->mdef,
+								 mdef_silphone(allp->mdef)));
+#endif
 	}
     }
     else {
@@ -867,10 +936,12 @@ srch_allphone_end(void *srch)
 	write_phseg(s, cmd_ln_str_r(kbcore_config(s->kbc), "-phsegdir"), s->uttid, allp->phseg);
 
     /* Reset language model stuff */
+#ifdef OLD_LM_API
     if (kbcore_lm(s->kbc)) {
 	lm_cache_stats_dump(kbcore_lm(s->kbc));
 	lm_cache_reset(kbcore_lm(s->kbc));
     }
+#endif
 
     return SRCH_SUCCESS;
 }
@@ -1230,7 +1301,11 @@ srch_allphone_set_lm(void *srch_struct, const char *lmname)
 }
 
 int
+#ifdef OLD_LM_API
 srch_allphone_add_lm(void *srch, lm_t * lm, const char *lmname)
+#else
+srch_allphone_add_lm(void *srch, ngram_model_t * lm, const char *lmname)
+#endif
 {
     E_INFO("In mode 1, currently the function add LM is not supported\n");
     return SRCH_FAILURE;

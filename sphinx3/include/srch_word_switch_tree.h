@@ -90,7 +90,11 @@
 #include "glist.h"
 #include "s3types.h"
 #include "kb.h"
+#ifdef OLD_LM_API
 #include "lm.h"
+#else
+#include <ngram_model.h>
+#endif
 #include "lextree.h"
 #include "fast_algo_struct.h"
 
@@ -142,7 +146,11 @@ typedef struct {
 
     int32 no_active_word;         /**< No of active word */
   
+#ifdef OLD_LM_API
     lmset_t* lmset;               /**< The LM set */
+#else
+    ngram_model_t* lmset;
+#endif
     int32 isLMLA;  /**< Is LM lookahead used?*/
 
     histprune_t *histprune; /**< Structure that wraps up parameters related to  */
@@ -164,7 +172,11 @@ int srch_WST_end(void* srch_struct);
 int srch_WST_decode(void* srch_struct);
 
 int srch_WST_set_lm(void* srch_struct, const char* lmname);
+#ifdef OLD_LM_API
 int srch_WST_add_lm(void* srch, lm_t *lm, const char *lmname);
+#else
+int srch_WST_add_lm(void* srch, ngram_model_t *lm, const char *lmname);
+#endif
 int srch_WST_delete_lm(void* srch, const char *lmname);
 
 int srch_WST_gmm_compute_lv2(void* srch_struct, float32 *feat, int32 time);

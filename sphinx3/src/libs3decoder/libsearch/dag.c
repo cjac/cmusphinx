@@ -190,7 +190,7 @@ dag_link(dag_t * dagp, dagnode_t * pd, dagnode_t * d, int32 ascr,
 
     /* HACK: silently refuse to create positive edges, since we won't accept them. */
     if (ascr > 0)
-	    return 0;
+        return 0;
 
     /* Link d into successor list for pd */
     if (pd) { /* Special condition for root node which doesn't have a predecessor */
@@ -398,7 +398,11 @@ dag_bestpath(dag_t * dagp,      /* A pointer of the dag */
              dagnode_t * src,   /* Source node for backward link l */
              float64 lwf,       /* Language weight multiplication factor */
              dict_t * dict,     /* The dictionary */
+#ifdef OLD_LM_API
              lm_t * lm,         /* The LM */
+#else
+             ngram_model_t * lm,         /* The LM */
+#endif
              s3lmwid32_t * dict2lmwid   /* A map from dictionary id to lm id, should use wid2lm insteead */
     )
 {
@@ -441,6 +445,7 @@ dag_bestpath(dag_t * dagp,      /* A pointer of the dag */
         if (score > l->pscr) {      /* rkm: Added 20-Nov-1996 */
             /* FIXME: This scales the wip implicitly */
             if (pd)
+#ifdef OLD_LM_API
                 lscr = lwf * lm_tg_score(lm,
                                          dict2lmwid[dict_basewid
                                                     (dict, pd->wid)],
@@ -449,13 +454,25 @@ dag_bestpath(dag_t * dagp,      /* A pointer of the dag */
                                          dict2lmwid[dict_basewid
                                                     (dict, src->wid)],
                                          dict_basewid(dict, src->wid));
+#else
+                lscr = lwf * ngram_tg_score(lm,
+                                         ngram_wid(lm, dict_wordstr(dict, dict_basewid(dict, src->wid))),
+                                         ngram_wid(lm, dict_wordstr(dict, dict_basewid(dict, d->wid))),
+                                         ngram_wid(lm, dict_wordstr(dict, dict_basewid(dict, pd->wid))), &lscr);
+#endif
             else
+#ifdef OLD_LM_API
                 lscr = lwf * lm_bg_score(lm,
                                          dict2lmwid[dict_basewid
                                                     (dict, d->wid)],
                                          dict2lmwid[dict_basewid
                                                     (dict, src->wid)],
                                          dict_basewid(dict, src->wid));
+#else
+                lscr = lwf * ngram_bg_score(lm,
+                                         ngram_wid(lm, dict_wordstr(dict, dict_basewid(dict, src->wid))),
+                                         ngram_wid(lm, dict_wordstr(dict, dict_basewid(dict, d->wid))), &lscr);
+#endif
             score += lscr;
 
             if (dagp->lmop++ >= dagp->maxlmop)
@@ -522,7 +539,11 @@ dag_destroy(dag_t * dagp)
  * exit node.
  */
 void
+#ifdef OLD_LM_API
 dag_compute_hscr(dag_t *dag, dict_t *dict, lm_t *lm, float64 lwf)
+#else
+dag_compute_hscr(dag_t *dag, dict_t *dict, ngram_model_t *lm, float64 lwf)
+#endif
 {
     dagnode_t *d, *d1, *d2;
     daglink_t *l1, *l2;
@@ -564,12 +585,19 @@ dag_compute_hscr(dag_t *dag, dict_t *dict, lm_t *lm, float64 lwf)
                     hscr = l2->hscr
                         + l2->ascr
                         /* FIXME: This scales the wip implicitly */
+#ifdef OLD_LM_API
                         + lwf * lm_tg_score(lm,
                                             (bw0 == BAD_S3WID)
                                             ? BAD_LMWID(lm) : lm->dict2lmwid[bw0],
                                             (bw1 == BAD_S3WID)
                                             ? BAD_LMWID(lm) : lm->dict2lmwid[bw1],
                                             lm->dict2lmwid[bw2], bw2);
+#else
+                        + lwf * ngram_tg_score(lm,
+                                            (bw2 == BAD_S3WID) ? NGRAM_INVALID_WID : ngram_wid(lm, dict_wordstr(dict, bw2)),
+                                            (bw1 == BAD_S3WID) ? NGRAM_INVALID_WID : ngram_wid(lm, dict_wordstr(dict, bw1)),
+                                            (bw0 == BAD_S3WID) ? NGRAM_INVALID_WID : ngram_wid(lm, dict_wordstr(dict, bw0)), &hscr);
+#endif
 
 
                     if (hscr > best_hscr)
@@ -729,7 +757,11 @@ dag_write_header(FILE * fp, cmd_ln_t *config)
 int32
 dag_write(dag_t * dag,
           const char *filename,
+#ifdef OLD_LM_API
           lm_t * lm,
+#else
+          ngram_model_t * lm,
+#endif
           dict_t * dict)
 {
     /* WARNING!!!! DO NOT INSERT a # in the format arbitrarily because the dag_reader is not very robust */
@@ -753,11 +785,11 @@ dag_write(dag_t * dag,
     fprintf(fp, "Frames %d\n", dag->nfrm);
     fprintf(fp, "#\n");
 
-    for (i = 0, d = dag->list; d; d = d->alloc_next, i++);
+    for (i = 0, d = dag->list; d; d = d->alloc_next, ++i);
     fprintf(fp,
             "Nodes %d (NODEID WORD STARTFRAME FIRST-ENDFRAME LAST-ENDFRAME)\n",
             i);
-    for (i = 0, d = dag->list; d; d = d->alloc_next, i++) {
+    for (i = 0, d = dag->list; d; d = d->alloc_next, ++i) {
         d->seqid = i;
         fprintf(fp, "%d %s %d %d %d\n", i, dict_wordstr(dict, d->wid),
                 d->sf, d->fef, d->lef);
@@ -792,7 +824,11 @@ int32
 dag_write_htk(dag_t *dag,
               const char *filename,
               const char *uttid,
+#ifdef OLD_LM_API
               lm_t * lm,
+#else
+              ngram_model_t * lm,
+#endif
               dict_t * dict)
 {
     int32 i, n_nodes, n_links;
@@ -816,8 +852,12 @@ dag_write_htk(dag_t *dag,
      * third-party tools might make assumptions about them, so we will
      * just convert to base e and seconds. */
     if (lm) {
+#ifdef OLD_LM_API
         if (lm->name)
             fprintf(fp, "lmname=%s\n", lm->name);
+#else
+        fprintf(fp, "lmname=%s\n", "(unknown)");
+#endif
         fprintf(fp, "lmscale=%f\n", cmd_ln_float32_r(dag->config, "-lw"));
         fprintf(fp, "wdpenalty=%f\n", cmd_ln_float32_r(dag->config, "-wip"));
     }
@@ -870,7 +910,11 @@ dag_write_htk(dag_t *dag,
             fprintf(fp, "J=%-10d S=%-5d E=%-5d W=%-20s a=%-10.2f v=%-5d l=%-10.2f\n",
                     i, l->node->seqid, d->seqid,
                     dict_wordstr(dict, b), logmath_log_to_ln(dag->logmath, l->ascr), nalt,
+#ifdef OLD_LM_API
                     logmath_log_to_ln(dag->logmath, lm ? lm_rawscore(lm, l->lscr) : l->lscr));
+#else
+                    logmath_log_to_ln(dag->logmath, lm ? ngram_score_to_prob(lm, l->lscr) : l->lscr));
+#endif
             ++i;
         }
     }
@@ -890,8 +934,13 @@ dag_write_htk(dag_t *dag,
  */
 
 srch_hyp_t *
+#ifdef OLD_LM_API
 dag_search(dag_t * dagp, char *utt, float64 lwf, dagnode_t * final,
            dict_t * dict, lm_t * lm, fillpen_t * fpen)
+#else
+dag_search(dag_t * dagp, char *utt, float64 lwf, dagnode_t * final,
+           dict_t * dict, ngram_model_t * lm, fillpen_t * fpen)
+#endif
 {
     daglink_t *l, *bestl;
     dagnode_t *d;
@@ -924,7 +973,11 @@ dag_search(dag_t * dagp, char *utt, float64 lwf, dagnode_t * final,
     for (l = final->predlist; l; l = l->next) {
         d = l->node;
         if (!dict_filler_word(dict, d->wid)) {  /* Ignore filler node */
+#ifdef OLD_LM_API
             if (dag_bestpath(dagp, l, final, lwf, dict, lm, lm->dict2lmwid) < 0) {      /* Best path to root beginning with l */
+#else
+            if (dag_bestpath(dagp, l, final, lwf, dict, lm, NULL) < 0) {      /* Best path to root beginning with l */
+#endif
                 E_ERROR("%s: Max LM ops (%d) exceeded\n", utt,
                         dagp->maxlmop);
                 bestl = NULL;

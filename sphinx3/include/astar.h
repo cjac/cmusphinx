@@ -45,7 +45,11 @@
 #include <s3types.h>
 #include "dag.h"
 #include "dict.h"
+#ifdef OLD_LM_API
 #include "lm.h"
+#else
+#include <ngram_model.h>
+#endif
 #include "fillpen.h"
 
 
@@ -66,11 +70,19 @@ typedef struct astar_s astar_t;
  * Initialize A* search
  **/
 S3DECODER_EXPORT
+#ifdef OLD_LM_API
 astar_t *astar_init(dag_t *dag, dict_t *dict, lm_t *lm,
                     fillpen_t *fpen,
                     float64 beam, /**< Pruning beam width */
                     float64 lwf   /**< Language weight factor (usually 1.0) */
     );
+#else
+astar_t *astar_init(dag_t *dag, dict_t *dict, ngram_model_t *lm,
+                    fillpen_t *fpen,
+                    float64 beam, /**< Pruning beam width */
+                    float64 lwf   /**< Language weight factor (usually 1.0) */
+    );
+#endif
 
 /**
  * Clean up after A* search
@@ -91,8 +103,13 @@ glist_t astar_next_hyp(astar_t *astar);
  * Does A* search and writes the results to the file specified.
  */
 S3DECODER_EXPORT
+#ifdef OLD_LM_API
 void nbest_search(dag_t *dag, char *filename, char *uttid, float64 lwf,
                   dict_t *dict, lm_t *lm, fillpen_t *fpen);
+#else
+void nbest_search(dag_t *dag, char *filename, char *uttid, float64 lwf,
+                  dict_t *dict, ngram_model_t *lm, fillpen_t *fpen);
+#endif
 
 #ifdef __cplusplus
 }

@@ -153,6 +153,7 @@
 #define REPORT_KBCORE 1
 
 
+#ifdef OLD_LM_API
 void
 checkLMstartword(lm_t * l, char *name)
 {
@@ -161,6 +162,7 @@ checkLMstartword(lm_t * l, char *name)
                 name);
     }
 }
+#endif
 
 /*
  * Unlink <s> and </s> between dictionary and LM, to prevent their 
@@ -169,8 +171,13 @@ checkLMstartword(lm_t * l, char *name)
  */
 /* This has to be done before tree is built */
 void
+#ifdef OLD_LM_API
 unlinksilences(lm_t * l, kbcore_t * kbc, dict_t * d)
+#else
+unlinksilences(ngram_model_t * l, kbcore_t * kbc, dict_t * d)
+#endif
 {
+#ifdef OLD_LM_API
     s3wid_t w;
 
     /* Store the word ID for later uses */
@@ -184,12 +191,17 @@ unlinksilences(lm_t * l, kbcore_t * kbc, dict_t * d)
         l->dict2lmwid[w] = BAD_LMWID(l);
     for (w = dict_finishwid(d); IS_S3WID(w); w = dict_nextalt(d, w))
         l->dict2lmwid[w] = BAD_LMWID(l);
-
+#endif
 }
 
 void
+#ifdef OLD_LM_API
 linksilences(lm_t * l, kbcore_t * kbc, dict_t * d)
+#else
+linksilences(ngram_model_t * l, kbcore_t * kbc, dict_t * d)
+#endif
 {
+#ifdef OLD_LM_API
     s3wid_t w;
 
     /* Store the word ID for later uses */
@@ -201,7 +213,7 @@ linksilences(lm_t * l, kbcore_t * kbc, dict_t * d)
         l->dict2lmwid[w] = lm_startwid(l);
     for (w = dict_finishwid(d); IS_S3WID(w); w = dict_nextalt(d, w))
         l->dict2lmwid[w] = lm_finishwid(l);
-
+#endif
 }
 
 /* I'm not sure what the portable way to do this is. */
@@ -386,6 +398,91 @@ s3_am_init(kbcore_t * kbc)
     }
 }
 
+#ifdef OLD_LM_API
+lmset_t*
+lm_init(cmd_ln_t *config, dict_t *dict, logmath_t *logmath)
+{
+    lmset_t *lmset = NULL;
+    if (cmd_ln_str_r(config, "-lm") || cmd_ln_str_r(config, "-lmctlfn")) {
+        lmset = lmset_init(cmd_ln_str_r(config, "-lm"),
+                               cmd_ln_str_r(config, "-lmctlfn"),
+                               cmd_ln_str_r(config, "-ctl_lm"),        /* This two are ugly. */
+                               cmd_ln_str_r(config, "-lmname"),
+                               cmd_ln_str_r(config, "-lmdumpdir"),
+                               cmd_ln_float32_r(config, "-lw"),
+                               cmd_ln_float32_r(config, "-wip"),
+                               cmd_ln_float32_r(config, "-uw"),
+                               dict,
+                               logmath);
+
+        /* CHECK: check whether LM has a start word and end word  */
+        for (i = 0; i < lmset->n_lm; i++) {
+            checkLMstartword(lmset->lmarray[i],
+                             lmset_idx_to_name(lmset, i));
+        }
+
+    }
+
+    return lmset;
+}
+#else
+ngram_model_t*
+lm_init(cmd_ln_t *config, dict_t *dict, logmath_t *logmath)
+{
+    const char *path;
+    const char *lmname;
+    ngram_model_t *ngram = NULL;
+
+    lmname = cmd_ln_str_r(config, "-lmname");
+
+    if ((path = cmd_ln_str_r(config, "-lmctlfn"))) {
+        ngram = ngram_model_set_read(config, path, logmath);
+        if (ngram == NULL) {
+            E_FATAL("Failed to read language model control file: %s\n", path);
+        }
+    }
+    else if ((path = cmd_ln_str_r(config, "-lm"))) {
+        static const char *name = "default";
+        ngram_model_t *lm;
+        lm = ngram_model_read(config, path, NGRAM_AUTO, logmath);
+        if (lm == NULL) {
+            E_FATAL("Failed to read language model file: %s\n", path);
+        }
+        if (lmname)
+            name = lmname;
+        ngram = ngram_model_set_init(config, &lm, (char**)&name, NULL, 1);
+        if (ngram == NULL) {
+            E_FATAL("Failed to initialize language model set\n");
+        }
+    }
+    if (ngram) {
+        const char **words;
+        int32 n_words;
+        int i, j;
+
+        /* It's okay to include fillers since they won't be in the LM */
+        n_words = dict_size(dict);
+        words = ckd_calloc(n_words, sizeof(*words));
+        /* Skip alternates because they increase the number of words and that
+         * doesn't play nicely with n_counts[0] */
+        for (i = 0, j = 0; i < n_words; ++i) {
+            if (dict_basewid(dict, i) == i)
+                words[j++] = dict_wordstr(dict, i);
+        }
+        n_words = j;
+        ngram_model_set_map_words(ngram, words, n_words);
+        ckd_free(words);
+
+        if (lmname)
+            ngram_model_set_select(ngram, lmname);
+        else
+            ngram_model_set_interp(ngram, NULL, NULL);
+    }
+
+    return ngram;
+}
+#endif
+
 kbcore_t *
 New_kbcore(cmd_ln_t *config)
 {
@@ -432,7 +529,6 @@ kbcore_t *
 kbcore_init(cmd_ln_t *config)
 {
     kbcore_t *kb;
-    int i;
     s3cipid_t sil;
     char const *str;
 
@@ -566,25 +662,11 @@ kbcore_init(cmd_ln_t *config)
 
     assert(kb->dict);
     
-    if (cmd_ln_str_r(config, "-lm") || cmd_ln_str_r(config, "-lmctlfn")) {
-        kb->lmset = lmset_init(cmd_ln_str_r(config, "-lm"),
-                               cmd_ln_str_r(config, "-lmctlfn"),
-                               cmd_ln_str_r(config, "-ctl_lm"),        /* This two are ugly. */
-                               cmd_ln_str_r(config, "-lmname"),
-                               cmd_ln_str_r(config, "-lmdumpdir"),
-                               cmd_ln_float32_r(config, "-lw"),
-                               cmd_ln_float32_r(config, "-wip"),
-                               cmd_ln_float32_r(config, "-uw"),
-                               kb->dict,
-                               kb->logmath);
-
-        /* CHECK: check whether LM has a start word and end word  */
-        for (i = 0; i < kb->lmset->n_lm; i++) {
-            checkLMstartword(kb->lmset->lmarray[i],
-                             lmset_idx_to_name(kb->lmset, i));
-        }
-
-    }
+#ifdef OLD_LM_API
+    kb->lmset = lm_init(config, kb->dict, kb->logmath);
+#else
+    kb->ngram = lm_init(config, kb->dict, kb->logmath);
+#endif
 
     if (cmd_ln_str_r(config, "-fillpen") || kb->dict) {
         if (!kb->dict)          /* Sic */
@@ -655,10 +737,17 @@ kbcore_init(cmd_ln_t *config)
 void
 kbcore_free(kbcore_t * kbcore)
 {
+#ifdef OLD_LM_API
     if (kbcore->lmset) {
         lmset_free(kbcore->lmset);
         kbcore->lmset = NULL;
     }
+#else
+    if (kbcore->ngram) {
+        ngram_model_free(kbcore->ngram);
+        kbcore->ngram = NULL;
+    }
+#endif
 
     /* Clean up the dictionary stuff */
     if (kbcore->dict) {

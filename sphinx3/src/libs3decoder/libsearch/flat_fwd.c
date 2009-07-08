@@ -338,6 +338,7 @@
     \brief Implementation of forward search in a flat lexicon. 
  */
 
+#ifdef OLD_LM_API
 void
 dump_all_whmm(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 n_frm, int32 * senscr)
 {
@@ -910,7 +911,11 @@ enter_cand_words(srch_FLAT_FWD_graph_t * fwg, latticehist_t *lathist,
 {
     int32 cand;
     kbcore_t *kbc = fwg->kbcore;
+#ifdef OLD_LM_API
     lm_t *lm = kbcore_lm(kbc);
+#else
+    ngram_model_t *lm = kbcore_lm(kbc);
+#endif
     dict_t *dict = kbcore_dict(kbc);
     s3wid_t bw0, bw1;
 
@@ -924,6 +929,7 @@ enter_cand_words(srch_FLAT_FWD_graph_t * fwg, latticehist_t *lathist,
         int32 lscr;
 
         nextwid = fwg->word_cand_cf[cand];
+#ifdef OLD_LM_API
         lw0 =
             IS_S3WID(bw0) ? lm->
             dict2lmwid[dict_basewid(dict, bw0)] : BAD_LMWID(lm);
@@ -931,6 +937,15 @@ enter_cand_words(srch_FLAT_FWD_graph_t * fwg, latticehist_t *lathist,
                            lw0,
                            lm->dict2lmwid[dict_basewid(dict, bw1)],
                            lm->dict2lmwid[nextwid], nextwid);
+#else
+        lw0 =
+            IS_S3WID(bw0) ? ngram_wid(lm, dict_wordstr(dict, dict_basewid(dict, bw0))) : NGRAM_INVALID_WID;
+        lscr = ngram_tg_score(lm,
+                              ngram_wid(lm, dict_wordstr(dict, dict_basewid(dict, nextwid))),
+                              ngram_wid(lm, dict_wordstr(dict, dict_basewid(dict, bw1))),
+                              lw0,
+                              &lscr);
+#endif
 
         for (w = nextwid; IS_S3WID(w); w = dict->word[w].alt) {
             int32 newscore;
@@ -1289,3 +1304,4 @@ word_cand_free(word_cand_t ** wcand)
     }
 
 }
+#endif

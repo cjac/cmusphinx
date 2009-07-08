@@ -161,7 +161,6 @@
 #include "mdef.h"
 #include "tmat.h"
 #include "dict.h"
-#include "lm.h"
 #include "fillpen.h"
 #include "search.h"
 #include "logs3.h"
@@ -200,7 +199,11 @@ typedef struct heap_s {
 struct astar_s {
     dag_t *dag;              /** DAG */
     dict_t *dict;            /** Dictionary */
+#ifdef OLD_LM_API
     lm_t *lm;                /** Language Model */
+#else
+    ngram_model_t *lm;                /** Language Model */
+#endif
     fillpen_t *fpen;         /** Filler word probabilities */
     ppath_t *ppath_list;     /** Complete list of allocated ppath nodes */
     int32 n_ppath;           /** #Partial paths allocated (to control memory usage) */
@@ -423,7 +426,11 @@ ppath_free(astar_t *astar)
 
 
 static void
+#ifdef OLD_LM_API
 ppath_seg_write(FILE * fp, ppath_t * pp, dict_t *dict, lm_t *lm, int32 ascr)
+#else
+ppath_seg_write(FILE * fp, ppath_t * pp, dict_t *dict, ngram_model_t *lm, int32 ascr)
+#endif
 {
     int32 lscr_base;
 
@@ -432,7 +439,11 @@ ppath_seg_write(FILE * fp, ppath_t * pp, dict_t *dict, lm_t *lm, int32 ascr)
                         pp->pscr - pp->hist->pscr - pp->lscr);
 
     /* FIXME: This will be wrong if lwf != 1.0 */
+#ifdef OLD_LM_API
     lscr_base = pp->hist ? lm_rawscore(lm, pp->lscr) : 0;
+#else
+    lscr_base = pp->hist ? ngram_score_to_prob(lm, pp->lscr) : 0;
+#endif
 
     fprintf(fp, " %d %d %d %s",
             pp->dagnode->sf, ascr, lscr_base, dict_wordstr(dict,
@@ -442,7 +453,11 @@ ppath_seg_write(FILE * fp, ppath_t * pp, dict_t *dict, lm_t *lm, int32 ascr)
 
 
 static void
+#ifdef OLD_LM_API
 nbest_hyp_write(FILE * fp, ppath_t * top, dict_t *dict, lm_t *lm, int32 pscr, int32 nfr)
+#else
+nbest_hyp_write(FILE * fp, ppath_t * top, dict_t *dict, ngram_model_t *lm, int32 pscr, int32 nfr)
+#endif
 {
     int32 lscr, lscr_base;
     ppath_t *pp;
@@ -450,7 +465,11 @@ nbest_hyp_write(FILE * fp, ppath_t * top, dict_t *dict, lm_t *lm, int32 pscr, in
     lscr_base = 0;
     for (lscr = 0, pp = top; pp; lscr += pp->lscr, pp = pp->hist) {
         if (pp->hist) /* FIXME: This will be wrong if lw != 1.0 */
+#ifdef OLD_LM_API
             lscr_base += lm_rawscore(lm, pp->lscr);
+#else
+            lscr_base += ngram_score_to_prob(lm, pp->lscr);
+#endif
         else
             assert(pp->lscr == 0);
     }
@@ -464,7 +483,11 @@ nbest_hyp_write(FILE * fp, ppath_t * top, dict_t *dict, lm_t *lm, int32 pscr, in
 }
 
 astar_t *
+#ifdef OLD_LM_API
 astar_init(dag_t *dag, dict_t *dict, lm_t *lm, fillpen_t *fpen, float64 beam, float64 lwf)
+#else
+astar_init(dag_t *dag, dict_t *dict, ngram_model_t *lm, fillpen_t *fpen, float64 beam, float64 lwf)
+#endif
 {
     astar_t *astar;
     ppath_t *pp;
@@ -538,7 +561,11 @@ astar_next_ppath(astar_t *astar)
     s3wid_t bw0, bw1, bw2;
     int32 ppathdebug;
     dict_t *dict = astar->dict;
+#ifdef OLD_LM_API
     lm_t *lm = astar->lm;
+#else
+    ngram_model_t *lm = astar->lm;
+#endif
     fillpen_t *fpen = astar->fpen;
     float64 lwf = astar->lwf;
 
@@ -577,12 +604,19 @@ astar_next_ppath(astar_t *astar)
             lscr =
                 (dict_filler_word(dict, bw2))
                 ? fillpen(fpen, bw2)
+#ifdef OLD_LM_API
                 : lwf * lm_tg_score(lm,
                                     (bw0 == BAD_S3WID)
                                     ? BAD_LMWID(lm) : lm->dict2lmwid[bw0],
                                     (bw1 == BAD_S3WID)
                                     ? BAD_LMWID(lm) : lm->dict2lmwid[bw1],
                                     lm->dict2lmwid[bw2], bw2);
+#else
+                : lwf * ngram_tg_score(lm,
+                                       (bw2 == BAD_S3WID) ? NGRAM_INVALID_WID : ngram_wid(lm, dict_wordstr(dict, bw2)),
+                                       (bw1 == BAD_S3WID) ? NGRAM_INVALID_WID : ngram_wid(lm, dict_wordstr(dict, bw1)),
+                                       (bw0 == BAD_S3WID) ? NGRAM_INVALID_WID : ngram_wid(lm, dict_wordstr(dict, bw0)), &lscr);
+#endif
 
             if (astar->dag->lmop++ > astar->dag->maxlmop) {
                 E_ERROR("Max LM ops (%d) exceeded\n", astar->dag->maxlmop);
@@ -640,7 +674,11 @@ astar_next_hyp(astar_t *astar)
         h = ckd_calloc(1, sizeof(*h));
         h->id = p->dagnode->wid;
         /* FIXME: This will be wrong if lwf != 1.0 */
+#ifdef OLD_LM_API
         h->lscr = p->hist ? lm_rawscore(astar->lm, h->lscr) : 0;
+#else
+        h->lscr = p->hist ? ngram_score_to_prob(astar->lm, h->lscr) : 0;
+#endif
         h->ascr = ascr;
         h->word = dict_wordstr(astar->dict, h->id);
         h->sf = p->dagnode->sf;
@@ -654,8 +692,13 @@ astar_next_hyp(astar_t *astar)
 }
 
 void
+#ifdef OLD_LM_API
 nbest_search(dag_t *dag, char *filename, char *uttid, float64 lwf,
              dict_t *dict, lm_t *lm, fillpen_t *fpen)
+#else
+nbest_search(dag_t *dag, char *filename, char *uttid, float64 lwf,
+             dict_t *dict, ngram_model_t *lm, fillpen_t *fpen)
+#endif
 {
     FILE *fp;
     float64 fbeam;

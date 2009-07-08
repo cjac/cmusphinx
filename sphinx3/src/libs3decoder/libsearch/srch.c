@@ -384,9 +384,11 @@ srch_init(kb_t * kb, int32 op_mode)
     else if (op_mode == OPERATION_GRAPH) {
 	s->funcs = &srch_FSG_funcs;
     }
+#ifdef OLD_LM_API
     else if (op_mode == OPERATION_FLATFWD) {
 	s->funcs = &srch_FLAT_FWD_funcs;
     }
+#endif
     else if (op_mode == OPERATION_TST_DECODE) {
 	s->funcs = &srch_TST_funcs;
     }
@@ -919,7 +921,6 @@ free_hyp:
 int32
 srch_set_lm(srch_t * srch, const char *lmname)
 {
-
     if (srch->funcs->set_lm == NULL) {
         E_INFO
             ("srch->funcs->set_lm is NULL. Please make sure it is set. No change will be made currently. \n");
@@ -931,7 +932,11 @@ srch_set_lm(srch_t * srch, const char *lmname)
 }
 
 int32
+#ifdef OLD_LM_API
 srch_add_lm(srch_t * srch, lm_t * lm, const char *lmname)
+#else
+srch_add_lm(srch_t * srch, ngram_model_t * lm, const char *lmname)
+#endif
 {
     if (srch->funcs->add_lm == NULL) {
         E_INFO

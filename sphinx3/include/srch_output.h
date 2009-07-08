@@ -54,7 +54,11 @@
 #include <s3types.h>
 #include <glist.h>
 #include <dict.h>
+#ifdef OLD_LM_API
 #include <lm.h>
+#else
+#include <ngram_model.h>
+#endif
 #include <search.h>
 
 
@@ -101,7 +105,11 @@ void matchseg_write (FILE *fp,  /**< The file pointer */
 		     glist_t hyp, /**< A link-list that contains the hypotheesis*/
 		     char *uttid, /**< Utterance ID of the file */
 		     char *hdr, /**< The header */
+#ifdef OLD_LM_API
 		     lm_t * lm, /**< Language model */
+#else
+		     ngram_model_t *lm, /**< Language model */
+#endif
 		     dict_t * dict, /**< Dictionary */
 		     int32 num_frm, /**< Number of frames */
 		     int32 *scl,     /**< Scale of the decoding. Required, if inverse normalization 
@@ -134,7 +142,11 @@ void match_detailed(FILE* fp, /**< The file pointer */
 S3DECODER_EXPORT
 int read_s3hypseg_line(char *line,  /**< A line pointer */
 		       seg_hyp_line_t *seg_hyp_line,  /**< A hypseg line structure */
+#ifdef OLD_LM_API
 		       lm_t* lm,  /**< A LM */
+#else
+		       ngram_model_t* lm, /**< A LM */
+#endif
 		       dict_t *dict /**< A dictionary */
     );
 
@@ -180,7 +192,11 @@ void log_hypseg (char *uttid,   /**< Input; uttid */
 		 int32 scl,	/**< In: Acoustic scaling for entire utt */
 		 float64 lwf,	/**< In: LM score scale-factor (in dagsearch) */
 		 dict_t* dict,  /**< In: dictionary */
+#ifdef OLD_LM_API
 		 lm_t *lm,       /**< In: LM */
+#else
+		 ngram_model_t *lm, /**< In: LM */
+#endif
 		 int32 unnorm   /**< Whether unscaled the score back */
     );
 

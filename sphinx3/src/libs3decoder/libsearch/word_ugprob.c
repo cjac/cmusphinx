@@ -48,6 +48,7 @@
 
 #include "word_ugprob.h"
 
+#ifdef OLD_LM_API
 word_ugprob_t **
 init_word_ugprob(mdef_t * _mdef, lm_t * _lm, dict_t * _dict)
 {
@@ -111,3 +112,4 @@ word_ugprob_free(word_ugprob_t ** wugp, int32 n)
 
     ckd_free(wugp);
 }
+#endif

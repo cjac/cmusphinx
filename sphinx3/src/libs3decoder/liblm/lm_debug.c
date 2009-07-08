@@ -48,6 +48,7 @@
  *
  */
 
+#define OLD_LM_API
 #include "lm.h"
 
 void

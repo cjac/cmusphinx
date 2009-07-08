@@ -229,7 +229,11 @@
 #include "tmat.h"
 #include "mdef.h"
 #include "dict.h"
+#ifdef OLD_LM_API
 #include "lm.h"
+#else
+#include "ngram_model.h"
+#endif
 #include "fillpen.h"
 #include "search.h"
 #include "wid.h"
@@ -244,7 +248,11 @@ static dict_t *dict;            /* The dictionary */
 
 static fillpen_t *fpen;         /* The filler penalty structure */
 static dag_t *dag;
+#ifdef OLD_LM_API
 static lmset_t *lmset;          /* The lmset. Replace lm */
+#else
+static ngram_model_t *lmset;
+#endif
 
 static ptmr_t tm_utt;
 static int32 tot_nfr;
@@ -308,16 +316,7 @@ models_init(void)
                      cmd_ln_str_r(config, "-fdict"),
                      cmd_ln_int32_r(config, "-lts_mismatch"), 1);
 
-    /* LM Set */
-    lmset = lmset_init(cmd_ln_str_r(config, "-lm"),
-                       cmd_ln_str_r(config, "-lmctlfn"),
-                       cmd_ln_str_r(config, "-ctl_lm"),
-                       cmd_ln_str_r(config, "-lmname"),
-                       cmd_ln_str_r(config, "-lmdumpdir"),
-                       cmd_ln_float32_r(config, "-lw"),
-                       cmd_ln_float32_r(config, "-wip"),
-                       cmd_ln_float32_r(config, "-uw"), dict,
-                       logmath);
+    lmset = lm_init(config, dict, logmath);
 
     /* Filler penalties */
     fpen = fillpen_init(dict, cmd_ln_str_r(config, "-fillpen"),
@@ -333,7 +332,11 @@ static void
 models_free(void)
 {
     fillpen_free(fpen);
+#ifdef OLD_LM_API
     lmset_free(lmset);
+#else
+    ngram_model_free(lmset);
+#endif
     dict_free(dict);
     mdef_free(mdef);
 }
@@ -357,12 +360,21 @@ s3dag_log_hypseg(char *uttid, FILE * fp,        /* Out: output file */
 {                               /* In: #frames in utterance */
     srch_hyp_t *h;
     int32 ascr, lscr, tscr;
+#ifdef OLD_LM_API
+    lm_t *lm = lmset->cur_lm;
+#else
+    ngram_model_t *lm = lmset;
+#endif
 
     ascr = lscr = tscr = 0;
     for (h = hypptr; h; h = h->next) {
         ascr += h->ascr;
         if (dict_basewid(dict, h->id) != dict->startwid) {
-            lscr += lm_rawscore(lmset->cur_lm, h->lscr);
+#ifdef OLD_LM_API
+            lscr += lm_rawscore(lm, h->lscr);
+#else
+            lscr += ngram_score_to_prob(lm, h->lscr);
+#endif
         }
         else {
             assert(h->lscr == 0);
@@ -378,7 +390,11 @@ s3dag_log_hypseg(char *uttid, FILE * fp,        /* Out: output file */
         for (h = hypptr; h; h = h->next) {
             lscr =
                 (dict_basewid(dict, h->id) !=
-                 dict->startwid) ? lm_rawscore(lmset->cur_lm, h->lscr) : 0;
+#ifdef OLD_LM_API
+                 dict->startwid) ? lm_rawscore(lm, h->lscr) : 0;
+#else
+                 dict->startwid) ? ngram_score_to_prob(lm, h->lscr) : 0;
+#endif
             fprintf(fp, " %d %d %d %s", h->sf, h->ascr, lscr,
                     dict_wordstr(dict, h->id));
         }
@@ -398,6 +414,11 @@ decode_utt(char *uttid, FILE * _matchfp, FILE * _matchsegfp)
     const char *latdir;
     const char *latext;
     int32 ascr, lscr;
+#ifdef OLD_LM_API
+    lm_t *lmset->cur_lm;
+#else
+    ngram_model_t *lm = lmset;
+#endif
 
     hyp = NULL;
     ptmr_reset(&tm_utt);
@@ -431,7 +452,7 @@ decode_utt(char *uttid, FILE * _matchfp, FILE * _matchsegfp)
     dag->final.node = dag->end;
 
     hyp = dag_search(dag, uttid, 1.0, dag->final.node,
-                     dict, lmset->cur_lm, fpen);
+                     dict, lm, fpen);
     if (hyp != NULL) {
         if (cmd_ln_boolean_r(config, "-backtrace"))
             log_hyp_detailed(stdout, hyp, uttid, "BP", "bp", NULL);
@@ -449,8 +470,10 @@ decode_utt(char *uttid, FILE * _matchfp, FILE * _matchsegfp)
         printf("BSTXCT: ");
         s3dag_log_hypseg(uttid, stdout, hyp, dag->nfrm);
 
-        lm_cache_stats_dump(lmset->cur_lm);
-        lm_cache_reset(lmset->cur_lm);
+#ifdef OLD_LM_API
+        lm_cache_stats_dump(lm);
+        lm_cache_reset(lm);
+#endif
     }
     else {
         E_ERROR("DAG search (%s) failed\n", uttid);
@@ -487,9 +510,12 @@ decode_utt(char *uttid, FILE * _matchfp, FILE * _matchsegfp)
 static void
 utt_dag(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
 {
-
     if (ur->lmname)
+#ifdef OLD_LM_API
         lmset_set_curlm_wname(lmset, ur->lmname);
+#else
+        ngram_model_set_select(lmset, ur->lmname);
+#endif
     decode_utt(uttid, matchfp, matchsegfp);
 }
 

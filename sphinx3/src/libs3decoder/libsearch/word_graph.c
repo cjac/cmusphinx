@@ -73,8 +73,13 @@
 #include "corpus.h"
 
 void
+#ifdef OLD_LM_API
 word_graph_dump(char *dir, char *uttfile, char *id, char *latfile_ext, dag_t * dag,
                 dict_t * dict, lm_t * lm, int32 * senscale)
+#else
+word_graph_dump(char *dir, char *uttfile, char *id, char *latfile_ext, dag_t * dag,
+                dict_t * dict, ngram_model_t * lm, int32 * senscale)
+#endif
 {
     word_graph_t *wg;
     FILE *fp;
@@ -322,8 +327,13 @@ print_wg(FILE * fp, word_graph_t * wg, dict_t * dict, int32 fmt)
 
 
 static void
+#ifdef OLD_LM_API
 wg_from_dag(word_graph_t * wg, dag_t * dag, dagnode_t * d,
             int32 dnode_stidx, int32 * senscale, lm_t * lm, dict_t * dict)
+#else
+wg_from_dag(word_graph_t * wg, dag_t * dag, dagnode_t * d,
+            int32 dnode_stidx, int32 * senscale, ngram_model_t * lm, dict_t * dict)
+#endif
 {
     daglink_t *l;
     dagnode_t *n;
@@ -367,7 +377,11 @@ wg_from_dag(word_graph_t * wg, dag_t * dag, dagnode_t * d,
             stfr[i].nodeidx = nodeidx;
             /* FIX ME ! Currently, confidence score is hard-wired to 0.0 */
             new_word_graph_link(wg, dnode_stidx, nodeidx, d->sf, n->sf,
+#ifdef OLD_LM_API
                                 d->wid, l->ascr, lm_rawscore(lm, l->lscr),
+#else
+                                d->wid, l->ascr, ngram_score_to_prob(lm, l->lscr),
+#endif
                                 0.0, senscale, dag->config, dag->logmath);
         }
     }
@@ -391,6 +405,7 @@ wg_from_dag(word_graph_t * wg, dag_t * dag, dagnode_t * d,
         }
         else {
             new_word_graph_link(wg, dnode_stidx, nodeidx, d->sf, d->lef,
+#ifdef OLD_LM_API
                                 d->wid, 0.0, lm_rawscore(lm,
                                                          lm_ug_score(lm,
                                                                      lm->
@@ -399,6 +414,10 @@ wg_from_dag(word_graph_t * wg, dag_t * dag, dagnode_t * d,
                                                                       wid],
                                                                      d->
                                                                      wid)),
+#else
+                                d->wid, 0.0, ngram_ug_prob(lm,
+                                                           d->wid),
+#endif
                                 0.0, senscale, dag->config, dag->logmath);
         }
 #endif
@@ -435,7 +454,11 @@ wg_from_dag(word_graph_t * wg, dag_t * dag, dagnode_t * d,
  *
  */
 word_graph_t *
+#ifdef OLD_LM_API
 dag_to_wordgraph(dag_t * dag, int32 * senscale, lm_t * _lm, dict_t * _dict)
+#else
+dag_to_wordgraph(dag_t * dag, int32 * senscale, ngram_model_t * _lm, dict_t * _dict)
+#endif
 {
     dagnode_t *d;
     word_graph_t *wg;

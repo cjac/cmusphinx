@@ -81,7 +81,6 @@
 
 #include <profile.h>
 #include <s3types.h>
-#include <lm.h>
 #include <kbcore.h>
 #include <vithist.h>
 #include <word_ugprob.h>

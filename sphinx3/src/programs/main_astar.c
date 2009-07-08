@@ -223,7 +223,11 @@
 #include <tmat.h>
 #include <mdef.h>
 #include <dict.h>
+#ifdef OLD_LM_API
 #include <lm.h>
+#else
+#include <ngram_model.h>
+#endif
 #include <fillpen.h>
 #include <search.h>
 #include <wid.h>
@@ -231,6 +235,7 @@
 #include <cmdln_macro.h>
 #include "corpus.h"
 #include "astar.h"
+#include "kbcore.h"
 
 static mdef_t *mdef;            /* Model definition */
 
@@ -238,7 +243,11 @@ static ptmr_t tm_utt;           /* Entire utterance */
 
 static dict_t *dict;            /* The dictionary       */
 static fillpen_t *fpen;         /* The filler penalty structure. */
-static lmset_t *lmset;          /* The lmset.           */
+#ifdef OLD_LM_API
+static lmset_t *lmset;          /* The lmset. */
+#else
+static ngram_model_t *lmset;
+#endif
 static logmath_t *logmath;
 
 static const char *nbestdir;
@@ -311,16 +320,7 @@ models_init(void)
                      cmd_ln_str_r(config, "-fdict"),
                      cmd_ln_int32_r(config, "-lts_mismatch"), 1);
 
-    lmset = lmset_init(cmd_ln_str_r(config, "-lm"),
-                       cmd_ln_str_r(config, "-lmctlfn"),
-                       cmd_ln_str_r(config, "-ctl_lm"),
-                       cmd_ln_str_r(config, "-lmname"),
-                       cmd_ln_str_r(config, "-lmdumpdir"),
-                       cmd_ln_float32_r(config, "-lw"),
-                       cmd_ln_float32_r(config, "-wip"),
-                       cmd_ln_float32_r(config, "-uw"), dict,
-                       logmath);
-
+    lmset = lm_init(config, dict, logmath);
 
     fpen = fillpen_init(dict, cmd_ln_str_r(config, "-fillpen"),
                         cmd_ln_float32_r(config, "-silprob"),
@@ -336,7 +336,11 @@ static void
 models_free(void)
 {
     fillpen_free(fpen);
+#ifdef OLD_LM_API
     lmset_free(lmset);
+#else
+    ngram_model_free(lmset);
+#endif
     dict_free(dict);
     mdef_free(mdef);
 }
@@ -381,9 +385,20 @@ utt_astar(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
     const char *nbestext;
     dag_t *dag;
     int32 nfrm;
+#ifdef OLD_LM_API
+    lm_t *lm = lmset->cur_lm;
+#else
+    ngram_model_t *lm = lmset;
+#endif
 
-    if (ur->lmname)
+    if (ur->lmname) {
+#ifdef OLD_LM_API
         lmset_set_curlm_wname(lmset, ur->lmname);
+        lm = lmset->cur_lm;
+#else
+        lm = ngram_model_set_select(lmset, ur->lmname);
+#endif
+    }
 
     latdir = cmd_ln_str_r(config, "-inlatdir");
     latext = cmd_ln_str_r(config, "-latext");
@@ -412,7 +427,7 @@ utt_astar(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
             E_ERROR("maxedge limit (%d) exceeded\n", dag->maxedge);
             goto search_done;
         }
-        dag_compute_hscr(dag, dict, lmset->cur_lm, 1.0);
+        dag_compute_hscr(dag, dict, lm, 1.0);
         dag_remove_bypass_links(dag);
 
         E_INFO("%5d frames, %6d nodes, %8d edges, %8d bypass\n",
@@ -422,10 +437,12 @@ utt_astar(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
         build_output_uttfile(nbestfile, nbestdir, uttid, ur->uttfile);
         strcat(nbestfile, ".");
         strcat(nbestfile, nbestext);
-        nbest_search(dag, nbestfile, uttid, 1.0, dict, lmset->cur_lm, fpen);
+        nbest_search(dag, nbestfile, uttid, 1.0, dict, lm, fpen);
 
-        lm_cache_stats_dump(lmset->cur_lm);
-        lm_cache_reset(lmset->cur_lm);
+#ifdef OLD_LM_API
+        lm_cache_stats_dump(lm);
+        lm_cache_reset(lm);
+#endif
     }
     else
         E_ERROR("Dag load (%s) failed\n", uttid);

@@ -69,7 +69,11 @@
 #include <s3types.h>
 #include <dag.h>
 #include <dict.h>
+#ifdef OLD_LM_API
 #include <lm.h>
+#else
+#include <ngram_model.h>
+#endif
 
 
 #ifdef __cplusplus
@@ -152,7 +156,11 @@ void print_wg(FILE *fp,  /**< File pointer */
 */
 word_graph_t* dag_to_wordgraph (dag_t* dag,  /**< a DAG structure */
 				int32 *senscale, /**< Scaling factor of the acoustic score */
+#ifdef OLD_LM_API
 				lm_t* lm, /**< LM */
+#else
+				ngram_model_t* lm, /**< LM */
+#endif
 				dict_t* dict /**< Dict */
     );
 
@@ -167,7 +175,11 @@ void word_graph_dump(char *dir, /**< Directory name*/
 		     char *latfile_ext,  /**< Lattice file Extension */
 		     dag_t *dag,   /**< DAG */
 		     dict_t *dict,  /**< Dictionary */
+#ifdef OLD_LM_API
 		     lm_t *lm,     /**< LM */
+#else
+		     ngram_model_t *lm,     /**< LM */
+#endif
 		     int32 *senscale /**< Senone scale */
     );
 

@@ -67,6 +67,7 @@
  *
  */
 
+#define OLD_LM_API
 #include "lm.h"
 
 static int32

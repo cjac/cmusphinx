@@ -65,7 +65,9 @@
 
 #include <s3types.h>
 #include "dict.h"
+#ifdef OLD_LM_API
 #include "lm.h"
+#endif
 
 /** \file wid.h
     \brief coversion of dictionary ID to LM ID. 
@@ -78,6 +80,7 @@ extern "C" {
 #endif
   
 
+#ifdef OLD_LM_API
 /**
  * Create mappings between dictionary and LM word-IDs.  In short:
  *    - An array of s3lmwid32_t entries (map[]) is created; where map[i] is the LM word-ID for
@@ -104,6 +107,18 @@ int32 wid_wordprob2alt (dict_t *dict,	/**< In: Dictionary */
 					   this array. */
 			int32 n	/**< In: #Input entries in the wordprob array */
     );
+
+#else
+
+/** \struct wordprob_t
+    \brief Generic structure that could be used at any n-gram level 
+*/
+typedef struct {
+    s3wid_t wid;	/**< NOTE: dictionary wid; may be BAD_S3WID if not available */
+    int32 prob;         /**< The probability */
+} wordprob_t;
+ 
+#endif
 
 #if 0
 { /* Stop indent from complaining */

@@ -72,7 +72,11 @@
 #include <glist.h>
 #include "s3types.h"
 #include "dag.h"
+#ifdef OLD_LM_API
 #include "lm.h"
+#else
+#include <ngram_model.h>
+#endif
 #include "kb.h"
 
 /**
@@ -103,7 +107,11 @@ int srch_debug_begin(void* srch);
 int srch_debug_end(void* srch);
 int srch_debug_decode(void);
 int srch_debug_set_lm(void* srch, const char *lmname);
+#ifdef OLD_LM_API
 int srch_debug_add_lm(void* srch, lm_t *lm, const char *lmname);
+#else
+int srch_debug_add_lm(void* srch, ngram_model_t *lm, const char *lmname);
+#endif
 int srch_debug_delete_lm(void* srch, const char *lmname);
 int srch_debug_gmm_compute_lv1(void *srch, float32 *feat, int32 cache_idx, int32 wav_idx);
 int srch_debug_gmm_compute_lv2(void *srch, float32 **feat, int32 wav_idx);

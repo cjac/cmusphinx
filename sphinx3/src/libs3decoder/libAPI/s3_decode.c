@@ -155,7 +155,11 @@ date: 2004/08/06 15:07:39;  author: yitao;  state: Exp;
 #include "s3_decode.h"
 #include "cmdln_macro.h"
 #include "utt.h"
+#ifdef OLD_LM_API
 #include "lm.h"
+#else
+#include <ngram_model.h>
+#endif
 #include "srch.h"
 
 arg_t S3_DECODE_ARG_DEFS[] = {
@@ -425,10 +429,16 @@ s3_decode_read_lm(s3_decode_t * _decode,
            const char *lmpath, const char *lmname)
 {
     srch_t *s;
+#ifdef OLD_LM_API
     lm_t *lm;
     int32 ndict;
+#else
+    ngram_model_t *lm;
+    kbcore_t *kbc = _decode->kb.kbcore;
+#endif
     s = (srch_t *) _decode->kb.srch;
 
+#ifdef OLD_LM_API
     ndict = dict_size(_decode->kb.kbcore->dict);
 
 
@@ -439,6 +449,12 @@ s3_decode_read_lm(s3_decode_t * _decode,
                          ndict, NULL, 1,   /* Weight apply */
                          kbcore_logmath(s->kbc)
         );
+#else
+
+    lm = ngram_model_read(kbcore_config(kbc), lmpath, NGRAM_AUTO, kbcore_logmath(kbc));
+    assert (lm);
+    ngram_model_set_add(kbcore_lmset(kbc), lm, lmname, 1.0, 0);
+#endif
 
     s->funcs->add_lm(s, lm, lmname);
 }

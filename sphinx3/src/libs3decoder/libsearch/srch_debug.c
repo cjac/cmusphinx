@@ -86,7 +86,11 @@ srch_debug_set_lm(void *srch, const char *lmname)
 }
 
 int
+#ifdef OLD_LM_API
 srch_debug_add_lm(void *srch, lm_t * lm, const char *lmname)
+#else
+srch_debug_add_lm(void *srch, ngram_model_t * lm, const char *lmname)
+#endif
 {
     E_INFOCONT("SEARCH DEBUG: MODE ADD LM\n");
     return SRCH_SUCCESS;

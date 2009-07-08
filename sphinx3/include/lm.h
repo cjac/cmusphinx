@@ -135,6 +135,13 @@
  */
 
 
+#ifndef OLD_LM_API
+#warning UNPORTED SOURCE FILE
+/*
+#error UNPORTED SOURCE FILE
+*/
+#endif
+
 #ifndef _S3_LM_H_
 #define _S3_LM_H_
 

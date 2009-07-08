@@ -52,7 +52,11 @@
 
 #include "s3types.h"
 #include "mdef.h"
+#ifdef OLD_LM_API
 #include "lm.h"
+#else
+#include <ngram_model.h>
+#endif
 #include "dict.h"
 
 #ifndef WORD_UGPROB
@@ -83,8 +87,12 @@ typedef struct word_ugprob_s {
 /**
  * Initialize word_ugprobability 
  */
-word_ugprob_t**  init_word_ugprob(mdef_t *_mdef, 
-				  lm_t *_lm, 
+word_ugprob_t**  init_word_ugprob(mdef_t *_mdef,
+#ifdef OLD_LM_API
+				  lm_t *_lm,
+#else
+				  ngram_model_t *_lm,
+#endif
 				  dict_t *_dict
     );
 

@@ -121,7 +121,11 @@
 
 #include "search.h"
 #include "dict.h"
+#ifdef OLD_LM_API
 #include "lm.h"
+#else
+#include <ngram_model.h>
+#endif
 #include "fillpen.h"
 
 
@@ -295,7 +299,11 @@ int32 dag_bestpath (
     dagnode_t *src,	/**< Source node for backward link l */
     float64 lwf,         /**< Language weight multiplication factor */ 
     dict_t *dict,        /**<  The dictionary */
+#ifdef OLD_LM_API
     lm_t *lm,             /**< The LM */
+#else
+    ngram_model_t *lm,    /**< The LM */
+#endif
     s3lmwid32_t *dict2lmwid /**< A map from dictionary id to lm id, should use wid2lm insteead*/
     ); 
 
@@ -320,7 +328,11 @@ int32 dag_destroy (
  * exit node.
  */
 S3DECODER_EXPORT
+#ifdef OLD_LM_API
 void dag_compute_hscr(dag_t *dag, dict_t *dict, lm_t *lm, float64 lwf);
+#else
+void dag_compute_hscr(dag_t *dag, dict_t *dict, ngram_model_t *lm, float64 lwf);
+#endif
 
 /**
  * Recursive backtrace through DAG (from final node to root) using daglink_t.history.
@@ -346,7 +358,11 @@ void dag_write_header(FILE *fp, cmd_ln_t *config);
 S3DECODER_EXPORT
 int32 dag_write(dag_t * dag,
                 const char *filename,
+#ifdef OLD_LM_API
                 lm_t * lm,
+#else
+                ngram_model_t * lm,
+#endif
                 dict_t * dict);
 
 /**
@@ -356,7 +372,11 @@ S3DECODER_EXPORT
 int32 dag_write_htk(dag_t *dag,
                     const char *filename,
                     const char *uttid,
+#ifdef OLD_LM_API
                     lm_t * lm,
+#else
+                    ngram_model_t * lm,
+#endif
                     dict_t * dict);
 
 
@@ -376,7 +396,11 @@ srch_hyp_t *dag_search (dag_t *dagp, /**< The initalized directed acyclic graph 
 			float64 lwf,  /**< LM weight */
 			dagnode_t *final,  /**< The final node, see source code in flat_fwd.c and dag.c */
 			dict_t *dict,  /**< Dict */
+#ifdef OLD_LM_API
 			lm_t *lm,      /**< LM */
+#else
+			ngram_model_t *lm,      /**< LM */
+#endif
 			fillpen_t *fpen /**< Fillpen */
     );
 

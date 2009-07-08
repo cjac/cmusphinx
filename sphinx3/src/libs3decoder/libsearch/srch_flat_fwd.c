@@ -86,6 +86,7 @@
 #include "corpus.h"
 #include "logs3.h"
 
+#ifdef OLD_LM_API
 static void
 fwd_timing_dump(srch_FLAT_FWD_graph_t * fwg)
 {
@@ -190,7 +191,11 @@ srch_FLAT_FWD_init(kb_t * kb,    /**< The KB */
     srch_t *s;
     mdef_t *mdef;
     dict_t *dict;
+#ifdef OLD_LM_API
     lm_t *lm;
+#else
+    ngram_model_t *lm;
+#endif
 
     kbc = kb->kbcore;
     s = (srch_t *) srch;
@@ -408,7 +413,9 @@ srch_FLAT_FWD_end(void *srch)
 
     whmm_t *h, *nexth;
     s3wid_t w;
-    lm_t *lm;
+#ifdef OLD_LM_API
+    lm_t *lm = kbcore_lm(s->kbc);
+#endif
 
 
     s = (srch_t *) srch;
@@ -416,8 +423,6 @@ srch_FLAT_FWD_end(void *srch)
     kbc = s->kbc;
     dict = kbcore_dict(kbc);
     st = s->stat;
-
-    lm = s->kbc->lmset->cur_lm;
 
     fwg->lathist->frm_latstart[fwg->n_frm] = fwg->lathist->n_lat_entry;     /* Add sentinel */
     pctr_increment(fwg->ctr_latentry, fwg->lathist->n_lat_entry);
@@ -436,8 +441,10 @@ srch_FLAT_FWD_end(void *srch)
         fwg->n_word_cand = 0;
     }
 
+#ifdef OLD_LM_API
     lm_cache_stats_dump(lm);
     lm_cache_reset(lm);
+#endif
 
     fwd_timing_dump(fwg);
 
@@ -452,7 +459,11 @@ srch_FLAT_FWD_set_lm(void *srch_struct, const char *lmname)
 }
 
 int
+#ifdef OLD_LM_API
 srch_FLAT_FWD_add_lm(void *srch, lm_t * lm, const char *lmname)
+#else
+srch_FLAT_FWD_add_lm(void *srch, ngram_model_t * lm, const char *lmname)
+#endif
 {
     E_INFO("In Mode 3, currently the function add LM is not supported\n");
     return SRCH_FAILURE;
@@ -619,7 +630,7 @@ srch_FLAT_FWD_gen_hyp(void *srch           /**< a pointer of srch_t */
     else {
         /* BAD_S3WID => Any right context */
         lattice_backtrace(fwg->lathist, s->exit_id, BAD_S3WID, &hyp,
-                          s->kbc->lmset->cur_lm, kbcore_dict(s->kbc),
+                          kbcore_lm(s->kbc), kbcore_dict(s->kbc),
                           fwg->ctxt, s->kbc->fillpen);
         ghyp = NULL;
         for (tmph = hyp; tmph; tmph = tmph->next) {
@@ -723,7 +734,7 @@ srch_FLAT_FWD_bestpath_impl(void *srch,           /**< A void pointer to a searc
 
     bph =
         dag_search(dag, s->uttid, lwf, dag->end,
-                   s->kbc->dict, s->kbc->lmset->cur_lm, s->kbc->fillpen);
+                   s->kbc->dict, kbcore_lm(s->kbc), s->kbc->fillpen);
 
     if (bph != NULL) {
         ghyp = NULL;
@@ -852,3 +863,5 @@ srch_funcs_t srch_FLAT_FWD_funcs = {
         /* nbest_impl */                srch_FLAT_FWD_nbest_impl,
 	NULL
 };
+
+#endif

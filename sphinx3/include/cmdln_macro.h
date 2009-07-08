@@ -217,7 +217,11 @@ us a better architecture.
     { "-lmname", \
       ARG_STRING, \
       NULL, \
-      "Name of language model in -lmctlfn to use for all utterances" }
+      "Name of language model in -lmctlfn to use for all utterances" }, \
+    { "-mmap", \
+      ARG_BOOLEAN, \
+      "yes", \
+      "Whether to mmap the language model file" }
 
 #if 0
           /* Comment out because I don't know what is the meaning of Sphinx 2 fsg control file means. */

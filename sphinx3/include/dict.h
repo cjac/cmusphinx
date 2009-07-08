@@ -206,6 +206,7 @@ const char *dict_ciphone_str (dict_t *d,	/**< In: Dictionary to look up */
 #define dict_size(d)		((d)->n_word)
 #define dict_basewid(d,w)	((d)->word[w].basewid)
 #define dict_wordstr(d,w)	((d)->word[w].word)
+#define dict_basewordstr(d,w)	((d)->word[(d)->word[w].basewid)].word)
 #define dict_nextalt(d,w)	((d)->word[w].alt)
 #define dict_pronlen(d,w)	((d)->word[w].pronlen) 
 #define dict_pron(d,w,p)	((d)->word[w].ciphone[p]) /**< The CI phones of the word w at position p */
