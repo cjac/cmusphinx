@@ -48,27 +48,47 @@
 
 #include "word_ugprob.h"
 
-#ifdef OLD_LM_API
 word_ugprob_t **
+#ifdef OLD_LM_API
 init_word_ugprob(mdef_t * _mdef, lm_t * _lm, dict_t * _dict)
+#else
+init_word_ugprob(mdef_t * _mdef, ngram_model_t * _lm, dict_t * _dict)
+#endif
 {
     /* WARNING! _dict and dict are two variables. */
 
     s3wid_t w;
     s3cipid_t ci;
-    int32 n_ug, ugprob;
+#ifdef OLD_LM_API
+    int32 n_ug;
     ug_t *ugptr;
+#else
+    ngram_iter_t *iter;
+#endif
+    int32 ugprob;
     word_ugprob_t *wp, *prevwp;
     word_ugprob_t **wugp;
 
     wugp = (word_ugprob_t **) ckd_calloc(_mdef->n_ciphone,
                                          sizeof(word_ugprob_t *));
+#ifdef OLD_LM_API
     n_ug = lm_uglist(_lm, &ugptr);
     for (; n_ug > 0; --n_ug, ugptr++) {
+
         if ((w = ugptr->dictwid) == _dict->startwid)
             continue;
 
         ugprob = LM_UGPROB(_lm, ugptr);
+#else
+    iter = ngram_model_mgrams(_lm, 0);
+    do {
+        int32 bowt;
+        int32 const *unigrams = ngram_iter_get(iter, &ugprob, &bowt);
+
+        w = dict_wordid(_dict, ngram_word(_lm, unigrams[0]));
+        if (! IS_S3WID(w) || w == _dict->startwid)
+            continue;
+#endif
 
         for (; IS_S3WID(w); w = _dict->word[w].alt) {
             ci = _dict->word[w].ciphone[0];
@@ -88,7 +108,12 @@ init_word_ugprob(mdef_t * _mdef, lm_t * _lm, dict_t * _dict)
                 wugp[ci] = wp;
             }
         }
+#ifdef OLD_LM_API
     }
+#else
+    } while ((iter = ngram_iter_next(iter)));
+#endif
+
     return wugp;
 }
 
@@ -112,4 +137,3 @@ word_ugprob_free(word_ugprob_t ** wugp, int32 n)
 
     ckd_free(wugp);
 }
-#endif

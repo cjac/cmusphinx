@@ -384,11 +384,9 @@ srch_init(kb_t * kb, int32 op_mode)
     else if (op_mode == OPERATION_GRAPH) {
 	s->funcs = &srch_FSG_funcs;
     }
-#ifdef OLD_LM_API
     else if (op_mode == OPERATION_FLATFWD) {
 	s->funcs = &srch_FLAT_FWD_funcs;
     }
-#endif
     else if (op_mode == OPERATION_TST_DECODE) {
 	s->funcs = &srch_TST_funcs;
     }

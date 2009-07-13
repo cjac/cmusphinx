@@ -86,7 +86,6 @@
 #include "corpus.h"
 #include "logs3.h"
 
-#ifdef OLD_LM_API
 static void
 fwd_timing_dump(srch_FLAT_FWD_graph_t * fwg)
 {
@@ -267,10 +266,7 @@ srch_FLAT_FWD_init(kb_t * kb,    /**< The KB */
     s->grh->graph_struct = fwg;
     s->grh->graph_type = GRAPH_STRUCT_FLAT;
 
-
-
     return SRCH_SUCCESS;
-
 }
 
 int
@@ -863,5 +859,3 @@ srch_funcs_t srch_FLAT_FWD_funcs = {
         /* nbest_impl */                srch_FLAT_FWD_nbest_impl,
 	NULL
 };
-
-#endif

@@ -324,7 +324,11 @@
 #include "mdef.h"
 #include "tmat.h"
 #include "dict.h"
+#ifdef OLD_LM_API
 #include "lm.h"
+#else
+#include <ngram_model.h>
+#endif
 #include "fillpen.h"
 #include "logs3.h"
 #include "search.h"
@@ -338,7 +342,6 @@
     \brief Implementation of forward search in a flat lexicon. 
  */
 
-#ifdef OLD_LM_API
 void
 dump_all_whmm(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 n_frm, int32 * senscr)
 {
@@ -748,15 +751,19 @@ enter_lm_words(srch_FLAT_FWD_graph_t * fwg, latticehist_t *lathist,
                s3latid_t l, s3cipid_t lc, int32 thresh, int32 phone_penalty)
 {
     kbcore_t *kbc = fwg->kbcore;
+#ifdef OLD_LM_API
     lm_t *lm = kbcore_lm(kbc);
+    int is32bits = lm->is32bits;
+    bg_t *bgptr;
+    bg32_t *bgptr32;
+    int32 n_bg;
+#else
+    ngram_model_t *lm = kbcore_lm(kbc);
+#endif
     dict_t *dict = kbcore_dict(kbc);
     mdef_t *mdef = kbcore_mdef(kbc);
     s3wid_t bw0, bw1;
-    int is32bits = lm->is32bits;
     int32 acc_bowt, bowt;
-    int32 n_bg;
-    bg_t *bgptr;
-    bg32_t *bgptr32;
     s3cipid_t rc;
 
     /* Find the last real (non-filler, non-silence) two-word history */
@@ -768,6 +775,7 @@ enter_lm_words(srch_FLAT_FWD_graph_t * fwg, latticehist_t *lathist,
     /* First, transition to trigram followers of bw0, bw1 */
     acc_bowt = 0;
     if (IS_S3WID(bw0)) {
+#ifdef OLD_LM_API
         int32 n_tg;
         tg_t *tgptr;
         tg32_t *tgptr32;
@@ -775,19 +783,14 @@ enter_lm_words(srch_FLAT_FWD_graph_t * fwg, latticehist_t *lathist,
         /* FIXME: THIS SUCKS */
         if (is32bits) {
             n_tg = lm_tg32list(lm,
-                               lm->
-                               dict2lmwid[dict_basewid(dict, bw0)],
-                               lm->
-                               dict2lmwid[dict_basewid(dict, bw1)],
+                               lm->dict2lmwid[dict_basewid(dict, bw0)],
+                               lm->dict2lmwid[dict_basewid(dict, bw1)],
                                &tgptr32, &bowt);
-
         }
         else {
             n_tg = lm_tglist(lm,
-                             lm->
-                             dict2lmwid[dict_basewid(dict, bw0)],
-                             lm->
-                             dict2lmwid[dict_basewid(dict, bw1)],
+                             lm->dict2lmwid[dict_basewid(dict, bw0)],
+                             lm->dict2lmwid[dict_basewid(dict, bw1)],
                              &tgptr, &bowt);
 
         }
@@ -797,13 +800,10 @@ enter_lm_words(srch_FLAT_FWD_graph_t * fwg, latticehist_t *lathist,
             while (n_tg > 0) {
                 s3wid_t nextwid;
 
-                nextwid = is32bits ?
-                    LM_DICTWID(lm, tgptr32->wid) :
-                    LM_DICTWID(lm, tgptr->wid);
-
+                nextwid = is32bits ?  LM_DICTWID(lm, tgptr32->wid)
+                                   : LM_DICTWID(lm, tgptr->wid);
 
                 /* Transition to all alternative pronunciations for trigram follower */
-
 
                 if (IS_S3WID(nextwid)
                     && (nextwid != dict->startwid)) {
@@ -831,8 +831,42 @@ enter_lm_words(srch_FLAT_FWD_graph_t * fwg, latticehist_t *lathist,
             }
             acc_bowt = bowt;
         }
+#else
+        int32 lbw0 = ngram_wid(lm, dict_wordstr(dict, dict_basewid(dict, bw0)));
+        int32 lbw1 = ngram_wid(lm, dict_wordstr(dict, dict_basewid(dict, bw1)));
+        ngram_iter_t *iter;
+        iter = ngram_model_mgrams(lm, 2);
+        do {
+            int32 score;
+            int32 const *trigrams = ngram_iter_get(iter, &score, &bowt);
+            s3wid_t nextwid;
+
+            if (trigrams[0] != lbw0 || trigrams[1] != lbw1)
+                continue;
+
+            nextwid = dict_wordid(dict, ngram_word(lm, trigrams[2]));
+            if (IS_S3WID(nextwid) && nextwid != dict->startwid) {
+                s3wid_t w;
+                for (w = nextwid; IS_S3WID(w); w = dict->word[w].alt) {
+                    int32 newscore;
+
+                    newscore = fwg->rcscore[dict->word[w].ciphone[0]];      /* right context scores with phone ciphone[0] */
+                    newscore += score;   /* The LM scores */
+                    newscore += phone_penalty;
+
+                    if (newscore >= thresh) {
+                        word_enter(fwg, w, newscore, l, lc);
+                        fwg->tg_trans_done[w] = 1;
+                    }
+                }
+            }
+        } while ((iter = ngram_iter_next(iter)));
+        acc_bowt = bowt;
+        ngram_iter_free(iter);
+#endif
     }
 
+#ifdef OLD_LM_API
     /* Transition to bigram followers of bw1 */
     if (is32bits)
         n_bg = lm_bg32list(lm,
@@ -849,12 +883,8 @@ enter_lm_words(srch_FLAT_FWD_graph_t * fwg, latticehist_t *lathist,
             s3wid_t nextwid;
 
             /* Transition to all alternative pronunciations for bigram follower */
-            nextwid =
-                is32bits ? LM_DICTWID(lm,
-                                      bgptr32->
-                                      wid) : LM_DICTWID(lm,
-                                                        bgptr->
-                                                        wid);
+            nextwid = is32bits ? LM_DICTWID(lm, bgptr32-> wid)
+                               : LM_DICTWID(lm, bgptr-> wid);
 
             if (IS_S3WID(nextwid) &&
                 (!fwg->tg_trans_done[nextwid]) &&  /* TG transition already done */
@@ -865,12 +895,9 @@ enter_lm_words(srch_FLAT_FWD_graph_t * fwg, latticehist_t *lathist,
                      w = dict->word[w].alt) {
                     int32 newscore;
 
-                    newscore =
-                        fwg->rcscore[dict->word[w].ciphone[0]];
-                    newscore +=
-                        is32bits ? LM_BGPROB(lm,
-                                             bgptr32) :
-                        LM_BGPROB(lm, bgptr);
+                    newscore = fwg->rcscore[dict->word[w].ciphone[0]];
+                    newscore += is32bits ? LM_BGPROB(lm, bgptr32)
+                                         : LM_BGPROB(lm, bgptr);
                     newscore += acc_bowt;
                     newscore += phone_penalty;
 
@@ -886,6 +913,38 @@ enter_lm_words(srch_FLAT_FWD_graph_t * fwg, latticehist_t *lathist,
 
         acc_bowt += bowt;
     }
+#else
+    int32 lbw1 = ngram_wid(lm, dict_wordstr(dict, dict_basewid(dict, bw1)));
+    ngram_iter_t *iter;
+    iter = ngram_model_mgrams(lm, 1);
+    do {
+        int32 score;
+        int32 const *bigrams = ngram_iter_get(iter, &score, &bowt);
+        s3wid_t nextwid;
+
+        if (bigrams[0] != lbw1)
+            continue;
+
+        nextwid = dict_wordid(dict, ngram_word(lm, bigrams[2]));
+        if (IS_S3WID(nextwid) && (!fwg->tg_trans_done[nextwid]) && nextwid != dict->startwid) {
+            s3wid_t w;
+            for (w = nextwid; IS_S3WID(w); w = dict->word[w].alt) {
+                int32 newscore;
+
+                newscore = fwg->rcscore[dict->word[w].ciphone[0]];      /* right context scores with phone ciphone[0] */
+                newscore += score;   /* The LM scores */
+                newscore += acc_bowt;
+                newscore += phone_penalty;
+
+                if (newscore >= thresh) {
+                    word_enter(fwg, w, newscore, l, lc);
+                }
+            }
+        }
+    } while ((iter = ngram_iter_next(iter)));
+    ngram_iter_free(iter);
+    acc_bowt += bowt;
+#endif
 
     /* Update unigram backoff node */
     for (rc = 0; rc < mdef->n_ciphone; rc++) {
@@ -925,7 +984,11 @@ enter_cand_words(srch_FLAT_FWD_graph_t * fwg, latticehist_t *lathist,
     /* Transition to words in word_cand_cf */
     for (cand = 0; IS_S3WID(fwg->word_cand_cf[cand]); cand++) {
         s3wid_t w, nextwid;
+#ifdef OLD_LM_API
         s3lmwid32_t lw0;
+#else
+        int32 lw0;
+#endif
         int32 lscr;
 
         nextwid = fwg->word_cand_cf[cand];
@@ -1304,4 +1367,3 @@ word_cand_free(word_cand_t ** wcand)
     }
 
 }
-#endif
