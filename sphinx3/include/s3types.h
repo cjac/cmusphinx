@@ -139,6 +139,7 @@ typedef int32		s3wid_t;	/** Dictionary word id */
 #define IS_S3WID(w)	((w)>=0)
 #define MAX_S3WID	((int32)0x7ffffffe)
 
+#ifdef OLD_LM_API
 typedef uint16		s3lmwid_t;	/** LM word id (uint16 for conserving space) */
 #define BAD_S3LMWID	((s3lmwid_t) 0xffff)
 #define NOT_S3LMWID(w)	((w)==BAD_S3LMWID)
@@ -162,6 +163,7 @@ typedef uint32		s3lmwid32_t;	/** LM word id (uint32 for conserving space) */
 #define NOT_LMWID(lm,w)    (lm->is32bits? NOT_S3LMWID32(w): NOT_S3LMWID(w))
 #define IS_LMWID(lm,w)     (lm->is32bits? IS_S3LMWID32(w): IS_S3LMWID(w))
 #define MAX_LMWID(lm)      (lm->is32bits? MAX_S3LMWID32: MAX_S3LMWID)
+#endif
 
 typedef int32		s3latid_t;	/** Lattice entry id */
 #define BAD_S3LATID	((s3latid_t) -1)

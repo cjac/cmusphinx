@@ -350,7 +350,11 @@ static int32
 vh_lmstate_find(vithist_t * vh, vh_lmstate_t * lms)
 {
     vh_lms2vh_t *lms2vh;
+#ifdef OLD_LM_API
     s3lmwid32_t lwid;
+#else
+    int32 lwid;
+#endif
     gnode_t *gn;
 
     lwid = lms->lm3g.lwid[0];
@@ -378,7 +382,11 @@ static void
 vithist_lmstate_enter(vithist_t * vh, int32 vhid, vithist_entry_t * ve)
 {
     vh_lms2vh_t *lms2vh, *child;
+#ifdef OLD_LM_API
     s3lmwid32_t lwid;
+#else
+    int32 lwid;
+#endif
 
     lwid = ve->lmstate.lm3g.lwid[0];
     if ((lms2vh = vh->lms2vh_root[lwid]) == NULL) {

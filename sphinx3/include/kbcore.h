@@ -162,8 +162,13 @@ typedef struct {
     int32 maxNewHeurScore; /**< Temporary variables for phoneme lookahead. This stores the heuristic score */
     int32 lastfrm; /**, Temporary variables, should be removed */
 
+#ifdef OLD_LM_API
     s3lmwid32_t startwid;
     s3lmwid32_t finishwid;
+#else
+    int32 startwid;
+    int32 finishwid;
+#endif
     logmath_t *logmath;
 } kbcore_t;
 

@@ -301,10 +301,11 @@ int32 dag_bestpath (
     dict_t *dict,        /**<  The dictionary */
 #ifdef OLD_LM_API
     lm_t *lm,             /**< The LM */
+    s3lmwid32_t *dict2lmwid /**< A map from dictionary id to lm id, should use wid2lm insteead*/
 #else
     ngram_model_t *lm,    /**< The LM */
+    void *unused
 #endif
-    s3lmwid32_t *dict2lmwid /**< A map from dictionary id to lm id, should use wid2lm insteead*/
     ); 
 
 

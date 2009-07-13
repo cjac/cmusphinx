@@ -400,10 +400,11 @@ dag_bestpath(dag_t * dagp,      /* A pointer of the dag */
              dict_t * dict,     /* The dictionary */
 #ifdef OLD_LM_API
              lm_t * lm,         /* The LM */
+             s3lmwid32_t * dict2lmwid   /* A map from dictionary id to lm id, should use wid2lm insteead */
 #else
              ngram_model_t * lm,         /* The LM */
+             void *unused
 #endif
-             s3lmwid32_t * dict2lmwid   /* A map from dictionary id to lm id, should use wid2lm insteead */
     )
 {
     dagnode_t *d, *pd;
@@ -432,8 +433,13 @@ dag_bestpath(dag_t * dagp,      /* A pointer of the dag */
 
         /* Evaluate best path along pl if not yet evaluated (recursive step) */
         if (!pl->pscr_valid)
+#ifdef OLD_LM_API
             if (dag_bestpath(dagp, pl, d, lwf, dict, lm, dict2lmwid) < 0)
                 return -1;
+#else
+            if (dag_bestpath(dagp, pl, d, lwf, dict, lm, unused) < 0)
+                return -1;
+#endif
 
         /* Accumulated path score along pl->l */
         /*      E_INFO("lwid1 %d, wid1 %d, lwid2 %d, wid2 %d\n",
