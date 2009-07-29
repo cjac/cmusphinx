@@ -278,6 +278,8 @@ fillertree_init(kbcore_t * kbc)
 
     for (i = dict_filler_start(dict); i <= dict_filler_end(dict); i++) {
         if (dict_filler_word(dict, i)) {
+            E_DEBUG(1,("Filler word %s prob %d\n",
+                       dict_wordstr(dict, i), fillpen(kbc->fillpen, i)));
             wp[n].wid = i;
             wp[n].prob = fillpen(kbc->fillpen, i);
             n++;
@@ -298,7 +300,7 @@ lextree_report(lextree_t * ltree)
     E_INFO_NOFN("Type of the tree %d (0:unigram, 1: 2g, 2: 3g etc.)\n",
                 ltree->type);
     E_INFO_NOFN("Number of left contexts %d \n", ltree->n_lc);
-    E_INFO_NOFN("Number of node %d \n", ltree->n_node);
+    E_INFO_NOFN("Number of nodes %d \n", ltree->n_node);
     E_INFO_NOFN("Number of links in the tree %d\n",
                 num_lextree_links(ltree));
     /*
@@ -452,6 +454,8 @@ lextree_build(kbcore_t * kbc, wordprob_t * wordprob, int32 n_word,
     for (i = 0; i < n_word; i++) {
         wid = wordprob[i].wid;
         prob = wordprob[i].prob;
+        E_DEBUG(2,("%s wid %d prob %d\n",
+                   dict_wordstr(dict, wid), wid, prob));
 
         pronlen = dict_pronlen(dict, wid);
 
@@ -1130,6 +1134,8 @@ lextree_enter(lextree_t * lextree, s3cipid_t lc, int32 cf,
             ) {
             scr = inscore + ln->prob;
             if ((scr >= thresh) && (hmm_in_score(ln) < scr)) {
+                E_DEBUG(4,("entering non-leaf root node with %d + %d >= (thresh %d score %d)\n",
+                           inscore, ln->prob, thresh, hmm_in_score(&ln->hmm)));
                 hmm_in_score(ln) = scr;
                 hmm_in_history(ln) = inhist;
 
@@ -1392,18 +1398,20 @@ lextree_hmm_propagate_non_leaves(lextree_t * lextree, kbcore_t * kbc,
 
     list = lextree->active;
 
+    E_DEBUG(1, ("lextree_hmm_propagate_non_leaves: cf %d th %d pth %d wth %d\n",
+                cf, th, pth, wth)); 
     n = lextree->n_next_active;
-    /*    E_INFO("The size of n: %d\n",n); */
     assert(n == 0);
 
-    /*    E_INFO("No. of active node within the lexical tree: %d\n",lextree->n_active); */
+    E_DEBUG(1,("No. of active node within the lexical tree: %d\n",lextree->n_active));
 
     for (i = 0; i < lextree->n_active; i++) {
-        /*      E_INFO("%d, %d\n", i,  lextree->n_alloc_node); */
+        E_DEBUG(3,("Looking at node %d of %d\n", i,  lextree->n_alloc_node));
         ln = list[i];
 
         if (IS_S3WID(ln->wid)) {
-            /*      E_INFO("Is WID %d, ln->rc %d, ln->ssid %d\n",ln->wid, ln->rc, ln->ssid); */
+            E_DEBUG(3,("Is WID %d = %s, ln->rc %d, ln->ssid %d\n",
+                       ln->wid, dict_wordstr(dict, ln->wid), ln->rc, ln->ssid));
             assert(ln->ssid != BAD_S3SSID);
         }
 
@@ -1411,18 +1419,22 @@ lextree_hmm_propagate_non_leaves(lextree_t * lextree, kbcore_t * kbc,
         /* This if will activate nodes */
         if (hmm_frame(ln) < nf) {
             if (hmm_bestscore(ln) >= th) { /* Active in next frm */
+                E_DEBUG(4,("Activating (%d >= %d)\n", hmm_bestscore(&ln->hmm), th));
                 hmm_frame(ln) = nf;
                 lextree->next_active[n++] = ln;
             }
             else {              /* Deactivate */
+                E_DEBUG(4,("Deactivating (%d < %d)\n", hmm_bestscore(&ln->hmm), th));
                 hmm_clear((hmm_t *)ln);
             }
         }
 
         if (NOT_S3WID(ln->wid)) {       /* Not a leaf node */
+
             if (hmm_out_score(ln) < pth)
                 continue;       /* HMM exit score not good enough */
 
+            E_DEBUG(4,("Propagating (%d >= %d)\n", hmm_out_score(&ln->hmm), pth));
             if (heur_type > 0) {        /* In full expansion, this part is not
                                            really correct */
                 if (cf != kbc->lastfrm) {
@@ -1450,16 +1462,18 @@ lextree_hmm_propagate_non_leaves(lextree_t * lextree, kbcore_t * kbc,
                    If not, it could run on. 
                  */
                 if (dict2pid_is_composite(d2p) ||
-                    (!dict2pid_is_composite(d2p) && NOT_S3WID(ln2->wid))
-                    ) {         /* If we use composite triphone mode. Or If we are 
-                                   not using composite triphone mode but the next node
-                                   is not a leave node .
-                                   Just enter like it is a simple triphone. 
-                                 */
+                    (!dict2pid_is_composite(d2p) && NOT_S3WID(ln2->wid))) {
+                    /* If we use composite triphone mode. Or If we are 
+                       not using composite triphone mode but the next node
+                       is not a leave node .
+                       Just enter like it is a simple triphone. 
+                    */
                     newscore = hmm_out_score(ln) + (ln2->prob - ln->prob);
                     newHeurScore =
                         newscore + phn_heur_list[(int32) ln2->ci];
 
+                    E_DEBUG(4,("  newscore %d + %d - %d = %d\n",
+                               hmm_out_score(&ln->hmm), ln2->prob, ln->prob, newscore));
                     if (((heur_type == 0) ||    /*If the heuristic type is 0, 
                                                    by-pass heuristic score OR */
                          (heur_type > 0 && newHeurScore >= hth)) &&     /*If the heuristic type is other 
@@ -1473,6 +1487,7 @@ lextree_hmm_propagate_non_leaves(lextree_t * lextree, kbcore_t * kbc,
                         hmm_in_history(ln2) = hmm_out_history(ln);
 
                         if (hmm_frame(ln2) != nf) {
+                            E_DEBUG(4,("  entering this node\n"));
                             hmm_frame(ln2) = nf;
                             /*                  lextree_realloc_active_list(lextree,n+1); */
                             lextree->next_active[n++] = ln2;
@@ -1494,13 +1509,11 @@ lextree_hmm_propagate_non_leaves(lextree_t * lextree, kbcore_t * kbc,
                         n_ci = mdef_n_ciphone(mdef);
 
 
-#if 0
-                        E_INFO
+                        E_DEBUG(3,
                             ("Tree %d, Cross word expansion is carried out at cf %d for wid %d, wstr %s, ln->children %d\n",
                              lextree, cf, ln2->wid, dict_wordstr(kbc->dict,
                                                                  ln2->wid),
-                             ln2->children);
-#endif
+                             ln2->children));
 
                         rmap = kbc->dict2pid->rssid[ln2->ci][ln->ci].ssid;
                         n_rc =
@@ -1566,16 +1579,16 @@ lextree_hmm_propagate_non_leaves(lextree_t * lextree, kbcore_t * kbc,
     }
 
     lextree->n_next_active = n;
-#if 0
-    E_INFO("Debugging.\n");
+#ifdef SPHINX_DEBUG
+    E_DEBUG(3,("Debugging.\n"));
     for (i = 0; i < lextree->n_next_active; i++) {
         ln = lextree->next_active[i];
 
-        E_INFO(" ln->wid %d, str %s, ln->ssid %d, ln->rc %d,\n", ln->wid,
-               dict_wordstr(dict, ln->wid), ln->ssid, ln->rc);
+        E_DEBUG(3,(" ln->wid %d, str %s, ln->ssid %d, ln->rc %d,\n", ln->wid,
+                   dict_wordstr(dict, ln->wid), ln->ssid, ln->rc));
     }
 #endif
-    /*    E_INFO("lextree->n_next_active %d\n",    lextree->n_next_active); */
+    E_DEBUG(1,("lextree->n_next_active %d\n",    lextree->n_next_active));
     return LEXTREE_OPERATION_SUCCESS;
 }
 
@@ -1593,6 +1606,7 @@ lextree_hmm_propagate_leaves(lextree_t * lextree, kbcore_t * kbc,
     /* Code for heursitic score */
     list = lextree->active;
 
+    E_DEBUG(1, ("lextree_hmm_propagate_leaves: cf %d wth %d\n", cf, wth)); 
     for (i = 0; i < lextree->n_active; i++) {
         ln = list[i];
 
@@ -1611,7 +1625,9 @@ lextree_hmm_propagate_leaves(lextree_t * lextree, kbcore_t * kbc,
 
 
             /* Rescore the LM prob for this word wrt all possible predecessors */
-
+            E_DEBUG(1,("Rescoring exit %s with score %d\n",
+                       dict_wordstr(kbcore_dict(kbc), ln->wid),
+                       hmm_out_score(&ln->hmm) - ln->prob));
             if (dict2pid_is_composite(kbc->dict2pid)) {
                 vithist_rescore(vh, kbc, ln->wid, cf,
                                 hmm_out_score(ln) - ln->prob,

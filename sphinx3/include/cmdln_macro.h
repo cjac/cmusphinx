@@ -445,11 +445,16 @@ us a better architecture.
       "0", \
       "(Not used in Mode 3) Use wbeam for phone transitions every so many frames (if >= 1)" }
 
-#define common_application_properties_command_line_macro() \
-    { "-logfn", \
-      ARG_STRING, \
-      NULL, \
-      "Log file (default stdout/stderr)" }
+#define common_application_properties_command_line_macro()      \
+    { "-logfn",                                                 \
+      ARG_STRING,                                               \
+      NULL,                                                     \
+            "Log file (default stdout/stderr)" },               \
+    { "-debug",                                                 \
+            ARG_INT32,                                          \
+            NULL,                                               \
+            "Verbosity level for debugging messages"            \
+     }
 
 #define control_file_handling_command_line_macro() \
     { "-ctl", \

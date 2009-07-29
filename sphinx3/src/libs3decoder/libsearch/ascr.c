@@ -166,11 +166,9 @@ ascr_print_senscr(ascr_t * a)
     }
 
     for (i = 0; i < a->n_comsen; i++) {
-        if (a->comssid_active[i]) {
-            E_INFO("ascr->comsen[%d], %d\n", i, a->comsen[i]);
-            if (a->comsen[i] > 0)
-                E_WARN("Score of %d >0\n", i);
-        }
+	E_INFO("ascr->comsen[%d], %d\n", i, a->comsen[i]);
+	if (a->comsen[i] > 0)
+	    E_WARN("Score of %d >0\n", i);
     }
 }
 

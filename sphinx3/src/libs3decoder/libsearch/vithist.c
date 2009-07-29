@@ -590,9 +590,12 @@ vithist_frame_gc(vithist_t * vh, int32 frm)
 
     bs = MAX_NEG_INT32;
     bv = -1;
+    E_DEBUG(2,("GC in frame %d, scanning vithist entries from %d to %d\n",
+               frm, se, fe));
     for (i = se; i <= fe; i++) {
         ve = vithist_id2entry(vh, i);
         if (ve->valid) {
+            E_DEBUG(2,("Valid entry %d score %d\n", i, ve->path.score));
             if (i != te) {      /* Move i to te */
                 tve = vithist_id2entry(vh, te);
                 /**tve = *ve;*/
@@ -607,9 +610,7 @@ vithist_frame_gc(vithist_t * vh, int32 frm)
             te++;
         }
     }
-
-
-    /*    E_INFO("frm %d, bs %d vh->bestscore[frm] %d\n",frm, bs, vh->bestscore[frm]); */
+    E_DEBUG(2,("GC bs %d vh->bestscore[frm] %d\n", bs, vh->bestscore[frm]));
 
     /* Can't assert this any more because history pruning could actually make the 
        best token go away 
@@ -649,7 +650,7 @@ vithist_prune(vithist_t * vh, dict_t * dict, int32 frm,
     vithist_entry_t *ve;
     heap_t h;
     s3wid_t *wid;
-    int32 i;
+    int32 i, nhf;
 
     assert(frm >= 0);
 
@@ -662,6 +663,7 @@ vithist_prune(vithist_t * vh, dict_t * dict, int32 frm,
     wid = (s3wid_t *) ckd_calloc(maxwpf + 1, sizeof(s3wid_t));
     wid[0] = BAD_S3WID;
 
+    E_DEBUG(1, ("vithist_prune frame %d has %d entries\n", frm, fe-se+1));
     for (i = se; i <= fe; i++) {
         ve = vithist_id2entry(vh, i);
         heap_insert(h, (void *) ve, -(ve->path.score));
@@ -670,6 +672,7 @@ vithist_prune(vithist_t * vh, dict_t * dict, int32 frm,
 
     /* Mark invalid entries: beyond maxwpf words and below threshold */
     filler_done = 0;
+    nhf = 0;
     while ((heap_pop(h, (void **) (&ve), &i) > 0)
            && ve->path.score >= th /* the score (or the cw scores) is above threshold */
            && maxhist > 0)        /* Number of history is larger than 0 */
@@ -693,17 +696,20 @@ vithist_prune(vithist_t * vh, dict_t * dict, int32 frm,
                 --maxwpf;
                 --maxhist;
                 ve->valid = 1;
+                ++nhf;
             }
         }
         else if (!vh->bghist) {
             --maxhist;
             ve->valid = 1;
+            ++nhf;
         }
     }
 
     ckd_free((void *) wid);
     heap_destroy(h);
 
+    E_DEBUG(1, ("vithist_prune frame %d retained %d entries\n", frm, nhf));
     /* Garbage collect invalid entries */
     vithist_frame_gc(vh, frm);
 }

@@ -195,6 +195,8 @@ kb_init(kb_t * kb, cmd_ln_t *config)
     dict = kbcore_dict(kbcore);
     d2p = kbcore_dict2pid(kbcore);
 
+    err_set_debug_level(cmd_ln_int32_r(config, "-debug"));
+
     /* STRUCTURE INITIALIZATION: Initialize the beam data structure */
     if (cmd_ln_exists_r(config, "-ptranskip")) {
         kb->beam = beam_init(cmd_ln_float64_r(config, "-beam"),

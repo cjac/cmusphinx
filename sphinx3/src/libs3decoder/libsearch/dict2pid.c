@@ -1060,14 +1060,16 @@ dict2pid_comsseq2sen_active(dict2pid_t * d2p, mdef_t * mdef,
     for (ss = 0; ss < d2p->n_comsseq; ss++) {
         if (comssid[ss]) {
             csp = d2p->comsseq[ss];
-
+            E_DEBUG(4,("comssid[%d] is active:",ss));
             for (i = 0; i < mdef_n_emit_state(mdef); i++) {
                 cs = csp[i];
                 sp = d2p->comstate[cs];
+                E_DEBUGCONT(4,(" %d",cs));
 
                 for (j = 0; IS_S3SENID(sp[j]); j++)
                     sen[sp[j]] = 1;
             }
+            E_DEBUGCONT(4,("\n"));
         }
     }
 }
