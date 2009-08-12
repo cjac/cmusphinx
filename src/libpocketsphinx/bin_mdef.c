@@ -254,9 +254,21 @@ bin_mdef_read_text(cmd_ln_t *config, const char *filename)
     return bmdef;
 }
 
-void
+bin_mdef_t *
+bin_mdef_retain(bin_mdef_t *m)
+{
+    ++m->refcnt;
+    return m;
+}
+
+int
 bin_mdef_free(bin_mdef_t * m)
 {
+    if (m == NULL)
+        return 0;
+    if (--m->refcnt > 0)
+        return m->refcnt;
+
     switch (m->alloc_mode) {
     case BIN_MDEF_FROM_TEXT:
         ckd_free(m->ciname[0]);
@@ -277,6 +289,7 @@ bin_mdef_free(bin_mdef_t * m)
     ckd_free(m->ciname);
     ckd_free(m->sseq);
     ckd_free(m);
+    return 0;
 }
 
 static const char format_desc[] =

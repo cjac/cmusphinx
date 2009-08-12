@@ -349,8 +349,6 @@ dict_init(cmd_ln_t *config, bin_mdef_t *mdef)
     E_INFO("LEFT CONTEXT TABLES\n");
     dict->lcList = glist_reverse(dict->lcList);
     buildEntryTable(dict, dict->lcList, &dict->lcFwdTable);
-    buildExitTable(dict, dict->lcList, &dict->lcBwdTable, &dict->lcBwdPermTable,
-                   &dict->lcBwdSizeTable);
 
     E_INFO("RIGHT CONTEXT TABLES\n");
     dict->rcList = glist_reverse(dict->rcList);
@@ -376,9 +374,6 @@ dict_free(dict_t * dict)
         ckd_free(gnode_ptr(gn));
     }
     ckd_free(dict->lcFwdTable);
-    ckd_free_2d(dict->lcBwdTable);
-    ckd_free_2d(dict->lcBwdPermTable);
-    ckd_free(dict->lcBwdSizeTable);
     if (dict->lcHT)
         hash_table_free(dict->lcHT);
     glist_free(dict->lcList);

@@ -107,8 +107,7 @@
 
 #include "s3types.h"
 #include "bin_mdef.h"
-#include "s3_dict.h"
-#include "ctxt_table.h"
+#include "s3dict.h"
 
 /** \file dict2pid.h
  * \brief Building triphones for a dictionary. 
@@ -169,6 +168,17 @@ extern "C" {
 #if 0
 } /* Fool Emacs into not indenting things. */
 #endif
+
+/**
+ * \struct xwdssid_t
+ * \brief cross word triphone model structure 
+ */
+
+typedef struct {
+    s3ssid_t  *ssid;	/**< Senone Sequence ID list for all context ciphones */
+    s3cipid_t *cimap;	/**< Index into ssid[] above for each ci phone */
+    int32     n_ssid;	/**< #Unique ssid in above, compressed ssid list */
+} xwdssid_t;
 
 /**
    \struct dict2pid_t
@@ -238,6 +248,7 @@ typedef struct {
 #define dict2pid_n_comstate(d)		((d)->n_comstate)     /**< return number of composite state*/
 #define dict2pid_n_comsseq(d)		((d)->n_comsseq)      /**< return number of composite state sequence*/
 #define dict2pid_is_composite(d)	((d)->is_composite)      /**< return whether dict2pid is in composite triphone mode or not*/
+#define dict2pid_rssid(d,ci,lc) (&(d)->rssid[ci][lc])
 
 #define IS_COMPOSITE 1
 #define NOT_COMPOSITE 0
