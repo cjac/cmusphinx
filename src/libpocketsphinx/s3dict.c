@@ -328,6 +328,7 @@ s3dict_init(bin_mdef_t * mdef, const char *dictfile, const char *fillerfile,
      * Also check for type size restrictions.
      */
     d = (s3dict_t *) ckd_calloc(1, sizeof(s3dict_t));       /* freed in s3dict_free() */
+    d->refcnt = 1;
     d->max_words =
         (n + S3DICT_INC_SZ < MAX_S3WID) ? n + S3DICT_INC_SZ : MAX_S3WID;
     if (n >= MAX_S3WID)
