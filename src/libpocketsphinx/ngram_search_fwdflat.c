@@ -84,6 +84,7 @@ ngram_fwdflat_expand_all(ngram_search_t *ngs)
         bitvec_set(ngs->expand_word_flag, i);
         ngs->n_expand_words++;
     }
+    E_INFO("Utterance vocabulary contains %d words\n", ngs->n_expand_words);
     ngs->expand_word_list[ngs->n_expand_words] = -1;
     ngs->fwdflat_wordlist[ngs->n_expand_words] = -1;
 }
@@ -249,6 +250,7 @@ build_fwdflat_wordlist(ngram_search_t *ngs)
         }
     }
     ngs->fwdflat_wordlist[nwd] = -1;
+    E_INFO("Utterance vocabulary contains %d words\n", nwd);
 }
 
 /**
@@ -283,14 +285,16 @@ build_fwdflat_chan(ngram_search_t *ngs)
         rhmm->ci2phone = s3dict_pron(dict, wid, 1);
         rhmm->ciphone = s3dict_first_phone(dict, wid);
         rhmm->next = NULL;
-        hmm_init(ngs->hmmctx, &rhmm->hmm, TRUE, rhmm->ci2phone, rhmm->ciphone);
+        hmm_init(ngs->hmmctx, &rhmm->hmm, TRUE,
+                 bin_mdef_pid2ssid(ps_search_acmod(ngs)->mdef, rhmm->ciphone),
+                 rhmm->ciphone);
 
         /* HMMs for word-internal phones */
         prevhmm = NULL;
         for (p = 1; p < s3dict_pronlen(dict, wid) - 1; p++) {
             hmm = listelem_malloc(ngs->chan_alloc);
             hmm->ciphone = s3dict_pron(dict, wid, p);
-            hmm->info.rc_id = p + 1 - s3dict_pronlen(dict, wid);
+            hmm->info.rc_id = (p == s3dict_pronlen(dict, wid) - 1) ? 0 : -1;
             hmm->next = NULL;
             hmm_init(ngs->hmmctx, &hmm->hmm, FALSE,
                      dict2pid_internal(d2p,wid,p), hmm->ciphone);
@@ -432,6 +436,7 @@ fwdflat_prune_chan(ngram_search_t *ngs, int frame_idx)
     thresh = ngs->best_score + ngs->fwdflatbeam;
     wordthresh = ngs->best_score + ngs->fwdflatwbeam;
     pip = ngs->pip;
+    E_DEBUG(3,("frame %d thresh %d wordthresh %d\n", frame_idx, thresh, wordthresh));
 
     /* Scan all active words. */
     for (w = *(awl++); i > 0; --i, w = *(awl++)) {
@@ -498,7 +503,7 @@ fwdflat_prune_chan(ngram_search_t *ngs, int frame_idx)
                             nexthmm = hmm->next;
                             /* Enter all right-context phones. */
                             if (nexthmm->info.rc_id >= 0) {
-                                for (; nexthmm; nexthmm = nexthmm->next) {
+                                 for (; nexthmm; nexthmm = nexthmm->next) {
                                     if ((hmm_frame(&nexthmm->hmm) < cf)
                                         || (newscore BETTER_THAN
                                             hmm_in_score(&nexthmm->hmm))) {
@@ -627,6 +632,8 @@ fwdflat_word_transition(ngram_search_t *ngs, int frame_idx)
                 newscore = rcss[rssid->cimap[s3dict_first_phone(dict, w)]];
             else
                 newscore = rcss[0];
+            if (newscore == WORST_SCORE)
+                continue;
             /* FIXME: Floating point... */
             newscore += lwf
                 * ngram_tg_score(ngs->lmset,

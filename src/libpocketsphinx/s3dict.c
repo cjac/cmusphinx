@@ -362,6 +362,7 @@ s3dict_init(bin_mdef_t * mdef, const char *dictfile, const char *fillerfile,
         E_INFO("%d words read\n", d->n_word - d->filler_start);
     }
     sil = bin_mdef_silphone(mdef);
+#if 0
     for (n = i = 0; i < mdef->n_ciphone; ++i) {
         /*
          * SIL is disguised as <sil>
@@ -379,6 +380,7 @@ s3dict_init(bin_mdef_t * mdef, const char *dictfile, const char *fillerfile,
         }
     }
     E_INFO("Added %d fillers from mdef file\n", n);
+#endif
     if (s3dict_wordid(d, S3_START_WORD) == BAD_S3WID) {
         s3dict_add_word(d, S3_START_WORD, &sil, 1);
     }

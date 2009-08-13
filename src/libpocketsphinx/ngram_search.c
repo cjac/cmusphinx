@@ -522,8 +522,12 @@ ngram_search_alloc_all_rc(ngram_search_t *ngs, int32 w)
         hmm->info.rc_id = 0;
         hmm->ciphone = s3dict_last_phone(ps_search_dict(ngs),w);
         hmm_init(ngs->hmmctx, &hmm->hmm, FALSE, rssid->ssid[0], hmm->ciphone);
+        E_DEBUG(3,("allocated rc_id 0 ssid %d ciphone %d lc %d word %s\n",
+                   rssid->ssid[0], hmm->ciphone,
+                   s3dict_second_last_phone(ps_search_dict(ngs),w),
+                   s3dict_wordstr(ps_search_dict(ngs),w)));
     }
-    for (i = 0; i < rssid->n_ssid; ++i) {
+    for (i = 1; i < rssid->n_ssid; ++i) {
         if ((hmm->next == NULL) || (hmm_nonmpx_ssid(&hmm->next->hmm) != rssid->ssid[i])) {
             thmm = listelem_malloc(ngs->chan_alloc);
             thmm->next = hmm->next;
@@ -533,6 +537,10 @@ ngram_search_alloc_all_rc(ngram_search_t *ngs, int32 w)
             hmm->info.rc_id = i;
             hmm->ciphone = s3dict_last_phone(ps_search_dict(ngs),w);
             hmm_init(ngs->hmmctx, &hmm->hmm, FALSE, rssid->ssid[i], hmm->ciphone);
+            E_DEBUG(3,("allocated rc_id %d ssid %d ciphone %d lc %d word %s\n",
+                       i, rssid->ssid[i], hmm->ciphone,
+                       s3dict_second_last_phone(ps_search_dict(ngs),w),
+                       s3dict_wordstr(ps_search_dict(ngs),w)));
         }
         else
             hmm = hmm->next;
