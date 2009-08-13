@@ -89,6 +89,7 @@ bin_mdef_read_text(cmd_ln_t *config, const char *filename)
 
 
     bmdef = ckd_calloc(1, sizeof(*bmdef));
+    bmdef->refcnt = 1;
 
     /* Easy stuff.  The mdef.c code has done the heavy lifting for us. */
     bmdef->n_ciphone = mdef->n_ciphone;
@@ -357,6 +358,7 @@ bin_mdef_read(cmd_ln_t *config, const char *filename)
 
     /* Finally allocate it. */
     m = ckd_calloc(1, sizeof(*m));
+    m->refcnt = 1;
 
     /* Don't bother to check each one, since they will all fail if one failed. */
     fread(&m->n_ciphone, 4, 1, fh);
