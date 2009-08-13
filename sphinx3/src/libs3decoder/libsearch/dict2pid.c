@@ -756,7 +756,7 @@ dict2pid_build(mdef_t * mdef, dict_t * dict, int32 is_composite, logmath_t *logm
                 for (r = 0; r < mdef_n_ciphone(mdef); r++) {
                     p = mdef_phone_id_nearest(mdef, (s3cipid_t) b,
                                               (s3cipid_t) l, (s3cipid_t) r,
-                                              WORD_POSN_BEGIN);
+                                              WORD_POSN_END);
                     dict2pid->rdiph_rc[b][l][r] = mdef_pid2ssid(mdef, p);
                 }
             }
