@@ -812,6 +812,8 @@ bin_mdef_phone_id_nearest(bin_mdef_t * m, int32 b, int32 l, int32 r, int32 pos)
 {
     int p, tmppos;
 
+
+
     /* In the future, we might back off when context is not available,
      * but for now we'll just return the CI phone. */
     if (l < 0 || r < 0)
@@ -831,10 +833,15 @@ bin_mdef_phone_id_nearest(bin_mdef_t * m, int32 b, int32 l, int32 r, int32 pos)
     }
 
     /* Nothing yet; backoff to silence phone if non-silence filler context */
+    /* In addition, backoff to silence phone on left/right if in beginning/end position */
     if (m->sil >= 0) {
-        int newl, newr;
-        newl = m->phone[(int)l].info.ci.filler ? m->sil : l;
-        newr = m->phone[(int)r].info.ci.filler ? m->sil : r;
+        int newl = l, newr = r;
+        if (m->phone[(int)l].info.ci.filler
+            || pos == WORD_POSN_BEGIN || pos == WORD_POSN_SINGLE)
+            newl = m->sil;
+        if (m->phone[(int)r].info.ci.filler
+            || pos == WORD_POSN_END || pos == WORD_POSN_SINGLE)
+            newr = m->sil;
         if ((newl != l) || (newr != r)) {
             p = bin_mdef_phone_id(m, b, newl, newr, pos);
             if (p >= 0)
