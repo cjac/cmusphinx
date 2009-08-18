@@ -204,6 +204,8 @@ create_search_tree(ngram_search_t *ngs)
 
         /* Handle single-phone words individually; not in channel tree */
         if (s3dict_pronlen(dict, w) == 1) {
+            E_DEBUG(1,("single_phone_wid[%d] = %s\n",
+                       ngs->n_1ph_LMwords, s3dict_wordstr(dict, w)));
             ngs->single_phone_wid[ngs->n_1ph_LMwords++] = w;
             continue;
         }
@@ -301,16 +303,19 @@ create_search_tree(ngram_search_t *ngs)
     }
 
     ngs->n_1ph_words = ngs->n_1ph_LMwords;
-    ngs->n_1ph_LMwords++;            /* including </s> */
 
+    /* Add filler words to the array of 1ph words. */
     for (w = 0; w < n_words; ++w) {
         /* Skip anything that doesn't actually have a single phone. */
         if (s3dict_pronlen(dict, w) != 1)
             continue;
-        /* Skip non-fillers that aren't in the LM. */
-        if ((!s3dict_filler_word(dict, w))
-            && (!ngram_model_set_known_wid(ngs->lmset, s3dict_basewid(dict, w))))
+        /* Also skip "real words" and things that are in the LM. */
+        if (s3dict_real_word(dict, w))
             continue;
+        if (ngram_model_set_known_wid(ngs->lmset, s3dict_basewid(dict, w)))
+            continue;
+        E_DEBUG(1,("single_phone_wid[%d] = %s\n",
+                   ngs->n_1ph_words, s3dict_wordstr(dict, w)));
         ngs->single_phone_wid[ngs->n_1ph_words++] = w;
     }
 
@@ -1040,6 +1045,10 @@ prune_word_chan(ngram_search_t *ngs, int frame_idx)
     for (i = 0; i < ngs->n_1ph_words; i++) {
         w = ngs->single_phone_wid[i];
         rhmm = (root_chan_t *) ngs->word_chan[w];
+        E_DEBUG(3,("Single phone word %s frame %d score %d thresh %d outscore %d nwthresh %d\n",
+                   s3dict_wordstr(ps_search_dict(ngs),w),
+                   hmm_frame(&rhmm->hmm), hmm_bestscore(&rhmm->hmm),
+                   lastphn_thresh, hmm_out_score(&rhmm->hmm), newword_thresh));
         if (hmm_frame(&rhmm->hmm) < frame_idx)
             continue;
         if (hmm_bestscore(&rhmm->hmm) BETTER_THAN lastphn_thresh) {
@@ -1047,8 +1056,10 @@ prune_word_chan(ngram_search_t *ngs, int frame_idx)
 
             /* Could if ((! skip_alt_frm) || (frame_idx & 0x1)) the following */
             if (hmm_out_score(&rhmm->hmm) BETTER_THAN newword_thresh) {
-                E_DEBUG(4,("Exiting single phone word %s with %d\n",
-                           s3dict_wordstr(ps_search_dict(ngs),w), hmm_out_score(&rhmm->hmm)));
+                E_DEBUG(4,("Exiting single phone word %s with %d > %d, %d\n",
+                           s3dict_wordstr(ps_search_dict(ngs),w),
+                           hmm_out_score(&rhmm->hmm),
+                           lastphn_thresh, newword_thresh));
                 ngram_search_save_bp(ngs, frame_idx, w,
                              hmm_out_score(&rhmm->hmm),
                              hmm_out_history(&rhmm->hmm), 0);
