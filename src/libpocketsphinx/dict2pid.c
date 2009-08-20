@@ -708,7 +708,6 @@ dict2pid_build(bin_mdef_t * mdef, s3dict_t * dict, int32 is_composite, logmath_t
             b = s3dict_pron(dict, w, 0);
             r = s3dict_pron(dict, w, 1);
             if (NOT_S3SSID(ldiph[b][r])) {
-
                 if (dict2pid->is_composite) {
                     /* Get all ssids for b(?,r) */
                     g = ldiph_comsseq(mdef, b, r);
@@ -716,6 +715,10 @@ dict2pid_build(bin_mdef_t * mdef, s3dict_t * dict, int32 is_composite, logmath_t
                     ldiph[b][r] =
                         ssidlist2comsseq(g, mdef, dict2pid, hs, hp);
                     glist_free(g);
+                }
+                else {
+                    /* Mark this as done (we will ignore the actual value) */
+                    ldiph[b][r] = 0;
                 }
 
                 /* Record all possible ssids for b(?,r) */
@@ -760,6 +763,10 @@ dict2pid_build(bin_mdef_t * mdef, s3dict_t * dict, int32 is_composite, logmath_t
                         ssidlist2comsseq(g, mdef, dict2pid, hs, hp);
                     glist_free(g);
                 }
+                else {
+                    /* Mark this as done (we will ignore the actual value) */
+                    rdiph[b][l] = 0;
+                }
 
                 for (r = 0; r < bin_mdef_n_ciphone(mdef); r++) {
                     p = bin_mdef_phone_id_nearest(mdef, (s3cipid_t) b,
@@ -784,7 +791,6 @@ dict2pid_build(bin_mdef_t * mdef, s3dict_t * dict, int32 is_composite, logmath_t
 
                 /* Find or build composite senone sequence for b(?,?) */
                 if (NOT_S3SSID(single[b])) {
-
                     g = single_comsseq(mdef, b);
                     single[b] =
                         ssidlist2comsseq(g, mdef, dict2pid, hs, hp);
