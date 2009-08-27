@@ -425,13 +425,14 @@ ppath_free(astar_t *astar)
 
 
 static void
-ppath_seg_write(FILE * fp, ppath_t * pp, dict_t *dict, lm_t *lm, int32 ascr)
+ppath_seg_write(FILE * fp, ppath_t * pp, dict_t *dict, lm_t *lm, int32 ascr, dagnode_t *old)
 {
     int32 lscr_base;
+    daglink_t *l;
 
     if (pp->hist)
         ppath_seg_write(fp, pp->hist, dict, lm,
-                        pp->pscr - pp->hist->pscr - pp->lscr);
+                        pp->pscr - pp->hist->pscr - pp->lscr, pp->dagnode);
 
     /* FIXME: This will be wrong if lwf != 1.0 */
     lscr_base = pp->hist ? lm_rawscore(lm, pp->lscr) : 0;
@@ -440,13 +441,20 @@ ppath_seg_write(FILE * fp, ppath_t * pp, dict_t *dict, lm_t *lm, int32 ascr)
             pp->dagnode->sf, ascr, lscr_base, dict_wordstr(dict,
                                                            pp->dagnode->
                                                            wid));
-*/    
-
-    fprintf(fp, " %d %lf %lf %s",
-            pp->dagnode->sf, logs3_to_log(ascr), logs3_to_log(lscr_base), dict_wordstr(dict,
+*/  
+   fprintf(fp, " %d %lf %lf %s",
+                pp->dagnode->sf, logs3_to_log(ascr), logs3_to_log(lscr_base), dict_wordstr(dict,
                                                            pp->dagnode->
                                                            wid));
 
+    if (old){ /* on cherche le lien entre les 2 noeuds pour y détecter un éventuel bypass */
+      for ( l=pp->dagnode->succlist; l && l->node!=old; l=l->next);
+      assert (l);
+
+/* En cas de bypass */
+      if (l->bypass)
+        fprintf(fp, " %d 0 0 [filler]", l->bypass->src->sf /* début du filler qui suit le mot = fin du mot */ );
+    }
 }
 
 
@@ -467,7 +475,7 @@ nbest_hyp_write(FILE * fp, ppath_t * top, dict_t *dict, lm_t *lm, int32 pscr, in
 /*    fprintf(fp, "T %d A %d L %d", pscr, pscr - lscr, lscr_base);*/
   fprintf(fp, "T %lf A %lf L %lf", logs3_to_log(pscr), logs3_to_log(pscr - lscr), logs3_to_log(lscr_base));
 
-    ppath_seg_write(fp, top, dict, lm, pscr - top->pscr);
+    ppath_seg_write(fp, top, dict, lm, pscr - top->pscr, NULL);
 
     fprintf(fp, " %d\n", nfr);
     fflush(fp);
@@ -734,7 +742,7 @@ nbest_search(dag_t *dag, char *filename, char *uttid, float64 lwf,
         top = astar_next_ppath(astar);
         if (top == NULL)
             break;
-        if (0) nbest_hyp_write(fp, top, dict, lm,
+        /*if (0)*/ nbest_hyp_write(fp, top, dict, lm,
                         top->pscr + dag->final.ascr,
                         dag->nfrm);
         n_hyp++;
@@ -746,7 +754,8 @@ nbest_search(dag_t *dag, char *filename, char *uttid, float64 lwf,
         if (worsthyp > top->pscr)
             worsthyp = top->pscr;
     }
-    if (theBest) nbest_hyp_write(fp, theBest, dict, lm,
+   if(0) /* moi aussi je sais faire (Yannick) :-) */
+	 if (theBest) nbest_hyp_write(fp, theBest, dict, lm,
                                  theBest->pscr + dag->final.ascr,
                                  dag->nfrm);
 

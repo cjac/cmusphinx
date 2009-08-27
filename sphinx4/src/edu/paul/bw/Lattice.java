@@ -229,7 +229,7 @@ public class Lattice  implements Configurable{
 	    }
 	    SentenceHMMState resultat=resultat=nodes.get(keyInit);
 	    if (base>0) {
-		if (dump) dumpAISee("aisee"+file.getName());
+		if (dump) dumpAISee("aisee"+file.getName()+".dot");
 		nodes.clear();}
 	    logger.fine("res:"+resultat);
 	    return resultat;
@@ -346,7 +346,12 @@ public class Lattice  implements Configurable{
 	}
 	HMM hmm= am.lookupNearestHMM(cd,position,true);
 	if (hmm==null) {
+	    hmm=am.lookupNearestHMM(cd,position,false);
+	    if (hmm==null)
 	  throw   new Error( "ratee " + cd +" p:"+ position);
+	    else 
+		logger.warning("pas vu le phone :"  + cd +" p:"+ position+
+			       " pris:"+hmm);
 	}
 	int nState=hmm.getOrder()+1;
 	//c'est le bordel between getOrder et numState getOrder= number of emittings states 
@@ -393,11 +398,12 @@ public class Lattice  implements Configurable{
 		// dans le cas ou un phoneme se repete dans l'alignement ...
 	    for (int i=ph.getStartFrame() ; i<= ph.getEndFrame() ; i++) {
 		if (i>=timeStamp.size()) {
-		    System.err.println ("--"+u+"---"+ph.getStartFrame() + " "+ph.getEndFrame()+"tt"+ph);}
-		if (count.containsKey(timeStamp.get(i)))
-		    count.put(timeStamp.get(i), count.get(timeStamp.get(i))+1);
+		    logger.warning ("on deborde --"+u+"---"+ph.getStartFrame() + " "+ph.getEndFrame()+"tt"+ph+" i:"+i);}
 		else
-		    count.put(timeStamp.get(i),1);
+		    if (count.containsKey(timeStamp.get(i)))
+			count.put(timeStamp.get(i), count.get(timeStamp.get(i))+1);
+		    else
+			count.put(timeStamp.get(i),1);
 	    }
 	    float valeur=-1.0f;
 	    
