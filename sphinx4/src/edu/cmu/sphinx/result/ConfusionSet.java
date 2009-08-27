@@ -27,6 +27,24 @@ import java.util.Comparator;
 public class ConfusionSet extends ArrayList<WordResult> {
     private boolean tri=false;
     private boolean hasFiller=false;
+    private int beginTime;
+    private int endTime;
+    public void setEndTime(int t){
+	endTime=t;
+    }
+    public int getEndTime() {
+	return endTime;
+    }
+ public void setBeginTime(int t){
+	beginTime=t;
+    }
+    public int getBeginTime() {
+	return beginTime;
+    }
+
+
+
+
     public void setHasFiller(boolean b) {
 	this.hasFiller=b;
     }
@@ -40,7 +58,7 @@ public class ConfusionSet extends ArrayList<WordResult> {
      */
     static Comparator<WordResult> comp= new Comparator<WordResult> (){ 
 	public int compare (WordResult wr1,WordResult wr2){
-	    return Double.compare(wr2.getConfidence(),wr1.getConfidence());}
+	    return Double.compare(wr1.getConfidence(),wr2.getConfidence());}
     };
 
     public void addWordHypothesis(WordResult word) {
@@ -66,7 +84,7 @@ public class ConfusionSet extends ArrayList<WordResult> {
     //return super.get(n);
     //}
     public WordResult getBestHypothesis() {
-	return get(0); 
+	return get(size()-1); 
     }
     
     /**
@@ -75,7 +93,7 @@ public class ConfusionSet extends ArrayList<WordResult> {
      * @return the highes posterior
      */
     public double getBestPosterior() {
-        return get(0).getConfidence();
+        return get(size()-1).getConfidence();
     }
 
     /**

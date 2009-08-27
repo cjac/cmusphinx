@@ -124,7 +124,8 @@ class HMMTree {
                 if (hmmNode == null) {
                     hmmNode = new HMMNode(hmm, LogMath.getLogOne());
                     resultMap.put(hmm, hmmNode);
-                }
+                } 
+		//else { System.err.println (" je confonds : " + hmm + " baseUnit " + baseUnit + " lc " + lc + " " + rc+ " nofde " + hmmNode ); } //paul
                 hmmNode.addRC(rc);
                 for (Iterator j = endNode.getSuccessors().iterator();
                             j.hasNext(); ) {

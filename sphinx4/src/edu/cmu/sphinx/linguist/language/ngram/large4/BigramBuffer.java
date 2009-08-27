@@ -26,8 +26,8 @@ class BigramBuffer extends NGramBuffer {
      * @param numberNGrams the number of bigram follows in the byte[]
      */
     public BigramBuffer(byte[] bigramsOnDisk,
-			int numberNGrams, boolean bigEndian) {
-        super(bigramsOnDisk, numberNGrams, bigEndian);
+			int numberNGrams, boolean bigEndian, int bytesPerIDField) {
+        super(bigramsOnDisk, numberNGrams, bigEndian, bytesPerIDField);
     }
 
 
@@ -55,8 +55,8 @@ class BigramBuffer extends NGramBuffer {
 //                break;
 //	    }
         }
-        if (end!=getNumberNGrams()-1 &&  secondWordID== getWordID(start) ) 
-        	return getBigramProbability(start);
+        if (end!=getNumberNGrams()-1 &&  secondWordID== getWordID(end) ) 
+        	return getBigramProbability(end);
         return null;
     }
 
@@ -69,13 +69,13 @@ class BigramBuffer extends NGramBuffer {
      * @return the BigramProbability of the nth follower
      */
     public final BigramProbability getBigramProbability(int nthFollower) {
-        int nthPosition = nthFollower * LargeQuadrigramModel.BYTES_PER_BIGRAM;
+        int nthPosition = nthFollower * LargeQuadrigramModel.ID_FIELDS_PER_BIGRAM * getBytesPerIDField();
 	setPosition(nthPosition);
 
-        int wordID = readTwoBytesAsInt();
-        int probID = readTwoBytesAsInt();
-        int backoffID = readTwoBytesAsInt();
-        int firstTrigram = readTwoBytesAsInt();
+        int wordID = readIDField();
+        int probID = readIDField();
+        int backoffID = readIDField();
+        int firstTrigram = readIDField();
 
         return (new BigramProbability
                 (nthFollower, wordID, probID, backoffID, firstTrigram));

@@ -30,7 +30,7 @@ import java.text.DecimalFormat;
 
 public class Confidence {
 
-    private static DecimalFormat format = new DecimalFormat("#.#####");
+    private static DecimalFormat format = new DecimalFormat("#.###########");
 
     /**
      * Main method for running the Confidence demo.
@@ -38,15 +38,20 @@ public class Confidence {
     public static  void  confucius(ConfidenceScorer cs, Result result)  {
 
 	ConfidenceResult cr = cs.score(result);
-	Path best = cr.getBestHypothesis();
+	Path best;
+	if (cr==null) {
+	    System.err.println("j'ai rate la sauccise \n");
+            return;
+	}
+	 best = cr.getBestHypothesis();
 
 	/* confidence of the best path */
 	System.out.println(best.getTranscription());
-	System.out.println
-	    ("     (confidence: " +
-	     format.format(best.getLogMath().logToLinear
-			   ((float)best.getConfidence()))
-	     + ")");
+	System.out.format(
+			  "(confidence: %.4g ) ",
+			  best.getLogMath().logToLinear
+			  ((float)best.getConfidence()));
+	   
 	System.out.println();
                         
 	/*
@@ -68,7 +73,7 @@ public class Confidence {
      * @param wr the WordResult to print
      */
     private static void printWordConfidence(WordResult wr) {
-        String word = wr.getPronunciation().getWord().getSpelling();
+        String word = wr.getWord().getSpelling();
 
         System.out.print(word);
 

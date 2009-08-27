@@ -272,15 +272,17 @@ public class Utilities {
     }
     public static long swapLong(long integer) {
 	long deb, fin;
-	deb = 0xffffffff & integer;
+	deb = 0xffffffffl & integer;
 	fin = integer >>32;
+	fin = fin & 0xffffffffl;
+	System.err.printf("%16X:%16X\n",fin,deb);
 	deb=swapIntegerLong(deb);
 	fin=swapIntegerLong(fin);
 	deb=    deb <<32;
 	return deb|fin;
     }
-    public static double swapDouble(double floatValue) {
-        return Double.longBitsToDouble
+    public static long swapDouble(double floatValue) {
+        return 
             (swapLong(Double.doubleToRawLongBits(floatValue)));
     }
 

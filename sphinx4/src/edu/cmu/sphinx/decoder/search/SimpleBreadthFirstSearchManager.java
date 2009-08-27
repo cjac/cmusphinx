@@ -518,8 +518,11 @@ public class SimpleBreadthFirstSearchManager implements SearchManager {
             tokenSet = new HashSet();
             for (Iterator i = resultList.iterator(); i.hasNext();) {
                 Token token = (Token) i.next();
+                if (logger.isLoggable(Level.FINE))
+		    logger.fine("---------\n" + token);
                 while (token != null) {
                     tokenSet.add(token);
+		    logger.fine(" " + token);
                     token = token.getPredecessor();
                 }
             }

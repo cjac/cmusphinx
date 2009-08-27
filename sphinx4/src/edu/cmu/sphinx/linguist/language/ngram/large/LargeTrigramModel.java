@@ -288,6 +288,7 @@ public class LargeTrigramModel implements LanguageModel {
      * @see edu.cmu.sphinx.linguist.language.ngram.LanguageModel#allocate()
      */
     public void allocate() throws IOException {
+	try {
         Timer.start("LM Load");
         // create the log file if specified
         if (ngramLogFile != null) {
@@ -297,6 +298,7 @@ public class LargeTrigramModel implements LanguageModel {
         loadedTrigramBuffer = new HashMap();
         trigramCache = new LRUCache(maxTrigramCacheSize);
         bigramCache = new LRUCache(maxBigramCacheSize);
+	logger.info("je lance le loader\n");
         loader = new BinaryLoader(format, location, applyLanguageWeightAndWip,
                 logMath, languageWeight, wip, unigramWeight);
         unigrams = loader.getUnigrams();
@@ -333,7 +335,15 @@ public class LargeTrigramModel implements LanguageModel {
             }
         }
         Timer.stop("LM Load");
-
+	}
+	catch (Exception e) {
+	    e.printStackTrace();
+	    throw new Error("bbbbbb");
+	}
+	catch (Error e) {
+	    e.printStackTrace();
+	    throw e;
+	}
     }
 
     /*
@@ -342,8 +352,9 @@ public class LargeTrigramModel implements LanguageModel {
      * @see edu.cmu.sphinx.linguist.language.ngram.LanguageModel#deallocate()
      */
     public void deallocate() {
-        // TODO write me
 
+        // TODO write me
+	if (logFile !=null) logFile.close();
     }
 
     /**

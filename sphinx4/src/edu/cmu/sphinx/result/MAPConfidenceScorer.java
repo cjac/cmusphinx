@@ -128,8 +128,17 @@ public class MAPConfidenceScorer implements ConfidenceScorer, Configurable {
      */
     int compte =0;
     public ConfidenceResult score(Result result) { 
-       System.err.println("pre lat");
+	System.err.println("pre lat");
         Lattice lattice = new Lattice(result);
+	return score(lattice,result);
+    }
+    public ConfidenceResult score(Lattice lattice){
+	return score(lattice,null);
+    }
+
+    private  ConfidenceResult score(Lattice lattice, Result result) {
+	
+	
         System.err.println("post lat");
 	if (false&& dumpLattice) {  
             lattice.dumpAISee("toto.gdl" + compte, "noop latt");
@@ -144,9 +153,9 @@ public class MAPConfidenceScorer implements ConfidenceScorer, Configurable {
 	    }
 	}
         LatticeOptimizer lop = new LatticeOptimizer(lattice);
-        lop.optimize();
+        //lop.optimize();
 	System.err.println("posterior");
-	lattice.computeNodePosteriors(languageWeight);
+	lattice.computeNodePosteriors(languageWeight,false,30,0,0.7f,null,languageWeight);
 	if (dumpLattice&& false) {
 	    try {
 	    PrintWriter op =
@@ -164,7 +173,7 @@ public class MAPConfidenceScorer implements ConfidenceScorer, Configurable {
         }
 
         lattice.computeNodePosteriors(languageWeight);
-        SausageMaker sm = new SausageMaker(lattice);
+        SausageMakerFast sm = new SausageMakerFast(lattice);
         Sausage s = sm.makeSausage();
 
         if (dumpSausage) {
@@ -172,6 +181,7 @@ public class MAPConfidenceScorer implements ConfidenceScorer, Configurable {
         }
 
         ConfidenceResult sausage = (ConfidenceResult) s;
+	if (result==null) return sausage;
         WordResultPath mapPath = new WordResultPath();
         List wordTokens = getWordTokens(result.getBestToken());
 

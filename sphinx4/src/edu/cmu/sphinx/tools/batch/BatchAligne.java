@@ -15,10 +15,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
-import java.io.BufferedWriter;
-import java.io.PrintWriter;
+import java.io.PrintStream;
 import java.io.BufferedReader;
 import java.io.FileReader;
 
@@ -77,6 +74,14 @@ public class BatchAligne implements Configurable {
      * The sphinx property that specifies the feat'extension
      */
     public final static String PROP_LATTICE_DIR_DEFAULT = "latDir";
+ /**
+     * The sphinx property that specifies the lattice directory
+     */
+    public final static String PROP_LATTICE_EXT = "latExt";
+    /**
+     * The sphinx property that specifies the feat'extension
+     */
+    public final static String PROP_LATTICE_EXT_DEFAULT = "saus";
 
     public final static String PROP_ALIGNER = "aligner";
     /**
@@ -95,10 +100,11 @@ public class BatchAligne implements Configurable {
     private Dictionary dictionary;
     private Logger logger;
     private String latDir;
+    private String latExt;
     private ConfigurationManager cm;
     private Aligner al;
-    private String stmName;
-    private float seuil;
+    private String stmName,ctmName;
+    private float seuil,sanseps,aveceps;
     /**
  
     // -------------------------------
@@ -122,8 +128,12 @@ public class BatchAligne implements Configurable {
         registry.register(PROP_ALIGNER, 
                           PropertyType.COMPONENT);
 	registry.register(PROP_STM,PropertyType.STRING);
+	registry.register("ctmName",PropertyType.STRING);
 	registry.register(PROP_LATTICE_DIR, PropertyType.STRING);
+	registry.register(PROP_LATTICE_EXT, PropertyType.STRING);
       	registry.register(PROP_SEUIL,PropertyType.FLOAT);
+      	registry.register("sanseps",PropertyType.FLOAT);
+      	registry.register("aveceps",PropertyType.FLOAT);
     }
 
     /*
@@ -143,12 +153,16 @@ public class BatchAligne implements Configurable {
         al = (Aligner) ps.getComponent(PROP_ALIGNER,
 						  Aligner.class);
 	stmName = ps.getString(PROP_STM,PROP_STM_DEFAULT);
+	ctmName = ps.getString("ctmName",null);
   //       dictionary =(Dictionary)  ps.getComponent
 //             (PROP_DICTIONARY, Dictionary.class);
 
 
         latDir = ps.getString(PROP_LATTICE_DIR,PROP_LATTICE_DIR_DEFAULT);
+        latExt = ps.getString(PROP_LATTICE_EXT,PROP_LATTICE_EXT_DEFAULT);
 	seuil  =ps.getFloat(PROP_SEUIL,PROP_SEUIL_DEFAULT);
+	sanseps  =ps.getFloat("sanseps",seuil);
+	aveceps  =ps.getFloat("aveceps",seuil);
     }
     /*
      * (non-Javadoc)
@@ -175,14 +189,23 @@ public class BatchAligne implements Configurable {
      *                 if there is an I/O error processing the batch file
      */
     public void decode(String batchFile) {
-	PrintWriter stmWriter=null;
+	PrintStream stmWriter=null,ctmWriter=System.out;
+	
 	if (stmName!= null) 
 	    try {
-		stmWriter =new PrintWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(stmName),
-										     "ISO8859_1")));
+		stmWriter =new PrintStream(//new BufferedWriter(new OutputStreamWriter(new FileOutputStream(
+					   stmName,
+										     "ISO8859_1");
         	
 	    } catch (IOException ioe) {
 		System.err.println("IO erreur durant stm file" + stmName +" "+ ioe);
+	    }
+	if (ctmName!= null) 
+	    try {
+		ctmWriter =new PrintStream(ctmName,"ISO8859_1");
+        	
+	    } catch (IOException ioe) {
+		System.err.println("IO erreur durant stm file" + ctmName +" "+ ioe);
 	    }
 	int count = 0 ;
 	List <String> list = new ArrayList<String> ();
@@ -210,13 +233,16 @@ public class BatchAligne implements Configurable {
 	    for(String l: list){
 		Matcher m=an.matcher(l);
 		if(!m.find()) throw new Error(l);
-		Sausage saus= new Sausage(SplitNameFile.splitNameFile(latDir,m.group(2),"saus"),seuil);// faudra changer cela
-		stmWriter.println(al.aligner(m.group(1),saus));
+		Sausage saus= new Sausage(SplitNameFile.splitNameFile(latDir,m.group(2),latExt),
+					  seuil,aveceps,sanseps);// faudra changer cela
+		if (stmWriter!=null)	stmWriter.println(m.group(2) +" "+al.aligner(m.group(1),saus,m.group(2),ctmWriter));
+		else al.aligner(m.group(1),saus,m.group(2),ctmWriter);
 	    }
-	    stmWriter.close();
+	    if (stmWriter !=null)	    stmWriter.close();
+	    if (ctmWriter !=null)	    ctmWriter.close();
 	}
 	catch (IOException io) {
-            logger.severe("I/O error during decoding: " + io.getMessage());
+            logger.warning("I/O error during decoding: " + io.getMessage());
 	    
 	}
     }

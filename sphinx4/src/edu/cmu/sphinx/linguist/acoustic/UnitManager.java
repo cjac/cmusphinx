@@ -127,14 +127,21 @@ public class  UnitManager implements Configurable  {
      *
      * @return the unit
      */
+
+
     private Unit createCIUnit(String name, boolean filler) {
         Unit unit = (Unit) ciMap.get(name);
         if (unit == null) {
+	    if ( !filler && name.matches("^\\+.+\\+$")){
+		if (logger.isLoggable(Level.INFO)) 
+		    logger.info("name :"+ name+" " + filler +"->true" );
+		filler=true;
+	    }
             Unit u = new Unit(name, filler,  nextID++);
             unit = u;
             ciMap.put(name, unit);
             if (logger.isLoggable(Level.INFO)) {
-                logger.info("CI Unit: " + unit);
+                logger.info("CI Unit: " + unit + "filler?" + filler);
             }
         }
         return unit;

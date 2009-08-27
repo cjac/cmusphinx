@@ -292,8 +292,8 @@ public class ClasseGramModel implements LanguageModel {
 
 	if (classeLM==null) {
 	  
-	if (maxDepthWord<maxDepth)
-	    maxDepth=maxDepthWord;
+	    if (maxDepth>wordLM.getMaxDepth())
+	    maxDepth=wordLM.getMaxDepth();
 	    return;
 	}
 	

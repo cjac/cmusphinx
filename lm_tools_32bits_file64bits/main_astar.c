@@ -403,7 +403,7 @@ static void test(void * fp) {
   exit(1);
 }
 static void toto (int u) {
-    printf("------------------------------------%d\n",u);
+    printf("signa :%d\n",u);
 }
 
 /* Decode the given mfc file and write result to given directory */
@@ -483,7 +483,9 @@ char chaine[1000],line[1000],commande[1000];
 /*	dag_compute_hscr(dag, dict, lmset->cur_lm, lmmax, 1.0);
 */
         dag_compute_hscr(dag, dict, lmset->cur_lm, NULL/*lmmax*/, 1.0);
-	dag_remove_bypass_links(dag);
+	/** je ne les enleve pas pour la sonde */
+	if (!cmd_ln_boolean("-bestorlat"))
+	    dag_remove_bypass_links(dag);
 
 	E_INFO("%5d frames, %6d nodes, %8d edges, %8d bypass\n",
 	       dag->nfrm, dag->nnode, dag->nlink, dag->nbypass);

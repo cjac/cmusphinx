@@ -13,7 +13,7 @@ package edu.cmu.sphinx.linguist.dictionary;
 
 import java.io.IOException;
 import java.io.InputStream;
-
+import java.util.regex.Pattern;
 import java.net.URL;
 
 import java.util.ArrayList;
@@ -83,7 +83,7 @@ public class FullDictionary implements Dictionary {
     private URL fillerDictionaryFile;
     private boolean allocated = false;
     private UnitManager unitManager;
-    
+    private boolean compound=false;
     
     private Map wordDictionary;
     private Map fillerDictionary;
@@ -95,6 +95,7 @@ public class FullDictionary implements Dictionary {
      * @see edu.cmu.sphinx.util.props.Configurable#register(java.lang.String,
      *      edu.cmu.sphinx.util.props.Registry)
      */
+    public java.util.List<Word> getChoix (String nnnn) {return null;}
     public void register(String name, Registry registry)
             throws PropertyException {
         this.name = name;
@@ -104,6 +105,7 @@ public class FullDictionary implements Dictionary {
                           PropertyType.BOOLEAN);
         registry.register(PROP_WORD_REPLACEMENT, PropertyType.STRING);
         registry.register(PROP_ALLOW_MISSING_WORDS, PropertyType.BOOLEAN);
+        registry.register("compound", PropertyType.BOOLEAN);
         registry.register(PROP_CREATE_MISSING_WORDS, PropertyType.BOOLEAN);
         registry.register(PROP_UNIT_MANAGER, PropertyType.COMPONENT);
     }
@@ -126,6 +128,9 @@ public class FullDictionary implements Dictionary {
                 PROP_ALLOW_MISSING_WORDS_DEFAULT);
         createMissingWords = ps.getBoolean(PROP_CREATE_MISSING_WORDS,
                 PROP_CREATE_MISSING_WORDS_DEFAULT);
+        compound = ps.getBoolean("compound",
+                false);
+
         unitManager = (UnitManager) ps.getComponent(PROP_UNIT_MANAGER,
                 UnitManager.class);
     }
@@ -153,10 +158,12 @@ public class FullDictionary implements Dictionary {
             logger.info("Loading dictionary from: " + wordDictionaryFile);
             wordDictionary = 
                 loadDictionary(wordDictionaryFile.openStream(), false);
+	    if (compound) doCompound(wordDictionary);
             logger.info("Loading filler dictionary from: " + 
                         fillerDictionaryFile);
             fillerDictionary = 
                 loadDictionary(fillerDictionaryFile.openStream(), true);
+
             loadTimer.stop();
             allocated = true;
             //dump(); cela peut servir
@@ -195,8 +202,9 @@ public class FullDictionary implements Dictionary {
         Map dictionary = new HashMap();
         ExtendedStreamTokenizer est = new ExtendedStreamTokenizer(inputStream,
                 true);
-        String word;
+        String word,variant;
         while ((word = est.getString()) != null) {
+	    variant = getVariant(word);
             word = removeParensFromWord(word);
             //word = word.toLowerCase(); paul 
             List units = new ArrayList(20);
@@ -210,7 +218,7 @@ public class FullDictionary implements Dictionary {
                 pronunciations = new LinkedList();
             }
             Pronunciation pronunciation = new Pronunciation(unitsArray, null,
-                    null, 1.0f);
+							    null, 1.0f,variant);
             pronunciations.add(pronunciation);
             // if we are adding a SIL ending duplicate
             if (!isFillerDict && addSilEndingPronunciation) {
@@ -293,6 +301,15 @@ public class FullDictionary implements Dictionary {
             }
         }
         return word;
+    }
+    private String getVariant(String word) {
+        if (word.charAt(word.length() - 1) == ')') {
+            int index = word.lastIndexOf('(');
+            if (index > 0) {
+                return word.substring (index);
+            }
+        }
+        return null;
     }
 
     /**
@@ -415,7 +432,21 @@ public class FullDictionary implements Dictionary {
         return (Word[]) fillerDictionary.values().toArray(
                 new Word[fillerDictionary.values().size()]);
     }
-
+    private void doCompound(Map dico) {
+	Pattern p= Pattern.compile("_+");
+	Objet:
+	for (Object o :dico.values()) {
+	    Word mot= (Word) o;
+	    String s=mot.getSpelling();
+	    if (s.indexOf('_')==-1) continue;
+	    String[] sousMot = p.split(s);
+	    Word[] comp = new Word[sousMot.length];
+	    for (int i =0 ; i<sousMot.length; i++)
+		if ( (comp[i]=(Word) dico.get(sousMot[i]))==null)
+		    continue Objet;
+	    mot.setCompound(comp);
+	}
+    }
     /**
      * Dumps this FullDictionary to System.out.
      */
@@ -431,7 +462,13 @@ public class FullDictionary implements Dictionary {
             String text = (String) i.next();
             Word word = getWord(text);
             Pronunciation[] pronunciations = word.getPronunciations(null);
-            result += (word + "\n");
+            result += (word);
+	    if (word.getClasse() != null) {
+		result += " " + word.getClasse();
+	    result += "\n";
+	    }
+	    else result += "\n";
+	    
             for (int p = 0; p < pronunciations.length; p++) 
                 result += ("   " + pronunciations[p].toString() + "\n");
 	    System.out.print(result);   

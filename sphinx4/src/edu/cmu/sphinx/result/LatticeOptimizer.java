@@ -31,6 +31,7 @@ public class LatticeOptimizer {
      */
     public LatticeOptimizer(Lattice lattice) {
         this.lattice = lattice;
+	lattice.lesNoeuds=null;
     }
 
     /**
@@ -46,21 +47,21 @@ public class LatticeOptimizer {
      * superclass of Lattice.
      */
     public void optimize() {
-        //System.err.println("***");
-        //lattice.dumpAllPaths();
-        //System.err.println("***");
+  //       System.err.println("***");
+//         lattice.dumpAllPaths();
+//         System.err.println("***");
 
         optimizeForward();
-
-        //System.err.println("***");
-        //lattice.dumpAllPaths();
-        //System.err.println("***");
+	//	lattice.dumpAISee("trucFor.gdl","ggggg ");
+   //      System.err.println("***");
+//         lattice.dumpAllPaths();
+//         System.err.println("***");
 
         optimizeBackward();
 
-        //System.err.println("***");
-        //lattice.dumpAllPaths();
-        //System.err.println("***");
+//         System.err.println("***");
+//         lattice.dumpAllPaths();
+//         System.err.println("***");
 
     }
 
@@ -201,7 +202,8 @@ public class LatticeOptimizer {
 
         Node n1 = e1.getToNode();
         Node n2 = e2.getToNode();
-
+	//        if (n.getBeginTime() >=245)
+	//  System.err.println(n  +"\n-----------"+ n1+" :"+ e1  + "\n----------"+n2+ " :"+ e2);
         assert n1.hasEquivalentEnteringEdges(n1);
         assert n1.getWord().equals(n2.getWord());
 
@@ -211,6 +213,10 @@ public class LatticeOptimizer {
         e1.setLMScore(mergeLanguageScores(e1.getLMScore(),
                                           e2.getLMScore()));
 
+	if (n1.equals(n2)) {
+              e2.getToNode().removeEnteringEdge(e2);
+	      e2.getFromNode().removeLeavingEdge(e2);
+	      lattice.removeEdge(e2) ;return;} // c'est le final et .... 
         // add n2's edges to n1
         for (Iterator i = n2.getLeavingEdges().iterator(); i.hasNext();) {
             Edge e = (Edge) i.next();
@@ -390,6 +396,10 @@ public class LatticeOptimizer {
                                           e2.getLMScore()));
 
         // add n2's "from" edges to n1
+	if (n1.equals(n2)) {
+	    e2.getToNode().removeEnteringEdge(e2);
+	    e2.getFromNode().removeLeavingEdge(e2);
+	    lattice.removeEdge(e2);return;}
         for (Iterator i = n2.getEnteringEdges().iterator(); i.hasNext();) {
             Edge e = (Edge) i.next();
             e2 = n1.getEdgeFromNode( e.getFromNode() );

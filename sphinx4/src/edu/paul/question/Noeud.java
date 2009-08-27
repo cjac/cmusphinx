@@ -57,7 +57,7 @@ class Noeud  implements Serializable{
     }
     static  float ddiv_d (float [] p, float q[] ,Integer []tri) {
 	float y=0.0f;
-	for (int i =0 ; i<40; i++) {
+	for (int i =0 ; i<p.length; i++) {
 	    int j=tri[i];
 	    if (p[j]>0.00000001)
 		y += p[j]*Math.log(p[j]/q[j]);

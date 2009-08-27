@@ -265,7 +265,7 @@ public class Clustering implements Configurable {
 	    if (set.size() <=3) {
 		System.err.println("g: "+ cand.gauche);
 		System.err.println("g: "+ cand.droit);
-		System.err.println( " cout : " +cand.dist + " : "+ n.droit.fusion(n.gauche).dist);
+		System.err.println( " cout : " +cand.dist + " : "+ cand.droit.fusion(cand.gauche).dist);
 	    }
 	    Noeud racine = new Noeud(cand);
 	    

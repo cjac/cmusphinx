@@ -45,6 +45,7 @@ public class CombineToken extends Token {
     public CombineToken(Token predecessor,
 			SentenceHMMState state,
 			int frameNumber) {
+      	
 	super(predecessor, state, 0.0f, 0.0f, 0.0f, frameNumber);
 	this.tokens = new HashMap();
     }

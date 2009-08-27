@@ -197,6 +197,7 @@ public class FlatLinguist implements Linguist, Configurable {
     private transient Collection stateSet = null;
     private String name;
     private GrammarNode initialGrammarState = null;
+    private boolean compound =false;
     /**
      * Returns the search graph
      * 
@@ -226,6 +227,7 @@ public class FlatLinguist implements Linguist, Configurable {
         registry.register(PROP_SHOW_SEARCH_SPACE, PropertyType.BOOLEAN);
         registry.register(PROP_DUMP_GSTATES, PropertyType.BOOLEAN);
         registry.register(PROP_SHOW_COMPILATION_PROGRESS, PropertyType.BOOLEAN);
+        registry.register("compound", PropertyType.BOOLEAN);
         registry.register(PROP_SPREAD_WORD_PROBABILITIES_ACROSS_PRONUNCIATIONS,
                           PropertyType.BOOLEAN);
         registry.register(PROP_UNIT_MANAGER, PropertyType.COMPONENT);
@@ -256,19 +258,17 @@ public class FlatLinguist implements Linguist, Configurable {
                 PROP_LANGUAGE_WEIGHT_DEFAULT);
         logWordInsertionProbability = logMath.linearToLog(ps.getDouble(
                 PROP_WORD_INSERTION_PROBABILITY,
-                PROP_WORD_INSERTION_PROBABILITY_DEFAULT))*languageWeight;
+                PROP_WORD_INSERTION_PROBABILITY_DEFAULT));// bug cor 18/09/2007 *languageWeight;
         logSilenceInsertionProbability = logMath.linearToLog(ps.getDouble(
                 PROP_SILENCE_INSERTION_PROBABILITY,
-                PROP_SILENCE_INSERTION_PROBABILITY_DEFAULT))*languageWeight;
+                PROP_SILENCE_INSERTION_PROBABILITY_DEFAULT));// idem 19/09/2007*languageWeight;
 	logFillerInsertionProbability = logMath.linearToLog(ps.getDouble(
                 PROP_FILLER_INSERTION_PROBABILITY,
-                PROP_FILLER_INSERTION_PROBABILITY_DEFAULT))*languageWeight;
+                PROP_FILLER_INSERTION_PROBABILITY_DEFAULT));// cor 19/09/2007 car mis en langproba *languageWeight;
         logUnitInsertionProbability = logMath.linearToLog(ps.getDouble(
                 PROP_UNIT_INSERTION_PROBABILITY,
                 PROP_UNIT_INSERTION_PROBABILITY_DEFAULT));
-        languageWeight = ps.getFloat(Linguist.PROP_LANGUAGE_WEIGHT,
-                PROP_LANGUAGE_WEIGHT_DEFAULT);
-        showSentenceHMM = ps.getBoolean(Linguist.PROP_SHOW_SEARCH_SPACE,
+         showSentenceHMM = ps.getBoolean(Linguist.PROP_SHOW_SEARCH_SPACE,
                 PROP_SHOW_SEARCH_SPACE_DEFAULT);
         dumpGStates = ps.getBoolean(PROP_DUMP_GSTATES,
                 PROP_DUMP_GSTATES_DEFAULT);
@@ -278,7 +278,7 @@ public class FlatLinguist implements Linguist, Configurable {
         spreadWordProbabilitiesAcrossPronunciations = ps.getBoolean(
                 PROP_SPREAD_WORD_PROBABILITIES_ACROSS_PRONUNCIATIONS,
                 PROP_SPREAD_WORD_PROBABILITIES_ACROSS_PRONUNCIATIONS_DEFAULT);
-
+	compound=ps.getBoolean("compound",false);
         addOutOfGrammarBranch = ps.getBoolean
             (PROP_ADD_OUT_OF_GRAMMAR_BRANCH,
              PROP_ADD_OUT_OF_GRAMMAR_BRANCH_DEFAULT);
@@ -453,6 +453,10 @@ public class FlatLinguist implements Linguist, Configurable {
         }
 
         searchGraph = new FlatSearchGraph(initialState);
+
+	if (showCompilationProgress) {
+	    System.out.print("\n");
+	}
         Timer.stop("compile");
         // Now that we are all done, dump out some interesting
         // information about the process
@@ -1100,16 +1104,26 @@ public class FlatLinguist implements Linguist, Configurable {
                     .isFiller(), context);
             UnitState unitState = new ExtendedUnitState(parent, which, cdUnit);
             float logInsertionProbability;
+	    
+	    logInsertionProbability = logUnitInsertionProbability;
+	    if (false) {
             if (unitState.getUnit().isFiller()) {
 		if (unitState.getUnit().isSilence())
-		    logInsertionProbability = logSilenceInsertionProbability;
+		    logInsertionProbability = logSilenceInsertionProbability+logWordInsertionProbability ;
 else
-                logInsertionProbability = logFillerInsertionProbability;
+                logInsertionProbability = logFillerInsertionProbability+ logWordInsertionProbability;
+		//bug add wip to filler insertion 18/09/2007
+		// cela ne me plait pas le code est virer 18/09/2007
+		// et cela a ete mis dans connect cela devrait etre + clean
+
             } else if (unitState.getWhich() == 0) {
                 logInsertionProbability = logWordInsertionProbability;
             } else {
-                logInsertionProbability = logUnitInsertionProbability;
+               
             }
+	    }
+	    //paul trace debug 
+	    //System.err.format("%s : vers : %s , cout:%f\n",parent,unitState,logInsertionProbability);
             // check to see if this state already exists, if so
             // branch to it and we are done, otherwise, branch to
             // the new state and expand it.
@@ -1415,13 +1429,25 @@ else
                     probability -= logMath.linearToLog(numPronunciations);
                 }
                 float fprob = probability;
+		float insprob=logOne;
+		if (!gstate.getNode().isEmpty()) {
+		    insprob =logWordInsertionProbability;
+		    if (compound && gstate.getNode().getWord().getCompound()!=null)
+			insprob *=gstate.getNode().getWord().getCompound().length; 
+		    if (gstate.getNode().getWord().isFiller()&& !gstate.getNode().getWord().isSentenceEndWord() ) {
+			if (gstate.getNode().getWord().isSilence())
+			    fprob +=  logSilenceInsertionProbability;
+			else
+			    fprob +=  logFillerInsertionProbability;
+		    }
+		}
                 for (Iterator keys = exitPoints.keySet().iterator(); keys
                         .hasNext();) {
                     ContextPair contextPair = (ContextPair) keys.next();
                     List destEntryPoints = gstate.getEntryPoints(contextPair);
                     if (destEntryPoints != null) {
                         List srcExitPoints = getExitPoints(contextPair);
-                        connect(srcExitPoints, destEntryPoints, fprob);
+                        connect(srcExitPoints, destEntryPoints, fprob,insprob);
                     }
                 }
             }
@@ -1435,13 +1461,14 @@ else
          * @param destList
          *                the set of destinatin states.
          */
-        private void connect(List sourceList, List destList, float logLangProb) {
+        @SuppressWarnings("unchecked")
+	    private void connect(List sourceList, List destList, float logLangProb,float logInserProb) {
             for (Iterator i = sourceList.iterator(); i.hasNext();) {
                 SentenceHMMState sourceState = (SentenceHMMState) i.next();
                 for (Iterator j = destList.iterator(); j.hasNext();) {
                     SentenceHMMState destState = (SentenceHMMState) j.next();
                     sourceState.connect(getArc(destState, logOne, logLangProb,
-                            logOne));
+                            logInserProb));
                     exitConnections++;
                 }
             }

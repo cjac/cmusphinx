@@ -40,23 +40,43 @@ public class Sausage implements ConfidenceResult {
 
 
     public Sausage(File f,float seuil,float aveceps ,float sanseps) throws IOException{
-	confusionSets=new ArrayList<ConfusionSet>();
 	BufferedReader reader = new BufferedReader(new FileReader(f));
         Pattern p=Pattern.compile("\\s+");
         String aline = null, line = null;
         int aid=-1;
 	boolean haseps=false;
+        ArrayList<String> lines= new ArrayList<String>();
+         String l[]=null;
 	while ((line = reader.readLine()) != null) {
-            if (line.length() > 0) {
-		
-	        String l[]=p.split(line);
+            if (line.length() > 0) {l=p.split(line);	if (l[2].equals("!NULL")) break;
+	    lines.add(line);
+	    }
+	}
+        reader.close();
+        confusionSets= new ArrayList<ConfusionSet>(Integer.parseInt(l[0]));
+        for (int i =0 ;i<Integer.parseInt(l[0]);i++) confusionSets.add(new ConfusionSet());
+	for (int nl = lines.size()-1; nl>=0 ;nl--) {
+	    line=lines.get(nl);
+	    {
+	     	
+	        l=p.split(line);
 		if (l.length<3) {
 		    System.err.println("ligne courte "+line+"\n");
-		continue;
+		    continue;
 	    }
 		int id1 = Integer.parseInt(l[0]);
 		int id2 = Integer.parseInt(l[1]);
 		if (l[2].equals("!NULL")) break;
+                if (l[2].equals("timestamp") && l.length==5) {	
+		    if (confusionSets.size()<=id1) System.err.println("je me suis plante\n");
+		    ConfusionSet cs= getConfusionSet(id1);
+		    cs.setBeginTime(Integer.parseInt(l[3]));
+		    cs.setEndTime(Integer.parseInt(l[4]));
+		    continue;
+		}
+		
+						       
+                 
 		Double proba = (Double.parseDouble(l[3]));
 		String m=l[2];
 		if (aid!=id1) haseps=false;
@@ -64,7 +84,7 @@ public class Sausage implements ConfidenceResult {
 		    haseps=true;
 		    if (proba<seuil) continue;
 		}else
-		    {
+		    {// c'est completement foireux car il son triee dans le sens inverse.
 			if (haseps && proba<aveceps) continue;
 			if (!haseps && proba<sanseps) continue;
 		    }
@@ -228,12 +248,15 @@ public class Sausage implements ConfidenceResult {
 	    for (ConfusionSet set : confusionSets) {
 		WordResult best =set.getBestHypothesis();
 		if (!best.toString().equals("esp") || 
-		    (set.size()>=2 && set.get(1).getConfidence()>limWord))
+		    (set.size()>=2 && set.get(set.size()-2).getConfidence()>limWord))
+		    {
 		    for (WordResult wr :set) {
-			if (!best.toString().equals("esp")&& wr.getConfidence()<limWord) break;
-                        if (!best.toString().equals("esp") || wr.getConfidence()>limEps)
+			if (!best.toString().equals("esp")&& wr.getConfidence()<limWord) continue;
+                        if ( !best.toString().equals("esp") || wr.getConfidence()>limEps)
 			    f.printf(Locale.US,"%-4d %-4d %-10s %.3g\n",
 				     count,count+1,wr.toString(), wr.getLogMath().logToLinear((float)wr.getConfidence()));
+		    }
+		    f.printf(Locale.US,"%-4d %-4d timestamp %-4d %-4d\n",count,count+1,set.getBeginTime(),set.getEndTime());
 		    }
 		count++;
 	    }

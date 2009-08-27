@@ -16,7 +16,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
-
+import java.util.logging.Logger;
 import edu.cmu.sphinx.util.LogMath;
 import edu.cmu.sphinx.util.props.PropertyException;
 import edu.cmu.sphinx.util.props.PropertySheet;
@@ -39,7 +39,7 @@ public class PartitionActiveListFactory implements ActiveListFactory {
     private int absoluteBeamWidth;
     private float logRelativeBeamWidth;
     private LogMath logMath;
-
+    private Logger logger;
     /*
      * (non-Javadoc)
      * 
@@ -60,6 +60,7 @@ public class PartitionActiveListFactory implements ActiveListFactory {
      * @see edu.cmu.sphinx.util.props.Configurable#newProperties(edu.cmu.sphinx.util.props.PropertySheet)
      */
     public void newProperties(PropertySheet ps) throws PropertyException {
+	logger= ps.getLogger();
         absoluteBeamWidth = ps.getInt(PROP_ABSOLUTE_BEAM_WIDTH,
                 PROP_ABSOLUTE_BEAM_WIDTH_DEFAULT);
         double relativeBeamWidth = ps.getDouble(PROP_RELATIVE_BEAM_WIDTH,
@@ -168,6 +169,9 @@ public class PartitionActiveListFactory implements ActiveListFactory {
             if (oldToken != null) {
                 int location = oldToken.getLocation();
                 // check to see if the old token is still in the list
+		// if (location>=size ) {
+// 		    logger.severe("loc:"+ location +" size:" + size + "tok : " +oldToken);
+// 		}
                 if (location != -1 && tokenList[location] == oldToken) {
                     tokenList[location] = newToken;
                     newToken.setLocation(location);

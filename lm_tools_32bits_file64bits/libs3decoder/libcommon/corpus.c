@@ -760,13 +760,12 @@ ctl_infile(char *file, const char *dir, const char *ext, const char *utt)
             strcpy(file, utt);
     }
 }
-
-
-void
-ctl_outfile(char *file, const char *dir, const char *ext, const char *utt, const char *uttid)
-{
+void 
+ctl_outfile(char *file, const char *dir, const char *ext,const  char *utt,const char *uttid)
+{static char oldrep[1000];
+  static int first=1;
     int32 k;
-
+    if (first) {first=0; oldrep[0]=0;}
     k = strlen(dir);
 
     if ((k > 4) && (strcmp(dir + k - 4, ",CTL") == 0)) {        /* HACK!! Hardwired ,CTL */
@@ -778,10 +777,19 @@ ctl_outfile(char *file, const char *dir, const char *ext, const char *utt, const
         else
             strcpy(file, utt);
     }
-    else {
-        strcpy(file, dir);
-        file[k] = '/';
-        strcpy(file + k + 1, uttid);
+    else {char rep[1000];
+      sscanf(uttid,"%[^-]",rep);
+      sprintf(file,"%s/%s",dir,rep);
+      if (strcmp(file,oldrep) )
+	{ mkdir(file,0777);
+	  strncpy(oldrep,file,900);
+	}
+      sprintf(file,"%s/%s/%s",dir,rep,uttid);
+
+      
+  /*       strcpy(file, dir); */
+/*         file[k] = '/'; */
+/*         strcpy(file + k + 1, uttid); */
     }
 
     if (ext && (ext[0] != '\0')) {

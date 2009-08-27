@@ -23,10 +23,12 @@ import java.util.StringTokenizer;
 import java.util.Iterator;
 import java.util.Vector;
 import java.util.Collection;
+import java.util.Collections;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-
+import java.util.Comparator;
+import java.util.HashSet;
 /**
  * Nodes are part of Lattices.  The represent theories that words were spoken over a given time.
  */
@@ -35,8 +37,10 @@ public class Node implements  NodeEdge{
 
     protected String id;
     protected Word word;
+    protected String variant;
     protected int beginTime = -1;
     protected int endTime = -1;
+    protected int lastBeginTime=-10;
     protected int firstEndTime = -1;
     protected Vector <Edge> enteringEdges;
     protected Vector <Edge> leavingEdges;
@@ -70,7 +74,10 @@ public class Node implements  NodeEdge{
      * @param beginTime
      * @param endTime
      */
-    protected Node(String id, Word word, int beginTime, int endTime) {
+    protected Node(String id, Word word, int beginTime, int endTime) 
+    {this(id,word,beginTime,endTime,null);
+    }
+    protected Node(String id, Word word, int beginTime, int endTime,String variant) {
         this.id = id;
         this.word = word;
         this.beginTime = beginTime;
@@ -78,6 +85,7 @@ public class Node implements  NodeEdge{
         this.forwardScore = LogMath.getLogZero();
         this.backwardScore = LogMath.getLogZero();
         this.posterior = LogMath.getLogZero();
+	this.variant =variant;
     }
 
     /**
@@ -89,7 +97,9 @@ public class Node implements  NodeEdge{
     protected static String getNextNodeId() {
         return Integer.toString(nodeCount);
     }
-
+    private String getVariant() {
+	return variant==null ? "" : variant;
+    }
     /**
      * Test if a node has an Edge to a Node
      * @param n
@@ -145,6 +155,12 @@ public class Node implements  NodeEdge{
         return null;
     }
 
+    protected void setWord( Word w) {
+
+	word=w;
+    }
+
+
     /**
      * Test if a Node has all Edges from the same Nodes and another Node.
      *
@@ -155,15 +171,63 @@ public class Node implements  NodeEdge{
         if (enteringEdges.size() != n.getEnteringEdges().size()) {
             return false;
         }
-        for (Iterator <Edge> i = enteringEdges.iterator(); i.hasNext();) {
+        for (Iterator <Edge> i = n.enteringEdges.iterator(); i.hasNext();) {
             Edge e =  i.next();
             Node fromNode = e.getFromNode();
-            if (!n.hasEdgeFromNode(fromNode)) {
+            if (!hasEdgeFromNode(fromNode)) {
                 return false;
             }
         }
+
+	if (false) 
+	    for (Iterator <Edge> i = n.enteringEdges.iterator(); i.hasNext();) {
+		Edge e =  i.next();
+		Node fromNode = e.getFromNode();
+		if (!hasEdgeFromNode(fromNode)) {
+		    System.err.println("  il y a tres gros gros probleme ");
+		}
+	    }
+
+
+
+
         return true;
     }
+
+
+
+ protected boolean hasEquivalentEnteringEdgesbis(Node n) {
+        if (enteringEdges.size() != n.getEnteringEdges().size()) {
+            return false;
+        }
+	 HashSet<Node> s1= new  HashSet<Node>(10) , s2= new HashSet<Node>(10);
+        for (Iterator <Edge> i = enteringEdges.iterator(); i.hasNext();) {
+            Edge e =  i.next();
+            s1.add(e.getFromNode());
+        }
+
+	if (true) 
+	    for (Iterator <Edge> i = n.enteringEdges.iterator(); i.hasNext();) {
+		Edge e =  i.next();
+		s2.add( e.getFromNode());
+	    }
+	return s1.equals(s2);
+ }
+
+
+
+    protected void  fusionEntree(Node n, LogMath  logMath) {
+        assert (enteringEdges.size() == n.getEnteringEdges().size());
+	    for (Iterator <Edge> i = n.enteringEdges.iterator(); i.hasNext();) {
+		Edge e1 =  i.next();
+		Node fromNode = e1.getFromNode();
+		Edge e= getEdgeFromNode(fromNode);
+		e.setPscore(logMath.addAsLinear((float)e.getPscore(),(float)e1.getPscore()));
+	    }
+	
+    }
+
+
 
     /**
      * Test if a Node has all Edges to the same Nodes and another Node.
@@ -175,14 +239,24 @@ public class Node implements  NodeEdge{
         if (leavingEdges.size() != n.getLeavingEdges().size()) {
             return false;
         }
-        for (Iterator <Edge> i = leavingEdges.iterator(); i.hasNext();) {
+        for (Iterator <Edge> i = n.leavingEdges.iterator(); i.hasNext();) {
             Edge e =  i.next();
             Node toNode = e.getToNode();
-            if (!n.hasEdgeToNode(toNode)) {
+            if (!hasEdgeToNode(toNode)) {
                 return false;
             }
         }
         return true;
+    }
+
+    public void  fusionSortie(Node n, LogMath logMath) {
+	assert  (leavingEdges.size() == n.getLeavingEdges().size());
+        for (Iterator <Edge> i = n.leavingEdges.iterator(); i.hasNext();) {
+            Edge e1 =  i.next();
+            Node toNode = e1.getToNode();
+	    Edge e= getEdgeToNode(toNode);
+	    e.setPscore(logMath.addAsLinear((float)e.getPscore(),(float)e1.getPscore()));
+        }
     }
 
     /**
@@ -249,6 +323,9 @@ public class Node implements  NodeEdge{
         leavingEdges.remove(e);
     }
 
+    protected void removeLeavingEdges() {
+	leavingEdges.clear();
+    }
     /**
      * Get the ID associated with this Node
      *
@@ -268,7 +345,7 @@ public class Node implements  NodeEdge{
     public Word getWord() {
         return word;
     }
-
+    
     /**
      * Get the frame number when the word began
      *
@@ -286,13 +363,14 @@ public class Node implements  NodeEdge{
      *
      * @return the end time, or -1 if the frame number if is unknown
      */
-    
+    private boolean pasFait=true;
     public int getEndTime() {
-        if (endTime==-1)
+        if (endTime==-1&& pasFait)
 	    calculateEndTime();
+	pasFait=false;
         return endTime;
     }
-    public int getFirstEndTime() {
+ public int getFirstEndTime() {
 	if (firstEndTime==-1) { 
 	    Iterator e = leavingEdges.iterator();
             firstEndTime=Integer.MAX_VALUE;
@@ -305,6 +383,20 @@ public class Node implements  NodeEdge{
 	    }
 	}
 	return firstEndTime;
+	}
+ public int getLastBeginTime() {
+	if (lastBeginTime==-10) { 
+	    Iterator<Edge>  e = enteringEdges.iterator();
+            lastBeginTime=getBeginTime();
+	    while (e.hasNext()) {
+		Edge edge = e.next();
+		if (edge.getFromNode().getEndTime()+1 >lastBeginTime) {
+                lastBeginTime  = edge.getFromNode().getEndTime()+1;
+		}
+
+	    }
+	}
+	return lastBeginTime;
 	}
 
     /**
@@ -327,13 +419,13 @@ public class Node implements  NodeEdge{
      * @param f
      * @throws IOException
      */
-    void dumpAISee(FileWriter f) throws IOException {
-        String posterior = "" + getPosterior();
+    void dumpAISee(FileWriter f, LogMath logMath) throws IOException {
+        String posterior = "" + logMath.logToLinear((float)getPosterior());
         if (getPosterior() == LogMath.getLogZero()) {
-            posterior = "log zero";
+            posterior = "ln0";
         }
         f.write("node: { title: \"" + id + "\" label: \""
-                + getWord() + "[" + getBeginTime() + "," + getEndTime() + 
+                + id + getWord() + "[" + getBeginTime() + "," + getEndTime() + 
                 " p:" + posterior + "]\" }\n");
     }
 
@@ -350,6 +442,12 @@ public class Node implements  NodeEdge{
         f.println("node: " + id + " " + word.getSpelling() + 
 		  " a:" + getForwardScore() + " b:" + getBackwardScore()+
 		  " p:" + posterior + " first:" + getBeginTime() + " last:" + getEndTime());
+    }
+
+    void dumpS3(PrintWriter f, int i) { // throws IOException {
+	id=""+i;
+        f.println(id + " " + word.getSpelling() +getVariant()+ 
+		  " "+ getBeginTime() + " " + getEndTime() + " "+ getEndTime());
     }
 
     /**
@@ -445,7 +543,7 @@ public class Node implements  NodeEdge{
         }
     }
     private void calculateEndTime() {
-        endTime = -1;
+        endTime = -2;
         Iterator e = leavingEdges.iterator();
         while (e.hasNext()) {
             Edge edge = (Edge)e.next();
@@ -455,6 +553,14 @@ public class Node implements  NodeEdge{
         }
     }
         
+    void setEndTime(int t) {
+	getEndTime();
+	if (endTime==-1)
+	    endTime=t;
+	else
+	    throw new  Error("set endtime :" +endTime + " with "+ t);
+    }
+
     /**
      * Get the nodes at the other ends of outgoing edges of this node.
      * 
@@ -482,7 +588,7 @@ public class Node implements  NodeEdge{
                 return true;
             }
             parcours.add(n);
-            if ( (n.getFirstEndTime() <= node.getBeginTime()) && 
+            if ( (n.getFirstEndTime() <= node.getLastBeginTime()) && 
 		 isAncestorHelper(n.getChildNodes(false),node)) {
                 return true;
             }
@@ -508,7 +614,7 @@ public class Node implements  NodeEdge{
             return true; // node is its own ancestor
         }
          parcours.clear();
-        return (getFirstEndTime() <= node.getBeginTime()) &&  
+        return (getFirstEndTime() <= node.getLastBeginTime()) &&  
 	    isAncestorHelper(this.getChildNodes(false),node);
     }
     
@@ -558,5 +664,22 @@ public class Node implements  NodeEdge{
             }
         }
         return null;
+    }
+
+
+
+    public void tri( int sens) {
+	final int cle=sens;
+	Collections.sort(enteringEdges,new Comparator <Edge> () {
+		public int compare(Edge e1, Edge e2) {
+		    return cle*(e1.getFromNode().getBeginTime()-e2.getFromNode().getBeginTime());
+		}
+	    });
+	Collections.sort(leavingEdges,new Comparator <Edge> () {
+		public int compare(Edge e1, Edge e2) {
+		    return cle*(e2.getFromNode().getBeginTime()-e1.getFromNode().getBeginTime());
+		}
+	    });
+	
     }
 }

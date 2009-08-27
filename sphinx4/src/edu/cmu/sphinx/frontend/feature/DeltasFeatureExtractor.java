@@ -195,6 +195,16 @@ public class DeltasFeatureExtractor extends BaseDataProcessor {
         if (outputQueue.size() > 0) {
 	    nbFrames++;
             Data feature = (Data) outputQueue.remove(0);
+            if (false && nbFrames<200&& feature instanceof FloatData) {
+            float  [] cepstrum =        ((FloatData) feature).getValues();
+	     System.out.printf("%3d: ",nbFrames);
+	    for (double f : cepstrum) 
+		  System.out.printf(" %9.5f",f);
+	    System.out.println();
+	  }
+	    
+
+
             return feature;
         } else {
             return null;
@@ -274,7 +284,7 @@ public class DeltasFeatureExtractor extends BaseDataProcessor {
     private void addCepstrum(DoubleData cepstrum) {
         cepstraBuffer[bufferPosition++] = cepstrum;
 		if (currentPosition<0 && bufferPosition>2*window+1){
-			currentPosition=0;
+			currentPosition=3;
 			if (logger.isLoggable(java.util.logging.Level.FINE))
 			    logger.fine("start of delta at " + bufferPosition);
 		}

@@ -167,6 +167,8 @@ public class BatchConfucius implements Configurable {
     private ConfigurationManager cm;
     private ConfidenceScorer sm;
     private String fsmDir;
+    private float limEps;
+    private float limWord;
     //private float pedge;
     /*
      * (non-Javadoc)
@@ -190,6 +192,8 @@ public class BatchConfucius implements Configurable {
 
 	registry.register(PROP_LATTICE_DIR, PropertyType.STRING);
 	registry.register(PROP_FSM_DIR, PropertyType.STRING);
+        registry.register("limEps", PropertyType.FLOAT);
+        registry.register("limWord", PropertyType.FLOAT);
 	//	registry.register(PROP_PROPORTION_EDGES,PropertyType.FLOAT);
     }
 
@@ -222,6 +226,10 @@ public class BatchConfucius implements Configurable {
             (PROP_DICTIONARY, Dictionary.class);
         latDir = ps.getString(PROP_LATTICE_DIR,PROP_LATTICE_DIR_DEFAULT);
         fsmDir = ps.getString(PROP_FSM_DIR,PROP_FSM_DIR_DEFAULT);
+        limWord = logMath.linearToLog(ps.getFloat("limWord",1e-4f));
+        limEps  = logMath.linearToLog(ps.getFloat("limEps",1e-4f));
+
+
 	//	pedge  =ps.getFloat(PROP_PROPORTION_EDGES,PROP_PROPORTION_EDGES_DEFAULT);
     }
     /*
@@ -281,7 +289,8 @@ public class BatchConfucius implements Configurable {
 	    
             while (count < totalCount && 
 		   (batchItem = batchManager.getNextItem()) != null) {
-                Lattice lat=new Lattice(logMath,dictionary,SplitNameFile.splitNameFile(latDir,batchItem.getId(),".lat.gz"));
+		try {  
+              Lattice lat=new Lattice(logMath,dictionary,SplitNameFile.splitNameFile(latDir,batchItem.getId(),".lat.gz"));
                 //lat.computeNodePosteriors(10.0f,false,pedge);// false with lm
 		//		SausageMakerFast sm = new SausageMakerFast(lat);
 		//SausageMakerEdges sm = new SausageMakerEdges();
@@ -289,14 +298,19 @@ public class BatchConfucius implements Configurable {
 		System.err.println(s.getBestHypothesisString());
 		//s.dumpAISee("mapSausage.gdl"+count, "MAP Sausage");
 		s.dumpFSM(SplitNameFile.splitNameFile(fsmDir,batchItem.getId(),"saus",true),
-			  logMath.linearToLog(1e-4),
-			  logMath.linearToLog(1e-4));
+			  limEps,
+			  limWord);
 
 		logger.info("File  : " + batchItem.getId());
                 count++;
+		}
+
+		catch (IOException io) {
+		    logger.severe("I/O error during decoding: " + io.getMessage());
+
+		}
+		System.gc();
 	    }
-	    System.gc();
-	
 	    batchManager.stop();
 	} catch (IOException io) {
             logger.severe("I/O error during decoding: " + io.getMessage());

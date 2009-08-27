@@ -18,6 +18,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.io.PrintWriter;
+import edu.cmu.sphinx.linguist.HMMSearchState;
+import edu.cmu.sphinx.linguist.WordSearchState;
 import edu.cmu.sphinx.decoder.search.ActiveList;
 import edu.cmu.sphinx.decoder.search.AlternateHypothesisManager;
 import edu.cmu.sphinx.decoder.search.Token;
@@ -364,30 +366,81 @@ public class Result {
     /***
      * pour debug uniquement
      */
+   
+    private class Mot  {
+	int debut=-1,fin=-1;
+	    boolean isBeginWord=false;
+	    Token t;
+	    Mot(Token t,int debut,int fin) {
+		this.t=t;
+		this.debut=debut;
+		this.fin=fin;}
+	} 	
     public void dumpCtm(PrintWriter out, int debut,String file, String extension) {
-    	LinkedList <Token> lestokens;
+	dumpCtm(out,debut,file,extension,false);
+    }
+    public void dumpCtm(PrintWriter out, int debut,String file, String extension,boolean aligner) {
+	
+	LinkedList <Mot> lestokens;
     	
     	int lastFrame = getFrameNumber();
     	{Token token = getBestToken();
     	if (token==null) { 
     	return;}
-    	lestokens = new LinkedList <Token>();
+    	lestokens = new LinkedList <Mot>();
     	while (token != null) {
             if (token.isWord()) {
-            	lestokens.addFirst(token);
+                if (((WordSearchState)token.getSearchState()).isWordStart()) {
+		    lestokens.addFirst(new Mot(token,token.getFrameNumber(),lastFrame));
+		    lastFrame=token.getFrameNumber()-1;
+		}
+		else {
+		    lestokens.addFirst(new Mot(token, -1,token.getFrameNumber()));
+		}   
+			
             }
+	    else
+		if (aligner) {
+		    lestokens.addFirst(new Mot(token, -1,token.getFrameNumber())); 
+		}
+		    
             token = token.getPredecessor();
     	}}
     	boolean pasfirst =false;
     	Word word=null;
         System.err.println("first frame :" + debut);
         // assert wordstate  false
-        int firstFrame=debut;
-    	for (Token token : lestokens) {
-	    word = token.getWord();
-	    out.printf(Locale.US,"%s 1 %.2f %.2f ",file,firstFrame*0.01, ((token.getFrameNumber()+debut)*0.01));
-	    out.println(word.getSpelling()+" "+extension);
-	    firstFrame= token.getFrameNumber()+debut+1;
+        int firstFrame=0,prFrame=0;
+	float av=0.0f;
+	float avl=0.0f,avi=0.0f;
+    	for (Mot m : lestokens) {
+	    word = m.t.getWord();
+	    if (aligner && word==null) { 
+            if (m.debut== -1) m.debut=prFrame;
+
+	    prFrame=m.fin+1;
+		if (m.t.isEmitting()) {
+			out.println ("VVV "+((HMMSearchState)m.t.getSearchState()).getHMMState().getId()+ " "+	
+				     m.t.getData());
+		}
+		else {
+		    out.printf(Locale.US,"%s 1 %.2f %.2f ",file,(m.debut+debut)*0.01, ((m.fin+debut)*0.01));
+		    out.println(((HMMSearchState)m.t.getSearchState()).getHMMState().getHMM().toString());
+		}
+	    }
+	    else {
+            if (m.debut== -1) m.debut=firstFrame;
+	    out.printf(Locale.US,"%s 1 %.2f %.2f ",file,(m.debut+debut)*0.01, ((m.fin+debut)*0.01));
+	    String temp= ((WordSearchState)m.t.getSearchState()).getPronunciation().getVar();
+	    if (temp==null) temp="";
+		out.print(word.getSpelling()+temp+" "+extension+" ");
+		out.printf(Locale.US,"%.0f  %.0f %.0f %.0f %.0f\n",m.t.getScore(), m.t.getScore()-av, 
+		       m.t.getLanguageScore()-avl,m.t.getInsertionProbability()-avi, m.t.getScore()-av
+			   -(m.t.getLanguageScore()+m.t.getInsertionProbability()-avi-avl));}
+	    av=m.t.getScore();
+	    avl= m.t.getLanguageScore();
+	    avi=m.t.getInsertionProbability();
+	    firstFrame= m.fin+1;
 	}
     }
     

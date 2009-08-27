@@ -771,10 +771,10 @@ public class LexTreeLinguist implements Linguist {
                 // System.out.println("LP " + nextWordSequence + " " +
                 // logProbability);
                 probability *= languageWeight;}
-		else
-		    // modif paul coherence sphinx3
-		    probability = languageWeight*( lastUnit.getBaseUnit().isSilence() ? logSilenceInsertionProbability :
-						   logFillerInsertionProbability);
+	    //		else
+		    //		    // modif paul coherence sphinx3
+		    // probability = languageWeight*( lastUnit.getBaseUnit().isSilence() ? logSilenceInsertionProbability :
+		    //				   logFillerInsertionProbability);
 
 
                 // subtract off the previously applied smear probability
@@ -804,8 +804,9 @@ public class LexTreeLinguist implements Linguist {
         SearchStateArc createUnitStateArc(HMMNode hmmNode, LexTreeState previous) {
             SearchStateArc arc;
             // System.out.println("CUSA " + hmmNode);
-            float insertionProbability =(previous instanceof LexTreeWordState? logWordInsertionProbability :0) +
-		logUnitInsertionProbability ;// calculateInsertionProbability(hmmNode);
+            float insertionProbability =//(previous instanceof LexTreeWordState? logWordInsertionProbability :0) +
+		//		logUnitInsertionProbability ;
+            calculateInsertionProbability(hmmNode);
             float probability = getUnigramSmear(hmmNode)
                     + previous.getSmearTerm();
             float arcProbability = probability - previous.getSmearProb();
@@ -1593,11 +1594,11 @@ public class LexTreeLinguist implements Linguist {
         if (type == UnitNode.SIMPLE_UNIT) {
             return logUnitInsertionProbability;
         } else if (type == UnitNode.WORD_BEGINNING_UNIT) {
-            return logUnitInsertionProbability + logWordInsertionProbability;
+            return logUnitInsertionProbability +logWordInsertionProbability;// pas de lang weigth on wip
         } else if (type == UnitNode.SILENCE_UNIT) {
-            return logSilenceInsertionProbability;
+            return logSilenceInsertionProbability*languageWeight + logWordInsertionProbability; 
         } else { // must be filler
-            return logFillerInsertionProbability;
+            return logFillerInsertionProbability*languageWeight + logWordInsertionProbability;
         }
     }
 

@@ -119,7 +119,7 @@ public class CMLLRFeature extends BaseDataProcessor implements SetId {
             if (input != null && a!=null) {
 		if (input instanceof FloatData) transfo((FloatData) input);
                 if (input instanceof DataStartSignal){
-		    logger.info("transfo en cours " +id);
+		    logger.info("transfo cmml en cours " +id);
 		    ntrame=0;
 	      if (false) for (int bloc =0 ;bloc<debutBloc.length; bloc++)
 		   for (int ligne=0; ligne<a[bloc].length ;ligne++){

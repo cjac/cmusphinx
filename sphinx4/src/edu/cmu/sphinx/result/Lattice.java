@@ -173,8 +173,12 @@ public class Lattice {
 	this.logMath = logMath;
     }
     public Lattice(Result result){
-	this(result,false);
+	this(result,false,false);
     }
+    public Lattice (Result result, boolean tout) {
+	this(result,tout,false);
+    }
+
     /**
      * Create a Lattice from a Result.
      *
@@ -184,9 +188,11 @@ public class Lattice {
      * @param result the result to convert into a lattice
      */
     private int profond=0;
-    public Lattice(Result result,boolean keepAll) {
+    private boolean keepVariant=false; 
+    public Lattice(Result result,boolean keepAll, boolean keepVariantLocal) {
 	this(result.getLogMath());
 	this.keepAll=keepAll;
+	keepVariant =keepVariantLocal;
 	nframe=result.getFrameNumber();
 	visitedWordTokens = new HashSet();
         nodesId= new HashMap<Token,Integer> ();
@@ -213,7 +219,7 @@ public class Lattice {
             collapseWordToken(token);
         }
 	System.err.println(" vu node:" + countNode + " token:" + visitedWordTokens.size()); //+" "+ countWord(result));
-      
+	keepVariant=false; 
     }
     private Set toto;// cele ne marche avec des lattices trop big.
     private int countWord(Result result)
@@ -272,7 +278,7 @@ public class Lattice {
 		
 
 		node = new Node(getNodeID(token), token.getWord(),
-			    startFrame, endFrame);
+				startFrame, endFrame, keepVariant ? wordState.getPronunciation().getVar() :null);
 	    }
 	    else {
 		//is not a word

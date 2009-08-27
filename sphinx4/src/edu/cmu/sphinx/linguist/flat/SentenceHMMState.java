@@ -697,7 +697,7 @@ public abstract class  SentenceHMMState implements Serializable, SearchState  {
 	while (queue.size() > 0) {
 	    SentenceHMMState state = (SentenceHMMState) queue.remove(0);
 	    //visitedStates.add(state);
-            state.dump();// on ne dump pas 
+            //state.dump();// on ne dump pas 
 	    SentenceHMMStateArc[] successors = state.getSuccessorArray();
 	    for (int i = 0; i < successors.length; i++) {
 		SentenceHMMStateArc arc = successors[i];

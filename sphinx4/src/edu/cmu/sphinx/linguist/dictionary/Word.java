@@ -33,8 +33,9 @@ public class Word {
     private String spelling;               // the spelling of the word
     private Pronunciation[] pronunciations; // pronunciations of this word
     private boolean isFiller = false;
-
-
+    private Word classe=null;
+    private float classeProba;
+    private  Word compound[];
     /**
      * Creates a Word
      *
@@ -58,7 +59,12 @@ public class Word {
     public String getSpelling() {
 	return spelling;
     }
-
+    void setCompound( Word[] l) {
+	compound=l;
+    }
+    public Word [] getCompound() {
+	return compound;
+    }
     /**
      * Determines if this is a filler word
      *
@@ -68,7 +74,10 @@ public class Word {
     public boolean isFiller() {
         return isFiller;
     }
-
+    public boolean isSilence() {
+	return isFiller && pronunciations.length==1 && pronunciations[0].getUnits().length==1 &&
+	    pronunciations[0].getUnits()[0].isSilence();
+    }
 
     /**
      * Returns true if this word is an end of sentence word
@@ -132,6 +141,18 @@ public class Word {
         return best;
     }
     
+    public Word getClasse() {
+	return classe;
+    }
+    public float getClasseProba() {
+	assert (classe!=null);
+	return classeProba;
+	
+    }
+    public void setClasse(Word classe ,float proba) {
+	this.classe=classe;
+	this.classeProba=proba;
+    }
     /**
      * Returns a string representation of this word, which is the spelling
      *

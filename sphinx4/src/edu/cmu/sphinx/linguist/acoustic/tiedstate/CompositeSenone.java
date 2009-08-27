@@ -39,7 +39,8 @@ public class CompositeSenone implements Senone, Serializable {
     transient volatile private Data logLastDataScored;
     transient volatile private float logLastScore;
     transient volatile private double lastScore;
-
+    public void resetTransfo() {
+    throw new Error ("not implemented");}
    /**
     * a factory method that creates a CompositeSenone from a list of
     * senones.

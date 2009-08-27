@@ -4,7 +4,7 @@ OBJECTS = bio.o case.o ckd_alloc.o cmd_ln.o dtoa.o err.o filename.o glist.o hash
 INCLUDES = -I../../include/sphinxbase
 
 .c.o:
-	gcc -g -O2 -Wall $(INCLUDES) -c -o $@ $<
+	gcc -g -O3 -Wall $(INCLUDES) -c -o $@ $<
 
 util: $(OBJECTS)
 

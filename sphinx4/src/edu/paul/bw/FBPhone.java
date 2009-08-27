@@ -160,7 +160,8 @@ public class FBPhone implements Configurable,FB {
 		if (logger.isLoggable(Level.FINEST))
 		    logger.finest(" " +state + " sc " + nextAlpha.get(state)+
 				  " audio:"+ (((HMMStateState)state).getScore(data[t])/lw)+ 
-				  "  scmod:"+ ((((HMMStateState)state).getScore(data[t])-logMax[t])/lw) );
+				  "  scmod:"+ ((((HMMStateState)state).getScore(data[t])-logMax[t])/lw)+
+				  " toto " + toto);
 	    }
 	    logger.finer(String.format(Locale.US," trame %4d max apres norme: %8g", t,logMaxAlpha));
 	    HashMap<SentenceHMMState,Float> aph=nextAlpha;
@@ -194,7 +195,7 @@ public class FBPhone implements Configurable,FB {
 			
 			if (logger.isLoggable(Level.FINER))
 			    logger.finer ("st :" + state+ " frame" + t + " prob:"
-					  + prob+ " alpha :"+(prob+ state.getDirect().getAlpha()) +" a':" +
+					  +logMath.logToLinear( prob)+ " alpha :"+logMath.logToLinear(prob+ state.getDirect().getAlpha()) +" a':" +
 					  zero.getAlphaPrime()+ " " + alphaPrime);
 			prob =prob+ state.getDirect().getAlpha();
 			
@@ -228,7 +229,7 @@ public class FBPhone implements Configurable,FB {
 			
 			w.setAlphaPrime(alphaLin>1e-200  ? w.getAlphaPrime()/alphaLin : 0 );
 			if (logger.isLoggable(Level.FINER)) {
-			    logger.finer("word:"+w +":"  +w.getAlphaPrime() + " "+nph.get(w)  );} 
+			    logger.finer("word:"+w +":"  +w.getAlphaPrime() + " nphLin "+logMath.logToLinear(nph.get(w)  ));} 
 		    }
 		nextAlpha.putAll(nph);
 		aph=nph;

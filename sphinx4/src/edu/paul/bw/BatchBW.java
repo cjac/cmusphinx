@@ -302,7 +302,7 @@ public class BatchBW implements Configurable {
         if (usePooledBatchManager) {
             batchManager = new PooledBatchManager(batchFile, skip,true);
         } else {
-            batchManager = new SimpleBatchManager(batchFile, skip, whichBatch,
+            batchManager = new SimpleBatchManager(batchFile, skip, whichBatch-1,
 						  totalBatches,true,beginSkip);
         }
     }

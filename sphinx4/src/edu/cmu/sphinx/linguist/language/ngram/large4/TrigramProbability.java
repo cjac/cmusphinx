@@ -23,7 +23,7 @@ class TrigramProbability {
     private int wordID;
     private int probabilityID;
     private int backoffID;
-    private int firstQuadigramEntry;
+    private int firstQuadrigramEntry;
 
 
     /**

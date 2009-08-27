@@ -904,7 +904,8 @@ public class WordPruningBreadthFirstSearchManager implements SearchManager {
                                 + newBestToken);
                     }
                     activeListReplace(bestToken, newBestToken);
-                    if (buildWordLattice && (newBestToken.isWord()|| (keepOrder!=null && keepOrder.contains(nextState.getOrder())))) {
+		    //11/10/2007 y mis false pour bw
+                    if (buildWordLattice && (newBestToken.isWord()|| (false && keepOrder!=null && keepOrder.contains(nextState.getOrder())))) {
 			//20/09/2007 je refais le loser pour avoir les scores il faudra refaire lattice de paul
                         // Move predecessors of bestToken to precede
                         // newBestToken, bestToken will be garbage collected.
@@ -913,9 +914,9 @@ public class WordPruningBreadthFirstSearchManager implements SearchManager {
 							     bestToken);//20/09/2007  .getPredecessor());
                     }
                 }
-            } else {
-                if (buildWordLattice &&  (nextState instanceof WordSearchState|| (keepOrder!=null && keepOrder.contains(nextState.getOrder())))) {
-                    if (predecessor != null) {
+            } else { //11/10/2007 y mis false pour bw
+                if (buildWordLattice &&  (nextState instanceof WordSearchState|| (false &&keepOrder!=null && keepOrder.contains(nextState.getOrder())))) {
+                    if (predecessor != null) {// pouquoi ce test ???? paul
 			Token loser = predecessor.child( nextState,
 			   logEntryScore, arc.getLanguageProbability()+token.getLanguageScore(), arc
 					       .getInsertionProbability()+token.getInsertionProbability(), currentFrameNumber);

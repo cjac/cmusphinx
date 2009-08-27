@@ -72,6 +72,18 @@ public class WordSequence {
         return (new WordSequence(words));
     }
 
+    public static WordSequence getWordSequence(Word w1,Word w2) {
+	WordSequence sequence = new WordSequence(2);
+	sequence.words[0]=w1;
+	sequence.words[1]=w2;
+	return sequence;
+    }
+    public static WordSequence getWordSequence(Word w1) {
+	WordSequence sequence = new WordSequence(1);
+	sequence.words[0]=w1;
+	return sequence;
+    }
+
     /**
      * Constructs a word sequence from the list of words
      *
@@ -105,10 +117,37 @@ public class WordSequence {
      * @return a new word sequence with the word added (but trimmed to
      * maxSize).
      */
+    private WordSequence addCompound(Word [] mots,int maxSize) {
+    int nextSize= ((size() + mots.length ) > maxSize) ? maxSize : (size() + mots.length);
+      WordSequence next = new WordSequence(nextSize);
+      if (mots.length >= nextSize){
+	  int i,j;
+	  for ( i =0 , j =mots.length-nextSize ; i<nextSize; i++,j++)
+	      next.words[i]=mots[j];
+      }
+      else {
+	  int nextIndex = nextSize - 1;
+	  int thisIndex = size() -1;
+	  for (int i=mots.length-1; i>=0;i--)
+	  next.words[nextIndex--] = mots[i];
+	  
+	  while (nextIndex >= 0 && thisIndex >= 0) {
+	      next.words[nextIndex--] = this.words[thisIndex--];
+	  }
+      }
+
+      //  System.err.printf("avant ---> %s  apres -----> %s \n",toString(),next.toString());
+      next.check();
+      return next;
+    }
+
     public WordSequence addWord(Word word, int maxSize) {
         if (maxSize <= 0) {
             return EMPTY;
         }
+	// c'etait une methode mais au niveau ML cela biaise puisqu un seul appel pour plusieurs mots
+	// donc transferer dans grapheLinguist 
+	//	if (word.getCompound()!=null) return addCompound(word.getCompound(),maxSize);
         int nextSize = ((size() + 1) > maxSize) ? maxSize : (size() + 1);
         WordSequence next = new WordSequence(nextSize);
         int nextIndex = nextSize - 1;
@@ -197,10 +236,24 @@ public class WordSequence {
      */
     public Word getWord(int n) {
         if (n >= words.length) {
-            return Word.UNKNOWN; // better if startSequence but it  is not defined in word
-	    // modif paul            throw new ArrayIndexOutOfBoundsException(n);
+           throw new ArrayIndexOutOfBoundsException(n);
         }
         return words[n];
+    }
+
+    /**
+     * Returns the newest  word in this sequence
+     *
+     * @param n which word to return
+     *
+     * @return the nth word in this sequence
+     */
+    public Word getNewWord()  {
+        if ( words.length==0) {
+            return Word.UNKNOWN; // better if startSequence but it  is not defined in word
+	    // modif paul 
+        }
+        return words[words.length-1];
     }
 
     /**
@@ -222,7 +275,10 @@ public class WordSequence {
 	StringBuffer sb = new StringBuffer();
         for (int i = 0; i < words.length; i++) {
             sb.append("[");
-            sb.append(words[i].toString());
+	    if (words[i] !=null) 
+		sb.append(words[i].toString());
+	    else
+		sb.append(" null ");
             sb.append("]");
 	}
 	return sb.toString();
@@ -285,4 +341,15 @@ public class WordSequence {
 	} 
         return false;
     }
+    public WordSequence getClasse() {
+	WordSequence classe=new WordSequence(words.length);
+	for (int i=0; i< words.length;i++) {
+ 	    classe.words[i]= words[i].getClasse();
+	    if (classe.words[i]==null)
+		System.err.println("mauvais " + this.toString() + " " +
+				   words[i] + " " + words[i].getClasse());
+	}
+	return classe;
+    }
+	
 }

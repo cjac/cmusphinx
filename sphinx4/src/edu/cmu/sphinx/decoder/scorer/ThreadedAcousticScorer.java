@@ -257,14 +257,19 @@ public class ThreadedAcousticScorer implements AcousticScorer {
             if (numThreads > 1) {
 
                 int nThreads = numThreads;
-                int scoreablesPerThread = (scoreableList.size() + (numThreads - 1))
-                        / numThreads;
+//                 int scoreablesPerThread = (scoreableList.size() + (numThreads - 1))
+//                         / numThreads;
+		int scoreablesPerThread = (scoreableList.size()-1)/numThreads +1;
+		// la il y en un plus donc le dernier peut ne rien avoir.
                 if (scoreablesPerThread < minScoreablesPerThread) {
                     scoreablesPerThread = minScoreablesPerThread;
-                    nThreads = (scoreableList.size() + (scoreablesPerThread - 1))
-                            / scoreablesPerThread;
-                }
-
+		}
+		// donc il faut effectivement calculer le nThreads necessaire
+		nThreads = (scoreableList.size() + (scoreablesPerThread - 1))
+		    / scoreablesPerThread;
+		// la j'ai quelques doutes mais ......
+		// mais dans ce sens cela a l'air ok
+		
                 semaphore.reset(nThreads);
 
                 for (int i = 0; i < nThreads; i++) {
@@ -289,7 +294,7 @@ public class ThreadedAcousticScorer implements AcousticScorer {
             dpe.printStackTrace();
             return best;
         }
-        if (false &&  best!=null){
+        if (true  &&  best!=null){
 	    float maxi = - Float.MAX_VALUE;
 	    for (Object o : scoreableList) 
 		if ( ((Token) o).getAcousticScore()>maxi) maxi =  ((Token) o).getAcousticScore();

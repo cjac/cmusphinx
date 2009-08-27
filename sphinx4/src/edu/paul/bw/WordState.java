@@ -14,7 +14,8 @@
 package edu.paul.bw;
 
 import edu.cmu.sphinx.linguist.dictionary.Word;
-
+import java.io.FileWriter;
+import java.io.IOException;
 /**
  * Represents a word in an SentenceHMMS
  * 
@@ -78,8 +79,8 @@ public class WordState extends SentenceHMMState {
 	return this;
     }
     //alpha prime du word is this : getDirect=this
-    private double betaPrime;
-    private double alphaPrime;
+    private double betaPrime=0.0;
+    private double alphaPrime=0.0;
     public double getAlphaPrime() {
 	return alphaPrime;
     }
@@ -92,6 +93,12 @@ public class WordState extends SentenceHMMState {
     public void  setBetaPrime(double betaPrime) {
 	this.betaPrime=betaPrime;
     }
+    public void dumpAISee(FileWriter f) throws IOException {
+	f.write("node: { title: \"" + this.getName() + "\" label: \""
+                + getWord() + "[" + getStartFrame() + "," + getEndFrame() + 
+		"]\" }\n");
+    }
+
 
 }
 

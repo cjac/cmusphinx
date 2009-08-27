@@ -1116,7 +1116,7 @@ dag_load_r(char *file,          /**< Input: File to lod from */
            cmd_ln_t *config
     )
 {
-
+    void *toto=NULL;
     FILE *fp;
     char line[16384], wd[1024];
     int32 sf, fef, lef, ef, lineno;
@@ -1351,7 +1351,7 @@ dag_load_r(char *file,          /**< Input: File to lod from */
         lathist->frm_latstart[j] = k;
 
     /* Read in edges */
-    while (fgets(line, 1024, fp) != NULL) {
+    while ((toto=fgets(line, 1024, fp)) != NULL) {
         lineno++;
 
         if (line[0] == '#')
@@ -1361,7 +1361,7 @@ dag_load_r(char *file,          /**< Input: File to lod from */
             break;
     }
     k = 0;
-    while (fgets(line, 1024, fp) != NULL) {
+    while ((toto=fgets(line, 1024, fp) )!= NULL) {
         lineno++;
         if (sscanf(line, "%d %d %d", &from, &to, &ascr) != 3)
             break;
@@ -1377,6 +1377,7 @@ dag_load_r(char *file,          /**< Input: File to lod from */
         }
         k++;
     }
+    if (toto==NULL) {E_ERROR("je me suis ramasse :%s:",line);perror(NULL);}
     if (strcmp(line, "End\n") != 0) {
         E_ERROR("Terminating 'End' missing\n");
         goto load_error;

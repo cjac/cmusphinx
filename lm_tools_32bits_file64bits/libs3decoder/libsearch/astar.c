@@ -597,9 +597,10 @@ astar_next_ppath(astar_t *astar)
         lwid[2] = (bw2 == BAD_S3WID) ? BAD_LMWID(lm) : lm->dict2lmwid[bw2];
 
         for (l = d->succlist; l; l = l->next) {
-            assert(l->node->reachable && (!l->bypass));
+            assert(l->node->reachable) ;  /* && (!l->bypass));  modif paul pour faire sur les byp 21/11/08 */
 
             /* Obtain LM score for link */
+            if (dict_filler_word(dict,l->node->wid)&&  l->node!= astar->dag->final.node) continue; /*  je me mefie pour </s> modif paul pour faire sur les byp 21/11/08 */
             bw3 = dict_basewid(dict, l->node->wid);
             lwid[3] = lm->dict2lmwid[bw3];
 
@@ -754,7 +755,7 @@ nbest_search(dag_t *dag, char *filename, char *uttid, float64 lwf,
     fprintf(fp, "End; best %d worst %d diff %d beam %d\n",
             besthyp + dag->final.ascr, worsthyp + dag->final.ascr,
             worsthyp - besthyp, astar->beam);
-    fprintf(stderr,"------- rang %7d/%d\n",rangTheBest/(n_hyp+1));
+    fprintf(stderr,"------- rang %7d/%d\n",rangTheBest,(n_hyp));
     fprintf(stderr, "%s End; best %d worst %d diff %d beam %d\n",uttid,
             besthyp + dag->final.ascr, worsthyp + dag->final.ascr,
             worsthyp - besthyp, astar->beam);

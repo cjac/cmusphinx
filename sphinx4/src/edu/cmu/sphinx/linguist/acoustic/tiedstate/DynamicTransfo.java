@@ -82,8 +82,9 @@ public class DynamicTransfo {
 		if (locId.equals(this.id)) return;
 		this.id=locId;
 		s= new Scanner(new File(new File(dumpDir,dec[0]),lenom.toString()+".regmat"));
+		System.err.println(" lire : " + dec[0] +" " + lenom.toString());
 	    }
-       
+
 	s.useLocale(Locale.US);
 	int nbClasse=s.nextInt();
         if (nbClasse !=meansTransformationVectorPool.size()) 

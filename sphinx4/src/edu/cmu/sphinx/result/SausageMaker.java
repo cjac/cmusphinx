@@ -589,6 +589,12 @@ public class SausageMaker implements ConfidenceScorer, Configurable {
     /**
      * @see edu.cmu.sphinx.result.ConfidenceScorer#score(edu.cmu.sphinx.result.Result)
      */
+    public ConfidenceResult score(Lattice lattice) {
+	this.lattice=lattice;
+	lattice.computeNodePosteriors(languageWeight);
+        return makeSausage();
+    }
+
     public ConfidenceResult score(Result result) {
         lattice = new Lattice(result);
         LatticeOptimizer lop = new LatticeOptimizer(lattice);

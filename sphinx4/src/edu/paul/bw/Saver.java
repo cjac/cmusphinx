@@ -26,7 +26,8 @@ public class Saver implements Configurable {
     protected final static int BYTE_ORDER_MAGIC = 0x11223344;
     public final static String MODEL_VERSION = "0.3";
     protected final static String DENSITY_FILE_VERSION = "1.0";
-    protected final static String MIXW_FILE_VERSION ="mixwcnt1.0";
+    protected final static String MIXW_FILE_VERSION ="1.0";
+    protected final static String MIXWCNT_FILE_VERSION ="mixwcnt1.0";
     protected final static String GAUCNT_FILE_VERSION  ="1.0";
  
     private String checksum;
@@ -71,17 +72,120 @@ public class Saver implements Configurable {
 	writeInt(dos, checkSum);
 	dos.close();
     }
+
+
+  public void save(String ext , float [][] data, int sizeMix,String modif)  throws IOException {
+	File f=new File(dirBase+modif, ext);
+	logger.info("Saving density file to: "+ f);
+	DataOutputStream dos = new DataOutputStream(
+						    new BufferedOutputStream(new FileOutputStream(f)));
+	Properties props = new Properties();
+	int checkSum = 0;
+	props.setProperty("version", DENSITY_FILE_VERSION);
+	props.setProperty("chksum0", checksum+"");
+	writeS3BinaryHeader(dos,props);
+	writeInt(dos,data.length/sizeMix);
+	writeInt(dos,1);
+	writeInt(dos,sizeMix);
+	writeInt(dos,data[0].length);
+	writeInt(dos,data.length*data[0].length);
+	for (int g=0; g< data.length; g++) {
+	    writeFloatArray(dos,data[g]);
+	}
+	writeInt(dos, checkSum);
+	dos.close();
+    }
+
+
+
+    public void save( float [][] data,String Modif)  throws IOException {
+	File f=new File(dirBase+Modif, "mixture_weights");
+	logger.info("Saving mixture file to: "+ f);
+	DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(f)));
+	Properties props = new Properties();
+	int checkSum = 0;
+	props.setProperty("version", MIXW_FILE_VERSION); //c'est la meme pour les mix et proba
+	props.setProperty("chksum0", checksum+"");
+	writeS3BinaryHeader(dos,props);
+	writeInt(dos,data.length);
+	writeInt(dos,1);
+	writeInt(dos,data[0].length);
+	writeInt(dos,data.length*data[0].length);
+	for (int g=0; g< data.length; g++) {
+	    //    for (int i=0; i< out.length ;i++)
+	    //out[i] =(float) data[g][i];
+	    writeFloatArray(dos,data[g]);
+	}
+	writeInt(dos, checkSum);//a voir
+	dos.close();
+    }
+
+    public DataOutputStream open( int nGausByMix,int nSenone ,String Modif)  throws IOException {
+	File f=new File(dirBase+Modif, "mixture_weights");
+	logger.info("Saving mixture file to: "+ f);
+	DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(f)));
+	Properties props = new Properties();
+	int checkSum = 0;
+	props.setProperty("version", MIXW_FILE_VERSION); //c'est la meme pour les mix et proba
+	//props.setProperty("chksum0", checksum+"");
+	writeS3BinaryHeader(dos,props);
+	writeInt(dos,nSenone);
+	writeInt(dos,1);
+	writeInt(dos,nGausByMix);
+	writeInt(dos,nGausByMix*nSenone);
+	return dos;}
+
+
+    public DataOutputStream open(String ext ,int nGaus,int vectLen, int sizeMix,String modif)  throws IOException {
+	File f=new File(dirBase+modif, ext);
+	logger.info("Saving density file to: "+ f);
+	DataOutputStream dos = new DataOutputStream(
+						    new BufferedOutputStream(new FileOutputStream(f),1024*1024));
+	Properties props = new Properties();
+	int checkSum = 0;
+	props.setProperty("version", DENSITY_FILE_VERSION);
+	//props.setProperty("chksum0", checksum+"");
+	writeS3BinaryHeader(dos,props);
+	writeInt(dos,nGaus/sizeMix);
+	writeInt(dos,1);
+	writeInt(dos,sizeMix);
+	writeInt(dos,vectLen);
+	writeInt(dos,nGaus*vectLen);
+	return dos;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     public void save( double [][] data)  throws IOException {
 	save(data,"");
     }
 
-    public void save( double [][] data,String Modif)  throws IOException {
+   public void save( double [][] data,String Modif)  throws IOException {
 	File f=new File(dirBase+Modif, "mixw_counts");
 	logger.info("Saving mixture file to: "+ f);
 	DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(f)));
 	Properties props = new Properties();
 	int checkSum = 0;
-	props.setProperty("version", MIXW_FILE_VERSION);
+	props.setProperty("version", MIXWCNT_FILE_VERSION);
 	//props.setProperty("chksum0", checksum+"");
 	writeS3BinaryHeader(dos,props);
 	writeInt(dos,data.length);
@@ -137,7 +241,7 @@ public class Saver implements Configurable {
 	writeInt(dos,mixw[0].length);
 	writeInt(dos,mixw.length*mixw[0].length);
 
-	    for (int testId=0 ; testId<mixw.length ; testId++){
+	if (false)    for (int testId=0 ; testId<mixw.length ; testId++){
 		double testCumul=0.0;
 	    
 		for (int imix=0 ; imix< mixw[testId].length;imix++) testCumul +=mixw[testId][imix];
@@ -201,7 +305,7 @@ public class Saver implements Configurable {
             dos.writeFloat(val);
         }
     }
-    protected void writeFloatArray(DataOutputStream dos, float[] data)
+    public void writeFloatArray(DataOutputStream dos, float[] data)
         throws IOException{
 	
         for (int i = 0; i < data.length; i++) {

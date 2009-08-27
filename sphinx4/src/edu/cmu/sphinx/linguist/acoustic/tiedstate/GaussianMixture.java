@@ -32,6 +32,12 @@ public class GaussianMixture implements Senone {
 
     transient volatile private Data lastDataScored;
     transient volatile private float logLastScore;
+    transient volatile private double lastScore;
+    transient volatile private Data lastDataComponent;
+    transient volatile private float [] lastLogComponentScore;
+    transient volatile private double [] lastComponentScore;
+    transient volatile private boolean transfoToCalculed=false;
+
 
     private LogMath logMath;
 
@@ -55,7 +61,13 @@ public class GaussianMixture implements Senone {
         this.id = id;
     }
 
-
+    public void resetTransfo() {
+	transfoToCalculed=true;
+	if (compteur!=0) {
+	    System.err.format("%30s %d mixture transformed \n","",compteur);
+	    compteur=0;
+	}
+    }
     /**
      * Dumps this senone.
      *
@@ -85,10 +97,24 @@ public class GaussianMixture implements Senone {
 	    logScore = calculateScore(feature);
 	    logLastScore = logScore;
 	    lastDataScored = feature;
+	    lastScore=-1.0;
 	}
 	return logScore;
     }
 
+    public double getScoreDouble (Data feature) {
+	if (feature.equals(lastDataScored) && lastScore>0)
+	    return lastScore;
+	 lastScore =calculateScoreDouble(feature);
+	 if (false) {
+	 double temp= logMath.logToLinear(getScore(feature));
+	 if (Math.abs(temp-lastScore)/temp>0.00001)
+	     System.err.format("vue %4d %7e %7e\n",id,temp,lastScore);
+	 }
+	 lastDataScored=feature;
+	 return lastScore;
+
+    }
 
     /**
      * Determines if two objects are equal
@@ -144,11 +170,15 @@ public class GaussianMixture implements Senone {
      * @return the score, in logMath log base, for the feature
      */
     public float calculateScore(Data feature) {
-	float logTotal = LogMath.getLogZero();
-	for (int i = 0; i < mixtureComponents.length; i++) {
+	if (transfoToCalculed) makeTransfo();
+	float logTotal =  mixtureComponents[0].getScore(feature)+
+	    logMixtureWeights[0];
+	 float zero= LogMath.getLogZero();
+	for (int i = 1; i < mixtureComponents.length; i++) {
 	    // In linear form, this would be:
 	    //
 	    // Total += Mixture[i].score * MixtureWeight[i]
+            if (zero  !=   logMixtureWeights[i])
 	    logTotal = logMath.addAsLinear(logTotal,
 		 mixtureComponents[i].getScore(feature)+
 					   logMixtureWeights[i]);    //paul j'ai des doutes sur ce truc 
@@ -156,6 +186,29 @@ public class GaussianMixture implements Senone {
 
 	return logTotal;
     }
+
+    private double calculateScoreDouble(Data feature) {
+	if (transfoToCalculed) makeTransfo();
+	double total= logMath.logToLinear(mixtureComponents[0].getScore(feature)+
+					  logMixtureWeights[0]);
+
+	float zero= LogMath.getLogZero();
+	for (int i = 1; i < mixtureComponents.length; i++) {
+	    // In linear form, this would be:
+	    //
+	    // Total += Mixture[i].score * MixtureWeight[i]
+            if (zero  !=   logMixtureWeights[i])
+		total += logMath.logToLinear(mixtureComponents[i].getScore(feature)+
+					     logMixtureWeights[i]);
+	}
+	
+	return total;
+    }
+    
+
+
+
+
 
     /**
      * Calculates the scores for each component in the senone.
@@ -165,6 +218,7 @@ public class GaussianMixture implements Senone {
      * @return the LogMath log scores for the feature, one for each component
      */
     public float[] calculateComponentScore(Data feature) {
+	if (transfoToCalculed) makeTransfo();
 	float[] logComponentScore = new float[mixtureComponents.length];
 	for (int i = 0; i < mixtureComponents.length; i++) {
 	    // In linear form, this would be:
@@ -176,7 +230,67 @@ public class GaussianMixture implements Senone {
 
 	return logComponentScore;
     }
+    /**
+     * Calculates the scores for each component in the senone.
+     *
+     * @param feature the feature to score
+     *
+     * @return the LogMath log scores for the feature, one for each component
+     */
+    public float[] calculateComponentScoreWithMemory(Data feature) {
+	if (transfoToCalculed) makeTransfo();
+	if (lastDataComponent== feature)
+	    return lastLogComponentScore;
+	float zero=logMath.getLogZero();
+	float[] logComponentScore = new float[mixtureComponents.length];
+	for (int i = 0; i < mixtureComponents.length; i++) {
+	    // In linear form, this would be:
+	    //
+	    // Total += Mixture[i].score * MixtureWeight[i]
+	    if (logMixtureWeights[i]!=zero)
+		logComponentScore[i] = mixtureComponents[i].getScore(feature)+
+		    logMixtureWeights[i];
+	    else
+		logComponentScore[i]=zero;	
+	}
+	lastDataComponent= feature;
+	lastLogComponentScore=logComponentScore;
+	return logComponentScore;
+    }
+    
+    
+    
+    public double[] calculateComponentScoreWithMemoryDouble(Data feature) {
+	if (true && lastDataComponent== feature)
+	    return lastComponentScore;
+	if (transfoToCalculed) makeTransfo();
+	float zero=logMath.getLogZero();
+	double [] componentScore = new double[mixtureComponents.length];
+	for (int i = 0; i < mixtureComponents.length; i++) {
+	    // In linear form, this would be:
+	    //
+	    // Total += Mixture[i].score * MixtureWeight[i]
+	    if (logMixtureWeights[i]!=zero)
+		componentScore[i] = logMath.logToLinear(mixtureComponents[i].getScore(feature)+
+						    logMixtureWeights[i]);
+	    else
+		componentScore[i]=0.0;	
+	}
+	lastDataComponent= feature;
+	lastComponentScore=componentScore;
+	return componentScore;
+    }
+    /**
+     * free the component memory after backward pass
+     *
+     *
+     */
 
+    public void clearComponentData() {
+	lastDataComponent=null;
+	lastLogComponentScore=null;
+	lastComponentScore=null;
+    }
     /**
      * Returns the mixture components associated with this Gaussian
      *
@@ -185,4 +299,17 @@ public class GaussianMixture implements Senone {
     public MixtureComponent[] getMixtureComponents() {
 	return mixtureComponents;
     }
+    public float [] getLogMixtureWeights() {
+	return logMixtureWeights;
+    }
+
+    static int compteur=0;
+    private void  makeTransfo() {
+	compteur++;
+	for (int i =0 ; i< mixtureComponents.length; i++)
+	    mixtureComponents[i].precomputeDistance();
+	transfoToCalculed=false;
+	
+    }
+
 }

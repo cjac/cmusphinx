@@ -161,7 +161,7 @@ public class GrapheLinguist implements Linguist {
 
     private int cacheTrys;
     private int cacheHits;
-
+    private boolean compound;
     /*
      * (non-Javadoc)
      * 
@@ -182,6 +182,7 @@ public class GrapheLinguist implements Linguist {
         registry.register(PROP_LANGUAGE_WEIGHT, PropertyType.FLOAT);
         registry.register(PROP_CACHE_SIZE, PropertyType.INT);
         registry.register(PROP_UNIT_MANAGER, PropertyType.COMPONENT);
+        registry.register("compound", PropertyType.BOOLEAN);
     }
 
     /*
@@ -210,6 +211,7 @@ public class GrapheLinguist implements Linguist {
         int newMaxArcCacheSize = ps.getInt(PROP_CACHE_SIZE,
 					   PROP_CACHE_SIZE_DEFAULT);
         
+	compound =ps.getBoolean("compound",false);
         // if the new size of the arc cache is less than before
         // just clear out the cache, since we can easily grow it
         // but not easily shrink it.
@@ -577,6 +579,14 @@ public class GrapheLinguist implements Linguist {
          * @return a list of SearchState objects
          */
         public SearchStateArc[] getSuccessors() {
+            if (isFinal()) 
+		{System.err.println("je demande les sucs de "+this);
+		    
+		    try {throw new Exception("tintin");}
+		    catch (Exception e) {
+			e.printStackTrace();
+		    }
+		    return new SearchStateArc[0];	}
             SearchStateArc[] arcs = getCachedArcs();
             if (arcs == null) {
                 arcs = getSuccessors(node);
@@ -596,7 +606,7 @@ public class GrapheLinguist implements Linguist {
             // System.out.println("Arc: "+ this);
             for (int i = 0; i < arcs.length; i++) {
                 SearchState nextNode = nodes[i].getState();
-                //  System.out.println(" " + nextNode);
+                //if (getOrder()==1)  System.out.println("coucou  " +i+"" + nextNode);
                 if (nextNode instanceof WordSearchState) {
                     arcs[i] = createWordStateArc((WordSearchState) nextNode,nodes[i], this);
                 } else if (nextNode instanceof UnitSearchState) {
@@ -627,17 +637,30 @@ public class GrapheLinguist implements Linguist {
             float arcProbability = logOne;
             Word nextWord = wordNode.getPronunciation().getWord();
             WordSequence nextWordSequence = wordSequence;
-            if (!nextWord.isFiller()) {
-                nextWordSequence = wordSequence.addWord(nextWord, languageModel
-							.getMaxDepth());
-                probability = languageModel.getProbability(nextWordSequence);
-		// System.out.println("LP " + nextWordSequence + " " +
-                // logProbability);
-                probability *= languageWeight;}
+            if (!nextWord.isFiller()||nextWord.isSentenceEndWord() ) {
+		if (compound && nextWord.getCompound()!=null) {
+		    
+		    for ( Word w: nextWord.getCompound()){
+			nextWordSequence=nextWordSequence.addWord(w,languageModel.getMaxDepth());
+			probability += languageModel.getProbability(nextWordSequence);
+		    }
+		}
+		else {
+		    nextWordSequence = wordSequence.addWord(nextWord, languageModel
+							    .getMaxDepth());
+		    probability = languageModel.getProbability(nextWordSequence);
+		    // System.out.println("LP " + nextWordSequence + " " +
+		    // logProbability);
+		}
+		probability *= languageWeight;}
 	    else
-		probability = logOne;
+		{
+		    probability = logOne;}
 	    arcProbability = probability + flatArc.getLanguageProbability();
 	    // fin du if not filler before 
+
+	    // System.err.format("GL : %s : to %s  avec l= %f    i= %f \n",  previous.toString(),nextWord.toString(),
+	    //	      arcProbability,flatArc.getInsertionProbability()); 
 	    return new GrapheLinguistWordState(wordNode,
 					      nextWordSequence.trim(languageModel.getMaxDepth() - 1), flatArc.getInsertionProbability(), arcProbability);
             

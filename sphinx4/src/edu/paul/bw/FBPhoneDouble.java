@@ -313,7 +313,7 @@ public class FBPhoneDouble implements Configurable,FB {
 
     protected final static String NUM_SENONES = "num_senones";
     protected final static String NUM_GAUSSIANS_PER_STATE = "num_gaussians";
-    protected final static String NUM_STREAMS = "num_streams";
+     protected final static String NUM_STREAMS = "num_streams";
     private class MaClasse extends 	HashMap<SentenceHMMState,Double>{
     }
 
@@ -366,7 +366,6 @@ public class FBPhoneDouble implements Configurable,FB {
 	mondeMixture= new ArrayList<double[]>();
 	mondeMean=new ArrayList <double [][]>();
 	mondeVar=new ArrayList < double [][]>();
-
 	float [] cd= new float[vectLen];
 	int select=0;
 	nextBeta=beta[select];
@@ -560,9 +559,14 @@ public class FBPhoneDouble implements Configurable,FB {
 			if (scoreDouble[i]<lemax) scoreDouble[i]=0.0;
 		    } 
 		    proba=cumulLocal;
-		    //System.err.format(Locale.US,"trame %3d id %4d sc %5e  cum %5e\n",t,id,proba,cumulLocal);
 		    //proba=logMath.linearToLog(cumulLocal);
 		    double poidsLocal= post/cumulLocal;
+		    if (proba <1.0e-300 && post>1.0e-20){ 
+			logger.warning(String.format(Locale.US,"probafaible %3d id %4d sc %5e max:%5e post:%5e pl:%5e\n",t,id,proba,maxi,post,poidsLocal));
+			clear(data.length);
+			for (Integer idTemp : vu.keySet()) 
+		       ((GaussianMixture)senones.get(idTemp)).clearComponentData();
+			return false; }
 		    int baseId =id *nGausByMixture;
 		    double gammaMpe= state.isStateZero() ? state.getGammaMpe() : state.getDirect().getGammaMpe();
 
@@ -581,33 +585,43 @@ public class FBPhoneDouble implements Configurable,FB {
 				accumVar.get(vu.get(id))[i][l]+=cd[l]*scoreDouble[i];
 			    }
 			}
-			if (false && id==22) 
-			    System.err.format(Locale.US," p:%4g %4g %4d\n",post,poidsLocal,t);
 		    }
 		    else
-			{  if (aligner) 
-			    logger.info(String.format(Locale.US,"MPENEG %7g %7g %5d %s  %s",gammaMpe,post,id,state.toString(), 
-						      ((HMMStateState) state).getHMMState().toString()));
+			{ 
 			    cumulMpeMoins -=gammaMpe*post;
 			    poidsLocal *=-gammaMpe;
 			    for (int i=0; i< scoreDouble.length ;i++) {
 				if (scoreDouble[i]==0.0) continue;
 				scoreDouble[i] *=poidsLocal;
-				if (scoreDouble[i] > 1e+33) {
+				if (scoreDouble[i] > 1e+5) {
 				    logger.warning(
 						   String.format(Locale.US,
-								 "score haut gau: %d,mix %d, s:%7g post:%7g mpe: %7g poidsloc %7g",
-								 id,i,scoreDouble[i],post,gammaMpe,poidsLocal));
+								 "score haut gau: %d,mix %d, s:%7g post:%7g mpe: %7g poidsloc %7g proba %7g",
+								 id,i,scoreDouble[i],post,gammaMpe,poidsLocal,proba));
+				System.err.format("proba:%7g ", ((HMMStateState) state).getScoreDouble(data[t]));
+				if (false) 
+				    {for(int tt =0 ; tt< scoreDouble.length; tt++)
+				    System.err.format(" (%d,%7g)",i,scoreDoubleTemp[i]);
+				    System.err.println();}
 				}
+
+				
 				mondeMixture.get(vu.get(id))[i] +=scoreDouble[i];
 				
+				if (mondeMixture.get(vu.get(id))[i]>=1.0e+10) {
+				     logger.warning(
+						   String.format(Locale.US,
+								 "monde haut m:%7g %7g",mondeMixture.get(vu.get(id))[i],scoreDouble[i]));
+						   }
 				for(int l=0; l<vectLen; l++) {
 				    mondeMean.get(vu.get(id))[i][l]+=md[l]*scoreDouble[i];
 				    mondeVar.get(vu.get(id))[i][l]+=cd[l]*scoreDouble[i];
 				}
 			    }
+			
 			}
 		}
+	      
 		proba=oldBeta.get(state)*(proba/logMax[t]);
 		//on propage 
 
@@ -646,7 +660,10 @@ public class FBPhoneDouble implements Configurable,FB {
 				 " papSent:" +papSentence +
 			    
 				 " mpeplus:" + cumulMpePlus + " mpesomme:" +((cumulMpePlus- cumulMpeMoins)) + " cavg" +cAvg);
-		    return false;}
+		   clear(data.length);
+		   for (Integer id : vu.keySet()) 
+		       ((GaussianMixture)senones.get(id)).clearComponentData();
+		   return false;}
 	    else
 		logger.fine(String.format(Locale.US,"verif trame %4d post:%.4f mpeplus:%7g mpemoin:%7g mpetotal:%7g papsent:%.4f",
 					  t,cumul,cumulMpePlus,cumulMpeMoins,

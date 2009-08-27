@@ -31,6 +31,7 @@ import edu.cmu.sphinx.linguist.dictionary.Word;
 import edu.cmu.sphinx.linguist.dictionary.Dictionary;
 import edu.cmu.sphinx.linguist.language.ngram.LanguageModel;
 import java.util.logging.Logger;
+import java.util.logging.Level;
 import edu.cmu.sphinx.util.LogMath;
 import edu.cmu.sphinx.util.props.Configurable;
 import edu.cmu.sphinx.util.props.PropertyException;
@@ -59,6 +60,13 @@ import edu.cmu.sphinx.util.props.Registry;
  */
 public class SausageMakerEdges implements ConfidenceScorer, Configurable {
   private int numero=0;
+
+    private class ContCluster {
+	Cluster c=null;
+	ContCluster(Cluster c) {
+	    this.c=c;
+	}
+    }
     private class Cluster {
 	int id =numero++;
         int idTopo;
@@ -67,7 +75,9 @@ public class SausageMakerEdges implements ConfidenceScorer, Configurable {
 	private int minTime=-100;
 	private int maxTime=-100;
 	ArrayList <NodeEdge> l;
+	ContCluster cont=null;
 	HashMap <Word,Float> proba=null;
+	HashSet <ContCluster> suc=null;
 	Cluster(ArrayList <NodeEdge>  l) {
 	    this.l=l;
 	    this.id =id;
@@ -88,6 +98,13 @@ public class SausageMakerEdges implements ConfidenceScorer, Configurable {
 		else
 		    proba.put(w,(float)n.getPosterior());
 	    }
+	}
+	double post() {
+	    double resu=0.0;
+	    for (NodeEdge n:l) {
+		resu += logMath.logToLinear((float) n.getPosterior());
+	    }
+	    return resu;
 	}
         void add(NodeEdge n) {
 	    if (this.proba!=null) {
@@ -130,13 +147,26 @@ public class SausageMakerEdges implements ConfidenceScorer, Configurable {
 	    maxTime= Math.max(maxTime,c2.maxTime);
 	    if (minTime >c2.minTime) 
 		System.err.println( "fusion inv "+ this + "," +  c2);
-
+	    if (this.suc!=null && c2.suc !=null) 
+		this.suc.addAll(c2.suc);
+		    
  // pour le min normale c'est deja le cas
 	}
-
+	ContCluster getCont() {
+	    if (cont==null) cont =new ContCluster(this);
+	    return cont;
+	}
+	String lesSucs() {
+	    if (suc==null) return "";
+	    StringBuffer sb=new StringBuffer();
+	    for (ContCluster c: suc) {
+		sb.append( " "+ c.c.id);
+	    }
+	    return "\n sucs:" +sb.toString() + "\n";
+	}
 	public String toString() {
 	    return "id:"+id+" siz:"+ l.size()+" bt:"+ getBeginTime() +" et:"+ getEndTime()+
-		" s:"+l.size()+ " latesbeg: " + getLatestBeginTime()+  " earlest:" + getEarliestEndTime();
+		" s:"+l.size()+ " latesbeg: " + getLatestBeginTime()+  " earlest:" + getEarliestEndTime()+ " " + l.get(0) +" "+ lesSucs();
 	}
 
 	public int hashCode() {
@@ -158,8 +188,8 @@ public class SausageMakerEdges implements ConfidenceScorer, Configurable {
 	int getLatestBeginTime() {
 	    if (beginTime >=0) return beginTime;
 	    for (NodeEdge n : l) 
-		if (n.getBeginTime()> beginTime)
-		    beginTime=n.getBeginTime();
+		if (n.getLastBeginTime()> beginTime)
+		    beginTime=n.getLastBeginTime();
 	    return beginTime;
 	}
 	int getEndTime() {
@@ -317,6 +347,12 @@ private class ClusterComparator implements Comparator <Cluster> {
     private float prune=10;
     private boolean edgeMode=true;
     private float wip=0;
+    private float seuilabs=5.0e-4f;
+    private double seuilMot=0.0001;
+    private float scale;
+    private boolean dumpSausage;
+    private boolean dumpLattice;
+    private boolean keepAll=false;
 /**
      * @see edu.cmu.sphinx.util.props.Configurable#register(java.lang.String,
      *      edu.cmu.sphinx.util.props.Registry)
@@ -329,27 +365,39 @@ private class ClusterComparator implements Comparator <Cluster> {
         registry.register(PROP_WORD_INSERTION_PROBABILITY, PropertyType.FLOAT);
 	registry.register(PROP_LANGUAGE_MODEL, PropertyType.COMPONENT);
 	registry.register(PROP_POURCENT_PRUNE, PropertyType.FLOAT);
+	registry.register("seuilAbsolu", PropertyType.FLOAT);
+	registry.register("seuilMot", PropertyType.DOUBLE);
+	registry.register("scale", PropertyType.FLOAT);
+        registry.register("dumpSausage", PropertyType.BOOLEAN);
+        registry.register("dumpLattice", PropertyType.BOOLEAN);
         registry.register(PROP_EDGE, PropertyType.BOOLEAN);
+	registry.register("keepAll", PropertyType.BOOLEAN);
     }
-
-
+    
+    
     /**
      * @see edu.cmu.sphinx.util.props.Configurable#newProperties(edu.cmu.sphinx.util.props.PropertySheet)
      */
     public void newProperties(PropertySheet ps) throws PropertyException {
-   
+	
 	logger = ps.getLogger();
         logMath = (LogMath) ps.getComponent(PROP_LOG_MATH, LogMath.class);
         dictionary = (Dictionary) ps.getComponent(PROP_DICTIONARY,
 						  Dictionary.class);
-    
+	
 	languageWeight = ps.getFloat(PROP_LANGUAGE_WEIGHT,
 				     PROP_LANGUAGE_WEIGHT_DEFAULT);
 	prune = ps.getFloat(PROP_POURCENT_PRUNE,PROP_POURCENT_PRUNE_DEFAULT);
+        seuilabs=ps.getFloat("seuilAbsolu",5.0e-4f);
+        seuilMot=ps.getDouble("seuilMot",seuilMot);
+        scale=ps.getFloat("scale",languageWeight);
 	edgeMode = ps.getBoolean(PROP_EDGE,PROP_EDGE_DEFAULT);
+	dumpSausage = ps.getBoolean("dumpSausage",false);
+	dumpLattice = ps.getBoolean("dumpLattice",false);
+	keepAll = ps.getBoolean("keepAll",false);
         wip = ps.getFloat(PROP_WORD_INSERTION_PROBABILITY,
 			   PROP_WORD_INSERTION_PROBABILITY_DEFAULT);
-        try {
+ 	try {
 	    languageModel = (LanguageModel) ps.getComponent(PROP_LANGUAGE_MODEL,
 							LanguageModel.class);
 	}
@@ -408,8 +456,15 @@ private class ClusterComparator implements Comparator <Cluster> {
 	 for (Cluster c : clusters)
 	     c.calculWordPost();
          countDump=clusters.size();
+	 if (logger.isLoggable(Level.FINEST)) {
+	     System.err.println("au milieu -------------------------------------------------------------------- " +countDump);
+	     printClusters(clusters);}
+	 
 	 while(interWordClusterStep(clusters,false));
          countDump=clusters.size();
+	 System.err.println("au milieu " +countDump);
+	 faireSuc( clusters);
+	 if (logger.isLoggable(Level.FINER)) printClusters(clusters);
 	 while(interWordClusterStep(clusters,true));
 
     }
@@ -437,12 +492,15 @@ private class ClusterComparator implements Comparator <Cluster> {
         if (latestBeginTime1 < earliestEndTime2 &&
             latestBeginTime2 < earliestEndTime1) {
             return true;
-        } else if (latestBeginTime2 < earliestEndTime1 &&
-                   latestBeginTime1 < earliestEndTime2) {
-            return true;
-        } else {
-            return false;
-        }
+        } 
+// 	else
+// 	    if (latestBeginTime2 < earliestEndTime1 &&  // j'aimerais comprendre ce test ....... je croyais que && commute
+//                    latestBeginTime1 < earliestEndTime2) {
+//             return true;
+//         } else {
+//             return false;
+//         }
+	return false;
     }
     
     private float ecartCluster(Cluster cluster1, Cluster cluster2) {
@@ -459,6 +517,71 @@ private class ClusterComparator implements Comparator <Cluster> {
 	if (res<=0f) return logMath.linearToLog(0.000001); else return logMath.linearToLog(res);
     }
 
+    private void faireSuc(List <Cluster> clusters) {
+	logger.fine(String.format("debut de faire suc %d",interdit.size()));
+   ListIterator <Cluster> i = clusters.listIterator();
+	int ecart=1;
+	boolean pasTrouve;
+        while (i.hasNext()) {
+            Cluster ci = i.next();
+	    if (ci.suc==null) ci.suc=new HashSet <ContCluster>(20);
+            if (!i.hasNext()) {
+                break;
+            }
+            ListIterator <Cluster> j = clusters.listIterator(i.nextIndex());
+            while (j.hasNext()) {
+                Cluster cj = j.next(); 
+                if (ci.getEndTime()+ ecart  < cj.getBeginTime()) break; 
+		CoupleInt couple= new CoupleInt(ci.id,cj.id);
+		if (! interdit.contains(couple)) continue;
+		pasTrouve =true; 
+		Iterator <NodeEdge>  ic = ci.l.iterator();
+		while (ic.hasNext() && pasTrouve) {
+		    NodeEdge n1 = ic.next();
+		    Iterator <NodeEdge> ic2 = cj.l.iterator();
+		    while (ic2.hasNext()&& pasTrouve) {
+			NodeEdge n2 = ic2.next();
+			if (n1.getEndTime()+getMaxEcart() <n2.getBeginTime()|| n1.isAncestorOf(n2)) {
+			    ci.suc.add(cj.getCont());pasTrouve=false;
+				       logger.finer("suc ( "+ci+","+cj  + "  ," +  n1.isAncestorOf(n2)
+						    + " n1:" +n1 +" n2:"+n2);
+				       } else if (n2.getEndTime()+getMaxEcart() <n1.getBeginTime()||n2.isAncestorOf(n1)) {
+				if (cj.suc==null) cj.suc=new HashSet <ContCluster> (20);
+				cj.suc.add(ci.getCont());pasTrouve=false;
+				logger.finer("suc( "+cj+","+ci  + "  ," +  n2.isAncestorOf(n1)
+					     + " n1:" +n2 +" n2:"+n1);
+			    }
+			}
+		}
+		if (pasTrouve) logger.warning("pas trouve l'ordre pour" +ci+ "et :" + cj);
+
+	    }
+	}
+	closure (i,clusters);
+    }
+    void closure (ListIterator <Cluster> fini, List <Cluster> clusters) {
+	int passe=5;
+	boolean modifier=true;
+	while (fini.hasPrevious() && passe-->0 && modifier) {
+	    modifier=false;
+	    ListIterator <Cluster> j = clusters.listIterator(fini.previousIndex());
+	    // fini.previous();
+	    int card=0;
+	    while(j.hasPrevious()) {
+		Cluster ci=j.previous();
+	        ContCluster [] temp= ci.suc.toArray( new ContCluster[0]);
+		for (ContCluster fils: temp) {
+		    for (ContCluster contPetitFils :fils.c.suc) {
+			Cluster cj=contPetitFils.c;
+			if (ci.getEndTime()+ getMaxEcart() +3 > cj.getBeginTime())  // je me suis fait avoir une fois alors .........on n'est pas a 3 pres. 
+			    modifier |= ci.suc.add(cj.getCont());
+		    }
+		}
+		card+=ci.suc.size();
+	    }
+	    System.err.println("une passe de closure " + card);
+	}
+    }
 
     /**
      * Perform one inter word clustering step of the algorithm
@@ -471,14 +594,14 @@ private class ClusterComparator implements Comparator <Cluster> {
         float maxSim = Float.NEGATIVE_INFINITY;
         ListIterator <Cluster> i = clusters.listIterator();
 	int ecart=(ncont) ? getMaxEcart():1;
-	if (clusters.size() <=countDump) {
+	if (clusters.size() <=countDump|| logger.isLoggable(Level.FINE)) {
 	    countDump=clusters.size()-100;
 	    logger.info("inter :" + clusters.size() + 
 			       " ancestor " + ancestors.size()+
 			       " distance:"+ distance.size()+ 
 			       " int:"+interdit.size()+
 			       " distanceEd:"+  distanceEdition.size()
-			       +" hit:" +hit + " nohit:"+nohit);
+			       +" hit:" +hit + " nohit:"+nohit + "ecart: "+ecart+ "ncont :" +ncont);
 	    
 	}
         while (i.hasNext()) {
@@ -489,7 +612,8 @@ private class ClusterComparator implements Comparator <Cluster> {
             ListIterator <Cluster> j = clusters.listIterator(i.nextIndex());
             while (j.hasNext()) {
                 Cluster c2 = j.next(); 
-                if (c1.getEndTime()+ ecart  < c2.getBeginTime()) break; 
+                if (c1.getEndTime()+ ecart  < c2.getBeginTime()) break;
+		if (ncont && (c1.suc.contains(c2.getCont()) || c2.suc.contains(c1.getCont()))) continue;
                 float sim = interClusterDistance(c1,c2);
 		if (ncont) sim+=ecartCluster(c1,c2);
                 if (sim > maxSim &&(ncont|| hasOverlap(c1,c2))) {
@@ -497,7 +621,6 @@ private class ClusterComparator implements Comparator <Cluster> {
 		    if ( toBeMerged2!=null 
 			 && toBeMerged2.getEndTime()+100<c1.getBeginTime())
 			{toMerged.add(toBeMerged1);toMerged.add(toBeMerged2);}
-
                     toBeMerged1 = c1;
                     toBeMerged2 = c2;
                 }
@@ -508,16 +631,20 @@ private class ClusterComparator implements Comparator <Cluster> {
 	    for (int clus=0; clus<toMerged.size();){
 		toBeMerged1=toMerged.get(clus++);
 		toBeMerged2=toMerged.get(clus++);
-                if (false){
-	     	    logger.info("merge : " +toBeMerged1+ " " +toBeMerged2);
-		    printCluster(toBeMerged1);
-		    printCluster(toBeMerged2);
+                if (logger.isLoggable(Level.FINE)){
+	     	    logger.fine("merge : " +toBeMerged1+ "----avec--  " +toBeMerged2);
+		    //printCluster(toBeMerged1);
+		    // printCluster(toBeMerged2);
 		}
-
-
-            clusters.remove(toBeMerged2);
-            toBeMerged1.addAll(toBeMerged2);
+		
+		
+		clusters.remove(toBeMerged2);
+		toBeMerged1.addAll(toBeMerged2);
+		if (logger.isLoggable(Level.FINE)){
+		    logger.fine("resul : " +toBeMerged1);
+		}
 	    }
+	    logger.fine(" fin d'une passe" );
             toMerged.clear();
             return true;
         }
@@ -671,24 +798,54 @@ private class ClusterComparator implements Comparator <Cluster> {
     HashMap <Couple,Boolean> ancestors=new HashMap <Couple,Boolean> ();
     protected boolean hasAncestralRelationship(NodeEdge n1, NodeEdge n2) {
 	Couple ci;
-	boolean b;
-        if (n1.getBeginTime()==n2.getBeginTime()) return false;
-	if (n1.getBeginTime()<n2.getBeginTime()){
-	    if (n1.getFirstEndTime()>n2.getBeginTime()) return false;
-	    if (n1.getEndTime()+getMaxEcart() <n2.getBeginTime()) return true;
-	    ci=new Couple(n1,n2);
-	    if (ancestors.containsKey(ci)) return ancestors.get(ci);
-	    b= n1.isAncestorOf(n2);
-	}
-	else {
-	    if (n2.getFirstEndTime()>n1.getBeginTime()) return false;
-	    if (n2.getEndTime()+getMaxEcart() <n1.getBeginTime()) return true;
-	    ci =new Couple(n2,n1);
-	    if (ancestors.containsKey(ci)) return ancestors.get(ci);
-	    b= n2.isAncestorOf(n1);
-	}
-        ancestors.put(ci,b);
-	return b;
+	boolean b=false;
+	if (!modeDebug) {
+        // if (n1.getBeginTime()==n2.getBeginTime()) return false;
+	    if (n1.getBeginTime()<n2.getLastBeginTime() &&
+		n1.getFirstEndTime()<=n2.getLastBeginTime()) {
+		if (n1.getEndTime()+getMaxEcart() <n2.getBeginTime()) return true;
+		ci=new Couple(n1,n2);
+		if (ancestors.containsKey(ci)) b=ancestors.get(ci);
+		else{
+		    b= n1.isAncestorOf(n2);
+		    ancestors.put(ci,b);
+		}
+	    }
+	    if (!b && n2.getBeginTime()<n1.getLastBeginTime()) {
+		if (n2.getFirstEndTime()>n1.getBeginTime()) return false; // idem mais dans l'autre sens
+		if (n2.getEndTime()+getMaxEcart() <n1.getBeginTime()) return true;
+		ci =new Couple(n2,n1);
+		if (ancestors.containsKey(ci)) return ancestors.get(ci);
+		b= n2.isAncestorOf(n1);
+		ancestors.put(ci,b);}
+	    return b;}
+	else  {
+	    System.err.println (n1+" --" + n1.getLastBeginTime()+ " ----------la------- "+n2+ ":" +n2.getLastBeginTime());
+	    if (n1.getBeginTime()<n2.getLastBeginTime() && 
+		n1.getFirstEndTime()<=n2.getLastBeginTime()) {
+		System.err.println ("ici");// rajouter pour cecilia sarkozy !!!!!le 26 novembre 2008
+		if (n1.getEndTime()+getMaxEcart() <n2.getBeginTime()) return true;
+		ci=new Couple(n1,n2);
+		if (ancestors.containsKey(ci)) b=ancestors.get(ci);
+		else{System.err.println ("la ");
+		    b= n1.isAncestorOf(n2);
+		    System.err.println ("la2 "+b);
+		    ancestors.put(ci,b);
+		}
+	    }
+	    
+	    if (!b && n2.getBeginTime()<n1.getLastBeginTime()) {
+		System.err.println ("la3 "+b);
+		if (n2.getFirstEndTime()>n1.getBeginTime()) return false; // idem mais dans l'autre sens
+		System.err.println ("la4 "+b);
+		if (n2.getEndTime()+getMaxEcart() <n1.getBeginTime()) return true;
+		System.err.println ("la5 "+b);
+		ci =new Couple(n2,n1);
+		if (ancestors.containsKey(ci)) return ancestors.get(ci);
+		b= n2.isAncestorOf(n1);
+		System.err.println ("la6 "+b);
+		ancestors.put(ci,b);}
+	    return b;}
     }
     /**
      * Check whether these to clusters stand in a relation to each other.
@@ -699,12 +856,21 @@ private class ClusterComparator implements Comparator <Cluster> {
      * @param cluster2 the second cluster
      * @return true if the clusters are related
      */
+    private  final boolean  modeDebug=false;
     protected boolean areClustersInRelation(Cluster cluster1, Cluster cluster2) {
+	//	if (cluster1.id==35 && cluster2.id==32) 
+// 	{
+// 		System.err.println (cluster1 + "------------------"+cluster2);
+// 		printCluster(cluster1);
+// 		printCluster(cluster2);
+// 		modeDebug=true;
+// 	    }
+	    //	else modeDebug=false;
         Iterator<NodeEdge>  i = cluster1.l.iterator();
 	for (NodeEdge n1 : cluster1.l )
 	    for (NodeEdge n2 : cluster2.l){
                 if (hasAncestralRelationship(n1,n2)) {
-                    return true;
+		   return true;
                 }
 	    }
 	return false;
@@ -777,8 +943,9 @@ private class ClusterComparator implements Comparator <Cluster> {
      * @param cluster
      */
     protected void printCluster(Cluster cluster) {
-        for (NodeEdge n : cluster.l) {
-            System.err.print(" " + n);                
+	System.err.println( "id : "+cluster.id + cluster.lesSucs());
+	for (NodeEdge n : cluster.l) {
+            System.err.print(" ("+n.getLastBeginTime()+"," + n+")");                
         }
 	System.err.println();
     }
@@ -874,20 +1041,21 @@ protected boolean intraWordClusterStep(List<Cluster> clusters) {
         return false;
     }
     public Sausage makeSausage() {
-	return makeSausage(this.lattice);
+	return makeSausage(this.lattice,false);
     }
     /**
      * Turn the lattice contained in this sausage maker into a sausage object.
      * 
      * @return the sausage producing by collapsing the lattice.
      */
-    public Sausage makeSausage(Lattice l) {
+    public Sausage makeSausage(Lattice l,boolean useAcoustic) {
 	lattice=l;
-	if (allocLm){
+	if (allocLm && languageModel !=null ){
 	    try {
 	    languageModel.allocate();
 	    allocLm=false;}
 	    catch (Exception e){
+		
 		logger.warning(" lm a rate");
 		languageModel=null;
 	    }
@@ -895,8 +1063,10 @@ protected boolean intraWordClusterStep(List<Cluster> clusters) {
 	if (logMath != lattice.getLogMath())
 	    new Error("logMath mismatch");
         logger.info("lm "+ languageWeight + " wip:"+ wip);
-        l.computeNodePosteriors(languageWeight,false,prune,wip,languageModel);
-
+        l.computeNodePosteriors(languageWeight,useAcoustic,prune,seuilabs,wip,languageModel,scale);
+	LatticeOptimizerBis op = new LatticeOptimizerBis(l);
+	op.optimize();
+	// si wip>0 lineartolog else wiplocal in latttice
 	maxEcart =100;
 	int ecart=0;
         numero=0;
@@ -970,6 +1140,16 @@ protected boolean intraWordClusterStep(List<Cluster> clusters) {
 		else break;
 	System.err.println();}
         intraWordCluster(clusters);
+	logger.info(" clusteravfiltre intra :" +clusters.size());
+	ArrayList <Cluster> aDetruire= new ArrayList <Cluster> (100);
+	for (Cluster c :clusters) 
+	    if (c.post() <= seuilMot) aDetruire.add(c);
+	for (Cluster c: aDetruire){
+	    // System.err.format(" je vire :%s : %f\n",c.l.get(0).getWord(),c.post());
+	    clusters.remove(c);
+	}
+	aDetruire.clear();
+	
         if (false) {
 	    ListIterator <Cluster> ic = clusters.listIterator();
 	    int count=0;
@@ -990,7 +1170,7 @@ protected boolean intraWordClusterStep(List<Cluster> clusters) {
 		System.err.println();
 	    }
 	}
-	logger.info(" clusterapres intra :" +clusters.size());
+	logger.info(" clusterfiltre intra :" +clusters.size());
         interWordCluster(clusters);
 	logger.info(" clusterapres inter :" +clusters.size());
      
@@ -1020,6 +1200,15 @@ protected boolean intraWordClusterStep(List<Cluster> clusters) {
             ConfusionSet cs= sausage.getConfusionSet(index);
 	    cs.setBeginTime(cluster.getBeginTime());
 	    cs.setEndTime(cluster.getEndTime());
+	    	 if (logger.isLoggable(Level.FINER)){ //debug
+		System.err.println(cluster.idTopo +"clus :"+ cluster);
+		    for (NodeEdge e: cluster.l) 
+			System.err.print( "  (" +e.getLastBeginTime() +","+  e +"),");
+		System.err.println();
+	    }
+
+
+
 	    for (Word word :cluster.proba.keySet() ) {
                 SimpleWordResult swr = new SimpleWordResult
                     (word.getSpelling(),
@@ -1036,21 +1225,25 @@ protected boolean intraWordClusterStep(List<Cluster> clusters) {
         distance.clear();
 	interdit.clear();
 	ancestors.clear();
+	if (dumpLattice)
+	    l.dumpAISee("lat"+(compteSaus)+".gdl","lattice");
+	if (dumpSausage) 
+	    sausage.dumpAISee("saus"+(compteSaus++)+".gdl","saussice");
         return sausage;
     }
-    
+    private int compteSaus=0;
     /**
      * @see edu.cmu.sphinx.result.ConfidenceScorer#score(edu.cmu.sphinx.result.Result)
      */
     public ConfidenceResult score(Lattice l) {
-	return makeSausage(l);
+	return makeSausage(l,false);
     }
     public ConfidenceResult score(Result result) {
-        lattice = new Lattice(result);
+        lattice = new Lattice(result,keepAll);
         LatticeOptimizer lop = new LatticeOptimizer(lattice);
-        lop.optimize();
+        //lop.optimize();
 	// lattice.computeNodePosteriors(languageWeight);
-        return makeSausage(lattice);
+        return makeSausage(lattice,true);// the acoustic has all scores
     }
 
     /**
@@ -1070,18 +1263,26 @@ protected boolean intraWordClusterStep(List<Cluster> clusters) {
 	  c.idTopo=count++;
 	}
       int [][] distance = new int[sorted.size()][sorted.size()];
+      System.err.format("%d\n",getMaxEcart());
       for (int i=0 ;i< sorted.size();i++) {
 	  distance[i][i]=0;
 	  //System.err.format("%"+(3*(i+1))+"d",0);
+
 	  Cluster ci=sorted.get(i);
 	  for (int j=i+1 ;j<sorted.size();j++){
 	      Cluster cj= sorted.get(j);//100 or 200
+	      distance[i][j]=0;
               if (ci.getEndTime()+ getMaxEcart()  < cj.getBeginTime()) distance[i][j]=-1;
-              else { 
+              if (ci.suc.contains(cj.getCont())) distance[i][j]=-1;
+              if (cj.suc.contains(ci.getCont())) distance[i][j]=1;
 
-		  distance[i][j]=0;
+		  { 
+
+		
+		  
 		  CoupleInt couple= new CoupleInt(ci.id,cj.id);
-		  if (! interdit.contains(couple)) throw  new Error( ci +"  cj:"+cj);
+		  if (distance[i][j]==0 && ! interdit.contains(couple)) throw  new Error( ci +"  cj:"+cj);
+		  
 		  Iterator <NodeEdge>  ic = ci.l.iterator();
 		  while (ic.hasNext() && distance[i][j]==0) {
 		      NodeEdge n1 = ic.next();
@@ -1090,12 +1291,12 @@ protected boolean intraWordClusterStep(List<Cluster> clusters) {
 			  NodeEdge n2 = ic2.next();
 			  if (n1.getEndTime()+getMaxEcart() <n2.getBeginTime()|| n1.isAncestorOf(n2)) {
 			      distance[i][j]=-1;
-			   //    logger.info("top( "+i+","+j
-			      //		 + " n1:" +n1 +" n2:"+n2);
+			     logger.finer("top( "+i+","+j  + "  ," +  n1.isAncestorOf(n2)
+			      		 + " n1:" +n1 +" n2:"+n2);
 			  } else if (n2.getEndTime()+getMaxEcart() <n1.getBeginTime()||n2.isAncestorOf(n1)) {
 			      distance[i][j]= 1; 
-			     //  logger.info("top( "+j+","+i
-			      //			 + " n1:" +n2 +" n2:"+n1);
+			       logger.finer("top( "+j+","+i  + "  ," +  n2.isAncestorOf(n1)
+			      			 + " n1:" +n2 +" n2:"+n1);
 			  }
 		      }
 		  }
@@ -1104,19 +1305,19 @@ protected boolean intraWordClusterStep(List<Cluster> clusters) {
                    Iterator <NodeEdge>  ic = ci.l.iterator();
 		  while (ic.hasNext() && distance[i][j]==0) {
 		      NodeEdge n1 = ic.next();
-		      System.err.print ("\n"+n1+"\n           ");
+		      System.err.print ("ooo \n"+n1+"\n           "); //debug
 
 		      Iterator <NodeEdge> ic2 = cj.l.iterator();
 		      while (ic2.hasNext()&& distance[i][j] ==0) {
 			  NodeEdge n2 = ic2.next(); 
-			  System.err.print(n2+",");
+			  System.err.print(n2+","); //debug
 			  if (n1.getEndTime()+getMaxEcart() <n2.getBeginTime()|| n1.isAncestorOf(n2)) {
 			      distance[i][j]=-1;
-			        logger.info("top( "+i+","+j
+			        logger.finer("top( "+i+","+j + "  ," +  n1.isAncestorOf(n2)
 			      		 + " n1:" +n1 +" n2:"+n2);
 			  } else if ( n2.getEndTime()+getMaxEcart() <n1.getBeginTime() || n2.isAncestorOf(n1)) {
 			      distance[i][j]= 1; 
-			        logger.info("top( "+j+","+i
+			        logger.finer("top( "+j+","+i + "  ," +  n2.isAncestorOf(n1)
 			      			 + " n1:" +n2 +" n2:"+n1);
 			  }
 			  else
@@ -1136,6 +1337,10 @@ protected boolean intraWordClusterStep(List<Cluster> clusters) {
       }
 	Comparator comparator = new SausageMakerEdges.ClusterComparator(distance);
 	Collections.sort(sorted,comparator);
+	if (false) {
+	    for (Cluster c:sorted) 
+		System.err.println("clus ordonne :"+ c.idTopo);
+	}
         return sorted;
     }
 }

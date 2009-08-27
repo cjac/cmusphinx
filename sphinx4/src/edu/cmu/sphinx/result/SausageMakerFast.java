@@ -58,6 +58,7 @@ public class SausageMakerFast implements ConfidenceScorer, Configurable {
   private int numero=0;
     private class Cluster {
 	int id =numero++;
+        int idTopo;
 	private int beginTime=-100;
 	private int endTime=-100;
 	private int minTime=-100;
@@ -157,7 +158,9 @@ public class SausageMakerFast implements ConfidenceScorer, Configurable {
 
 
 private class ClusterComparator implements Comparator <Cluster> {
-    
+    int [][] ecart;
+
+
     /**
      * Compares to clusters according to their topological relationship. Relies
      * on strong assumptions about the possible constituents of clusters which
@@ -166,26 +169,16 @@ private class ClusterComparator implements Comparator <Cluster> {
      * @param o1 the first cluster (must be a List)
      * @param o2 the second cluster (must be a List)
      */
+    private ClusterComparator(int [][] ecart ) {
+	this.ecart=ecart;}
+
+
+
     public int compare( Cluster cluster1 , Cluster cluster2) {
 	//      Cluster cluster1 = (Cluster) o1;
-	//         Cluster cluster2 = (Cluster) o2;
-	if (cluster1.getEndTime() +10 <cluster2.getBeginTime()) return -1;
-	if (cluster2.getEndTime() +10 <cluster1.getBeginTime()) return 1;
-
-        Iterator <Node>  i = cluster1.l.iterator();
-        while (i.hasNext()) {
-            Node n1 = i.next();
-            Iterator <Node> i2 = cluster2.l.iterator();
-            while (i2.hasNext()) {
-                Node n2 = i2.next();
-                if (n1.isAncestorOf(n2)) {
-                    return -1;
-                } else if (n2.isAncestorOf(n1)) {
-                    return 1;
-                }
-            }
-        }
-        return 0;
+	//         Cluster cluster2 = (Cluster) o2
+	return  ecart[cluster1.idTopo][cluster2.idTopo];
+    
     }
 }
 
@@ -361,7 +354,7 @@ private class ClusterComparator implements Comparator <Cluster> {
         Cluster toBeMerged2 = null;
         float maxSim = Float.NEGATIVE_INFINITY;
         ListIterator <Cluster> i = clusters.listIterator();
-	int ecart=(ncont) ? 100:1;
+	int ecart=(ncont) ? 200:1;
 	if (clusters.size() <=countDump) {
 	    countDump=clusters.size()-100;
 	    System.err.println("inter :" + clusters.size() + 
@@ -564,14 +557,14 @@ private class ClusterComparator implements Comparator <Cluster> {
 	boolean b;
         if (n1.getBeginTime()==n2.getBeginTime()) return false;
 	if (n1.getBeginTime()<n2.getBeginTime()){
-	    if (n1.getEndTime()>n2.getBeginTime()) return false;
+	    if (n1.getFirstEndTime()>n2.getBeginTime()) return false;
 	    if (n1.getEndTime()+100 <n2.getBeginTime()) return true;
 	    ci=new Couple(n1,n2);
 	    if (ancestors.containsKey(ci)) return ancestors.get(ci);
 	    b= n1.isAncestorOf(n2);
 	}
 	else {
-	    if (n2.getEndTime()>n1.getBeginTime()) return false;
+	    if (n2.getFirstEndTime()>n1.getBeginTime()) return false;
 	    if (n2.getEndTime()+100 <n1.getBeginTime()) return true;
 	    ci =new Couple(n2,n1);
 	    if (ancestors.containsKey(ci)) return ancestors.get(ci);
@@ -777,34 +770,23 @@ protected boolean intraWordClusterStep(List<Cluster> clusters) {
         numero=0;
         ArrayList <Cluster>  clusters = new ArrayList <Cluster> (lattice.getNodes().size());
 	System.err.println(" cluster debut :" +clusters.size());
-        Collection nodes = lattice.nodes.values();
-        Node car=(Node) lattice.nodes.get("40");
-	Node car0=(Node) lattice.nodes.get("0");
-        Node car2= (Node)  lattice.nodes.get("234");
+        ArrayList  <Node> nodes = new ArrayList <Node>(lattice.nodes.values());
+	Collections.sort(nodes, new Comparator<Node>() { 
+			     public int compare  (Node  t1, Node t2) {
+				 return Double.compare(t2.getPosterior(), t1.getPosterior());}
+			 });
         Iterator i = nodes.iterator();
 	System.err.println(" cluster avant prune :"+ nodes.size());
-	while(i.hasNext()) {
+        int nb=0;
+	while(i.hasNext()&& nb< nodes.size()/10) {
             Node n=(Node) i.next();    
-
-            if (n.getIsNotPruned()){
-
+	    nb++;
+            if (true || n.getIsNotPruned()){
+		
 		Cluster  bucket = new Cluster (n);
 		clusters.add(bucket);
-		if(false && n==car) {
-		    System.err.println("j'ysuis "+ n+
-				       " "+n.getIsNotPruned()+ " " +bucket);
-		}
 	    }
 	}
-
-        System.err.println(car+"test ancestor"+ car.isAncestorOf(car2));
-	System.err.println(car0+"test ancestor"+ car0.isAncestorOf(car2));
-	System.err.println(car0+"test ancestor"+ car0.isAncestorOf(car));
-        for (Node n: car.getChildNodes(true)) 
-	    System.err.print(n+" ,");
-	System.err.println();
-
-
 	System.err.println(" cluster avant tri :"+ clusters.size());
         Collections.sort(clusters, new Comparator<Cluster>() { 
 			     public int compare  (Cluster  t1, Cluster t2) {
@@ -844,48 +826,46 @@ protected boolean intraWordClusterStep(List<Cluster> clusters) {
 	System.err.println(" clusterapres inter :" +clusters.size());
      
 	int count =0;
-	ListIterator <Cluster> ic = clusters.listIterator();
-	while (ic.hasNext()) {
-            Cluster c1 = ic.next();
-	    System.err.print((count++) + " " +c1 +"\n      ");
-            printCluster(c1);
-            System.err.print("     ");
-	    ListIterator <Cluster>  j = clusters.listIterator(ic.nextIndex());
-	    while (j.hasNext()) {
-                Cluster  c2 = j.next();
-		CoupleInt ci=new CoupleInt(c1.id,c2.id);
-		if (interdit.contains(ci))
-		    System.err.print(c2.id+",");
-	    }
-	    System.err.println();
-	}
+// 	ListIterator <Cluster> ic = clusters.listIterator();
+// 	while (ic.hasNext()) {
+//             Cluster c1 = ic.next();
+// 	    System.err.print((count++) + " " +c1 +"\n      ");
+//             printCluster(c1);
+//             System.err.print("     ");
+// 	    ListIterator <Cluster>  j = clusters.listIterator(ic.nextIndex());
+// 	    while (j.hasNext()) {
+//                 Cluster  c2 = j.next();
+// 		CoupleInt ci=new CoupleInt(c1.id,c2.id);
+// 		if (interdit.contains(ci))
+// 		    System.err.print(c2.id+",");
+// 	    }
+// 	    System.err.println();
+//	}
 	clusters = topologicalSort(clusters);
-
+	interdit.clear();
+	distance.clear();
+	ancestors.clear();
         Sausage sausage = new Sausage(clusters.size());
         ListIterator<Cluster>  c1 = clusters.listIterator();
         while (c1.hasNext()) {
-            HashSet seenWords = new HashSet();
             int index = c1.nextIndex();
-            Cluster cluster =  c1.next();
-            Iterator <Node>  c2 = cluster.l.iterator();
-            while (c2.hasNext()) {
-                Node node = c2.next();
-                Word word = node.getWord();
-                if (seenWords.contains(word.getSpelling())) {
-                    continue;
-                }
-                seenWords.add(word.getSpelling());
+            final Cluster cluster =  c1.next();
+	    for (Word word :cluster.proba.keySet() ) {
                 SimpleWordResult swr = new SimpleWordResult
-                    (node,
-                     wordSubClusterProbability(cluster,word.getSpelling()),
+                    (word.getSpelling(),
+                     cluster.proba.get(word),
                      lattice.getLogMath());
                 sausage.addWordHypothesis(index,swr);
             }
         }
-        sausage.fillInBlanks(lattice.getLogMath());
+        sausage.fillInBlanks(lattice.getLogMath());// sort thes ConfusSet
         return sausage;
     }
-    
+    public ConfidenceResult score ( Lattice l) {
+	lattice=l;
+	lattice.computeNodePosteriors(languageWeight);
+        return makeSausage();
+    }
     /**
      * @see edu.cmu.sphinx.result.ConfidenceScorer#score(edu.cmu.sphinx.result.Result)
      */
@@ -907,8 +887,50 @@ protected boolean intraWordClusterStep(List<Cluster> clusters) {
      * @return a topologically sorted list of clusters
      */
     private ArrayList <Cluster> topologicalSort(ArrayList <Cluster> clusters) {
-	Comparator comparator = new SausageMakerFast.ClusterComparator();
+
         ArrayList <Cluster>  sorted = new ArrayList<Cluster>( clusters);
+        {int count=0;  
+      for (Cluster c : sorted) 
+	  c.idTopo=count++;
+	}
+      int [][] distance = new int[sorted.size()][sorted.size()];
+      for (int i=0 ;i< sorted.size();i++) {
+	  distance[i][i]=0;
+	  //System.err.format("%"+(3*(i+1))+"d",0);
+	  Cluster ci=sorted.get(i);
+	  for (int j=i+1 ;j<sorted.size();j++){
+	      Cluster cj= sorted.get(j);//100 or 200
+              if (ci.getEndTime()+ 200  < cj.getBeginTime()) distance[i][j]=-1;
+              else { 
+
+		  distance[i][j]=0;
+		  CoupleInt couple= new CoupleInt(ci.id,cj.id);
+		  if (! interdit.contains(couple)) throw  new Error( ci +"  cj:"+cj);
+		  Iterator <Node>  ic = ci.l.iterator();
+		  while (ic.hasNext() && distance[i][j]==0) {
+		      Node n1 = ic.next();
+		      Iterator <Node> ic2 = cj.l.iterator();
+		      while (ic2.hasNext()&& distance[i][j] ==0) {
+			  Node n2 = ic2.next();
+			  if (n1.isAncestorOf(n2)) {
+			      distance[i][j]=-1;
+			      System.err.println("top( "+i+","+j
+						 + " n1:" +n1 +" n2:"+n2);
+			  } else if (n2.isAncestorOf(n1)) {
+			      distance[i][j]= 1; 
+			      System.err.println("top( "+j+","+i
+						 + " n1:" +n2 +" n2:"+n1);
+			  }
+		      }
+		  }
+	      }
+		if (distance[i][j]==0)  throw  new Error("distance nulle" +ci+ "  cj:"+cj);
+		distance[j][i]= -distance[i][j];
+		//System.err.format("%3d",distance[i][j]);
+	  }
+	  // System.err.println();
+      }
+	Comparator comparator = new SausageMakerFast.ClusterComparator(distance);
 	Collections.sort(sorted,comparator);
         return sorted;
     }

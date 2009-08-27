@@ -119,11 +119,11 @@ public class NormFeature extends BaseDataProcessor implements SetId {
      */
     public Data getData() throws DataProcessingException {
 	Data input = getPredecessor().getData();
-	if (retour==null) return (input);
-	if (input != null && a!=null) {
+	if (retour==null) return input;
+	if (input != null) {
 	    if (input instanceof FloatData) transfo((FloatData) input);
 	    if (input instanceof DataStartSignal){
-		logger.info("transfo en cours " +id);
+		logger.info("transfo en cours normage " +id);
 		ntrame=0;
 
 	    }
@@ -149,6 +149,14 @@ public class NormFeature extends BaseDataProcessor implements SetId {
 	for (int i =0 ; i< feat.length; i++)
 	    feat[i] = (feat[i]-retour[0][i])/ retour[1][i];
 	}
+	if (false && ntrame <200) {
+		    
+		    System.out.printf("%3d",ntrame);
+		    for (float f : feat) 
+			System.out.printf(" %6.2f",f);
+		    System.out.println("norm");
+		}
+
     }
     /**
      * load transfo cmllr avec base dir of component

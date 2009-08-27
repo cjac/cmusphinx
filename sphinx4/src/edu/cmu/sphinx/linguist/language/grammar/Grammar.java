@@ -103,7 +103,7 @@ public abstract class Grammar implements Configurable {
     private int maxIdentity = 0;
     private boolean postProcessed = false;
     private boolean idCheck = false;
-
+    protected int milieu=-1;
 
 
     /*
@@ -120,6 +120,7 @@ public abstract class Grammar implements Configurable {
         registry.register(PROP_OPTIMIZE_GRAMMAR, PropertyType.BOOLEAN);
         registry.register(PROP_ADD_SIL_WORDS, PropertyType.BOOLEAN);
         registry.register(PROP_ADD_FILLER_WORDS, PropertyType.BOOLEAN);
+	registry.register("milieu", PropertyType.INT);
     }
 
     /*
@@ -138,6 +139,7 @@ public abstract class Grammar implements Configurable {
                 PROP_ADD_SIL_WORDS_DEFAULT);
         addFillerWords = ps.getBoolean(PROP_ADD_FILLER_WORDS,
                 PROP_ADD_FILLER_WORDS_DEFAULT);
+	milieu=ps.getInt("milieu",-1);
 
         dictionary = (Dictionary) ps.getComponent(PROP_DICTIONARY,
                 Dictionary.class);
@@ -202,7 +204,7 @@ public abstract class Grammar implements Configurable {
             }
             dumpStatistics();
             if (showGrammar) {
-		//   dumpGrammar("grammar.gdl");
+		 dumpGrammar("grammar.gdl");
 		//        dumpRandomSentences("sentences.txt", 100);
                 logger.info("Total number of nodes " + grammarNodes.size());
             }
@@ -472,6 +474,16 @@ public abstract class Grammar implements Configurable {
             logger.warning("Can't find pronunciation for " + word);
         }
         return node;
+    }
+ protected GrammarNode createGrammarNode(int identity, Word  word) {
+        GrammarNode node = null;
+        Word[][] alternatives;
+            alternatives = new Word[1][];
+            alternatives[0] = new Word[1];
+            alternatives[0][0] = word;
+            node = new GrammarNode(identity, alternatives);
+            add(node);
+         return node;
     }
 
     /**

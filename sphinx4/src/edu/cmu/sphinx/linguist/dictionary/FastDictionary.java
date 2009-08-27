@@ -192,6 +192,7 @@ public void deallocate() {
         }
     }
 
+    public java.util.List<Word> getChoix(String nom) {return null;}
 
     /**
      * Loads the given sphinx3 style simple dictionary from the given
@@ -300,7 +301,7 @@ public void deallocate() {
      */
     public Word getWord(String text) {
         Word word = null;
-        text = text.toLowerCase();
+	//        text = text.toLowerCase();
 
         Object object = dictionary.get(text);
 

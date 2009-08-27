@@ -202,6 +202,8 @@ public class FSMGrammar extends Grammar {
         int numNode=Integer.parseInt(aline); //last line 
         int numAlpha=numNode;
         boolean [] epsNode=new boolean[numNode];
+        int [] beginTime=new int[numNode];
+	int [] endTime= new int[numNode];
         for (int iLigne=list.size()-2; iLigne >=0 ; iLigne--) {
 	    String maligne= list.get(iLigne);
 	    String l[]=p.split(maligne);
@@ -211,6 +213,11 @@ public class FSMGrammar extends Grammar {
 	    }
             int id1 = Integer.parseInt(l[0]);
             int id2 = Integer.parseInt(l[1]);
+            if (l[2].equals("timestamp") && l.length==5) {
+		beginTime[id1]=Integer.parseInt(l[3]);
+		endTime[id1]=Integer.parseInt(l[4]);
+                continue;
+	    }
 	    float pr;
             float proba = logMath.linearToLog(pr=Float.parseFloat(l[3]));
 	    proba =LogMath.getLogOne();
@@ -222,7 +229,7 @@ public class FSMGrammar extends Grammar {
 		epsNode[id1]=true;    
 	    }
 	    else {
-		if(epsNode[id1] && pr<aveceps) continue;
+		if(epsNode[id1] && pr<aveceps) continue;//on est a l'envers il faut trier en sens inverse
 		if(!epsNode[id1] && pr<sanseps) continue;
 
 		GrammarNode node=createGrammarNode(numAlpha++,l[2]);
@@ -235,7 +242,8 @@ public class FSMGrammar extends Grammar {
                 int fils=id2;
 		while (epsNode[fils]) {
                     fils=fils+1;
-		    node.add(get(fils),LogMath.getLogOne());
+		    if  (beginTime[fils]< endTime[id1]+10) 
+			node.add(get(fils),LogMath.getLogOne());
 		    // la proba est a modifier par eps proba si on le fait
 		}
 

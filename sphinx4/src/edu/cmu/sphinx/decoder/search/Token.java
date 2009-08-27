@@ -149,7 +149,7 @@ public class Token implements Scoreable {
      * @param frameNumber the frame number associated with this token
      *
      */
-    private Token(Token predecessor,
+    protected Token(Token predecessor,
                   SearchState state,
                   float logTotalScore,
                   float logLanguageScore,

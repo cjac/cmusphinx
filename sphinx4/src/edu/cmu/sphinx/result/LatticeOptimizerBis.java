@@ -28,11 +28,18 @@ import java.util.Comparator;
 public class LatticeOptimizerBis {
     protected Lattice lattice;
     private LinkedList<Node>  mesNoeuds;
+    private boolean sansPrune=false;
+    private boolean pourSaucisse=false;
     /**
      * Create a new Lattice optimizer
      *
      * @param lattice
      */
+
+    public  LatticeOptimizerBis(Lattice lattice, boolean sansPrune){
+	this(lattice);
+	this.sansPrune=sansPrune;
+    }
     public LatticeOptimizerBis(Lattice lattice) {
         this.lattice = lattice;
 	lattice.lesNoeuds=null;
@@ -47,7 +54,16 @@ public class LatticeOptimizerBis {
 	
     }
 
-
+    private boolean  verifPost ( Node n) {
+	double cumul=0.0;
+	for (Edge e : n.getEnteringEdges())
+	    cumul += lattice.getLogMath().logToLinear((float) e.getPscore());
+	double prevu= lattice.getLogMath().logToLinear((float)n.getPosterior());
+	if ((Math.abs(cumul-prevu)/(0.0001+ prevu))>0.01 &&(sansPrune || prevu>0.005)) {
+	    System.err.format("verifPost :%s  %f %f\n",n.toString(),cumul,prevu);
+	    return false;}
+	return true;
+    }
     /**
      * Code for optimizing Lattices.  An optimal lattice has all the same
      * paths as the original, but with fewer nodes and edges
@@ -91,32 +107,61 @@ public class LatticeOptimizerBis {
     
     }
 	
+    private void voirFin(String lab) {
+	if (true) return;
+	System.err.println(lab+ sansPrune+ "    start");
+	if (true) {
+	ListIterator<Node>  it= mesNoeuds.listIterator(mesNoeuds.size());
+	int n=10;
+	while (n-->0 && it.hasPrevious()) {
+	    System.err.print( n+ ": "+it.previous()+ ",");
+	    
+	}
+	System.err.println();
+	}
+	if (true) {
 
+	for (Node s : mesNoeuds)
+	    verifPost(s);
+	}
+		System.err.println(lab+ sansPrune+ "    fin");
+    }
+
+    static int comp=0;
     public void optimize() {
-        System.err.println("***");
-//         lattice.dumpAllPaths();
-//         System.err.println("***");
+	//        System.err.println("***");
+	//         lattice.dumpAllPaths();
+	//         System.err.println("***");
+	voirFin("start");
+	// lattice.dumpAISee("trucForav"+sansPrune+".gdl","ggggg ",true);
 	prune();
-      System.err.println("*prune**" + lattice.getEdges().size()+ " n:" + lattice.getNodes().size());
+	System.err.println("prune ed : " + lattice.getEdges().size()+ " n:" + lattice.getNodes().size());
+	voirFin("prune");
+	//if (!sansPrune) lattice.dumpAISee("trucFor.gdl","ggggg ",true);
 	deleteNoInit();
-      System.err.println("*final**" + lattice.getEdges().size()+ " n:" + lattice.getNodes().size());
+	System.err.println("final ed : " + lattice.getEdges().size()+ " n:" + lattice.getNodes().size());
+	voirFin("noInit");
 	deleteNoFinal();
+	voirFin("noFinal");
         optimizeForward();
 	//	lattice.dumpAISee("trucFor.gdl","ggggg ");
-        System.err.println("for" + lattice.getEdges().size()+ " n:" + lattice.getNodes().size());
-//         lattice.dumpAllPaths();
-//         System.err.println("***");
-
+        System.err.println("for ed :" + lattice.getEdges().size()+ " n:" + lattice.getNodes().size());
+	//         lattice.dumpAllPaths();
+	//         System.err.println("***");
+        voirFin("forWard");
         optimizeBackward();
-
-        System.err.println("back" + lattice.getEdges().size()+ " n:" + lattice.getNodes().size());
-//         lattice.dumpAllPaths();
-//         System.err.println("***");
-
+	
+        System.err.println("back ed :" + lattice.getEdges().size()+ " n:" + lattice.getNodes().size());
+	//         lattice.dumpAllPaths();
+	//         System.err.println("***");
+	voirFin("backWard");
+       	//lattice.dumpAISee("trucFinal"+comp+"_"+sansPrune+ ".gdl","ggggg ",sansPrune);
+	//if (!sansPrune) comp++;
     }
 
 
     void prune() {
+	if (!sansPrune)
 	for (Edge e2 : lattice.getCopyEdges())
 	    if (!e2.getIsNotPruned())
 		{
@@ -183,7 +228,7 @@ public class LatticeOptimizerBis {
                 // we are iterating down a list of node before optimization
                 // previous iterations may have removed nodes from the list
                 // therefore we have to check that the node stiff exists
-                if (lattice.hasNode(n)) {
+                if (lattice.hasNode(n.getId())) {
                     moreChanges |= optimizeNodeForward(n);
                 }
 		else i.remove();
@@ -205,11 +250,12 @@ public class LatticeOptimizerBis {
      * @return true if Node n required an optimize forward
      */
     protected boolean optimizeNodeForward(Node n) {
-        assert lattice.hasNode(n);
+        assert lattice.hasNode(n.getId());
 	boolean retour=false;
         Vector leavingEdges = new Vector(n.getLeavingEdges());
 	boolean valide[]=new boolean[leavingEdges.size()];
 	java.util.Arrays.fill(valide,true);
+	//System.err.println(" vire les fils de "+ n);
         for (int j = 0; j < leavingEdges.size(); j++) 
 	    if (valide[j])
 		{
@@ -223,9 +269,14 @@ public class LatticeOptimizerBis {
 			     * equivalent nodes, we have a hit, return true
 			     */
 			    assert e != e2;
+			    if (true && !lattice.hasNode(e2.getToNode().getId()) ) {valide[k]=false;
+				//je l'ai deja vu par un autre arc ??????
+				//System.err.println(e2+ " oh " + e2.getToNode()+ " " + j +" "+k);
+			    }else 
 			    if (equivalentNodesForward(e.getToNode(), e2.getToNode())) {
 				mergeNodesAndEdgesForward(n, e, e2);
 				valide[k]=false;
+				//System.err.println("virer" + j+ " " +k );
 				if (false && count >=20) System.err.println("e: "+ e +" e2 "+ e2);
 				retour=true;
                 }
@@ -247,8 +298,8 @@ public class LatticeOptimizerBis {
      */
     protected boolean equivalentNodesForward(Node n1, Node n2) {
 
-        assert lattice.hasNode(n1);
-        assert lattice.hasNode(n2);
+        assert lattice.hasNode(n1.getId());
+        assert lattice.hasNode(n2.getId());
 
         // do the labels match?
         if (!equivalentNodeLabels(n1, n2)) return false;
@@ -274,7 +325,7 @@ public class LatticeOptimizerBis {
      * @param e2
      */
     protected void mergeNodesAndEdgesForward(Node n, Edge e1, Edge e2) {
-        assert lattice.hasNode(n);
+        assert lattice.hasNode(n.getId());
         assert lattice.hasEdge(e1);
         assert lattice.hasEdge(e2);
 
@@ -283,23 +334,35 @@ public class LatticeOptimizerBis {
 
         Node n1 = e1.getToNode();
         Node n2 = e2.getToNode();
+	boolean b=false ; //verifPost(n1) && verifPost(n2);
 	//        if (n.getBeginTime() >=245)
 	//  System.err.println(n  +"\n-----------"+ n1+" :"+ e1  + "\n----------"+n2+ " :"+ e2);
         assert n1.hasEquivalentEnteringEdges(n2); //je crois n2 et pas n1
         assert n1.getWord().equals(n2.getWord());
 
+       
         // merge the scores of e1 and e2 into e1
-        e1.setAcousticScore(mergeAcousticScores
+       //
+	e1.setAcousticScore(mergeAcousticScores
                             (e1.getAcousticScore(), e2.getAcousticScore()));
         e1.setLMScore(mergeLanguageScores(e1.getLMScore(),
                                           e2.getLMScore()));
-        e1.setPscore(mergePScores(e1.getPscore(),
-                                          e2.getPscore()));
+        
+	if (n1.equals(n2) || (!sansPrune && pourSaucisse))  /// pour les tests le sansprune
+	    //cela est faux dans le cas general
+	    e1.setPscore(mergePScores(e1.getPscore(),
+				      e2.getPscore()));
+	else
+	    n1.fusionEntree(n2,lattice.getLogMath());
 
 	if (n1.equals(n2)) {
               e2.getToNode().removeEnteringEdge(e2);
 	      e2.getFromNode().removeLeavingEdge(e2);
-	      lattice.removeEdge(e2) ;return;} // c'est le final et .... 
+	      lattice.removeEdge(e2) ;
+	      if ( false && b && ! verifPost(n1)) {
+		  System.err.format(" j'ai un biais mono: %s  %s \n",n1.toString(), " " + e2);
+	      }
+	      return;} // c'est le final et .... 
         // add n2's edges to n1
         for (Iterator i = n2.getLeavingEdges().iterator(); i.hasNext();) {
             Edge e = (Edge) i.next();
@@ -308,7 +371,7 @@ public class LatticeOptimizerBis {
                 e2=lattice.addEdge(n1, e.getToNode(),
 				   e.getAcousticScore(), e.getLMScore());
 		e2.setPscore(e.getPscore());
-		e2.setNoPruned(true);
+		e2.setNoPruned(true&& !sansPrune);
 		e2=null;
             } else {
                 // if we got here then n1 and n2 had edges to the same node
@@ -320,11 +383,16 @@ public class LatticeOptimizerBis {
                                                   e2.getLMScore())) ;
                 e2.setPscore(mergePScores(e.getPscore(), 
                                                   e2.getPscore())) ;
+
             }
         }
-
+	n1.setPosterior(mergePScores(n1.getPosterior(),n2.getPosterior()));
+	if ( false && b && ! verifPost(n1)) {
+		System.err.format(" j'ai un biais ici: %s %s %s \n",n1.toString(), n2.toString(), " " + e2);
+	    }
         // remove n2 and all associated edges
         lattice.removeNodeAndEdges(n2);
+	//System.err.print(" je vire :" +n2);
     }
 
 
@@ -374,7 +442,7 @@ public class LatticeOptimizerBis {
                 // we are iterating down a list of node before optimization
                 // previous iterations may have removed nodes from the list
                 // therefore we have to check that the node stiff exists
-                if (lattice.hasNode(n)) {
+                if (lattice.hasNode(n.getId())) {
                     moreChanges |= optimizeNodeBackward(n);
 		}
 		else
@@ -410,6 +478,9 @@ public class LatticeOptimizerBis {
 			     * equivalent nodes, we have a hit, return true
 			     */
 			    assert e != e2;
+			    if (true && ! lattice.hasNode(e2.getFromNode().getId()))
+				valide[k] =false;
+			    else
 			    if (equivalentNodesBackward(e.getFromNode(),
 							e2.getFromNode())) {
 				mergeNodesAndEdgesBackward(n, e, e2);
@@ -434,8 +505,8 @@ public class LatticeOptimizerBis {
      */
     protected boolean equivalentNodesBackward(Node n1, Node n2) {
 
-        assert lattice.hasNode(n1);
-        assert lattice.hasNode(n2);
+        assert lattice.hasNode(n1.getId());
+        assert lattice.hasNode(n2.getId());
 
         // do the labels match?
         if (!equivalentNodeLabels(n1, n2)) return false;
@@ -474,7 +545,7 @@ public class LatticeOptimizerBis {
      * @param e2
      */
     protected void mergeNodesAndEdgesBackward(Node n, Edge e1, Edge e2) {
-        assert lattice.hasNode(n);
+        assert lattice.hasNode(n.getId());
         assert lattice.hasEdge(e1);
         assert lattice.hasEdge(e2);
 
@@ -492,8 +563,11 @@ public class LatticeOptimizerBis {
                                                 e2.getAcousticScore()));
         e1.setLMScore(mergeLanguageScores(e1.getLMScore(),
                                           e2.getLMScore()));
-        e1.setPscore(mergePScores(e1.getPscore(),
+
+	if (n1.equals(n2)|| (!sansPrune && pourSaucisse))  // test only a enlever en Prod (le sansPrune)
+	    e1.setPscore(mergePScores(e1.getPscore(),
                                           e2.getPscore()));
+	else n1.fusionSortie(n2,lattice.getLogMath());
 
         // add n2's "from" edges to n1
 	if (n1.equals(n2)) {
@@ -507,7 +581,7 @@ public class LatticeOptimizerBis {
                 e2=lattice.addEdge(e.getFromNode(), n1,
 				   e.getAcousticScore(), e.getLMScore());
 		e2.setPscore(e.getPscore());
-		e2.setNoPruned(true);
+		e2.setNoPruned(true&&!sansPrune);
 		e2=null;
             } else {
                 // if we got here then n1 and n2 had edges from the same node
@@ -522,7 +596,7 @@ public class LatticeOptimizerBis {
   
            }
         }
-
+	n1.setPosterior(mergePScores(n1.getPosterior(),n2.getPosterior()));
         // remove n2 and all associated edges
         lattice.removeNodeAndEdges(n2);
     }
@@ -533,7 +607,7 @@ public class LatticeOptimizerBis {
     protected void removeHangingNodes() {
         for (Iterator i = lattice.getCopyOfNodes().iterator(); i.hasNext();) {
             Node n = (Node) i.next();
-            if (lattice.hasNode(n)) {
+            if (lattice.hasNode(n.getId())) {
                 if (n == lattice.getInitialNode()) {
 
                 } else if (n == lattice.getTerminalNode()) {

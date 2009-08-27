@@ -312,6 +312,7 @@ typedef struct astar_s {
   int32 n_ppath;           /** #Partial paths allocated (to control memory usage) */
   int32 maxppath;          /** Max partial paths allowed before aborting */
   int32 beam;
+  int32 timeForBeam ; 
   int32 besttscr;
   int32 n_pop, n_exp, n_pp;
   float32 lwf;
@@ -604,7 +605,20 @@ static void ppath_seg_write (FILE *fp, ppath_t *pp, int32 ascr,astar_t *astar)
     if (pp->hist)    if (fp) fprintf(fp,"J=%d\tS=%d\tE=%d\ta=%f\tl=%f\n",edgeCount++,pp->hist->num,
 			     pp->num,logs3_to_log( pp->pscr - pp->hist->pscr - pp->lscr),logs3_to_log(lscr_base));
 }
-static void imprimer(FILE *fp, ppath_t *pp,int ascr,astar_t * astar,int fin) {
+
+static void imprimer(FILE *fp, ppath_t *pp,int ascr,astar_t * astar,int fin);
+ void s3paul_imprimer(FILE *fp, void *pp,int ascr,void * astar,int fin) {
+
+   /*je sais c'est risque mais bon a la guerre comme a la guerre */
+  imprimer(fp,
+	   (ppath_t *)  pp, 
+	   ascr, 
+	   (astar_t *) astar,
+	   fin );
+ }
+
+
+ static void imprimer(FILE *fp, ppath_t *pp,int ascr,astar_t * astar,int fin) {
   if (pp->hist)
     imprimer(fp,pp->hist,pp->pscr - pp->hist->pscr - pp->lscr,
 	     astar,pp->dagnode->sf);
@@ -708,7 +722,7 @@ void nbest_dag_htk (dag_t *dag, char *filename, char *uttid, float64 lwf,
     int32 ppathdebug=cmd_ln_boolean("-ppathdebug");
     astar_t *astar;
     float64 v;
-    s3lmwid32_t lwid[3];
+    s3lmwid32_t lwid[4];
     if (cmd_ln_exists("-beamastar"))
       v= cmd_ln_float64("-beamastar");
     else 
@@ -839,12 +853,15 @@ sscanf(uttid,"%[^-]-%f",astar->showName,&(astar->startTime));
     }
     imprimer(ctmfp,lebest, dag->final.ascr,astar,lebest->dagnode->sf);
 
-    fprintf (stderr, "End; best %d worst %d diff %d beam %d\n",
+    fprintf (stderr, "%s End; best %d worst %d diff %d beam %d\n",uttid,
 	     besthyp + dag->final.ascr, worsthyp + dag->final.ascr, worsthyp - besthyp, astar->beam);
     if (fp) fprintf(fp,"start=0\tend=%d\n",final);
     if (fp) fprintf(fp,"N=%d\tL=%d\n",nodeCount,edgeCount);
     fprintf(stderr,"N=%d\tL=%d\tF=%d\n",nodeCount,edgeCount,final);
     if (fp) fclose_comp (fp, ispipe);
+
+
+
     if (n_hyp <= 0) {
 	unlink (filename);
 	E_ERROR("%s: A* search failed\n", uttid);
@@ -857,7 +874,7 @@ sscanf(uttid,"%[^-]-%f",astar->showName,&(astar->startTime));
     n_pp = ppath_free (astar);
     ckd_free(astar->heap_root);
     ckd_free(astar->hash_list);
-    if (1) {
+    if (0) {
 
     lm_cache_stats_dump(astar->lm);
     lm_cache_reset(astar->lm);

@@ -288,6 +288,11 @@ public class Sphinx3Loader implements Loader {
     protected final static String DENSITY_FILE_VERSION = "1.0";
     protected final static String MIXW_FILE_VERSION = "1.0";
     protected final static String TMAT_FILE_VERSION = "1.0";
+    protected final static String MAP_FILE_VERSION ="1.2";
+    private int numClasses =1; //il y a toujours one classe
+    private int [] classeMllr;
+
+
     // --------------------------------------
     // Configuration variables
     // --------------------------------------
@@ -304,7 +309,7 @@ public class Sphinx3Loader implements Loader {
     private float mixtureWeightFloor;
     private float varianceFloor;
     private boolean useCDUnits;
-
+    private String fileNameClasseMllr;
 
     /*
      * (non-Javadoc)
@@ -323,6 +328,7 @@ public class Sphinx3Loader implements Loader {
         registry.register(PROP_MODEL, PropertyType.STRING);
         registry.register(PROP_DATA_LOCATION, PropertyType.STRING);
         registry.register(PROP_PROPERTIES_FILE, PropertyType.STRING);
+        registry.register("classeMllr", PropertyType.STRING);
         registry.register(PROP_MC_FLOOR, PropertyType.FLOAT);
         registry.register(PROP_MW_FLOOR, PropertyType.FLOAT);
         registry.register(PROP_VARIANCE_FLOOR, PropertyType.FLOAT);
@@ -361,6 +367,7 @@ public class Sphinx3Loader implements Loader {
             ps.getFloat(PROP_VARIANCE_FLOOR, PROP_VARIANCE_FLOOR_DEFAULT);
         useCDUnits = 
             ps.getBoolean(PROP_USE_CD_UNITS, PROP_USE_CD_UNITS_DEFAULT);
+	fileNameClasseMllr=ps.getString("classeMllr","");
     }
 
     private void loadProperties() {
@@ -463,15 +470,17 @@ public class Sphinx3Loader implements Loader {
         // TODO: what is this all about?
         hmmManager = new HMMManager();
         contextIndependentUnits = new LinkedHashMap();
+	if (! fileNameClasseMllr.equals(""))
+	    classeMllr=loadClasseMllr(fileNameClasseMllr);
         // dummy pools for these elements
         meanTransformationMatrixPool = 
-            createDummyMatrixPool("meanTransformationMatrix");
+            createDummyMatrixPool("meanTransformationMatrix",numClasses);
         meanTransformationVectorPool = 
-            createDummyVectorPool("meanTransformationMatrix");
+            createDummyVectorPool("meanTransformationMatrix",numClasses);
         varianceTransformationMatrixPool = 
-            createDummyMatrixPool("varianceTransformationMatrix");
+            createDummyMatrixPool("varianceTransformationMatrix",1);
         varianceTransformationVectorPool = 
-            createDummyVectorPool("varianceTransformationMatrix");
+            createDummyVectorPool("varianceTransformationMatrix",1);
         // do the actual acoustic model loading
         loadModelFiles(model);
     }
@@ -610,12 +619,13 @@ public class Sphinx3Loader implements Loader {
 	for (int i = 0; i < numSenones; i++) {
 	    MixtureComponent[] mixtureComponents = new
 		MixtureComponent[numGaussiansPerSenone];
+	    int classe=(classeMllr!=null) ?classeMllr[i]:0;
 	    for (int j = 0; j <  numGaussiansPerSenone; j++) {
 		mixtureComponents[j] = new MixtureComponent(
 		    logMath,
 		    (float[]) meansPool.get(whichGaussian),
-		    (float[][]) meanTransformationMatrixPool.get(0),
-		    (float[]) meanTransformationVectorPool.get(0),
+		    (float[][]) meanTransformationMatrixPool.get(classe),
+		    (float[]) meanTransformationVectorPool.get(classe),
 		    (float[]) variancePool.get(whichGaussian),
 		    (float[][]) varianceTransformationMatrixPool.get(0),
 		    (float[]) varianceTransformationVectorPool.get(0),
@@ -827,7 +837,11 @@ public class Sphinx3Loader implements Loader {
         throws IOException {
 
         // logger.fine("resource: " + path + ", " + getClass());
-        InputStream inputStream = getClass().getResourceAsStream(path);
+        InputStream inputStream;
+	if (location!=null && location.equals("letrucimpossibleetquinexistepas"))
+	    inputStream= new java.io.FileInputStream(path);
+        else inputStream = getClass().getResourceAsStream(path);
+
 
         if (inputStream == null) {
             throw new IOException("Can't open " + path);
@@ -928,6 +942,17 @@ public class Sphinx3Loader implements Loader {
             return dis.readInt();
         }
     }
+
+
+  protected int[] readIntArray(DataInputStream dis, int size)
+            throws IOException {
+        int[] data = new int[size];
+        for (int i = 0; i < size; i++) {
+            data[i] = readInt(dis);
+        }
+        return data;
+    }
+
     /**
      * Read a float from the input stream, byte-swapping as necessary
      * 
@@ -1313,6 +1338,29 @@ public class Sphinx3Loader implements Loader {
         return pool;
     }
     /**
+     * load map for mllr
+     **/
+    private int[] loadClasseMllr(String path)  throws IOException{
+	int numSenone;
+	int [] res;
+	Properties props = new Properties();
+	DataInputStream dis = readS3BinaryHeader("letrucimpossibleetquinexistepas",
+						 path,props);
+	String version =props.getProperty("version");
+	if (version== null || !version.equals(MAP_FILE_VERSION)) 
+	    throw new IOException("Unsupported version in" + path);
+	String checksum = props.getProperty("checksum0");
+	boolean doCheckSum;
+	doCheckSum =  (checksum != null && checksum.equals("yes"));
+	numClasses=readInt(dis);
+	numSenone=readInt(dis);
+	res=readIntArray(dis,numSenone);
+	dis.close();
+	logger.info(" classe mllr "+numClasses);
+	return res;
+    }
+
+    /**
      * Loads the mixture weights (Binary)
      * 
      * @param path
@@ -1485,7 +1533,7 @@ public class Sphinx3Loader implements Loader {
 
 	    for (int j = 0; j < numRows; j++) {
                 tmat[j] = readFloatArray(dis, numStates);
-                nonZeroFloor(tmat[j], 0.0001f);
+                nonZeroFloor(tmat[j], 0.00001f);
                 normalize(tmat[j]);
                 convertToLogMath(tmat[j]);
 	    }
@@ -1501,20 +1549,23 @@ public class Sphinx3Loader implements Loader {
           * 
           * @return the pool with the matrix
           */
-    private Pool createDummyMatrixPool(String name) {
+    private Pool createDummyMatrixPool(String name, int card) {
         Pool pool = new Pool(name);
-        float[][] matrix = new float[vectorLength][vectorLength];
-        logger.fine("creating dummy matrix pool " + name);
-        for (int i = 0; i < vectorLength; i++) {
-            for (int j = 0; j < vectorLength; j++) {
-                if (i == j) {
-                    matrix[i][j] = 1.0F;
-                } else {
-                    matrix[i][j] = 0.0F;
-                }
-            }
-        }
-        pool.put(0, matrix);
+        logger.fine("creating dummy matrix pool " + name + " " + card);
+	for (int classe=0 ; classe<card; classe++) {
+	    float[][] matrix = new float[vectorLength][vectorLength];
+	    
+	    for (int i = 0; i < vectorLength; i++) {
+		for (int j = 0; j < vectorLength; j++) {
+		    if (i == j) {
+			matrix[i][j] = 1.0F;
+		    } else {
+			matrix[i][j] = 0.0F;
+		    }
+		}
+	    }
+	    pool.put(classe, matrix);
+	}
         return pool;
     }
     /**
@@ -1525,14 +1576,16 @@ public class Sphinx3Loader implements Loader {
      * 
      * @return the pool with the vector
      */
-    private Pool createDummyVectorPool(String name) {
-        logger.fine("creating dummy vector pool " + name);
+    private Pool createDummyVectorPool(String name, int card) {
+        logger.fine("creating dummy vector pool " + name + " " + card);
         Pool pool = new Pool(name);
-        float[] vector = new float[vectorLength];
-        for (int i = 0; i < vectorLength; i++) {
-            vector[i] = 0.0f;
-        }
-        pool.put(0, vector);
+	for (int classe =0 ; classe < card; classe++) {
+	    float[] vector = new float[vectorLength];
+	    for (int i = 0; i < vectorLength; i++) {
+		vector[i] = 0.0f;
+	    }
+	    pool.put(classe, vector);
+	}
         return pool;
     }
 

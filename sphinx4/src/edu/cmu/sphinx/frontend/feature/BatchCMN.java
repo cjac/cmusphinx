@@ -224,7 +224,7 @@ public class BatchCMN extends BaseDataProcessor {
 		for (int j = 1; j < cepstrum.length; j++) {
                     cepstrum[j] -= sums[j]; // sums[] is now the means[]	  
 		}		 
-		if (false && compte <200) {
+		if (false  && compte <200) {
 		    
 		    System.out.printf("%3d",compte++);
 		    for (double f : cepstrum) 

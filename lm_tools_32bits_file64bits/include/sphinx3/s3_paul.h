@@ -49,7 +49,7 @@
 #include "fillpen.h"
 
 void nbest_dag_htk (dag_t *dag, char *filename, char *uttid, float64 lwf,
-                    dict_t *dict, lmset_t *lm, fillpen_t *fpen ,FILE * ctmfp);
+                    dict_t *dict, lm_t *lm, fillpen_t *fpen ,FILE * ctmfp);
 
-
+void s3paul_imprimer(FILE *fp, void *pp,int ascr,void  * astar,int fin);
 #endif /* __S3_paul_H__ */

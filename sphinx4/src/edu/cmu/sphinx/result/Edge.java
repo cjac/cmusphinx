@@ -17,18 +17,22 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.StringTokenizer;
 import  edu.cmu.sphinx.linguist.dictionary.Word;
+import edu.cmu.sphinx.util.LogMath;
 /**
  * Edges are part of Lattices.  They connect Nodes, and contain the score
  * associated with that sequence.
  */
-public class Edge {
+
+public class Edge implements NodeEdge {
     protected double acousticScore;
     protected double lmScore;
     protected Node fromNode;
     protected Node toNode;
     protected double pscore;
+    protected boolean noPruned;
     protected int beginTime=-1;
     protected int endTime=-1;
+    protected int lastBeginTime=-10;
     /**
      * Create an Edge from fromNode to toNode with acoustic and
      * Language Model scores.
@@ -45,7 +49,9 @@ public class Edge {
         this.fromNode = fromNode;
         this.toNode = toNode;
     }
-
+    protected void  setFromNode(Node n) {
+	fromNode=n;
+    }
     public String toString() {
         return "Edge(" + fromNode + "-->" + toNode + "[" + acousticScore
                 + "," + lmScore +","+pscore+ "])";
@@ -84,16 +90,21 @@ public class Edge {
         f.println( "edge: " + fromNode.getId() + " " + toNode.getId() + " "
                     + acousticScore + " " + lmScore );
     }
+    void dumpS3(PrintWriter f) { //  throws IOException {
+        f.println( " " + fromNode.getId() + " " + toNode.getId() + " "
+		   + (acousticScore-lmScore) + " " + lmScore ); //pour une sombre histoire ac contient les deux
+    }
 
     /**
      * Internal routine used when dumping a Lattice as an AiSee file
      * @param f
      * @throws IOException
      */
-    void dumpAISee(FileWriter f) throws IOException {
+    void dumpAISee(FileWriter f, LogMath logMath) throws IOException {
         f.write( "edge: { sourcename: \"" + fromNode.getId()
                 + "\" targetname: \"" + toNode.getId()
-                + "\" label: \"" + acousticScore + "," + lmScore + "\" }\n" );
+       	  + "\" label: \"" + logMath.logToLinear((float)pscore) + "," + noPruned+ "\" }\n" );
+	//	 + "\" label: \"" + (acousticScore-lmScore) + "," + lmScore + "\" }\n" );
     }
 
     /**
@@ -127,12 +138,18 @@ public class Edge {
     public Node getToNode() {
         return toNode;
     }
-    public void getBeginTime(){
+    public int getBeginTime(){
 	if (beginTime!=-1)
 	    return beginTime;
 	return beginTime=getFromNode().getBeginTime();
     }
-  public void getEndTime(){
+    public int getLastBeginTime(){
+	//	if (lastBeginTime!=-10)
+	//    return lastBeginTime;
+	return lastBeginTime=getFromNode().getLastBeginTime();
+    }
+
+  public int getEndTime(){
 	if (endTime!=-1)
 	    return endTime;
 	return endTime=getToNode().getBeginTime();
@@ -149,9 +166,15 @@ public class Edge {
     public double getPscore() {
 	return pscore;
     }
+    public boolean isAncestorOf(NodeEdge n) {
+	return getToNode().isAncestorOf(n.getFromNode());
+    }
 
-    public isAncestorOf(Edge e) {
-	return getToNode)().isAncestorOf(e.getFromNode());
+    public int getFirstEndTime() {
+	return getEndTime();
+    }
+    public boolean isAncestorOf(Edge e) {
+	return getToNode().isAncestorOf(e.getFromNode());
     }
     /**
      * Sets the acoustic score
@@ -169,6 +192,15 @@ public class Edge {
      */
     public void setLMScore(double v) {
         lmScore = v;
+    }
+    public void setNoPruned( boolean b) {
+	this.noPruned=b;
+    }
+    public boolean getNoPruned() {
+	return noPruned;
+    }
+    public boolean getIsNotPruned(){
+	return noPruned;
     }
 
     /**

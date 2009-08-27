@@ -32,6 +32,6 @@ public class TokenFactice extends Token  {
     private static DecimalFormat numFmt = new DecimalFormat("0000");
 
     public String toString() {
-	return   "fact"  +  ((getPredecessor()!=null) ?  numFmt.format(getPredecessor().getFrameNumber()) + scoreFmt.format(getPredecessor().getScore()) :   "     ") + "-> " +  scoreFmt.format(getAcousticScore())  + " " +  scoreFmt.format(getLanguageScore()) + " ::  ";
+	return   "factice "  +  ((getPredecessor()!=null) ?  numFmt.format(getPredecessor().getFrameNumber()) + scoreFmt.format(getPredecessor().getScore()) :   "     ") + "-> " +  scoreFmt.format(getAcousticScore())  + " " +  scoreFmt.format(getLanguageScore()) + " ::  ";
     }
 } 

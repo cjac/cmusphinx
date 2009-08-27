@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.io.IOException;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.BufferedReader;
 import java.util.HashMap;
 import java.util.Collection;
@@ -44,7 +45,7 @@ public class Lattice  implements Configurable{
 	Unit u;
 	int duree;
     }
-    public enum Mode {normal,fbArc,phone}
+    public enum Mode {normal,fbArc,phone,phoneLinear}
     private Logger logger;
     String name;
     private LanguageModel lm;
@@ -58,6 +59,9 @@ public class Lattice  implements Configurable{
     private boolean allocated=false;
     private boolean rescoreArc =true;
     private Mode mode=Mode.normal;
+    private boolean addAlignement;
+    private boolean dump=false;
+    private boolean linear=false;
     public void register(String name, Registry registry)
             throws PropertyException {
 	this.name = name;
@@ -70,7 +74,10 @@ public class Lattice  implements Configurable{
 	registry.register("insertionFiller",PropertyType.FLOAT);
 	registry.register("dictionary",PropertyType.COMPONENT);
 	registry.register("rescoreArc",PropertyType.BOOLEAN);
+	registry.register("dump",PropertyType.BOOLEAN);
+	registry.register("addAlignement",PropertyType.BOOLEAN);
 	registry.register("mode",PropertyType.STRING);
+
     }
     public void newProperties(PropertySheet ps) throws PropertyException {
         logger = ps.getLogger();
@@ -84,7 +91,10 @@ public class Lattice  implements Configurable{
 	lw= logMath.linearToLog(ps.getFloat("lw",10f));
 	insertionFiller=logMath.linearToLog( ps.getFloat("insertionFiller",0.2f));
 	rescoreArc=ps.getBoolean("rescoreArc",rescoreArc);
+	dump=ps.getBoolean("dump",false);
+	addAlignement=ps.getBoolean("addAlignement",true);
 	mode=Enum.valueOf(Mode.class,ps.getString("mode","normal"));
+	if (mode==Mode.phoneLinear) linear=true; else linear=false;
     }
     
     public String getName() {
@@ -126,7 +136,7 @@ public class Lattice  implements Configurable{
 	    while ((line=in.readLine())!=null){
 		l=blanc.split(line);
 		if (l[0].equals("node:"))
-		    doNode(l,timeStamp);
+		    doNode(l,timeStamp,1);
 	    }
 	    in.close();
 	    if (logger.isLoggable(Level.FINE)){
@@ -153,11 +163,13 @@ public class Lattice  implements Configurable{
     public SentenceHMMState load(File file) {
 	return load(file,null);
     }
-
+    public SentenceHMMState load(File file,File stamp){
+	return load(file,stamp,1);
+    }
     
-    public SentenceHMMState load(File file,File stamp) {
+    public SentenceHMMState load(File file,File stamp,int base) {
 	try {
-	    logger.info("Loading from " + file+ " mode " +mode );
+	    logger.info("Loading from " + file+ " mode " +mode+ " base" +base);
 	    BufferedReader in = new BufferedReader(new InputStreamReader(new GZIPInputStream(new java.io.FileInputStream( file))));
 	    Pattern blanc=Pattern.compile("\\s+");
 	    String line;
@@ -165,12 +177,16 @@ public class Lattice  implements Configurable{
 	    String [] l= blanc.split(line);
 	    if (!l[0].equals("initialNode:"))
 		throw new Error("initialNode:"+ line);
-	    int keyInit=SentenceHMMState.getKey(0,Integer.parseInt(l[1]));
+	    int keyInit=SentenceHMMState.getKey(0,Integer.parseInt(l[1])*base);
 	    line=in.readLine();
 	    l= blanc.split(line);
 	    if (!l[0].equals("terminalNode:"))
 		throw new Error("terminalNode:"+ line);
-	    int keyFinal=SentenceHMMState.getKey(0,Integer.parseInt(l[1]));
+	    int keyFinal=SentenceHMMState.getKey(0,Integer.parseInt(l[1])*base);
+	    if (Integer.parseInt(l[1])!=0 && base!=1)
+		{logger.warning(line + "je sais pas faire base negative et initial non nulle"+ base + file);
+		return null;
+		}
 	    line=in.readLine();
 	    l= blanc.split(line);
 	    if (!l[0].equals("logBase:"))
@@ -179,23 +195,44 @@ public class Lattice  implements Configurable{
 	    while ((line=in.readLine())!=null){
 		l=blanc.split(line);
 		if (l[0].equals("node:"))
-		    doNode(l,null);
+		    doNode(l,null,base);
 		else
-		    doEdge(l);
+		    doEdge(l,base);
 	    }
 	    in.close();
 	    nodes.get(keyFinal).setFinalState(true);
-	    SentenceHMMState start=nodes.get(keyInit);
-	    rescoreArc(); // equilibrage entre monde et sentence 10 fois la meme sequence c'est la meme	  
+
+	    if (stamp==null && base>0 ) rescoreArc(); // equilibrage entre monde et sentence 10 fois la meme sequence c'est la meme	  
 	    if (stamp!=null) {
-		if (mode!=Mode.phone){
+		if (mode!=Mode.phone&& mode!= Mode.phoneLinear){
 		    logger.severe("stamp avec mode:" + mode);
 		    return null;
 		}
+		SentenceHMMState debut;
+		if (addAlignement && (debut=load(stamp,null, -1)) !=null)
+		    { //on raccorde
+
+		      SentenceHMMState lfin = nodes.get(SentenceHMMState.getKey(0,Integer.MIN_VALUE));
+		      logger.fine("on raccorde "+debut+ ": " +lfin);
+		      SearchStateArc  arc= debut.getSuccessors()[0];
+		      SentenceHMMState fphone=(SentenceHMMState) arc.getToState().getSuccessors()[0].getToState();
+		      SentenceHMMStateArc a =new SentenceHMMStateArc(nodes.get(keyInit),fphone,arc.getProbability());
+		      nodes.get(keyInit).connect(a);
+		      fphone.connectPred(a);
+		      arc=lfin.getPredecessors()[0];
+		      lfin= (SentenceHMMState)arc.getFromState();
+		      a=new SentenceHMMStateArc(lfin, nodes.get(keyFinal),arc.getProbability());
+		      lfin.connect(a);
+		      nodes.get(keyFinal).connectPred(a);
+	  }
 		tag(nodes.values(),loadTimeStamp(stamp));
 	    }
-	    nodes.clear();
-	    return start;
+	    SentenceHMMState resultat=resultat=nodes.get(keyInit);
+	    if (base>0) {
+		if (dump) dumpAISee("aisee"+file.getName());
+		nodes.clear();}
+	    logger.fine("res:"+resultat);
+	    return resultat;
 	}
 	catch (IOException e) {
 	    nodes.clear();
@@ -219,13 +256,15 @@ public class Lattice  implements Configurable{
 	    }
     }
 
-    private void doEdge(String [] l) {
+    private void doEdge(String [] l,int base) {
 	if (!(l.length ==3 && l[0].equals("edge:")))
 	    throw new Error(" pas edge" + Arrays.toString(l));
-	SentenceHMMState fromNode = nodes.get(SentenceHMMState.getKey(0,Integer.parseInt(l[1])));
-	SentenceHMMState toNode =nodes.get(SentenceHMMState.getKey(0,Integer.parseInt(l[2])));
+        int fin=Integer.parseInt(l[2])*base;
+	if (fin==0 && base !=1) fin=Integer.MIN_VALUE;
+	SentenceHMMState fromNode = nodes.get(SentenceHMMState.getKey(0,Integer.parseInt(l[1])*base));
+	SentenceHMMState toNode =nodes.get(SentenceHMMState.getKey(0,fin));
 	if (fromNode instanceof HMMStateState) {
-	    fromNode= nodes.get(SentenceHMMState.getKey(((HMMStateState)fromNode).getHMMState().getHMM().getOrder(),Integer.parseInt(l[1])));
+	    fromNode= nodes.get(SentenceHMMState.getKey(((HMMStateState)fromNode).getHMMState().getHMM().getOrder(),Integer.parseInt(l[1])*base));
 	}
 	float logProb=LogMath.getLogOne();
 	if (toNode instanceof WordState) {
@@ -234,8 +273,9 @@ public class Lattice  implements Configurable{
 	    else logProb= lm.getProbability (WordSequence.getWordSequence(w));
 	    logProb += wip/lw;
 	}
-	if (logger.isLoggable(Level.FINEST))
-	    logger.finest("arc:"+fromNode+ " to:"+toNode +" prob:"+ logMath.logToLinear(logProb));
+	if (logger.isLoggable(Level.FINER))
+	    logger.finer("arc:"+fromNode+ " to:"+toNode +" prob:"+ logMath.logToLinear(logProb));
+	if (linear) logProb=(float)logMath.logToLinear(logProb);//je sais il y a une perte .....
 	SentenceHMMStateArc a=  new SentenceHMMStateArc(fromNode,toNode,logProb);
 	fromNode.connect(a);
 	toNode.connectPred(a);
@@ -244,8 +284,9 @@ public class Lattice  implements Configurable{
 
 
     Pattern p=Pattern.compile("HMM\\((\\S+)\\[(\\S+),(\\S+)]\\):(\\S)"); //bizarre bizarre 2 versions mais bof...
-private void doNode(String []l, ArrayList<Couple> timeStamp) {
-	int nodeId=Integer.parseInt(l[1]);
+    
+    private void doNode(String []l, ArrayList<Couple> timeStamp,int baseId) {
+	int nodeId=Integer.parseInt(l[1])*baseId;
 	int startFrame=Integer.parseInt(l[2])-1;
 	// in decoder frame decale de 1 the first token emit has frameNumber of one
 	//if (startFrame==1) startFrame=0; //pb avec <s> qui est en 0 et non en -1
@@ -257,13 +298,18 @@ private void doNode(String []l, ArrayList<Couple> timeStamp) {
 		startFrame=endFrame;
 	    }
 	    Word w= dictionary.getWord(l[4]);
-	    nodes.put(SentenceHMMState.getKey(0,nodeId),new WordState(w,nodeId,startFrame,endFrame));
+	    if (nodeId ==0 && baseId<0){ nodeId=Integer.MIN_VALUE;
+	    logger.fine(l[4] + "passe au mini");}
+	    if (!nodes.containsKey(SentenceHMMState.getKey(0,nodeId)))
+		nodes.put(SentenceHMMState.getKey(0,nodeId),new WordState(w,nodeId,startFrame,endFrame));
+		else
+		logger.info(l[4]+ " " + nodeId + "deja vu");
 	    return;
 	}
 	if (l.length<=5&& timeStamp!=null) return;
 	//that is a HMM
 	if (!"HMM".equals(l[4]))
-	    throw new Error("not hmm"+ l[0] +" "+l[1]+" "+l[4]);
+	    throw new Error("not hmm"+ l[0] +" "+baseId+l[1]+" "+l[4]);
 	Matcher ml=p.matcher(l[6]);
 	Boolean isFiller=Boolean.parseBoolean(l[5]);
 	if (!ml.find())
@@ -313,9 +359,10 @@ private void doNode(String []l, ArrayList<Couple> timeStamp) {
 	case normal: lesEtats[0]= new  HMMStateState(hmm.getState(0),nodeId,startFrame,endFrame);break;
 	case fbArc: lesEtats[0]= new StateZero(hmm.getState(0),nodeId,startFrame,endFrame);break;
 	case phone: lesEtats[0]= new StatePhone(hmm.getState(0),nodeId,startFrame,endFrame);break;
+	case phoneLinear :lesEtats[0]=	new StatePhoneDouble(hmm.getState(0),nodeId,startFrame,endFrame); break;
 	}
-	if (logger.isLoggable(Level.FINER))
-	    logger.finer("e:" +lesEtats[0] + " classe:"+ lesEtats[0].getClass()); 
+	if (logger.isLoggable(Level.FINEST))
+	    logger.finest("e:" +lesEtats[0] + " classe:"+ lesEtats[0].getClass()); 
 	for (int i=1 ; i<nState; i++) {
 	    lesEtats[i]= new HMMStateState(hmm.getState(i),nodeId,startFrame,endFrame);
 	    lesEtats[i].direct=lesEtats[0];
@@ -325,7 +372,9 @@ private void doNode(String []l, ArrayList<Couple> timeStamp) {
 	nodes.put(lesEtats[nState-1].getKey(),lesEtats[nState-1]);
 	for (int i=0 ; i<nState ;i++)
 	    for (HMMStateArc arc: hmm.getState(i).getSuccessors()){
-		SentenceHMMStateArc a= new SentenceHMMStateArc(lesEtats[i],lesEtats[arc.getHMMState().getState()],arc.getLogProbability());
+		SentenceHMMStateArc a= new SentenceHMMStateArc(lesEtats[i],lesEtats[arc.getHMMState().getState()],
+							       (linear)? (float) logMath.logToLinear(arc.getLogProbability()) :
+							       arc.getLogProbability() );
 		logger.finest(a.toString());
 		lesEtats[i].connect(a);
 		lesEtats[arc.getHMMState().getState()].connectPred(a);
@@ -335,8 +384,8 @@ private void doNode(String []l, ArrayList<Couple> timeStamp) {
 	
     private void tag(Collection <SentenceHMMState> states,ArrayList<Couple> timeStamp) {
 	for (SentenceHMMState s: states) {
-	    if (! (s instanceof StatePhone) ) continue;
-	    StatePhone  ph =(StatePhone ) s; 
+	    if (! s.isStateZero() ) continue;
+	    HMMStateState  ph =(HMMStateState ) s; 
 	    Unit u= ph.getHMMState().getHMM().getBaseUnit();
 	    // les fillers sont problematique dans cette histoire mais  bon ....
 	    HashMap<Couple,Integer> count= new HashMap<Couple,Integer>(3) ;
@@ -359,16 +408,46 @@ private void doNode(String []l, ArrayList<Couple> timeStamp) {
 		if (u.isFiller() && x<0) x=0.0f;
 		if (x> valeur) valeur=x;
 	    }
-	    if (logger.isLoggable(Level.FINE)) logger.fine("acc st:"+ph+ " u:" +u +" deb:" + ph.getStartFrame() 
-							     +" fin:" +      ph.getEndFrame()         + " v:"+ valeur);
 	    ph.setPhoneAcc(valeur);
+	    if (logger.isLoggable(Level.FINE)) logger.fine("acc" +s+" st:"+ph+ " u:" +u +" deb:" + ph.getStartFrame() 
+							     +" fin:" +      ph.getEndFrame()         + " v:"+ valeur+
+							   " "+ ph.getPhoneAcc());
+
 
 	}
     }
 	
-
-
-
-
+    void dumpAISee(String fileName) {
+	String title=fileName;
+	try {
+            System.err.println("Dumping " + title + " to " + fileName);
+            FileWriter f = new FileWriter(fileName);
+            f.write("graph: {\n");
+            f.write("title: \"" + title + "\"\n");
+            f.write("display_edge_labels: yes\n");
+	    for (SentenceHMMState s: nodes.values()) {
+		if (!s.isEmitting() )s.dumpAISee(f);
+	    }
+	    for (SentenceHMMState s: nodes.values()) {
+		if  (!s.isEmitting() ) {
+		    for (SearchStateArc  arc: s.getSuccessors()) {
+			SentenceHMMState toNode = (SentenceHMMState)arc.getToState();
+			if (toNode.isEmitting()) toNode =toNode.getDirect();
+			f.write( "edge: { sourcename: \"" + s.getName()
+				 + "\" targetname: \"" + toNode.getName()
+				 + "\" label: \"" + arc.getProbability()
+				 + "\" }\n" );
+		    }		
+		    
+		}
+	    }
+	    f.write("}\n");
+	    f.close();
+	}
+	catch (IOException e) {
+	    e.printStackTrace();
+	}
+    }
+    
 }
 

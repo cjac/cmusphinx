@@ -26,8 +26,8 @@ class QuadrigramBuffer extends NGramBuffer {
      * @param numberNGrams the number of trigram follows in the byte[]
      */
     public QuadrigramBuffer(byte[] quadrigramsOnDisk,
-			 int numberNGrams, boolean bigEndian) {
-        super(quadrigramsOnDisk, numberNGrams, bigEndian);
+			 int numberNGrams, boolean bigEndian, int bytesPerIDField) {
+        super(quadrigramsOnDisk, numberNGrams, bigEndian, bytesPerIDField);
     }
 
 
@@ -55,11 +55,11 @@ class QuadrigramBuffer extends NGramBuffer {
                 end = mid;
           //  } else {
 		//trigram = getProbabilityID(mid);
-                break;
+                //break;
 	    //}
         }
-                if (end!=getNumberNGrams() &&  thirdWordID== getWordID(start) ) 
-                	return getProbabilityID(start);
+                if (end!=getNumberNGrams() &&  thirdWordID== getWordID(end) ) 
+                	return getProbabilityID(end);
                 return -1 ;
             
 
@@ -75,8 +75,8 @@ class QuadrigramBuffer extends NGramBuffer {
      * @return the TrigramProbability of the nth follower
      */
     public final int getProbabilityID(int nthFollower) {
-        int nthPosition = nthFollower * LargeQuadrigramModel.BYTES_PER_QUADRIGRAM;
-        setPosition(nthPosition + 2); // the 2 is to skip the word ID
-        return readTwoBytesAsInt();
+        int nthPosition = nthFollower * LargeQuadrigramModel.ID_FIELDS_PER_QUADRIGRAM * getBytesPerIDField();
+        setPosition(nthPosition + getBytesPerIDField()); // to skip the word ID
+        return readIDField();
     }
 }

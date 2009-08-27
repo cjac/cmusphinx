@@ -210,7 +210,7 @@ public class BatchCtlModeRecognizer implements Configurable {
     private PrintWriter ctmWriter;
     private ConfidenceScorer cs = null;
     private SetId fsmGrammar=null;
-    private SetId cmllr=null;
+    private SetId cmllr=null,normLocuteur=null;
     private  Loader loader=null;
     private DynamicTransfo dynamicTransfo=null;
     private boolean dumpLattice=false;
@@ -244,6 +244,7 @@ public class BatchCtlModeRecognizer implements Configurable {
 	registry.register(PROP_CTM,PropertyType.STRING);
 	registry.register(PROP_FSM_GRAMMAR,PropertyType.COMPONENT);
 	registry.register(PROP_CMLLR,PropertyType.COMPONENT);
+	registry.register("normLocuteur",PropertyType.COMPONENT);
 	registry.register("AM",PropertyType.STRING);
 	registry.register("mllrDir",PropertyType.STRING);
 	registry.register("mllrByShow",PropertyType.BOOLEAN);
@@ -324,6 +325,11 @@ public class BatchCtlModeRecognizer implements Configurable {
 	try {cmllr= (SetId) ps.getComponent(PROP_CMLLR,SetId.class);}
         catch (Exception e) 
 	    { cmllr=null;logger.warning(e.toString());}
+	try {normLocuteur= (SetId) ps.getComponent("normLocuteur",SetId.class);}
+	        catch (Exception e) 
+            { normLocuteur=null;logger.warning(e.toString());}
+
+
 	dumpLattice=ps.getBoolean("dumpLattice",false);
 	dumpLatticeS3=ps.getBoolean("dumpLatticeS3",false);
 	dumpLatticeDir=ps.getString("dumpLatticeDir","");
@@ -393,6 +399,7 @@ public class BatchCtlModeRecognizer implements Configurable {
                         (batchItem = batchManager.getNextItem()) != null) {
                 if (fsmGrammar !=null) fsmGrammar.setId(aligner ? batchItem.getTranscript() :
 							batchItem.getId());
+		if (normLocuteur !=null) normLocuteur.setId(batchItem.getId());
                 if (cmllr !=null) cmllr.setId(batchItem.getId());
                 setInputStream(batchItem.getFilename(),batchItem.getStartSentence(),batchItem.getEndSentence());
 		if (loader!=null)
