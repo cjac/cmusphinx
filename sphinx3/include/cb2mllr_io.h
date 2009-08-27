@@ -59,8 +59,8 @@ extern "C" {
 int
 cb2mllr_read(const char *fn, /**< MLLR class mapping file.*/
 	     int32 **out_cb2mllr,  /**< Output CB 2 MLLR */
-	     int32 *out_n_cb,      /**< Number of codebook */
-	     int32 *out_n_mllr     /**< Number of MLLR class */
+	     uint32 *out_n_cb,      /**< Number of codebook */
+	     uint32 *out_n_mllr     /**< Number of MLLR class */
     );
 
 #ifdef __cplusplus

@@ -147,7 +147,6 @@ extern arg_t S3_DECODE_ARG_DEFS[];
 
 /** Wrapper structure for live-mode recognition
  */
-S3DECODER_EXPORT
 typedef struct
 {
     /**

@@ -81,6 +81,7 @@
 #include "kbcore.h"
 #include "word_fsg.h"
 #include "fsg_search.h"
+#include <string.h>
 
 static word_fsg_t *srch_FSG_read_fsgfile(void *srch, const char *fsgfilename);
 

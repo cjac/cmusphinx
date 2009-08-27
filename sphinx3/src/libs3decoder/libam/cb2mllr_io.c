@@ -61,7 +61,7 @@
 static int
 s3map_read(const char *fn, /**< The file name */
            void **out_map,
-           int32 * out_n_dom, int32 * out_n_rng, size_t map_elem_size)
+           uint32 * out_n_dom, uint32 * out_n_rng, size_t map_elem_size)
 {
     uint32 rd_chksum = 0;
     uint32 sv_chksum;
@@ -132,7 +132,7 @@ s3map_read(const char *fn, /**< The file name */
 
 int
 cb2mllr_read(const char *fn,
-             int32 ** out_cb2mllr, int32 * out_n_cb, int32 * out_n_mllr)
+             int32 ** out_cb2mllr, uint32 * out_n_cb, uint32 * out_n_mllr)
 {
     int ret, i, n_d, n_r;
     int *did_map;

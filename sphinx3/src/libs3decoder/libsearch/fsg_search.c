@@ -897,6 +897,7 @@ fsg_search_utt_start(fsg_search_t * search)
 }
 
 
+#if 0
 static void
 fsg_search_hyp_dump(fsg_search_t * search, FILE * fp)
 {
@@ -904,6 +905,7 @@ fsg_search_hyp_dump(fsg_search_t * search, FILE * fp)
     log_hyp_detailed(fp, search->hyp, search->uttid, "FSG", "fsg",
                      search->senscale);
 }
+#endif
 
 void
 fsg_search_history_backtrace(fsg_search_t * search,

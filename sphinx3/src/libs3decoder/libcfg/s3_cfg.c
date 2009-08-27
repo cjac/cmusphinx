@@ -41,10 +41,6 @@ static s3_cfg_item_t *
 add_item(s3_cfg_t *_cfg, char *_name);
 
 static void
-read_1rule(s3_cfg_t *_cfg, FILE *_file, float32 *_score,
-           s3_cfg_id_t *_src, s3_cfg_id_t *_products);
-
-static void
 print_parse(s3_cfg_t *_cfg, s3_cfg_entry_t *_parse, FILE *_out,
                         int _depth);
 
@@ -757,6 +753,7 @@ s3_cfg_add_rule(s3_cfg_t *_cfg, s3_cfg_id_t _src, float32 _score,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#if 0
 static void
 read_1rule(s3_cfg_t *_cfg, FILE *_file, float32 *_score,
            s3_cfg_id_t *_src, s3_cfg_id_t *_products)
@@ -813,7 +810,7 @@ read_1rule(s3_cfg_t *_cfg, FILE *_file, float32 *_score,
   memcpy(_products, products, (len + 1) * sizeof(s3_cfg_id_t));
 
 }
-
+#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

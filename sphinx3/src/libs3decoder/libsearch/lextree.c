@@ -136,6 +136,7 @@
 
 #include "lextree.h"
 #include "wid.h"
+#include <string.h>
 
 /*
  * Lextree nodes, and the HMMs contained within, are cleared upon creation, and whenever
@@ -1053,6 +1054,7 @@ lextree_dump(lextree_t * lextree, dict_t * dict, mdef_t * mdef, FILE * fp,
     fflush(fp);
 }
 
+#if 0
 /*
   Hmm. For some reason, it doesn't really work yet. 
  */
@@ -1083,7 +1085,7 @@ lextree_realloc_active_list(lextree_t * lt, int32 num_active)
     }
 
 }
-
+#endif
 
 void
 lextree_enter(lextree_t * lextree, s3cipid_t lc, int32 cf,

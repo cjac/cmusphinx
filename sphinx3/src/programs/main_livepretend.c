@@ -99,7 +99,6 @@ utt_livepretend(void *data, utt_res_t * ur, int32 sf, int32 ef,
                 char *uttid)
 {
     char fullrawfn[FILENAME_LENGTH];
-    char waveheader[44];
     char *hypstr;
 
     short samples[SAMPLE_BUFFER_LENGTH];

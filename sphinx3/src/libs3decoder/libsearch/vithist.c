@@ -127,6 +127,7 @@
 #include <listelem_alloc.h>
 #include <pio.h>
 #include <heap.h>
+#include <string.h>
 
 #include "vithist.h"
 #include "lextree.h"

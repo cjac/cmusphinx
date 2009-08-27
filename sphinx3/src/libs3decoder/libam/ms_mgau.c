@@ -94,7 +94,7 @@ model_set_mllr(ms_mgau_model_t * msg, const char *mllrfile,
         E_FATAL("ms_mllr_read_regmat failed\n");
 
     if (cb2mllrfile && strcmp(cb2mllrfile, ".1cls.") != 0) {
-        int32 ncb, nmllr;
+        uint32 ncb, nmllr;
 
         cb2mllr_read(cb2mllrfile, &cb2mllr, &ncb, &nmllr);
         if (nmllr != nclass)

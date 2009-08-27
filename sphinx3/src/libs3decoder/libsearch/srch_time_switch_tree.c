@@ -152,6 +152,7 @@
 #include "lextree.h"
 #include "lm.h"
 #include "vithist.h"
+#include <string.h>
 
 /** 
     \file srch_time_switch_tree.h 

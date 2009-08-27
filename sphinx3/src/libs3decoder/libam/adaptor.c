@@ -129,7 +129,7 @@ adapt_set_mllr(adapt_am_t * ad, mgau_model_t * g, const char *mllrfile,
 		     &(ad->mllr_nclass), mgau_veclen(g));
 
     if (cb2mllrname && strcmp(cb2mllrname, ".1cls.") != 0) {
-        int32 ncb, nmllr;
+        uint32 ncb, nmllr;
 
         cb2mllr_read(cb2mllrname, &cb2mllr, &ncb, &nmllr);
         if (nmllr != ad->mllr_nclass)

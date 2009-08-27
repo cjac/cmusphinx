@@ -100,6 +100,7 @@
 #ifdef WIN32
 #include <direct.h>             /* RAH, added */
 #endif
+#include <string.h>
 
 #include "kb.h"
 #include "utt.h"

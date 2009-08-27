@@ -134,6 +134,7 @@ senone_mgau_map_read(senone_t * s, const char *file_name)
     char eofchk;
     char **argname, **argval;
     float32 v;
+    uint32 n_sen;
 
     E_INFO("Reading senone gauden-codebook map file: %s\n", file_name);
 
@@ -179,10 +180,11 @@ senone_mgau_map_read(senone_t * s, const char *file_name)
 
     /* Read 1d array data */
     if (bio_fread_1d
-        ((void **) (&s->mgau), sizeof(s3mgauid_t), &(s->n_sen), fp,
+        ((void **) (&s->mgau), sizeof(s3mgauid_t), &n_sen, fp,
          byteswap, &chksum) < 0) {
         E_FATAL("bio_fread_1d(%s) failed\n", file_name);
     }
+    s->n_sen = n_sen;
 
     /* Infer n_gauden if not present in this version */
     if (!n_gauden_present) {

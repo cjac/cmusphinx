@@ -686,6 +686,7 @@ ctl_process_utt(const char *uttfile, int32 count,
                 void (*func) (void *kb, utt_res_t * ur, int32 sf, int32 ef,
                               char *uttid), void *kb)
 {
+    char utterance_file[16384];
     char uttid[4096];
     char base[16384];
     int32 i, c;
@@ -722,11 +723,12 @@ ctl_process_utt(const char *uttfile, int32 count,
 
         /* Form uttid */
         sprintf(uttid, "%s_%08d", base, c);
+        strncpy(utterance_file, uttfile, strlen (utterance_file));
 
         /* Process this utterance */
         ptmr_start(&tm);
         if (func) {
-            utt_res_set_uttfile(ur, uttfile);
+            utt_res_set_uttfile(ur, utterance_file);
 
             (*func) (kb, ur, 0, -1, uttid);
         }
