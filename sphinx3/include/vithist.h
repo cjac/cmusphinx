@@ -239,7 +239,7 @@ typedef struct {
     vithist_entry_t **entry;	/**< entry[i][j]= j-th entry in the i-th block allocated */
     int32 *frame_start;		/**< For each frame, the first vithist ID in that frame; (the
                                    last is just before the first of the next frame) */
-    int32 n_entry;		/**< Total #entries used (generates global seq no. or ID) */
+    int32 n_entry;		/**< Total \#entries used (generates global seq no. or ID) */
     int32 n_frm;		/**< No. of frames processed so far in this utterance */
     int32 n_ci;                 /**< No. of CI phones */
     int32 bghist;		/**< If TRUE (bigram-mode) only one entry/word/frame; otherwise
@@ -301,8 +301,8 @@ vithist_t *vithist_init (kbcore_t *kbc,  /**< Core search data structure */
 
 
 /**
- * Invoked at the beginning of each utterance; vithist initialized with a root <s> entry.
- * @return Vithist ID of the root <s> entry.
+ * Invoked at the beginning of each utterance; vithist initialized with a root \<s\> entry.
+ * @return Vithist ID of the root \<s\> entry.
  */
 int32 vithist_utt_begin (vithist_t *vh, /**< In: a Viterbi history data structure*/
 			 kbcore_t *kbc  /**< In: a KBcore */
@@ -310,8 +310,8 @@ int32 vithist_utt_begin (vithist_t *vh, /**< In: a Viterbi history data structur
 
 
 /**
- * Invoked at the end of each utterance; append a final </s> entry that results in the best
- * path score (i.e., LM including LM transition to </s>).
+ * Invoked at the end of each utterance; append a final \</s\> entry that results in the best
+ * path score (i.e., LM including LM transition to \</s\>).
  * Return the ID of the appended entry if successful, -ve if error (empty utterance).
  */
 int32 vithist_utt_end (vithist_t *vh, /**< In: a Viterbi history data structure*/

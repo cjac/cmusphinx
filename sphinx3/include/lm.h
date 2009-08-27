@@ -448,7 +448,7 @@ typedef struct {
 typedef struct tginfo_s {
     s3lmwid_t w1;		/**< w1 component of bigram w1,w2.  All bigrams with
 				   same w2 linked together. */
-    int32 n_tg;			/**< #tg for parent bigram w1,w2 */
+    int32 n_tg;			/**< \#tg for parent bigram w1,w2 */
     tg_t *tg;			/**< Trigrams for w1,w2 */
     int32 bowt;			/**< tg bowt for w1,w2 */
     int32 used;			/**< whether used since last lm_reset */
@@ -463,7 +463,7 @@ typedef struct tginfo_s {
 typedef struct tginfo32_s {
     s3lmwid32_t w1;		/**< w1 component of bigram w1,w2.  All bigrams with
 				   same w2 linked together. */
-    int32 n_tg;			/**< #tg for parent bigram w1,w2 */
+    int32 n_tg;			/**< \#tg for parent bigram w1,w2 */
     tg32_t *tg32;			/**< Trigrams for w1,w2 */
     int32 bowt;			/**< tg bowt for w1,w2 */
     int32 used;			/**< whether used since last lm_reset */
@@ -558,9 +558,9 @@ typedef struct {
  */
 typedef struct lm_s {
     char *name ;        /**< The name of the LM */
-    int32 n_ug;         /**< #unigrams in LM */
-    int32 n_bg;         /**< #bigrams in entire LM */
-    int32 n_tg;         /**< #trigrams in entire LM */
+    int32 n_ug;         /**< \#unigrams in LM */
+    int32 n_bg;         /**< \#bigrams in entire LM */
+    int32 n_tg;         /**< \#trigrams in entire LM */
     int32 max_ug;       /**< To which n_ug can grow with dynamic addition of words */
 
     int32 n_ng;           /**< if unigram, n_ng=1, if bigram n_bg=2 and so one */
@@ -625,15 +625,15 @@ typedef struct lm_s {
     
     
     /* Statistics */
-    int32 n_bg_fill;    /**< #bg fill operations */
-    int32 n_bg_inmem;   /**< #bg in memory */
-    int32 n_bg_score;   /**< #bg_score operations */
-    int32 n_bg_bo;	/**< #bg_score ops backed off to ug */
+    int32 n_bg_fill;    /**< \#bg fill operations */
+    int32 n_bg_inmem;   /**< \#bg in memory */
+    int32 n_bg_score;   /**< \#bg_score operations */
+    int32 n_bg_bo;	/**< \#bg_score ops backed off to ug */
     int32 n_tg_fill;	/**< Similar stats for trigrams */
-    int32 n_tg_inmem;   /**< #tg in memory */
-    int32 n_tg_score;   /**< #tg_score operations */
-    int32 n_tg_bo;      /**< #tg_score ops backed off to bg */
-    int32 n_tgcache_hit;  /**< # of trigram cache hit ops backed off to bg */
+    int32 n_tg_inmem;   /**< \#tg in memory */
+    int32 n_tg_score;   /**< \#tg_score operations */
+    int32 n_tg_bo;      /**< \#tg_score ops backed off to bg */
+    int32 n_tgcache_hit;  /**< \# of trigram cache hit ops backed off to bg */
     
     int32 access_type;	/**< Updated on every lm_{tg,bg,ug}_score call to reflect the kind of
                            n-gram accessed: 3 for 3-gram, 2 for 2-gram and 1 for 1-gram */
@@ -649,7 +649,7 @@ typedef struct lm_s {
   
     /* Data structure that maintains the class information */
     lmclass_t **lmclass;   /**< LM class for this LM */
-    int32 n_lmclass;      /**< # LM class */
+    int32 n_lmclass;      /**< \# LM class */
     int32 *inclass_ugscore; /**< An array of inter-class unigram probability */
 
 
@@ -876,7 +876,7 @@ void lmset_free(lmset_t *lms /**< In: The set of LM */
 
 /**
  * Return trigram followers for given two words.  Both w1 and w2 must be valid.
- * Return value: #trigrams in returned list.
+ * Return value: \#trigrams in returned list.
  */
 int32 lm_tglist (lm_t *lmp,	/**< In: LM being queried */
 		 s3lmwid32_t w1,	/**< In: LM word id of the first of a 2-word history */
@@ -894,7 +894,7 @@ int32 lm_tg32list (lm_t *lmp,	/**< In: LM being queried */
 
 /**
  * Return the bigram followers for the given word w.
- * Return value: #bigrams in returned list.
+ * Return value: \#bigrams in returned list.
  */
 int32 lm_bglist (lm_t *lmp,	/**< In: LM being queried */
 		 s3lmwid32_t w,	/**< In: LM word id of the 1-word history */
@@ -915,7 +915,7 @@ int32 lm_bg32list (lm_t *lmp,	/**< In: LM being queried */
  * of simply returning the bglist.  The wordprob array contains dictionary word IDs.  But note
  * that only the base IDs are entered; the caller is responsible for filling out the alternative
  * pronunciations.
- * Return value:  #entries filled in the wordprob array.
+ * Return value:  \#entries filled in the wordprob array.
  */
 int32 lm_bg_wordprob(lm_t *lm,		/**< In: LM being queried */
 		     s3lmwid32_t w,	/**< In: LM word ID of the 1-word history */
@@ -938,7 +938,7 @@ void lm_null_struct(lm_t* lm
 
 /**
  * Like lm_bg_wordprob, but for unigrams.
- * Return value:  #entries filled in the wordprob array.
+ * Return value:  \#entries filled in the wordprob array.
  */
 int32 lm_ug_wordprob(lm_t *lm, /**< In: LM being queried */
 		     dict_t *dict, /**< In : The dictionary */
@@ -946,7 +946,7 @@ int32 lm_ug_wordprob(lm_t *lm, /**< In: LM being queried */
 		     wordprob_t *wp /**< In/out: Array to be filled */
     );
 
-/** Return the unigrams in LM.  Return value: #unigrams in returned list. */
+/** Return the unigrams in LM.  Return value: \#unigrams in returned list. */
 int32 lm_uglist (lm_t *lmp,	/**< In: LM being queried */
 		 ug_t **ug	/**< Out: *ug = unigram array */
     );
@@ -1157,7 +1157,7 @@ int32 lm_write(lm_t *model, /** In: the pointer LM we want to output */
    x: not supported yet
    y: supported
 
-   i\o 0 1 2
+   i\\o 0 1 2
    0 - n n
    1 n - y
    2 n x -
@@ -1190,10 +1190,10 @@ void lm_free (lm_t *lm /**< In: a LM structure */
    Add word list to the LM 
    For each word in the file, call lm_add_wordlist. 
    The file is assume to have a format like this:
-   <word1> 
-   <word2>
-   <word3>
-   <word4>
+   \<word1\> 
+   \<word2\>
+   \<word3\>
+   \<word4\>
      
    If the lmwid2dictid mapping is not updated, or the dictionary
    itself is not used in the context.  Just specify dict=NULL;

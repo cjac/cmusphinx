@@ -84,8 +84,8 @@ typedef float32 *vector_t;
  * \brief wrapper of array size 
  */
 typedef struct {
-    int32 r;		/**< #rows, */
-    int32 c;		/**< #cols in an array */
+    int32 r;		/**< \#rows, */
+    int32 c;		/**< \#cols in an array */
 } arraysize_t;
 
 /** \struct point_t
@@ -187,7 +187,7 @@ int32 vector_cmp (float32 *v1, float32 *v2,	/**< In: Vectors to be compared */
 int32 vector_mean (float32 *mean,	/**< Out: Computed mean; caller should allocate
 					   this memory */
 		   float32 **data,	/**< In: Set of data over which mean is computed */
-		   int32 n_vec,		/**< In: #Vectors in data */
+		   int32 n_vec,		/**< In: \#Vectors in data */
 		   int32 n_dim	/**< In: Dimensionality of each vector (and mean) */
     );
 
@@ -241,14 +241,14 @@ vector_dist_maha (float32 *vec,		/**< In: Vector for which distance from mean
  */
 S3DECODER_EXPORT
 float64 vector_vqgen (float32 **data,	/**< In: Input Data to be quantized */
-		      int32 rows,	/**< In: #Rows in input data */
-		      int32 cols,	/**< In: #Cols in input data (and output VQ table) */
-		      int32 vqrows,	/**< In: #Rows in vector quantized result */
+		      int32 rows,	/**< In: \#Rows in input data */
+		      int32 cols,	/**< In: \#Cols in input data (and output VQ table) */
+		      int32 vqrows,	/**< In: \#Rows in vector quantized result */
 		      float64 epsilon,	/**< In: Convergence limit; stop k-means iterations when
 					   the relative reduction in total squared error in
 					   successive iterations ((sqerr[t]-sqerr[t+1])/sqerr[t])
 					   is below this value. */
-		      int32 maxiter,	/**< In: Max #iterations, regardless of convlimit */
+		      int32 maxiter,	/**< In: Max \#iterations, regardless of convlimit */
 		      float32 **mean,	/**< Out: Vector quantized array of centroids.  Caller
 					   must allocate this array */
 		      int32 *map,       /**< Out: data->mean mapping; mean[map[i]] is the closest
@@ -269,8 +269,8 @@ float64 vector_vqgen (float32 **data,	/**< In: Input Data to be quantized */
  */
 int32 vector_vqlabel (float32 *vec,	/**< In: Vector to be compared against VQ table */
 		      float32 **mean,	/**< In: Table of centroids */
-		      int32 rows,	/**< In: #Rows in mean */
-		      int32 cols,	/**< In: #Cols in mean (and vec) */
+		      int32 rows,	/**< In: \#Rows in mean */
+		      int32 cols,	/**< In: \#Cols in mean (and vec) */
 		      float64 *sqerr	/**< Out: Squared error (distance) between vec and the
 					   selected codeword.  May be NULL if not needed. */
     );
@@ -296,7 +296,7 @@ float64 vector_pdf_cross_entropy (float32 *p1,
  * only the diagonal is maintained, as a vector).
  */
 typedef struct {
-    int32 n_gau;	/**< #Gaussians in table */
+    int32 n_gau;	/**< \#Gaussians in table */
     int32 veclen;	/**< Vector length */
     float32 **mean;	/**< n_cw x veclen mean values */
     float32 **var;	/**< n_cw x veclen corresponding (diagonal) variance values */
@@ -338,7 +338,7 @@ void vector_gautbl_maha_precomp (vector_gautbl_t *gau);
 void
 vector_gautbl_eval_logs3 (vector_gautbl_t *gau,	/**< In: Table of Gaussians */
 			  int32 offset,	/**< In: First VQ codeword in the range to be evaluated */
-			  int32 count,	/**< In: #Codewords to be evaluated (range size) */
+			  int32 count,	/**< In: \#Codewords to be evaluated (range size) */
 			  float32 *x,	/**< In: Input vector being compared to codewords */
 			  int32 *scr,	/**< Out: Mahalanobis distance scores (logs3 values).
 					   Caller must allocate this array.  Note that only

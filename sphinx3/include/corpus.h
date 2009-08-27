@@ -168,7 +168,7 @@ void report_utt_res(
  */
 typedef struct {
     hash_table_t *ht;	/**< Hash table for IDs; CASE-SENSITIVE */
-    int32 n;		/**< #IDs (and corresponding argument strings) in the corpus */
+    int32 n;		/**< \#IDs (and corresponding argument strings) in the corpus */
     char **str;		/**< The argument strings */
 } corpus_t;
 

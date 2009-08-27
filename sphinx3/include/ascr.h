@@ -121,12 +121,12 @@ typedef struct {
  * @return Pointer to created structure if successful, NULL otherwise.
  */
 S3DECODER_EXPORT
-ascr_t *ascr_init (int32 n_sen,		/**< Input: #Ordinary senones */
-		   int32 n_comsen,	/**< Input: #Composite senones */
-		   int32 n_sseq,        /**< Input: # of senone sequences */ 
-		   int32 n_comsseq,     /**< Input: # of composite senone sequences */ 
+ascr_t *ascr_init (int32 n_sen,		/**< Input: \#Ordinary senones */
+		   int32 n_comsen,	/**< Input: \#Composite senones */
+		   int32 n_sseq,        /**< Input: \# of senone sequences */ 
+		   int32 n_comsseq,     /**< Input: \# of composite senone sequences */ 
 		   int32 pl_win,        /**< Input: size of phoneme lookahead windows */
-		   int32 n_cisen        /**< Input: # of CI senones */
+		   int32 n_cisen        /**< Input: \# of CI senones */
     );
 
 /**

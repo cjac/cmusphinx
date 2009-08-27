@@ -130,7 +130,7 @@ typedef struct {
 
 
     lextree_t **roottree;           /**< The pool of trees that stores all
-                                       word trees. An array with dimension. #lm*/
+                                       word trees. An array with dimension. \#lm*/
 
     hash_table_t *active_word;    /**< Hash table that map word end to the index of the expandtree. */
 

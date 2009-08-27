@@ -139,9 +139,9 @@ typedef struct {
     vector_t ***var;	/**< like mean; diagonal covariance vector only */
     float32 ***det;	/**< log(determinant) for each variance vector;
 			   actually, log(sqrt(2*pi*det)) */
-    int32 n_mgau;	/**< #codebooks */
-    int32 n_feat;	/**< #feature streams in each codebook */
-    int32 n_density;	/**< #gaussian densities in each codebook-feature stream */
+    int32 n_mgau;	/**< \#codebooks */
+    int32 n_feat;	/**< \#feature streams in each codebook */
+    int32 n_density;	/**< \#gaussian densities in each codebook-feature stream */
     int32 *featlen;	/**< feature length for each feature */
 } gauden_t;
 
@@ -208,7 +208,7 @@ int32
 gauden_dist (gauden_t *g,	/**< In: handle to entire ensemble of codebooks */
 	     s3mgauid_t mgau,	/**< In: codebook for which density values to be evaluated
 				   (g->{mean,var}[mgau]) */
-	     int32 n_top,	/**< In: #top densities to be evaluated */
+	     int32 n_top,	/**< In: \#top densities to be evaluated */
 	     vector_t *obs,	/**< In: Observation vector; obs[f] = for feature f */
 	     gauden_dist_t **out_dist
 	     /**< Out: n_top best codewords and density values,
@@ -228,7 +228,7 @@ gauden_dist (gauden_t *g,	/**< In: handle to entire ensemble of codebooks */
  */
 int32
 gauden_dist_norm (gauden_t *g,		/**< In: handle to all collection of codebooks */
-		  int32 n_top,		/**< In: #density values computed per feature */
+		  int32 n_top,		/**< In: \#density values computed per feature */
 		  gauden_dist_t ***dist,/**< In/Out: n_top density indices and values for
 					   each feature.  On return, density values are
 					   normalized. */

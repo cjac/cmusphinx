@@ -804,15 +804,15 @@ dump_sent_hmm(void)
 /**
  * Build a sentence HMM for the given transcription (wordstr).  A two-level DAG is
  * built: phone-level and state-level.
- *   - <s> and </s> always added at the beginning and end of sentence to form an
+ *   - \<s\> and \</s\> always added at the beginning and end of sentence to form an
  *     augmented transcription.
- *   - Optional <sil> and noise words added between words in the augmented
+ *   - Optional \<sil\> and noise words added between words in the augmented
  *     transcription.
  * wordstr must contain only the transcript; no extraneous stuff such as utterance-id.
  * Phone-level HMM structure has replicated nodes to allow for different left and right
  * context CI phones; hence, each pnode corresponds to a unique triphone in the sentence
  * HMM.
- * Return 0 if successful, <0 if any error (eg, OOV word encountered).
+ * Return 0 if successful, \<0 if any error (eg, OOV word encountered).
  */
 int32
 align_build_sent_hmm(char *wordstr, int insert_sil)

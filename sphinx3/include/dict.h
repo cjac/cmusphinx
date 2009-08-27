@@ -145,8 +145,8 @@ typedef struct {
     int32 n_ciphone;	/**< Used only if CI phones handled internally (mdef == NULL) */
     dictword_t *word;	/**< Array of entries in dictionary */
     hash_table_t *ht;	/**< Hash table for mapping word strings to word ids */
-    int32 max_words;	/**< #Entries allocated in dict, including empty slots */
-    int32 n_word;	/**< #Occupied entries in dict; ie, excluding empty slots */
+    int32 max_words;	/**< \#Entries allocated in dict, including empty slots */
+    int32 n_word;	/**< \#Occupied entries in dict; ie, excluding empty slots */
     int32 filler_start;	/**< First filler word id (read from filler dict) */
     int32 filler_end;	/**< Last filler word id (read from filler dict) */
     s3wid_t startwid;	/**< FOR INTERNAL-USE ONLY */

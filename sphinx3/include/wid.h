@@ -95,14 +95,14 @@ s3lmwid32_t *wid_dict_lm_map (dict_t *dict,	/**< In: Dictionary */
 
 /**
  * Augment the given wordprob array with alternative pronunciations from the dictionary.
- * Return value: #entries in the augmented wordprob array (including the original ones).
+ * Return value: \#entries in the augmented wordprob array (including the original ones).
  */
 int32 wid_wordprob2alt (dict_t *dict,	/**< In: Dictionary */
 			wordprob_t *wp,	/**< In/Out: Input wordprob array, to be augmented with
 					   alternative pronunciations for the entries that
 					   already exist in it.  Caller must have allocated
 					   this array. */
-			int32 n	/**< In: #Input entries in the wordprob array */
+			int32 n	/**< In: \#Input entries in the wordprob array */
     );
 
 #if 0

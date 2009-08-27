@@ -111,7 +111,7 @@ extern "C" {
 typedef struct {
     s3ssid_t  *ssid;	/**< Senone Sequence ID list for all context ciphones */
     s3cipid_t *cimap;	/**< Index into ssid[] above for each ci phone */
-    int32     n_ssid;	/**< #Unique ssid in above, compressed ssid list */
+    int32     n_ssid;	/**< \#Unique ssid in above, compressed ssid list */
 } xwdssid_t;
 
 

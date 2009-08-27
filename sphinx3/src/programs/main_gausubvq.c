@@ -76,7 +76,7 @@
 #include "feat.h"
 #include "cmdln_macro.h"
 
-/** \file gausubvq.c 
+/** \file main_gausubvq.c 
  * \brief Compute the SVQ map 
  */
 

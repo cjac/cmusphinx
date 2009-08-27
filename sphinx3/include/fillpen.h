@@ -115,10 +115,10 @@ typedef struct {
  * Initialize filler probabilities (penalties, whatever) module and return a pointer to the
  * structure created.  Filler word probabilities are simple unigram probabilities.  Here is an
  * example of such a file (one entry per line; a word and a probability):
- *   <sil>  0.10792
- *   <uh>   0.00866
- *   <um>   0.00147
- * If the first character in a line is a '#', the line is treated as a comment and ignored.
+ *   \<sil\>  0.10792
+ *   \<uh\>   0.00866
+ *   \<um\>   0.00147
+ * If the first character in a line is a '\#', the line is treated as a comment and ignored.
  * If no filler probabilities file is provided, the silence word gets silprob, and all other
  * filler words get fillprob.  As with the trigram LM, the resulting log-probabilities are
  * multiplied by a language weight and finally a word insertion penalty is tacked on.

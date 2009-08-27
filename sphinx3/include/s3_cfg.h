@@ -353,8 +353,8 @@ s3_cfg_print_parse(s3_cfg_t *_cfg, s3_cfg_entry_t *_parse, FILE *_out);
    already exist, assign it a new id.
 
    @param _cfg A CFG parser.
-   @param _id A term id.
-   @return A string representation of the term.
+   @param _item A term string representation.
+   @return A term id.
  */
 s3_cfg_id_t
 s3_cfg_str2id(s3_cfg_t *_cfg, char *_item);

@@ -176,7 +176,7 @@ void log_hyp_detailed (FILE *fp, /**< A file poointer */
 void log_hypseg (char *uttid,   /**< Input; uttid */
 		 FILE *fp,	/**< Out: output file */
 		 srch_hyp_t *hypptr,	/**< In: Hypothesis */
-		 int32 nfrm,	/**< In: #frames in utterance */
+		 int32 nfrm,	/**< In: \#frames in utterance */
 		 int32 scl,	/**< In: Acoustic scaling for entire utt */
 		 float64 lwf,	/**< In: LM score scale-factor (in dagsearch) */
 		 dict_t* dict,  /**< In: dictionary */

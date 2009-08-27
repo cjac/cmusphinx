@@ -152,7 +152,7 @@ extern "C" {
  * A lextree can be built for a specific history (e.g., for all bigram successors of a given
  * word or trigram successors of a word-pair in a given LM).  The history provides a set of left
  * context CIphones (if the final history word has multiple pronunciations; and there is always
- * <sil>).
+ * \<sil\>).
  * A lextree is usually a set of trees, one for each distinct root model for the given set of
  * words.  Furthermore, the root node of each tree can itself actually be a SET of nodes,
  * required by the different left contexts.  If there is no history (i.e., the unigram lextree),

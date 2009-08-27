@@ -221,8 +221,8 @@ typedef struct {
 				   composite phone (composite sseq). */
     int32 *comwt;		/**< Weight associated with each composite state (logs3 value).
 				   Final composite state score weighted by this amount */
-    int32 n_comstate;		/**< #Composite states */
-    int32 n_comsseq;		/**< #Composite senone sequences */
+    int32 n_comstate;		/**< \#Composite states */
+    int32 n_comsseq;		/**< \#Composite senone sequences */
     int32 n_ci;   /**< Number of CI phone in */
     int32 n_dictsize; /**< Dictionary size */
 

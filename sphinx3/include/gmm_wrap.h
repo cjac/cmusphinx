@@ -108,7 +108,7 @@ int32 approx_cd_gmm_compute_sen_comp(
 */
 int32 approx_cd_gmm_compute_sen(
     void *srch, /**< a pointer to a srch_t */
-    float32 **feat, /**< feature vector #stream x #coeff*/
+    float32 **feat, /**< feature vector \#stream x \#coeff*/
     int32 wav_idx  /**< frame index */
     );
 
@@ -120,7 +120,7 @@ int32 approx_cd_gmm_compute_sen(
 
 int32 ms_cd_gmm_compute_sen_comp(
     void *srch,   /**< a pointer to a srch_t */
-    float32 **feat,  /**< feature vector #stream x #coeff*/
+    float32 **feat,  /**< feature vector \#stream x \#coeff*/
     int32 wav_idx    /**< frame index */
     );
 
@@ -131,7 +131,7 @@ int32 ms_cd_gmm_compute_sen_comp(
 
 int32 ms_cd_gmm_compute_sen(
     void *srch,   /**< a pointer to a srch_t */
-    float32 **feat,  /**< feature vector #stream x #coeff*/
+    float32 **feat,  /**< feature vector \#stream x \#coeff*/
     int32 wav_idx    /**< frame index */
     );
 
@@ -146,7 +146,7 @@ int32 ms_cd_gmm_compute_sen(
 
 int32 s3_cd_gmm_compute_sen_comp(
     void *srch,   /**< a pointer to a srch_t */
-    float32 **feat,  /**< feature vector #stream x #coeff*/
+    float32 **feat,  /**< feature vector \#stream x \#coeff*/
     int32 wav_idx    /**< frame index */
 
     );
@@ -163,7 +163,7 @@ int32 s3_cd_gmm_compute_sen_comp(
 
 int32 s3_cd_gmm_compute_sen(
     void *srch,   /**< a pointer to a srch_t */
-    float32 **feat,  /**< feature vector #stream x #coeff*/
+    float32 **feat,  /**< feature vector \#stream x \#coeff*/
     int32 wav_idx    /**< frame index */
     );
 

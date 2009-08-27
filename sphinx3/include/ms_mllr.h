@@ -98,7 +98,7 @@ int32 ms_mllr_read_regmat (const char *regmatfile,	/**< In: File to be read */
 			   float32 ****B,		/**< Out: [*B][stream][nclass][streamlen] */
 			   float32 ****H,		/**< Out: [*H][stream][nclass][streamlen] */
 			   int32 *streamlen,	/**< In: Dimension of each feature stream */
-			   int32 n_stream,	/**< In: #Feature streams */
+			   int32 n_stream,	/**< In: \#Feature streams */
 			   int32 *nclass	/**< Out: number of classes */
     );
 
@@ -109,7 +109,7 @@ int32 ms_mllr_read_regmat (const char *regmatfile,	/**< In: File to be read */
 int32 ms_mllr_free_regmat (float32 ****A,	/**< In: A[stream][nclass][streamlen][streamlen] */
 			   float32 ***B,	/**< In: B[stream][nclass][streamlen] */
 			   float32 ***H,	/**< In: H[stream][nclass][streamlen] */
-			   int32 n_stream	/**< In: #Feature streams */
+			   int32 n_stream	/**< In: \#Feature streams */
     );
 
 /**
@@ -120,12 +120,12 @@ int32 ms_mllr_norm_mgau (float32 ***mean,	/**<< In/Out: Set of vectors to be tra
 						   mean[stream][density] */
                          float32 ***mvar,	/**<< In/Out: Set of vectors to be transformed:
 						   var[stream][density] */
-			 int32 n_density,	/**< In: #densities in above mean matrix */
+			 int32 n_density,	/**< In: \#densities in above mean matrix */
 			 float32 ****A,	/**< In: "matrix" portion of regression matrix */
 			 float32 ***B,	/**< In: "vector" portion of regression matrix */
 			 float32 ***H,	/**< In: regression "matrix" for variances */
 			 int32 *streamlen,	/**< In: Dimension of each feature stream */
-			 int32 n_stream,	/**< In: #Feature streams */
+			 int32 n_stream,	/**< In: \#Feature streams */
 			 int32 _class	/**< In: number of classes */
     );
 

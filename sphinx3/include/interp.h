@@ -101,7 +101,7 @@ extern "C" {
  */
 typedef struct {
     logmath_t *logmath;
-    int32 n_sen;	/**< #senones */
+    int32 n_sen;	/**< \#senones */
 
     /**
      * \struct interp_wt_s

@@ -169,7 +169,7 @@ extern "C" {
  * \brief A single mixture-Gaussian model for one senone (see above comment).
  */
 typedef struct {
-    int32 n_comp;	/**< #Component Gaussians in this mixture.  NOTE: May be 0 (for the
+    int32 n_comp;	/**< \#Component Gaussians in this mixture.  NOTE: May be 0 (for the
 			   untrained states). */
 
     int32 bstidx;         /**< Index for the most likely Gaussians in this mixture of component. It persists through time. */ 
@@ -205,7 +205,7 @@ typedef struct {
  * \brief The set of mixture-Gaussians in an acoustic model used in Sphinx 3.X family of tool
  */
 typedef struct {
-    int32 n_mgau;	/**< #Mixture Gaussians in this model (i.e., #senones) */
+    int32 n_mgau;	/**< \#Mixture Gaussians in this model (i.e., \#senones) */
     int32 max_comp;	/**< Max components in any mixture */
     int32 veclen;	/**< Vector length of the Gaussian density means (and diagonal vars) */
     mgau_t *mgau;	/**< The n_mgau mixture Gaussians */
@@ -215,10 +215,10 @@ typedef struct {
     int32 verbose;    /**< Whether to display information */
 
     /* Used only in the flat lexicon decoder, statistics */
-    int32 frm_sen_eval;		/**< #Senones evaluated in the most recent frame */
-    int32 frm_gau_eval;		/**< #Gaussian densities evaluated in the most recent frame */
-    int32 frm_ci_sen_eval;        /**< #CI Senones evaluated in most recent frame*/
-    int32 frm_ci_gau_eval;        /**< #CI Senones evaluated in most recent frame*/
+    int32 frm_sen_eval;		/**< \#Senones evaluated in the most recent frame */
+    int32 frm_gau_eval;		/**< \#Gaussian densities evaluated in the most recent frame */
+    int32 frm_ci_sen_eval;        /**< \#CI Senones evaluated in most recent frame*/
+    int32 frm_ci_gau_eval;        /**< \#CI Senones evaluated in most recent frame*/
 
     int32 gau_type; /**< gau_type=CONTHMM if it is fully continous HMM, 
                        gau_type=SEMIHMM if it is semi continous HMM. Currently SEMIHMM is not supported. */
@@ -248,9 +248,9 @@ typedef struct {
     Number of senones evaluated in this frame
     \def mgau_frm_gau_eval
     Number of gaussians evaluated in this frame
-    \def mgau_frm_ci_sen_eval
+    \def mgau_frm_cisen_eval
     Number of CI senones evaluated in this frame
-    \def mgau_frm_ci_gau_eval
+    \def mgau_frm_cigau_eval
     Number of CI gaussians evaluated in this frame
 
 */
@@ -326,15 +326,16 @@ int32 mgau_eval (mgau_model_t *g,	/**< In: The entire mixture Gaussian model */
     );		
 
 /**
- * Like mgau_eval, but return the scores of the individual components, instead of combining
+ * Like mgau_eval(), but return the scores of the individual components, instead of combining
  * them into a senone score.  
  * @return: Best component score.
  */
 S3DECODER_EXPORT
 int32 mgau_comp_eval (mgau_model_t *g,	/**< In: Set of mixture Gaussians */
-		      int32 m,		/**< In: Mixture being considered */
+		      int32 s,		/**< In: Mixture being considered */
 		      float32 *x,	/**< In: Input vector being compared to the components */
-		      int32 *score);	/**< Out: Array of scores for each component */
+		      int32 *score	/**< Out: Array of scores for each component */
+    );
 
 /**
  * A routine that dump all mean and variance parameters of a set of gaussian distribution.   

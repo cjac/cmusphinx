@@ -56,7 +56,7 @@
  * 		Started.
  */
 
-/** \file decode.c
+/** \file main_decode.c
  * \brief main function for application decode
  */
 #include "info.h"

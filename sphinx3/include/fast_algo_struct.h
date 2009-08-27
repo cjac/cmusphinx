@@ -193,7 +193,7 @@ typedef struct {
     int32 maxhmmpf;        /**< Max active HMMs per frame*/
     int32 hmm_hist_binsize;/**< Hmm histogram bin size */
     int32 hmm_hist_bins;   /**< Number of histogram bins*/
-    int32 *hmm_hist;	   /**< Histogram: #frames in which a given no. of HMMs are active */
+    int32 *hmm_hist;	   /**< Histogram: \#frames in which a given no. of HMMs are active */
     
 } histprune_t;
 

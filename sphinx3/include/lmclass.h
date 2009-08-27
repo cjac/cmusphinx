@@ -133,14 +133,14 @@ void lmclass_free(lmclass_t *lmclass);
  * updated set.  Note that the input file can contain several class definitions.
  * File format:
  * 
- *    LMCLASS <classname1>
- * 	<word1> [<prob1>]
- * 	<word2> [<prob2>]
+ *    LMCLASS \<classname1\>
+ * 	\<word1\> [\<prob1\>]
+ * 	\<word2\> [\<prob2\>]
  * 	... (each word, and its associated probability, in one line)
- *    END <classname1>
- *    LMCLASS <classname2>
+ *    END \<classname1\>
+ *    LMCLASS \<classname2\>
  *      ...
- *    END <classname2>
+ *    END \<classname2\>
  *    ... (as many classes as desired)
  * 
  * By convention, classname strings begin and end with [ and ] (Roni Rosenfeld).

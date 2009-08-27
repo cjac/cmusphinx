@@ -85,7 +85,7 @@ extern "C" {
 #endif
 
 /**
-   \struct structure specific for node of DAG for confidence
+   structure specific for node of DAG for confidence
    annotation.
    
 */

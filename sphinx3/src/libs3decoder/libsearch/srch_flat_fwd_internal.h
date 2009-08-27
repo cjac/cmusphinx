@@ -117,7 +117,7 @@ typedef struct {
  * \struct backoff_t
  *
  * Backoff node when backing off all the way to unigrams.  Since each
- * word exits with #ciphones different scores (for so many different
+ * word exits with \#ciphones different scores (for so many different
  * right contexts), a separate node exists for each context.
  */
 typedef struct {
@@ -150,7 +150,7 @@ typedef struct srch_FLAT_FWD_graph_s {
      * this forward pass can also consider words starting at a number of neighbouring frames
      * within a given window.
      * 
-     * Input lattice file format:  Each line contains a single <word> <startframe> info.  The
+     * Input lattice file format:  Each line contains a single \<word\> \<startframe\> info.  The
      * line may contain other info following these two fields; these are ignored.  Empty lines
      * and lines beginning with a # char in the first column (ie, comment lines) are ignored.
      */
@@ -163,13 +163,13 @@ typedef struct srch_FLAT_FWD_graph_s {
 				   entire run */
   
     char const *latfile_ext;	/**< Complete word candidate filename for an utterance formed
-                           by word_cand_dir/<uttid>.latfile_ext */
+                           by word_cand_dir/\<uttid\>.latfile_ext */
     int32 word_cand_win;	/**< In frame f, candidate words in input lattice from frames
 				   [(f - word_cand_win) .. (f + word_cand_win)] will be
 				   the actual candidates to be started(entered) */
     word_cand_t **word_cand;	/**< Word candidates for each frame.  (NOTE!! Another array
                                    with a hard limit on its size.) */
-    int32 n_word_cand;	/**< #candidate entries in word_cand for current utterance.
+    int32 n_word_cand;	/**< \#candidate entries in word_cand for current utterance.
                            If <= 0; full search performed for current utterance */
 
 

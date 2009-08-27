@@ -112,10 +112,10 @@ extern "C" {
  * \brief Wrapper structures of sub-vector quantization
  */
 typedef struct {
-    arraysize_t origsize;	/**< origsize.r = #codebooks (or states) in original model;
-				   origsize.c = max #codewords/codebook in original model. */
-    int32 n_sv;			/**< #Subvectors */
-    int32 vqsize;		/**< #Codewords in each subvector quantized mean/var table */
+    arraysize_t origsize;	/**< origsize.r = \#codebooks (or states) in original model;
+				   origsize.c = max \#codewords/codebook in original model. */
+    int32 n_sv;			/**< \#Subvectors */
+    int32 vqsize;		/**< \#Codewords in each subvector quantized mean/var table */
     int32 **featdim;		/**< featdim[s] = Original feature dimensions in subvector s */
     vector_gautbl_t *gautbl;	/**< Vector-quantized Gaussians table for each sub-vector */
     int32 ***map;		/**< map[i][j] = map from original codebook(i)/codeword(j) to
@@ -144,9 +144,9 @@ typedef struct {
 
 /**
  * SubVQ file format:
- *   VQParam #Original-Codebooks #Original-Codewords/codebook(max) -> #Subvectors #VQ-codewords
- *   Subvector 0 length <length> <feature-dim> <feature-dim> <feature-dim> ...
- *   Subvector 1 length <length> <feature-dim> <feature-dim> <feature-dim> ...
+ *   VQParam \#Original-Codebooks \#Original-Codewords/codebook(max) -> \#Subvectors \#VQ-codewords
+ *   Subvector 0 length \<length\> \<feature-dim\> \<feature-dim\> \<feature-dim\> ...
+ *   Subvector 1 length \<length\> \<feature-dim\> \<feature-dim\> \<feature-dim\> ...
  *   ...
  *   Codebook 0
  *   Row 0 of mean/var values (interleaved) for subvector 0 codebook (in 1 line)
@@ -237,7 +237,7 @@ void subvq_subvec_eval_logs3 (subvq_t *vq,	/**< In/Out: Reference subvq structur
  */
 int32 subvq_mgau_shortlist (subvq_t *vq,        /**< In subvq */
 			    int32 m,	/**< In: GMM index */
-			    int32 n,	/**< In: #Components in specified mixture */
+			    int32 n,	/**< In: \#Components in specified mixture */
 			    int32 beam	/**< In: Threshold to select active components */
     );
 
@@ -250,7 +250,7 @@ int32 subvq_mgau_shortlist (subvq_t *vq,        /**< In subvq */
 int32 subvq_mgau_eval (mgau_model_t *g, /**< In: Gaussian */
 		       subvq_t *vq, /**< In: the SVQ */
 		       int32 m, /**< In: GMM Index */
-		       int32 n, /**< In :#Components in a specified mixture */
+		       int32 n, /**< In :\#Components in a specified mixture */
 		       int32 *active /**< In:Active list of mixture */
     );
 

@@ -122,7 +122,7 @@
 #ifndef __S3_DECODE_H
 #define __S3_DECODE_H
 
-/** \file live_decode_API.h
+/** \file s3_decode.h
  * \brief header for live mode decoding API 
  */
 #ifdef __cplusplus
@@ -229,8 +229,8 @@ typedef struct
     <I>cmd_ln_parse_file_r()</I>.  The user is responsible for calling
     <I>cmd_ln_free_r()</I> when he/she is done with the decoder.
 
-    @param decoder Pointer to the decoder.
-    @param config Pointer to the command-line object
+    @param _decode Pointer to the decoder.
+    @param _config Pointer to the command-line object
                   returned by <i>cmd_ln_parse_r()</i>.
     @return 0 for success.  -1 for failure.
 */
@@ -242,7 +242,7 @@ int s3_decode_init(s3_decode_t *_decode, cmd_ln_t *_config);
     function should be called once the user is finished with the Sphinx3
     decoder.
 
-    @param decoder Pointer to the decoder.
+    @param _decode Pointer to the decoder.
     @see s3_decode_init
 */
 S3DECODER_EXPORT
@@ -250,19 +250,19 @@ void s3_decode_close(s3_decode_t *_decode);
 
 /** Marks the start of the current utterance.  An utterance is a session of
     speech decoding that starts with a call to <I>s3_decode_begin_utt()</I> and
-    ends with a call to <I>{@link s3_decode_end_utt s3_decode_end_utt()}</I>.
+    ends with a call to <I>s3_decode_end_utt()</I>.
     In the duration of an utterance, speech data is processed with either
-    <I>{@link s3_decode_process_raw s3_decode_process_raw()}</I> or
-    <I>{@link s3_decode_process_ceps s3_decode_process_ceps()}</I>.  Decoding
+    <I>s3_decode_process_raw()</I> or
+    <I>s3_decode_process_ceps(}</I>.  Decoding
     results (hypothesis) can be retrieved any time after the start of an
-    utterance using <I>{@link s3_decode_hypothesis s3_decode_hypothesis()}</I>.
+    utterance using <I>s3_decode_hypothesis()</I>.
     All previous results will be clobbered at the start of a new utterance.
 
     At the moment, there is an undocumented time limit to the length of an
     utterance.  (Yitao: there is?)
 
-    @param decoder Pointer to the decoder.
-    @param uttid Utterance ID string.  If <I>null</I>, a somewhat unique 
+    @param _decode Pointer to the decoder.
+    @param _uttid Utterance ID string.  If <I>null</I>, a somewhat unique 
     utterance id will be generated instead.
     @return 0 for success.  -1 for failure.
     @see s3_decode_end_utt
@@ -276,10 +276,10 @@ int s3_decode_begin_utt(s3_decode_t *_decode, char *_uttid);
     process speech data until the start of the next utterance.  Any hypothesis
     retrieved prior to the end of the utterance is called a partial hypothesis.
     Any hypothesis retrieved after the end of the utterance is called the final
-    hypothesis.  See <I>{@link s3_decode_hypothesis s3_decode_hypothesis()}</I>
+    hypothesis.  See <I>s3_decode_hypothesis()</I>
     on how to retrieve hypothesis.
 
-    @param decoder Pointer to the decoder
+    @param _decode Pointer to the decoder
     @see s3_decode_begin_utt
     @see s3_decode_process
     @see s3_decode_hypothesis
@@ -289,17 +289,17 @@ void s3_decode_end_utt(s3_decode_t *_decode);
 
 /** Process a buffer of cepstrum frames for the current utterance.  This 
     function has to be called in the duration of an utterance.  That is, in
-    between calls to <I>{@link s3_decode_begin_utt s3_decode_begin_utt()}</I>
-    and <I>{@link s3_decode_end_utt s3_decode_end_utt()}</I>.
+    between calls to <I>s3_decode_begin_utt()</I>
+    and <I>s3_decode_end_utt()</I>.
 
     One common issue with Sphinx3 decoder is the mismatch of parameters to
     the signal processor and accoustic model.  Please double check with the
     accoustic model training scripts and your signal processing front-end to
     make sure the cepstrals are generated consistently.
 
-    @param decoder Pointer to the decoder.
-    @param frames Buffer of audio feature frames.
-    @param num_frames Number of frames in the buffer.
+    @param _decode Pointer to the decoder.
+    @param _frames Buffer of audio feature frames.
+    @param _num_frames Number of frames in the buffer.
     @return 0 for success.  -1 for failure.
     @see s3_decode_begin_utt
     @see s3_decode_end_utt
@@ -337,10 +337,11 @@ int s3_decode_process(s3_decode_t *_decode,
     }
     </PRE>
     
-    @param decoder Pointer to the decoder.
-    @param hyp_str Return pointer to a READ-ONLY string.  If <I>null</I>,
+    @param _decode Pointer to the decoder.
+    @param _uttid Pointer to utterance ID string.
+    @param _hyp_str Return pointer to a READ-ONLY string.  If <I>null</I>,
     the string is not returned.
-    @param hyp_segs Return pointer to a null-terminated array of word
+    @param _hyp_segs Return pointer to a null-terminated array of word
     segments.  If <I>null</I>, the array is not returned.
     @return 0 for success.  -1 for failure.
 */
@@ -352,7 +353,7 @@ int s3_decode_hypothesis(s3_decode_t *_decode, char **_uttid,
  * s3_decode_end_utt() before this.  See {@link dag.h} and {@link
  * astar.h} for information on what to do with this structure.
  *
- * @param decoder Pointer to the decoder.
+ * @param _decode Pointer to the decoder.
  * @return A dag_t structure, or NULL on failure.  This pointer
  * becomes invalid after a call to s3_decode_begin_utt().
  */

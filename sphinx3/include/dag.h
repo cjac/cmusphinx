@@ -203,10 +203,10 @@ typedef struct daglink_s {
 */
 typedef struct {
     dagnode_t *list;		/**< Linear list of nodes allocated */
-    dagnode_t *root;            /**< Corresponding to the node of (<s>,0)  */
-    dagnode_t *end;             /**< Final node (</s>,nfrm) */
+    dagnode_t *root;            /**< Corresponding to the node of (\<s\>,0)  */
+    dagnode_t *end;             /**< Final node (\</s\>,nfrm) */
 
-    daglink_t entry;		/**< Entering (<s>,0) */
+    daglink_t entry;		/**< Entering (\<s\>,0) */
     daglink_t final;            /**< Exit link from final DAG node */
 
     s3wid_t orig_exitwid;	/**< If original exit node is not a filler word */
@@ -220,7 +220,7 @@ typedef struct {
                                    parts of the dag code will exceed the maximum no of edge 
                                 */
 
-    int32 lmop;		        /**< (Temporary Variable): #LM ops actually made */
+    int32 lmop;		        /**< (Temporary Variable): \#LM ops actually made */
     int32 maxlmop;		/**< Max LM ops allowed before utterance aborted 
 				 */
 

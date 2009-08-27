@@ -147,10 +147,10 @@ typedef struct {
                                    evaluating the many codebooks will be more costly.
                                    if (n_gauden == 1): pdf[feat][codeword][sen].  Optimized
                                    for the shared-distribution semi-continuous case. */
-    int32 n_sen;		/**< #senones in this set */
-    int32 n_feat;		/**< #feature streams */ 
-    int32 n_cw;			/**< #codewords per codebook,stream */
-    int32 n_gauden;		/**< #gaussian density codebooks referred to by senones */
+    int32 n_sen;		/**< \#senones in this set */
+    int32 n_feat;		/**< \#feature streams */ 
+    int32 n_cw;			/**< \#codewords per codebook,stream */
+    int32 n_gauden;		/**< \#gaussian density codebooks referred to by senones */
     float32 mixwfloor;		/**< floor applied to each PDF entry */
     int32 shift;		/**< LSB bits truncated from original logs3 value */
     s3mgauid_t *mgau;		/**< senone-id -> mgau-id mapping for senones in this set */
@@ -189,7 +189,7 @@ int32 senone_eval (senone_t *s, s3senid_t id,	/**< In: senone for which score de
 
 /**
  * Like senone_eval, but compute all senone scores for the shared density case (ie,
- * #codebooks = 1).
+ * \#codebooks = 1).
  */
 void senone_eval_all (senone_t *s,		/**< In: Senone structure */
 		      gauden_dist_t **dist,	/**< In: as in senone_eval above */
