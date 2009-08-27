@@ -772,11 +772,11 @@ public class Sphinx3Loader implements Loader {
 
         int rawLength = readInt(dis);
 
-        //System.out.println("Nstates " + numStates);
-        //System.out.println("Nstreams " + numStreams);
-        //System.out.println("NgaussiansPerState " + numGaussiansPerState);
-        //System.out.println("vectorLength " + vectorLength.length);
-        //System.out.println("rawLength " + rawLength);
+        logger.fine("Nstates " + numStates);
+        logger.fine("Nstreams " + numStreams);
+        logger.fine("NgaussiansPerState " + numGaussiansPerState);
+        logger.fine("vectorLength " + vectorLength.length);
+        logger.fine("rawLength " + rawLength);
 
         for (int i = 0;  i < numStreams; i++) {
             blockSize += vectorLength[i];
@@ -826,7 +826,7 @@ public class Sphinx3Loader implements Loader {
                                                  Properties props)
         throws IOException {
 
-        // System.out.println("resource: " + path + ", " + getClass());
+        // logger.fine("resource: " + path + ", " + getClass());
         InputStream inputStream = getClass().getResourceAsStream(path);
 
         if (inputStream == null) {
@@ -850,10 +850,10 @@ public class Sphinx3Loader implements Loader {
         }
         int byteOrderMagic = dis.readInt();
         if (byteOrderMagic == BYTE_ORDER_MAGIC) {
-            // System.out.println("Not swapping " + path);
+            // logger.fine("Not swapping " + path);
             swap = false;
         } else if (byteSwap(byteOrderMagic) == BYTE_ORDER_MAGIC) {
-            // System.out.println("SWAPPING " + path);
+            // logger.fine("SWAPPING " + path);
             swap = true;
         } else {
             throw new IOException("Corrupt S3 file " + location + path);
@@ -1367,8 +1367,9 @@ public class Sphinx3Loader implements Loader {
 
 	for (int i = 0; i < numStates; i++) {
 	    float[] logMixtureWeight = readFloatArray(dis,numGaussiansPerState);
-            normalize(logMixtureWeight);
-            floorData(logMixtureWeight, floor);
+
+            nonZeroFloor(logMixtureWeight, floor);
+            normalize(logMixtureWeight);   //paul la pb car si mix=0             
             convertToLogMath(logMixtureWeight);
 	    pool.put(i, logMixtureWeight);
 	}
@@ -1484,7 +1485,7 @@ public class Sphinx3Loader implements Loader {
 
 	    for (int j = 0; j < numRows; j++) {
                 tmat[j] = readFloatArray(dis, numStates);
-                nonZeroFloor(tmat[j], 0f);
+                nonZeroFloor(tmat[j], 0.0001f);
                 normalize(tmat[j]);
                 convertToLogMath(tmat[j]);
 	    }

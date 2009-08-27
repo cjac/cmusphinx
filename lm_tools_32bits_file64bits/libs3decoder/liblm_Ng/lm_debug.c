@@ -34,11 +34,13 @@
  *
  */
 
+/** \file lm_debug.c
+	\brief Debugging library
+ 
+	A library for debugging miscellaneous problem of the LM data structure.
+*/
+
 /*
- * lm_debug.c - A library for debugging miscellaneous problem
- * of the lm data structure. 
- *
- *
  * **********************************************
  * CMU ARPA Speech Project
  *
@@ -46,10 +48,24 @@
  * ALL RIGHTS RESERVED.
  * **********************************************
  *
+ * 2008/06/27  N. Coetmeur, supervised by Y. Esteve
+ * Adjust comments for compatibility with Doxygen 1.5.6
+ *
+ * 2008/06/17  N. Coetmeur, supervised by Y. Esteve
+ * Replace bg_write and tg_write functions by ng_write for working with N-grams
+ * for each N value (i.e for a trigram file N=3, for a quadrigram file N=4 and
+ * so on...).
+ * Add ng32_write function for working in 32 bits.
+ *
+ *
  */
 
 #include "lm.h"
 
+
+/*
+   Write an unigram structure
+*/
 void
 ug_write(FILE * fp, ug_t * ug)
 {
@@ -58,17 +74,34 @@ ug_write(FILE * fp, ug_t * ug)
     fflush(fp);
 }
 
+/*
+   Write a N-gram structure
+*/
 void
-bg_write(FILE * fp, bg_t * bg)
+ng_write(FILE * fp, ng_t * ng, uint32 Nc, uint32 max_N)
 {
-    fprintf(fp, "BG lmwid %d, prob ID %d, bowt ID %d, firsttg %d\n",
-            bg->wid, bg->probid, bg->bowtid, bg->firsttg);
-    fflush(fp);
+	if ( (Nc <= 2) || (Nc < max_N) )
+		fprintf(fp, "%dG lmwid %d, prob ID %d, bowt ID %d, firsttg %d\n",
+				Nc, ng->wid, ng->probid, ng->bowtid, ng->firstnng);
+	else
+		fprintf(fp, "%dG lmwid %d, prob ID %d\n",
+				Nc, ng->wid, ng->probid);
+
+	fflush(fp);
 }
 
+/*
+   Write a 32-bits N-gram structure
+*/
 void
-tg_write(FILE * fp, tg_t * tg)
+ng32_write(FILE * fp, ng32_t * ng, uint32 Nc, uint32 max_N)
 {
-    fprintf(fp, "TG lmwid %d, prob ID %d\n", tg->wid, tg->probid);
-    fflush(fp);
+	if ( (Nc <= 2) || (Nc < max_N) )
+		fprintf(fp, "%dG lmwid %d, prob ID %d, bowt ID %d, firsttg %d\n",
+				Nc, ng->wid, ng->probid, ng->bowtid, ng->firstnng);
+	else
+		fprintf(fp, "%dG lmwid %d, prob ID %d\n",
+				Nc, ng->wid, ng->probid);
+
+	fflush(fp);
 }

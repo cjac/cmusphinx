@@ -42,6 +42,7 @@
 #ifndef __S2_SEMI_MGAU_H__
 #define __S2_SEMI_MGAU_H__
 
+#include <logmath.h>
 #include "s3types.h"
 #include "fe.h"
 #include "ascr.h"
@@ -77,6 +78,7 @@ typedef float32 var_t;
 
 typedef struct s2_semi_mgau_s s2_semi_mgau_t;
 struct s2_semi_mgau_s {
+    logmath_t *logmath;
     int32   detArr[S2_NUM_FEATURES*S2_NUM_ALPHABET];	/* storage for det vectors */
     int32   *dets[S2_NUM_FEATURES];	/* det values foreach feature */
     mean_t  *means[S2_NUM_FEATURES];	/* mean vectors foreach feature */
@@ -106,7 +108,7 @@ struct s2_semi_mgau_s {
 
 s2_semi_mgau_t *s2_semi_mgau_init(const char *mean_path, const char *var_path,
 				  float64 varfloor, const char *mixw_path,
-				  float64 mixwfloor, int32 topn);
+				  float64 mixwfloor, int32 topn, logmath_t *logmath);
 
 void s2_semi_mgau_free(s2_semi_mgau_t *s);
 

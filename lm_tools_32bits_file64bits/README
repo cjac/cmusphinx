@@ -1,0 +1,60 @@
+ensemble d'outils utilisant des bibliothèques extraites de Sphinx3 (dont la bibliothèque LM en version Ng) :
+lm_convert, dmp2max, max_read, 4glat, s3astar
+
+voir les paragraphes [compilation], [utilisation des outils], [organisation de l'arborescence]
+
+
+[compilation]
+
+le Makefile principal se trouve à la racine de l'arborescence
+les programmes sont créés dans le répertoire 'programs'
+
+
+[utilisation des outils]
+
+> lm_convert
+convertit un modèle de langage en fichier dump (et vice-versa)
+
+> dmp2max
+calcule des maximums de probabilités d'un modèle de langage
+prend en entrée un fichier dump produit par lm_convert
+créé en sortie un fichier dump max
+
+> max_read
+permet de lire des maximums de probabilités d'un modèle de langage
+prend en entrée un fichier dump produit par lm_convert et un fichier dump max produit par dmp2max
+
+> 4glat
+programme de rescoring de graphes
+utilise entre autres en entrée un fichier dump produit par lm_convert
+produit en sortie le résultat de la reconnaissance avec les scores de chaque mot
+
+un fichier exécutable 'go4glat.ch' utilisant des arguments en exemple est disponible dans le sous-répertoire 'programs/4glat_files' (les arguments supposent l'existence d'un sous-répertoire 'programs/4glat_files/data' contenant les données)
+
+> s3astar
+programme de rescoring utilisant l'algorithme A*
+utilise entre autres en entrée un fichier dump produit par lm_convert et un fichier dump max produit par dmp2max
+produit en sortie les multiples estimations de reconnaissance
+
+un fichier d'arguments 'default.arg' en exemple est disponible dans le sous-répertoire 'programs/s3astar_files'
+pour lancer le programme avec ce fichier d'argument, utiliser le fichier exécutable 's3astar_with_default.arg'
+
+
+[organisation de l'arborescence]
+
+.\include
+contient les en-têtes de fichiers
+composé des sous-répertoires '4g-lat' (spécifique à l'outil 4glat), 'lmmax' (spécifique à la librairie LM Max), 'sphinx3' et 'sphinxbase' (ces deux derniers contiennet les fichiers utilisés provenant des librairies de Sphinx3)
+
+.\4g-lat
+contient les fichiers sources spécifiques à l'outil 4glat
+
+.\liblmmax
+contient les fichiers sources de la librairie LM Max
+
+.\libs3decoder
+.\libsphinxbase
+contient les fichiers sources des librairies de Sphinx3 qui sont utilisés
+
+.\programs
+contient les programmes exécutables et des exemples d'arguments

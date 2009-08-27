@@ -57,7 +57,8 @@ public class GrammarNode {
      * particular word for the alternative
      */
     public GrammarNode(int id, Word[][] alternatives) {
-        this(id, false);
+        this.identity = id;
+        this.isFinal = isFinal;
         this.alternatives = alternatives;
     }
     

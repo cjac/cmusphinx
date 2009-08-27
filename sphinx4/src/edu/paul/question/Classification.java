@@ -1,0 +1,3 @@
+package edu.paul.question;
+public enum  Classification {BASE,VOCALIQUE,NASALE,ARRONDI,ANTERIEUR,HAUT,VOISE,PLOSIVE,FRICATIVE,SEMI,POINT};
+

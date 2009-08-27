@@ -78,12 +78,23 @@ public class Partitioner {
      * @return the index of the last element in the partition
      */
     public int partition(Token[] tokens, int size, int n) {
-        if (tokens.length > n) {
+  
+	/*      if (tokens.length > n) {
             return midPointSelect(tokens, 0, size - 1, n);
         } else {
             int r = -1;
             float lowestScore = Float.MAX_VALUE;
             for (int i = 0; i < tokens.length; i++) {
+  
+	    * je ne comprends pas ce code puisqu'il y a au plus size token dans le tableau. je l'ai remplace par :
+	*/
+
+      if (size  > n) {
+            return midPointSelect(tokens, 0, size - 1, n);
+        } else {
+            int r = -1;
+            float lowestScore = Float.MAX_VALUE;
+            for (int i = 0; i < size; i++) {
                 Token current = tokens[i];
                 float currentScore = current.getScore();
                 if (currentScore <= lowestScore) {

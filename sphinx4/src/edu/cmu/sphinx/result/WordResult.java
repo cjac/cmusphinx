@@ -17,7 +17,7 @@ package edu.cmu.sphinx.result;
 import edu.cmu.sphinx.frontend.Data;
 import edu.cmu.sphinx.linguist.dictionary.Pronunciation;
 import edu.cmu.sphinx.util.LogMath;
-
+import edu.cmu.sphinx.linguist.dictionary.Word;
 
 /**
  * Represents a word in a recognition result. This is designed specifically
@@ -54,11 +54,12 @@ public interface WordResult {
 
     /**
      * Gets the pronunciation for this word.
-     *
+     * yes but why ? 
+     * one word n -> n prononciation
      * @return the pronunciation for the word
      */
     public Pronunciation getPronunciation();
-
+    public Word getWord();
     /**
      * Gets the starting frame number for the word
      *

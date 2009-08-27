@@ -89,7 +89,7 @@ public class Token implements Scoreable {
      *
      * @param bpClasses
      */
-    public static void setPredecessorClass(Set bpClasses) {
+    public static void setPredecessorOrder(Set bpClasses) {
         predecessorClasses = bpClasses;
     }
 
@@ -119,7 +119,7 @@ public class Token implements Scoreable {
                        float logInsertionProbability,
                        int frameNumber) {
        if ((predecessorClasses == null) || 
-	   predecessorClasses.contains(state.getClass())) {
+	   predecessorClasses.contains(this.searchState.getOrder())) {
             return new Token(this, state, 
 			     logTotalScore, logLanguageScore, 
 			     logInsertionProbability, frameNumber);
@@ -149,7 +149,7 @@ public class Token implements Scoreable {
      * @param frameNumber the frame number associated with this token
      *
      */
-    protected Token(Token predecessor,
+    private Token(Token predecessor,
                   SearchState state,
                   float logTotalScore,
                   float logLanguageScore,
@@ -358,7 +358,7 @@ public class Token implements Scoreable {
 
     /**
      * Determines if this token is associated with a final SentenceHMM state.
-     *
+     *j' ai le plus grand doute sur ce commentaire paul.
      * @return <code>true</code> if this token is associated with a
      * final state
      */
@@ -387,14 +387,30 @@ public class Token implements Scoreable {
             appString = " " + appObject.toString();
         }
         return
+	    ((getPredecessor()!=null) ?  numFmt.format(getPredecessor().getFrameNumber())  : "     ") + " "+
                 numFmt.format(getFrameNumber()) + " " +
                 scoreFmt.format(getScore()) + " " +
-                scoreFmt.format(getAcousticScore()) + " " +
-                scoreFmt.format(getLanguageScore()) + " " +
-                scoreFmt.format(getInsertionProbability())
-                + " " + getSearchState() + appString;
+	    //   scoreFmt.format(getAcousticScore()) + " " +
+                scoreFmt.format(getLanguageScore()) + " " 
+                //+ scoreFmt.format(getInsertionProbability())
+                + " stat:" + getSearchState() ;//+" <aaps> "+ appString +"<\\apps>";
     }
 
+  public String toChaine() {
+        String appString = "";
+
+        if (appObject != null) {
+            appString = " " + appObject.toString();
+        }
+        return
+	    ((getPredecessor()!=null) ?  ("pred :" + getPredecessor() + "> "+numFmt.format(getPredecessor().getFrameNumber()))  : "     ") + " "+
+                numFmt.format(getFrameNumber()) + " sco " +
+                scoreFmt.format(getScore())  +
+	    // scoreFmt.format(getAcousticScore()) + " " +
+                " lgs:"+scoreFmt.format(getLanguageScore())  
+	    //+ scoreFmt.format(getInsertionProbability())
+                + " stat:" + getSearchState() ;//+" <aaps> "+ appString +"<\\apps>";
+    }
 
     /**
      * dumps a branch of tokens

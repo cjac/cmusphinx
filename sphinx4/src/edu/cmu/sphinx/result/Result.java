@@ -16,7 +16,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-
+import java.util.Locale;
+import java.io.PrintWriter;
 import edu.cmu.sphinx.decoder.search.ActiveList;
 import edu.cmu.sphinx.decoder.search.AlternateHypothesisManager;
 import edu.cmu.sphinx.decoder.search.Token;
@@ -360,7 +361,36 @@ public class Result {
             return token.getWordPathNoFiller();
         }
     }
-
+    /***
+     * pour debug uniquement
+     */
+    public void dumpCtm(PrintWriter out, int debut,String file, String extension) {
+    	LinkedList <Token> lestokens;
+    	
+    	int lastFrame = getFrameNumber();
+    	{Token token = getBestToken();
+    	if (token==null) { 
+    	return;}
+    	lestokens = new LinkedList <Token>();
+    	while (token != null) {
+            if (token.isWord()) {
+            	lestokens.addFirst(token);
+            }
+            token = token.getPredecessor();
+    	}}
+    	boolean pasfirst =false;
+    	Word word=null;
+        System.err.println("first frame :" + debut);
+        // assert wordstate  false
+        int firstFrame=debut;
+    	for (Token token : lestokens) {
+	    word = token.getWord();
+	    out.printf(Locale.US,"%s 1 %.2f %.2f ",file,firstFrame*0.01, ((token.getFrameNumber()+debut)*0.01));
+	    out.println(word.getSpelling()+" "+extension);
+	    firstFrame= token.getFrameNumber()+debut+1;
+	}
+    }
+    
     /**
      * Returns the string of words (with timestamp) for this token.
      *
@@ -374,7 +404,7 @@ public class Result {
                                      boolean wordTokenFirst) {
         Token token = getBestToken();
         if (token == null) {
-            return "";
+            return "noresult";
         } else {
             if (wordTokenFirst) {
                 return getTimedWordPath(token, wantFiller);
@@ -397,8 +427,8 @@ public class Result {
         StringBuffer sb = new StringBuffer();
 
         // get to the first emitting token
-        while (token != null && !token.isEmitting()) {
-            token = token.getPredecessor();
+        while (token != null &&  !token.isEmitting()) {
+              token = token.getPredecessor();
         }
 
         if (token != null) {
@@ -448,9 +478,10 @@ public class Result {
                                 (FloatData) lastFeature,
                                 (FloatData) lastWordFirstFeature);
                     }
+                
                     word = token.getWord();
                     lastWordFirstFeature = lastFeature;
-                }
+                } // cela deconne mais de toutes facons !!!!!
             }
             Data feature = token.getData();
             if (feature != null) {
@@ -483,8 +514,8 @@ public class Result {
         if (sb.length() > 0) {
             sb.insert(0, " ");
         }
-        sb.insert(0, (word.getSpelling() + "(" + startTime + "," + 
-                      endTime + ")"));
+        sb.insert(0, (word.getSpelling() + " " + startTime + " " + 
+                      endTime + "\n"));
     }
 
 

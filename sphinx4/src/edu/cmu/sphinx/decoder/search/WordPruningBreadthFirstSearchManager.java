@@ -218,20 +218,20 @@ public class WordPruningBreadthFirstSearchManager implements SearchManager {
     private StatisticsVariable tokensCreated;
     private long tokenSum = 0;
     private int tokenCount = 0;
-
+    private String keepTokensList;
     // -----------------------------------
     // Working data
     // -----------------------------------
     private int currentFrameNumber; // the current frame number
     private ActiveList activeList; // the list of active tokens
-    private List resultList; // the current set of results
+    private List<Token> resultList; // the current set of results
     private Map bestTokenMap;
     private AlternateHypothesisManager loserManager;
     private int numStateOrder;
     // private TokenTracker tokenTracker;
     // private TokenTypeTracker tokenTypeTracker;
     private Map skewMap;
-
+    private HashSet<Integer> keepOrder=null;
     /*
      * (non-Javadoc)
      * 
@@ -253,6 +253,8 @@ public class WordPruningBreadthFirstSearchManager implements SearchManager {
         registry.register(PROP_MAX_LATTICE_EDGES, PropertyType.INT);
         registry.register(PROP_ACOUSTIC_LOOKAHEAD_FRAMES, PropertyType.FLOAT);
         registry.register(PROP_KEEP_ALL_TOKENS, PropertyType.BOOLEAN);
+        registry.register("keepTokensList", PropertyType.STRING);
+
         registry.register(PROP_RELATIVE_BEAM_WIDTH, PropertyType.DOUBLE);
     }
 
@@ -285,7 +287,7 @@ public class WordPruningBreadthFirstSearchManager implements SearchManager {
                 PROP_ACOUSTIC_LOOKAHEAD_FRAMES_DEFAULT);
         keepAllTokens = ps.getBoolean(PROP_KEEP_ALL_TOKENS,
                 PROP_KEEP_ALL_TOKENS_DEFAULT);
-
+	keepTokensList=ps.getString("keepTokensList","");
         double linearRelativeBeamWidth = ps.getDouble(PROP_RELATIVE_BEAM_WIDTH,
                 PROP_RELATIVE_BEAM_WIDTH_DEFAULT);
         this.relativeBeamWidth = logMath.linearToLog(linearRelativeBeamWidth);
@@ -323,6 +325,17 @@ public class WordPruningBreadthFirstSearchManager implements SearchManager {
         linguist.allocate();
         pruner.allocate();
         scorer.allocate();
+	keepOrder= null;
+	if (!keepTokensList.equals("")) {
+	    String []l= keepTokensList.split("\\s+");
+
+	    logger.info("keep " +l.length+" " + l[0]);
+	     keepOrder = new HashSet<Integer>(l.length);
+	    for (String a:l)
+	       keepOrder.add(new Integer(a));
+	    Token.setPredecessorOrder(keepOrder);
+	}
+
     }
 
     /*
@@ -360,7 +373,7 @@ public class WordPruningBreadthFirstSearchManager implements SearchManager {
         Result result;
 
         for (int i = 0; i < nFrames && !done; i++) {
-            // System.out.println("Frame " + currentFrameNumber);
+            if (i%50==0) logger.info("Frame " + currentFrameNumber);
             // score the emitting list
 
             // tokenTracker.startFrame();
@@ -377,16 +390,28 @@ public class WordPruningBreadthFirstSearchManager implements SearchManager {
                     // prune and grow the emitting list
                     pruneBranches();
 
-                    resultList = new LinkedList();
+                    resultList = new LinkedList<Token>();
+// 		    if (currentFrameNumber==-4)
+// 			logger.setLevel(Level.FINEST);////debuging
                     growEmittingBranches();
                     // prune and grow the non-emitting lists
                     // activeListManager.dump();
                     growNonEmittingLists();
+		    if (currentFrameNumber % 100 == 0 && logger.isLoggable(Level.INFO)|| logger.isLoggable(Level.FINEST)){
+			logger.info("number state in finish "+resultList.size()+ " " + currentFrameNumber);
+			logger.info("number wordstate in finish: "+countWord(resultList)+ " " + currentFrameNumber);
+		    }
                 }
             }
             // tokenTracker.stopFrame();
         }
-
+        if (logger.isLoggable(Level.INFO)) {
+	    logger.fine("finish Frame: " + currentFrameNumber + ":" );
+	    for (Token  o : resultList) 
+		logger.fine("result in tok :" + o + " pred "+ ( o.getPredecessor()!=null ? o.getPredecessor(): "rien") );
+	}
+	
+           
         result = new Result(loserManager, activeList, resultList,
                 currentFrameNumber, done, logMath);
 
@@ -396,6 +421,32 @@ public class WordPruningBreadthFirstSearchManager implements SearchManager {
         }
         return result;
     }
+    private Set toto;
+    private Set<Token> vu = new HashSet<Token>();
+    private int countWord(List list)
+    {  toto= new HashSet();
+	int c;
+        for (Iterator i = list.iterator(); i.hasNext();) {
+            Token token = (Token) i.next();    
+            parcours(token);
+	    
+	}
+	c= toto.size();
+        toto.clear();
+        vu.clear();
+	return c;
+    }
+    private void parcours(Token t) {
+        
+	if (t==null|| vu.contains(t)) return;
+	vu.add(t);
+        if (t.isWord()) toto.add(t.getSearchState());
+	parcours(t.getPredecessor());
+	if (loserManager != null&& loserManager.getAlternatePredecessors(t)!=null) 
+	    for ( Object o : loserManager.getAlternatePredecessors(t))
+		parcours((Token) o);
+    }
+  
 
     /**
      * creates a new best token map with the best size
@@ -440,8 +491,8 @@ public class WordPruningBreadthFirstSearchManager implements SearchManager {
         SearchState state = searchGraph.getInitialState();
 
         activeList = activeListManager.getEmittingList();
-        activeList.add(new Token(state, currentFrameNumber));
-        resultList = new LinkedList();
+        activeListManager.add(new Token(state, currentFrameNumber));
+        resultList = new LinkedList<Token>();
 
         bestTokenMap = new HashMap();
         growBranches();
@@ -454,7 +505,7 @@ public class WordPruningBreadthFirstSearchManager implements SearchManager {
      * Local cleanup for this search manager
      */
     protected void localStop() {
-        // tokenTracker.stopUtterance();
+        // tokenTracker.stopUbtterance();
     }
 
     /**
@@ -465,23 +516,44 @@ public class WordPruningBreadthFirstSearchManager implements SearchManager {
      */
     protected void growBranches() {
         growTimer.start();
+        int count=0;
         Iterator iterator = activeList.iterator();
         float relativeBeamThreshold = activeList.getBeamThreshold();
-        if (logger.isLoggable(Level.FINE)) {
-            logger.fine("Frame: " + currentFrameNumber 
-                    + " thresh : " + relativeBeamThreshold + " bs "
-                    + activeList.getBestScore() + " tok "
-                    + activeList.getBestToken());
+        if (activeList.getBestToken() != null  &&
+	    (logger.isLoggable(Level.FINE)
+	     &&activeList.getBestToken().isWord()
+	     || logger.isLoggable(Level.FINER)) ) {
+            logger.fine("size " + activeList.size() + " Frame: " + currentFrameNumber 
+			+ " thresh : " + relativeBeamThreshold + " bs "
+			+ activeList.getBestScore() + " tok "
+			+ activeList.getBestToken().toChaine());
+	    if (logger.isLoggable(Level.FINEST)) 
+		for (Iterator i = activeList.iterator(); i.hasNext();) {
+		Token t = (Token) i.next();
+		
+		if  (t.getScore() >= relativeBeamThreshold) 
+                    System.err.println(t.toString());
+	    }
         }
         while (iterator.hasNext()) {
             Token token = (Token) iterator.next();
             if (token.getScore() >= relativeBeamThreshold && skewPrune(token)) {
                 collectSuccessorTokens(token);
+                count++;
             }
         }
-        growTimer.stop();
 
+        growTimer.stop();
+	if (activeList.getBestToken() != null  && (
+						   logger.isLoggable(Level.FINE)&& activeList.getBestToken().isWord()
+						   || logger.isLoggable(Level.FINER)))
+	    logger.fine("node expandes :" + count + "size :" +activeList.size() +
+			"order :" + activeList.getBestToken().getSearchState().getOrder());
         // activeListManager.dump();
+        if (currentFrameNumber %50 ==0 && count >0 && logger.isLoggable(Level.INFO))
+	    logger.info("node expandes :" + count + " size :" +activeList.size() +
+			" order :" + activeList.getBestToken().getSearchState().getOrder());
+            
     }
 
 
@@ -527,7 +599,9 @@ public class WordPruningBreadthFirstSearchManager implements SearchManager {
                 .hasNext();) {
             activeList = (ActiveList) i.next();
             if (activeList != null) {
-                i.remove();
+                i.remove();//cela peut surprendre mais c'est ok cela cree 
+		// une nouvelle liste pour cet ordre la. et ne touche pas
+		// a activeListe actuel.
                 pruneBranches();
                 growBranches();
             }
@@ -678,19 +752,26 @@ public class WordPruningBreadthFirstSearchManager implements SearchManager {
         if (keepAllTokens) {
             return token;
         } else {
-            float logAcousticScore = 0.0f;
-            float logLanguageScore = 0.0f;
+	    while (token != null && !token.isWord()) token = token.getPredecessor();
+	    return token;
 
-            while (token != null && !token.isWord()) {
-                logAcousticScore += token.getAcousticScore();
-                logLanguageScore += token.getLanguageScore();
-                token = token.getPredecessor();
-            }
-            if (buildWordLattice) {
-                return new Token(logAcousticScore, logLanguageScore, token);
-            } else {
-                return token;
-            }
+	    // ce code ne me plait pas on ne retrouve pas vraiment ses petits
+	    // il n'y plus trace  des insertions et les transitions des hmm n'y sont pas
+	    // a moins de les avoir coller dans le modele de langage (douteux)
+// 	    // a reprendre 
+//             float logAcousticScore = 0.0f;
+//             float logLanguageScore = 0.0f;
+
+//             while (token != null && !token.isWord()) {
+//                 logAcousticScore += token.getAcousticScore();
+//                 logLanguageScore += token.getLanguageScore();
+//                 token = token.getPredecessor();
+//             }
+//             if (true || buildWordLattice) {
+//                 return new TokenFactice(logAcousticScore, logLanguageScore, token);
+//             } else {
+//                 return token;
+//             }
         }
     }
 
@@ -770,9 +851,9 @@ public class WordPruningBreadthFirstSearchManager implements SearchManager {
         // (lextree linguist for example). For these cases, it is perfectly
         // fine to disable this check by setting keepAllTokens to false
 
-        if (!token.isEmitting() && (keepAllTokens && isVisited(token))) {
-            return;
-        }
+	// if (!token.isEmitting() && (keepAllTokens && isVisited(token))) {
+	//   return;
+        //} apriori 
 
         SearchState state = token.getSearchState();
         SearchStateArc[] arcs = state.getSuccessors();
@@ -803,34 +884,44 @@ public class WordPruningBreadthFirstSearchManager implements SearchManager {
             boolean firstToken = bestToken == null;
 
             if (firstToken || bestToken.getScore() < logEntryScore) {
-                Token newBestToken = new Token(predecessor, nextState,
-                        logEntryScore, arc.getLanguageProbability(), arc
-                                .getInsertionProbability(), currentFrameNumber);
+		// Token newBestToken = new Token(predecessor, nextState,
+		Token newBestToken = predecessor.child( nextState,
+                        logEntryScore, arc.getLanguageProbability()+token.getLanguageScore(), arc
+					       .getInsertionProbability()+token.getInsertionProbability(), currentFrameNumber);
                 tokensCreated.value++;
 
                 setBestToken(newBestToken, nextState);
+                
                 if (firstToken) {
-                    activeListAdd(newBestToken);
+		    //  if (currentFrameNumber>=48 && currentFrameNumber <=48 && !token.isEmitting() ) {
+		    //  System.out.println("metting " + token  + " in " 
+		    //		   + newBestToken);
+                    //}
+                     activeListAdd(newBestToken);
                 } else {
                     if (false) {
                         System.out.println("Replacing " + bestToken + " with "
                                 + newBestToken);
                     }
                     activeListReplace(bestToken, newBestToken);
-                    if (buildWordLattice && newBestToken.isWord()) {
-
+                    if (buildWordLattice && (newBestToken.isWord()|| (keepOrder!=null && keepOrder.contains(nextState.getOrder())))) {
+			//20/09/2007 je refais le loser pour avoir les scores il faudra refaire lattice de paul
                         // Move predecessors of bestToken to precede
                         // newBestToken, bestToken will be garbage collected.
                         loserManager.changeSuccessor(newBestToken, bestToken);
                         loserManager.addAlternatePredecessor(newBestToken,
-                                bestToken.getPredecessor());
+							     bestToken);//20/09/2007  .getPredecessor());
                     }
                 }
             } else {
-                if (buildWordLattice && nextState instanceof WordSearchState) {
+                if (buildWordLattice &&  (nextState instanceof WordSearchState|| (keepOrder!=null && keepOrder.contains(nextState.getOrder())))) {
                     if (predecessor != null) {
+			Token loser = predecessor.child( nextState,
+			   logEntryScore, arc.getLanguageProbability()+token.getLanguageScore(), arc
+					       .getInsertionProbability()+token.getInsertionProbability(), currentFrameNumber);
+     
                         loserManager.addAlternatePredecessor(bestToken,
-                                predecessor);
+							     loser);// 20/09/2007 predecessor avant 
                     }
                 }
             }
@@ -850,7 +941,7 @@ public class WordPruningBreadthFirstSearchManager implements SearchManager {
 
         while (t != null && !t.isEmitting()) {
             if (curState.equals(t.getSearchState())) {
-                System.out.println("CS " + curState + " match " + t.getSearchState());
+                //System.out.println("CS " + curState + " match " + t.getSearchState());
                 return true;
             }
             t = t.getPredecessor();
@@ -981,7 +1072,7 @@ public class WordPruningBreadthFirstSearchManager implements SearchManager {
 
         tokenSet = new HashSet();
 
-        for (Iterator i = resultList.iterator(); i.hasNext();) {
+        for (Iterator<Token> i = resultList.iterator(); i.hasNext();) {
             Token token = (Token) i.next();
             while (token != null) {
                 tokenSet.add(token);
@@ -1071,7 +1162,7 @@ public class WordPruningBreadthFirstSearchManager implements SearchManager {
      * 
      * @return the result list
      */
-    public List getResultList() {
+    public List<Token> getResultList() {
         return resultList;
     }
 
@@ -1081,7 +1172,7 @@ public class WordPruningBreadthFirstSearchManager implements SearchManager {
      * @param resultList
      *                the new result list
      */
-    public void setResultList(List resultList) {
+    public void setResultList(List<Token> resultList) {
         this.resultList = resultList;
     }
 

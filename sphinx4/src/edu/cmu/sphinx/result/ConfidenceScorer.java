@@ -60,4 +60,12 @@ public interface ConfidenceScorer {
      * @return a confidence result
      */
     public ConfidenceResult score(Result result);
+    public ConfidenceResult score (Lattice lattice);
+    /**
+
+     *
+     * from interface configurable
+     */
+    public String getName();
+
 }

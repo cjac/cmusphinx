@@ -47,6 +47,9 @@
  * HISTORY
  * 
  * $Log: dag.h,v $
+ * 2008/09/19  N. Coetmeur, supervised by Y. Esteve
+ * Add LM Max library for use lm_best_4g_score function in dag_compute_hscr
+ *
  * Revision 1.2  2006/02/23 05:22:32  arthchan2003
  * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: 1, Fixed bugs from last check in, lw should be * instead of +, 2, Moved most of the functions from flat_fwd.c and s3_dag.c to here.  Things that required specified will be prefixed.
  *
@@ -119,6 +122,7 @@
 #include "search.h"
 #include "dict.h"
 #include "lm.h"
+#include "lm_max.h"
 #include "fillpen.h"
 #include "logs3.h"
 
@@ -323,7 +327,7 @@ int32 dag_destroy (
  * exit node.
  */
 S3DECODER_EXPORT
-void dag_compute_hscr(dag_t *dag, dict_t *dict, lm_t *lm, float64 lwf);
+void dag_compute_hscr(dag_t *dag, dict_t *dict, lm_t *lm, lm_max_t *lmmax, float64 lwf);
 
 /**
  * Recursive backtrace through DAG (from final node to root) using daglink_t.history.

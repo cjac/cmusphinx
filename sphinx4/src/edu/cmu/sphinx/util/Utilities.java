@@ -264,8 +264,26 @@ public class Utilities {
 		((0x00ff0000 & integer) >> 8) |
 		((0xff000000 & integer) >> 24));
     }
+ private static long swapIntegerLong(long integer) {
+	return (((0x000000ff & integer) << 24) |
+		((0x0000ff00 & integer) << 8) |
+		((0x00ff0000 & integer) >> 8) |
+		((0xff000000 & integer) >> 24));
+    }
+    public static long swapLong(long integer) {
+	long deb, fin;
+	deb = 0xffffffff & integer;
+	fin = integer >>32;
+	deb=swapIntegerLong(deb);
+	fin=swapIntegerLong(fin);
+	deb=    deb <<32;
+	return deb|fin;
+    }
+    public static double swapDouble(double floatValue) {
+        return Double.longBitsToDouble
+            (swapLong(Double.doubleToRawLongBits(floatValue)));
+    }
 
-    
     /**
      * Byte-swaps the given float to the other endian. That is, if this
      * float is big-endian, it becomes little-endian, and vice-versa.

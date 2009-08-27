@@ -43,7 +43,8 @@ public interface HMMState {
      * @return the acoustic score for this state.
      */
     public float getScore(Data data);
-
+    public double getScoreDouble(Data data);
+  
     /**
      * Determines if this HMMState is an emittting state
      *
@@ -58,7 +59,7 @@ public interface HMMState {
      * @return the set of successor state arcs
      */
     public HMMStateArc[] getSuccessors();
-
+    public long getId();
 
     /**
      * Determines if this state is an exit state of the HMM

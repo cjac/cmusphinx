@@ -25,7 +25,7 @@ import edu.cmu.sphinx.util.props.PropertyException;
 import edu.cmu.sphinx.util.props.PropertySheet;
 import edu.cmu.sphinx.util.props.PropertyType;
 import edu.cmu.sphinx.util.props.Registry;
-
+import java.util.logging.Logger;
 /**
  * Computes the delta and double delta of input cepstrum (or plp or ...). The
  * delta is the first order derivative and the double delta (a.k.a. delta
@@ -63,6 +63,16 @@ public class DeltasFeatureExtractor extends BaseDataProcessor {
      * DeltasFeatureExtractor.
      */
     public static final String PROP_FEATURE_WINDOW = "windowSize";
+	/**
+     * The name of the SphinxProperty for the mode of the
+     * DeltasFeatureExtractor.
+     * if true not replicate of the first and the last frame
+     */
+	
+	
+	public static final String PROP_FEATURE_MODE = "modeCTL";
+	
+	public static final Boolean  PROP_FEATURE_MODE_DEFAULT = false;
     /**
      * The default value of PROP_FEATURE_WINDOW.
      */
@@ -72,11 +82,13 @@ public class DeltasFeatureExtractor extends BaseDataProcessor {
     private int bufferPosition;
     private int currentPosition;
     private int window;
+	private boolean mode_ctl;
     private int jp1, jp2, jp3, jf1, jf2, jf3;
     private DoubleData[] cepstraBuffer;
     private DataEndSignal dataEndSignal;
     private List outputQueue;
-
+    private Logger logger;
+    private long nbFrames;
     /*
      * (non-Javadoc)
      * 
@@ -87,6 +99,7 @@ public class DeltasFeatureExtractor extends BaseDataProcessor {
             throws PropertyException {
         super.register(name, registry);
         registry.register(PROP_FEATURE_WINDOW, PropertyType.INT);
+	registry.register(PROP_FEATURE_MODE, PropertyType.BOOLEAN);
     }
 
     /*
@@ -96,7 +109,9 @@ public class DeltasFeatureExtractor extends BaseDataProcessor {
      */
     public void newProperties(PropertySheet ps) throws PropertyException {
         super.newProperties(ps);
+        logger = ps.getLogger();
         window = ps.getInt(PROP_FEATURE_WINDOW, PROP_FEATURE_WINDOW_DEFAULT);
+	mode_ctl=ps.getBoolean(PROP_FEATURE_MODE, PROP_FEATURE_MODE_DEFAULT);
     }
 
     /*
@@ -120,7 +135,17 @@ public class DeltasFeatureExtractor extends BaseDataProcessor {
     private void reset() {
         bufferPosition = 0;
         currentPosition = 0;
-    }
+        nbFrames=0;
+		if (mode_ctl) {
+			currentPosition = -1;
+			jf3=6;
+			jf2=5;
+			jf1=4;
+			jp1=2;
+			jp2=1;
+			jp3=0;	
+		}
+	}
 
 
 
@@ -134,7 +159,7 @@ public class DeltasFeatureExtractor extends BaseDataProcessor {
      *                 if there is a data processing error
      */
     public Data getData() throws DataProcessingException {
-        if (outputQueue.size() == 0) {
+        while (outputQueue.size() == 0) {
             Data input = getPredecessor().getData();
             if (input != null) {
                 if (input instanceof DoubleData) {
@@ -143,21 +168,32 @@ public class DeltasFeatureExtractor extends BaseDataProcessor {
                 } else if (input instanceof DataStartSignal) {
                     dataEndSignal = null;
                     outputQueue.add(input);
+		    logger.info("start : "+ nbFrames);
+		    nbFrames=0;
+					if (!mode_ctl) {
                     Data start = getPredecessor().getData();
                     int n = processFirstCepstrum(start);
                     computeFeatures(n);
+					}
                     if (dataEndSignal != null) {
                         outputQueue.add(dataEndSignal);
                     }
                 } else if (input instanceof DataEndSignal) {
+		    logger.info("end : "+ nbFrames);
                     // when the DataEndSignal is right at the boundary
-                    int n = replicateLastCepstrum();
-                    computeFeatures(n);
+                    if (!mode_ctl) {
+			int n = replicateLastCepstrum();
+			computeFeatures(n);
+		    }
+                    else reset();
                     outputQueue.add(input);
+                    break;
                 }
-            }
+            } else 
+		break;
         }
         if (outputQueue.size() > 0) {
+	    nbFrames++;
             Data feature = (Data) outputQueue.remove(0);
             return feature;
         } else {
@@ -237,6 +273,11 @@ public class DeltasFeatureExtractor extends BaseDataProcessor {
      */
     private void addCepstrum(DoubleData cepstrum) {
         cepstraBuffer[bufferPosition++] = cepstrum;
+		if (currentPosition<0 && bufferPosition>2*window+1){
+			currentPosition=0;
+			if (logger.isLoggable(java.util.logging.Level.FINE))
+			    logger.fine("start of delta at " + bufferPosition);
+		}
         bufferPosition %= cepstraBufferSize;
     }
 
@@ -270,6 +311,7 @@ public class DeltasFeatureExtractor extends BaseDataProcessor {
      * @return a FeatureFrame
      */
     private void computeFeatures(int totalFeatures) {
+		if (currentPosition>=0) {
         getTimer().start();
         if (totalFeatures == 1) {
             computeFeature();
@@ -279,7 +321,8 @@ public class DeltasFeatureExtractor extends BaseDataProcessor {
                 computeFeature();
             }
         }
-        getTimer().stop();
+        getTimer().stop(); }
+		
     }
 
     /**

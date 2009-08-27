@@ -47,6 +47,9 @@
  * HISTORY
  * 
  * $Log$
+ * 2008/09/19  N. Coetmeur, supervised by Y. Esteve
+ * Add LM Max library for use lm_best_4g_score function 
+ *
  * Revision 1.12  2006/02/24  04:02:15  arthchan2003
  * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Changed commands to macro.
  * 
@@ -207,7 +210,7 @@
 /** \file main_astar.c 
  * \brief Driver for N-best list creation from DAGs using A* algorithm.
  */
-
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -222,6 +225,7 @@
 #include <mdef.h>
 #include <dict.h>
 #include <lm.h>
+#include <lm_max.h>
 #include <fillpen.h>
 #include <search.h>
 #include <hyp.h>
@@ -230,7 +234,7 @@
 #include <cmdln_macro.h>
 #include "corpus.h"
 #include "astar.h"
-
+#include "s3_paul.h"
 static mdef_t *mdef;            /* Model definition */
 
 static ptmr_t tm_utt;           /* Entire utterance */
@@ -238,9 +242,10 @@ static ptmr_t tm_utt;           /* Entire utterance */
 static dict_t *dict;            /* The dictionary       */
 static fillpen_t *fpen;         /* The filler penalty structure. */
 static lmset_t *lmset;          /* The lmset.           */
+//static lm_max_t *lmmax;         /* The set of maximum probabilities. */
 
 static const char *nbestdir;
-
+static    FILE * theFp=NULL;
 /*
  * Command line arguments.
  */
@@ -253,11 +258,16 @@ static arg_t defn[] = {
         control_file_handling_command_line_macro()
         control_lm_file_command_line_macro()
         dag_handling_command_line_macro()
-    {"-mdef",
+/* pénible ... Yannick, LIUM    {"-mdef",
      ARG_STRING,
      NULL,
      "Model definition input file: triphone -> senones/tmat tying"},
+*/
     {"-beam",
+     ARG_FLOAT64,
+     "1e-64",
+     "Partial path pruned if below beam * score of best partial ppath so far"},
+    {"-beamastar",
      ARG_FLOAT64,
      "1e-64",
      "Partial path pruned if below beam * score of best partial ppath so far"},
@@ -265,10 +275,18 @@ static arg_t defn[] = {
      ARG_INT32,
      "1000000",
      "Max partial paths created after which utterance aborted; controls CPU/memory use"},
+    {"-bestorlat",
+     ARG_BOOLEAN,
+     "true",
+     "vrai si nbest sinon lat htk"},
     {"-inlatdir",
      ARG_STRING,
      NULL,
      "Input word-lattice directory with per-utt files for restricting words searched"},
+    {"-ctmfp",
+     ARG_STRING,
+     NULL,
+     "fichier ctm"},
     {"-latext",
      ARG_STRING,
      "lat.gz",
@@ -277,7 +295,12 @@ static arg_t defn[] = {
      ARG_STRING,
      ".",
      "Input word-lattice directory with per-utt files for restricting words searched"},
-    {"-nbestext",
+   /* {"-max4glm",
+     ARG_STRING,
+     NULL,
+     "4gMax probabilities from the LM (sonde)"},
+    */
+{"-nbestext",
      ARG_STRING,
      "nbest.gz",
      "N-best filename extension (.gz or .Z extension for compression)"},
@@ -300,8 +323,9 @@ static void
 models_init(void)
 {
     /* HMM model definition */
-    mdef = mdef_init(cmd_ln_str("-mdef"), 1);
-
+// pénible ... Yannick, LIUM    mdef = mdef_init(cmd_ln_str("-mdef"), 1);
+    mdef = NULL;
+    
     /* Dictionary */
     dict = dict_init(mdef,
                      cmd_ln_str("-dict"),
@@ -324,6 +348,13 @@ models_init(void)
                         cmd_ln_float32("-lw"),
                         cmd_ln_float32("-wip"));
 
+	/* Maximum probabilities model */
+/*	lmmax = lm_max_read_dump (cmd_ln_str("-max4glm"), 1,
+							  cmd_ln_float32("-lw"),
+							  cmd_ln_float32("-wip"));
+	if (lmmax == NULL)
+		E_FATAL ("Can't read maximum dump file\n");
+*/
 }
 
 
@@ -339,7 +370,7 @@ static void
 build_output_uttfile(char *buf, const char *dir, const char *uttid, const char *ctlspec)
 {
     int32 k;
-
+char YKLIUMtmp[1024];
     k = strlen(dir);
     if ((k > 4) && (strcmp(dir + k - 4, ",CTL") == 0)) {        /* HACK!! Hardwired ,CTL */
         if (ctlspec[0] != '/') {
@@ -355,6 +386,24 @@ build_output_uttfile(char *buf, const char *dir, const char *uttid, const char *
         buf[k] = '/';
         strcpy(buf + k + 1, uttid);
     }
+
+strcpy(YKLIUMtmp, buf);
+for (k=0; k<strlen(YKLIUMtmp) && YKLIUMtmp[k]!='-'; k++) 
+  buf[k]=YKLIUMtmp[k];
+//buf[k++] = '/';
+buf[k] = '\0';
+/*mkdir(buf, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);*/
+strcat(buf,YKLIUMtmp+strlen(dir));
+
+
+}
+static void test(void * fp) {
+  if (fp!=NULL) return;
+  perror("rate:");
+  exit(1);
+}
+static void toto (int u) {
+    printf("------------------------------------%d\n",u);
 }
 
 /* Decode the given mfc file and write result to given directory */
@@ -367,6 +416,7 @@ utt_astar(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
     const char *nbestext;
     dag_t *dag;
     int32 nfrm;
+
 
     if (ur->lmname)
         lmset_set_curlm_wname(lmset, ur->lmname);
@@ -386,6 +436,37 @@ utt_astar(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
     ptmr_start(&tm_utt);
 
     nfrm = 0;
+
+    if (0) {int i;
+char chaine[1000],line[1000],commande[1000];
+	int d[3],lineno=0;
+	FILE * fp;
+    sprintf(commande,"gunzip -c %s;sleep 3",dagfile);
+    fp=popen(commande,"r");
+    test(fp);
+    signal(SIGCHLD,toto); 
+    do {
+      test(fgets(line,sizeof(line),fp));
+      lineno++;
+    }
+    while (sscanf(line,"%s",chaine)!=1 || strcmp(chaine,"Edges")!=0);
+    fprintf(stderr,"mil: %s:%d:%s",chaine,lineno,line);
+    do {
+       test(fgets(line,sizeof(line),fp));
+      lineno++;
+    }
+    while (sscanf(line, "%d%d%d",d,d+1,d+2)==3);
+    fprintf(stderr,"c'est fini:%s:%d:%s:",dagfile,lineno,line);
+    pclose(fp);
+  }
+
+
+
+
+
+
+	
+    signal(SIGCHLD,toto);
     if ((dag = dag_load(dagfile,
 			cmd_ln_int32("-maxedge"),
 			cmd_ln_float32("-logbase"),
@@ -398,17 +479,24 @@ utt_astar(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
             E_ERROR("maxedge limit (%d) exceeded\n", dag->maxedge);
 	    goto search_done;
 	}
-	dag_compute_hscr(dag, dict, lmset->cur_lm, 1.0);
+
+/*	dag_compute_hscr(dag, dict, lmset->cur_lm, lmmax, 1.0);
+*/
+        dag_compute_hscr(dag, dict, lmset->cur_lm, NULL/*lmmax*/, 1.0);
 	dag_remove_bypass_links(dag);
 
 	E_INFO("%5d frames, %6d nodes, %8d edges, %8d bypass\n",
 	       dag->nfrm, dag->nnode, dag->nlink, dag->nbypass);
 
 	nfrm = dag->nfrm;
-	build_output_uttfile(nbestfile, nbestdir, uttid, ur->uttfile);
-	strcat(nbestfile, ".");
-	strcat(nbestfile, nbestext);
-        nbest_search(dag, nbestfile, uttid, 1.0, dict, lmset->cur_lm, fpen);
+
+	ctl_outfile(nbestfile, nbestdir,nbestext, ur->uttfile,uttid);
+	
+	if (cmd_ln_boolean("-bestorlat"))
+	    nbest_search(dag, nbestfile, uttid, 1.0, dict, lmset->cur_lm, fpen,theFp);
+	else
+	    nbest_dag_htk(dag, nbestfile, uttid, 1.0, dict, lmset->cur_lm, fpen,
+			  theFp);
 
         lm_cache_stats_dump(lmset->cur_lm);
         lm_cache_reset(lmset->cur_lm);
@@ -417,7 +505,7 @@ utt_astar(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
         E_ERROR("Dag load (%s) failed\n", uttid);
 search_done:
     dag_destroy(dag);
-
+    
     ptmr_stop(&tm_utt);
 
     printf("%s: TMR: %5d Frm", uttid, nfrm);
@@ -446,7 +534,8 @@ main(int32 argc, char *argv[])
     models_init();
 
     ptmr_init(&tm_utt);
-
+    if (cmd_ln_exists("-ctmfp"))
+	theFp=fopen(cmd_ln_str("-ctmfp"),"w");
     nbestdir = cmd_ln_str("-nbestdir");
 
     if (cmd_ln_str("-ctl")) {
@@ -462,7 +551,7 @@ main(int32 argc, char *argv[])
     }
 
 
-
+    if (theFp) fclose(theFp);
 #if (! WIN32)
     system("ps aguxwww | grep s3astar");
 #endif

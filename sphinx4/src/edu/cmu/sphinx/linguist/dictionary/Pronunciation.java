@@ -30,7 +30,7 @@ public class Pronunciation {
     private Unit[] units;
     private String tag;
     private float probability;
-
+    private String var;
     /**
      * Creates a pronunciation
      *
@@ -40,7 +40,8 @@ public class Pronunciation {
      * @param probability the probability of this pronunciation
      * occurring
      */
-    Pronunciation(Unit[] units,
+    //paul met public 
+public    Pronunciation(Unit[] units,
                   String tag,
                   WordClassification wordClassification,
                   float probability) {
@@ -48,6 +49,17 @@ public class Pronunciation {
 	this.units = units;
 	this.tag = tag;
 	this.probability = probability;
+	this.var=null;
+    }
+public    Pronunciation(Unit[] units,
+                  String tag,
+                  WordClassification wordClassification,
+			float probability, String var) {
+        this.wordClassification = wordClassification;
+	this.units = units;
+	this.tag = tag;
+	this.probability = probability;
+	this.var=var;
     }
 
     /**
@@ -55,7 +67,9 @@ public class Pronunciation {
      *
      * @param word the Word this Pronunciation represents
      */
-    protected void setWord(Word word) {
+
+    // paul : met public
+    public void setWord(Word word) {
         if (this.word == null) {
             this.word = word;
         } else {
@@ -72,6 +86,9 @@ public class Pronunciation {
 	return word;
     }
 
+    public String getVar() {
+	return var;
+    }
     /**
      * Retrieves the word classification for this pronunciation
      * 

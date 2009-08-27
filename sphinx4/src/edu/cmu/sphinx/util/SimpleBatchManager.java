@@ -25,11 +25,12 @@ import java.util.List;
 public class SimpleBatchManager implements BatchManager {
     private String batchFile;
     private int skip;
+    private int beginSkip;
     private int whichBatch;
     private int totalBatches;
     private int curItem;
-    private List items;
-
+    private List <String> items;
+    private boolean modeCtl;
     /**
      * Constructs a SimpleBatchManager object.
      *
@@ -45,8 +46,30 @@ public class SimpleBatchManager implements BatchManager {
         this.skip = skip;
         this.whichBatch = whichBatch;
         this.totalBatches = totalBatches;
+        this.modeCtl =false;
+        this.beginSkip =0;
     }
 
+ /**
+     * Constructs a SimpleBatchManager object.
+     *
+     * @param filename      the name of the batch file
+     * @param skip          number of records to skip between items
+     * @param whichBatch    which chunk of the batch should we process
+     * @param totalBatches  the total number of chuncks that the batch
+     *                      is divided into.
+     *@param modeCtl       as name 
+     */
+  public SimpleBatchManager(String filename,
+			    int skip, int whichBatch, int totalBatches, 
+			    boolean modeCtl,int beginSkip) {
+        this.batchFile = filename;
+        this.skip = skip;
+        this.beginSkip=beginSkip;
+        this.whichBatch = whichBatch;
+        this.totalBatches = totalBatches;
+        this.modeCtl = modeCtl;
+    }
     /**
      * Starts processing the batch
      *
@@ -70,6 +93,9 @@ public class SimpleBatchManager implements BatchManager {
             return null;
         } else {
             String line = (String) items.get(curItem++);
+            if (modeCtl) 
+		return new BatchItem(line.split(" +"));
+           else
             return new BatchItem(BatchFile.getFilename(line),
                             BatchFile.getReference(line));
         }
@@ -95,10 +121,41 @@ public class SimpleBatchManager implements BatchManager {
      *
      * @param file the name of the file 
      */
-    private List getBatchItems(String file) throws IOException {
-	List list = BatchFile.getLines(file, skip);
+    private List <String> getBatchItems(String file) throws IOException {
+	List <String> list = BatchFile.getLines(file, skip,beginSkip);
 
 	if (totalBatches > 1) {
+	    if (modeCtl) {
+		//j'essaye un découpage en temps.
+		int total=0;
+		for (String line : list) {
+		    String tab[]=line.split(" +");
+		    total+= Integer.parseInt(tab[2]) - Integer.parseInt(tab[1]);
+		}
+		int dureePerBatch = total / totalBatches;
+		int start=dureePerBatch*whichBatch;
+		int fin =dureePerBatch*(whichBatch+1);
+		int startLine=0,endLine=0;
+		System.err.format("total :%d, duree:%d, start:%d, fin:%d\n",total, dureePerBatch,start,fin);
+		total=0;
+		int numero=0;
+		for (String line:list) {
+		    String tab[]=line.split(" +");
+	// 	    for(String s:tab) System.err.format("|%s|",s);
+// 		    System.err.println();
+		    total+= Integer.parseInt(tab[2]) - Integer.parseInt(tab[1]);
+		    if (total>=fin) { endLine=numero-2; break;}
+		    if (total< start) startLine=numero;
+		    numero++;		    
+		}
+		if (whichBatch==(totalBatches-1))
+		    endLine=list.size();
+		System.err.println(" batchs  start ==>"+startLine+ " end==>"+ endLine);
+		return list.subList(startLine,endLine);
+
+
+
+	    }
 	    int linesPerBatch = list.size() / totalBatches;
 	    if (linesPerBatch < 1) {
 		linesPerBatch = 1;

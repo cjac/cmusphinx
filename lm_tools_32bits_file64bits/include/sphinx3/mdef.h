@@ -358,6 +358,7 @@ void mdef_free_recursive_rc (ph_rc_t *rc /**< In: A list of right context */
     );
 
 /** Free an mdef_t */
+S3DECODER_EXPORT
 void mdef_free (mdef_t *mdef /**< In : The model definition*/
     );
 

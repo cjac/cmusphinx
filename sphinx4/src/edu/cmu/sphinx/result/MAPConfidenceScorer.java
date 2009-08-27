@@ -20,7 +20,9 @@ import edu.cmu.sphinx.util.props.PropertyException;
 import edu.cmu.sphinx.util.props.PropertySheet;
 import edu.cmu.sphinx.util.props.PropertyType;
 import edu.cmu.sphinx.util.props.Registry;
-
+import java.io.PrintWriter;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -124,19 +126,49 @@ public class MAPConfidenceScorer implements ConfidenceScorer, Configurable {
      * @param result the result to compute confidences for
      * @return a confidence result
      */
-    public ConfidenceResult score(Result result) {
+    int compte =0;
+    public ConfidenceResult score(Result result) { 
+       System.err.println("pre lat");
         Lattice lattice = new Lattice(result);
+        System.err.println("post lat");
+	if (false&& dumpLattice) {  
+            lattice.dumpAISee("toto.gdl" + compte, "noop latt");
+	    if (false) try {
+	    PrintWriter op =
+		new PrintWriter(new BufferedWriter (
+						      new FileWriter("toto.lat")));
+	    lattice.dump(op);
+            op.close();}
+	    catch (java.io.IOException e) {
+		System.out.println(e);
+	    }
+	}
         LatticeOptimizer lop = new LatticeOptimizer(lattice);
         lop.optimize();
+	System.err.println("posterior");
+	lattice.computeNodePosteriors(languageWeight);
+	if (dumpLattice&& false) {
+	    try {
+	    PrintWriter op =
+		new PrintWriter(new BufferedWriter (
+						      new FileWriter("toto_op.lat")));
+	    lattice.dump(op);
+            op.close();}
+	    catch (java.io.IOException e) {
+		System.out.println(e);
+	    }
+	}
+        if (dumpLattice) {
+            lattice.dumpAISee("mapLattice.gdl"+compte, "MAP Lattice");
+            compte++ ; compte = compte %100;
+        }
+
         lattice.computeNodePosteriors(languageWeight);
         SausageMaker sm = new SausageMaker(lattice);
         Sausage s = sm.makeSausage();
 
-        if (dumpLattice) {
-            lattice.dumpAISee("mapLattice.gdl", "MAP Lattice");
-        }
         if (dumpSausage) {
-            s.dumpAISee("mapSausage.gdl", "MAP Sausage");
+            s.dumpAISee("mapSausage.gdl"+compte, "MAP Sausage");
         }
 
         ConfidenceResult sausage = (ConfidenceResult) s;
@@ -145,14 +177,15 @@ public class MAPConfidenceScorer implements ConfidenceScorer, Configurable {
 
         /* start with the first slot */
         int slot = 0;
-
+       
         Iterator i = wordTokens.iterator();
 
         while (i.hasNext()) {
             Token token = (Token) i.next();            
             String word = token.getWord().getSpelling();
-            WordResult wr = null;
-            ConfusionSet cs = null;
+	    //System.err.println(" mot "+ word + "slot"+ slot);
+           WordResult wr = null;
+	   ConfusionSet cs = null;
             
             /* track through all the slots to find the word */
             while (slot < sausage.size() && wr == null) {
@@ -165,10 +198,8 @@ public class MAPConfidenceScorer implements ConfidenceScorer, Configurable {
             if (wr != null) {
                 mapPath.add(wr);
             } else {
-                cs.dump("Slot " + slot);
-                throw new Error
-                    ("Can't find WordResult in ConfidenceResult slot " +
-                     slot + " for word " + word);
+           cs.dump("Slot " + slot);
+            throw new Error                   ("Can't find WordResult in ConfidenceResult slot " +  slot + " for word " + word);
             }
             slot++;
         }

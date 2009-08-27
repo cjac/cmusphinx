@@ -197,7 +197,8 @@ public class WordSequence {
      */
     public Word getWord(int n) {
         if (n >= words.length) {
-            throw new ArrayIndexOutOfBoundsException(n);
+            return Word.UNKNOWN; // better if startSequence but it  is not defined in word
+	    // modif paul            throw new ArrayIndexOutOfBoundsException(n);
         }
         return words[n];
     }

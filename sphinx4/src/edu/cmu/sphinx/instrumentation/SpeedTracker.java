@@ -112,7 +112,7 @@ public class SpeedTracker
     private long maxResponseTime = Long.MIN_VALUE;
     private long minResponseTime = Long.MAX_VALUE;
     private long totalResponseTime = 0L;
-
+    private boolean vraiStart =false;
     /*
      * (non-Javadoc)
      * 
@@ -271,15 +271,17 @@ public class SpeedTracker
      */
     public void signalOccurred(Signal signal) {
         if (signal instanceof DataStartSignal) {
-            startTime = getTime();
-            long responseTime = (System.currentTimeMillis() - signal.getTime());
-            totalResponseTime += responseTime;
-            if (responseTime > maxResponseTime) {
-                maxResponseTime = responseTime;
-            }
-            if (responseTime < minResponseTime) {
-                minResponseTime = responseTime;
-            }
+            if (!vraiStart) startTime = getTime();
+	    vraiStart=false;
+	    long responseTime = (System.currentTimeMillis() - signal.getTime());
+	    totalResponseTime += responseTime;
+	    if (responseTime > maxResponseTime) {
+		maxResponseTime = responseTime;
+	    }
+	    if (responseTime < minResponseTime) {
+		minResponseTime = responseTime;
+		
+	    }
             numUtteranceStart++;
         } else if (signal instanceof DataEndSignal) {
             DataEndSignal endSignal = (DataEndSignal) signal;
@@ -300,6 +302,11 @@ public class SpeedTracker
      * @see edu.cmu.sphinx.recognizer.StateListener#statusChanged(edu.cmu.sphinx.recognizer.RecognizerState)
      */
     public void statusChanged(RecognizerState status) {
+	if (status== RecognizerState.RECOGNIZING) {
+	    vraiStart=true;
+	    startTime=getTime();
+	}
+
         if (status == RecognizerState.ALLOCATED) {
             if (showTimers) {
                 Timer.dumpAll();

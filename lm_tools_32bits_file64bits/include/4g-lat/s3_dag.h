@@ -35,7 +35,7 @@
  */
 
 /*
- * align.h -- Exported time-aligner functions and data structures.
+ * s3_dag.h -- Exported time-aligner functions and data structures.
  *
  * **********************************************
  * CMU ARPA Speech Project
@@ -46,10 +46,10 @@
  * 
  * HISTORY
  * 
- * $Log$
- * Revision 1.2  2004/09/13  08:13:28  arthchan2003
+ * $Log: s3_dag.h,v $
+ * Revision 1.2  2004/09/13 08:13:28  arthchan2003
  * update copyright notice from 200x to 2004
- * 
+ *
  * Revision 1.1  2004/08/30 22:29:19  arthchan2003
  * Refactor the s3.0 tools, currently it is still quite messy, we need to make it modularize later on.
  *
@@ -74,9 +74,9 @@
 #ifndef _LIBFBS_DAG_H_
 #define _LIBFBS_DAG_H_
 
-#include <libutil/libutil.h>
+#include "libutil.h"
 #include "s3types.h"
-#include "search.h"
+#include "s3_dag_search.h"
 #include "dict.h"
 
 /*
@@ -92,54 +92,79 @@ typedef struct dagnode_s {
     struct dagnode_s *alloc_next;	/* Next in linear list of allocated nodes */
     struct daglink_s *succlist;		/* List of successor nodes (adjacent in time) */
     struct daglink_s *predlist;		/* List of preceding nodes (adjacent in time) */
+  int32 index;                /* position dans le darray du dag */
 } dagnode_t;
-
+//typedef union bout  {dagnode_t * s; struct daglink_s * l;void *p ;} bout_t;
 /* A DAG node can have several successor or predecessor nodes, each represented by a link */
 typedef struct daglink_s {
-    dagnode_t *node;		/* Target of link (source determined by dagnode_t.succlist
-				   or dagnode_t.predlist) */
-    dagnode_t *src;		/* Source node of link */
-    struct daglink_s *next;	/* Next in same dagnode_t.succlist or dagnode_t.predlist */
-    struct daglink_s *history;	/* Previous link along best path (for traceback) */
-    struct daglink_s *bypass;	/* If this links A->B, bypassing A->fillnode->B, then
-				   bypass is ptr to fillnode->B */
-    int32 ascr;			/* Acoustic score for segment of source node ending just
+  //dagnode_t 
+  void * node;		/* Target of link (source determined by dagnode_t.succlist
+			   or dagnode_t.predlist) */
 
-				   before the end point of this link.  (Actually this gets
-
+  //  dagnode_t 
+  void * src;		/* Source node of link */
+  struct daglink_s *next;	/* Next in same dagnode_t.succlist or dagnode_t.predlist */
+  struct daglink_s *history;	/* Previous link along best path (for traceback) */
+  struct daglink_s *bypass;	/* If this links A->B, bypassing A->fillnode->B, then
+          			   bypass is ptr to fillnode->B */
+  int32 ascr;			/* Acoustic score for segment of source node ending just
+ 				   before the end point of this link.  (Actually this gets
 				   corrupted because of filler node deletion.) */
-    int32 hscr;			/* Heuristic score from end of link to dag exit node */
-    int32 lscr;			/* LM score to the SUCCESSOR node */
-    int32 pscr;			/* Best path score to root beginning with this link */
-    s3frmid_t ef;		/* End time for this link.  Should be 1 before the start
-				   time of destination node (or source node for reverse
-				   links), but gets corrupted because of filler deletion */
-    uint8 pscr_valid;		/* Flag to avoid evaluating the same path multiple times */
+  //  int32 map;
+  int32 ascr_save; /* for ascr modif by filler */
+  int32 hscr;			/* Heuristic score from end of link to dag exit node */
+  int32 lscr;			/* LM score to the SUCCESSOR node */
+  int32 pscr;			/* Best path score to root beginning with this link */
+  s3frmid_t ef;		/* End time for this link.  Should be 1 before the start
+			   time of destination node (or source node for reverse
+			   links), but gets corrupted because of filler deletion */
+  struct daglink_s *succlist;		/* List of successor nodes (adjacent in time) */
+  struct daglink_s *predlist;
+  struct daglink_s *list;
+  struct daglink_s *reci;    /* other link node ->src */
+  int32 index; /* index for fwbw or pap for meta+1 */
+  uint8 pscr_valid;		/* Flag to avoid evaluating the same path multiple times */
+  uint8 meta;
+   int8 notpruned;
+  int8 isfiller;  /* 4* 8 = 32 cela fait un alignement */
 } daglink_t;
+
+
+typedef struct {
+  short order;
+  int eLwid[4]; /* pas plus que des 4g */
+  float *lscore;
+} externalLM;
 
 /* Summary of DAG structure information */
 typedef struct {
-    dagnode_t *list;		/* Linear list of nodes allocated */
-    dagnode_t *root;            /* Corresponding to (<s>,0) */
-    daglink_t final;            /* Exit link from final DAG node */
-    daglink_t entry;		/* Entering (<s>,0) */
-    daglink_t exit;		/* Exiting (</s>,finalframe) */
-    s3wid_t orig_exitwid;	/* If original exit node is not a filler word */
+  dagnode_t ** darray; // la me chose que list mais en array 0..nnnode -1
+  dagnode_t *list;		/* Linear list of nodes allocated */
+  daglink_t *linklist ;
+  dagnode_t *root;            /* Corresponding to (<s>,0) */
+  daglink_t final;            /* Exit link from final DAG node */
+  daglink_t entry;		/* Entering (<s>,0) */
+  daglink_t exit;		/* Exiting (</s>,finalframe) */
+  s3wid_t orig_exitwid;	/* If original exit node is not a filler word */
+  int32 nnode;
+  int32 nfrm;
+  int32 nlink;
+  int32 nbypass;
 
-    int32 nfrm;
-    int32 nlink;
-    int32 nbypass;
+  int32 filler_removed;       /* Whether filler nodes removed from DAG to help search */
+  int32 fudged;               /* Whether fudge edges have been added */
+  int32 maxlink;               /* nb max link after pruned by prob a posteriori */
+  s3latid_t latfinal;         /* Lattice entry determined to be final end point */
 
-    int32 filler_removed;       /* Whether filler nodes removed from DAG to help search */
-    int32 fudged;               /* Whether fudge edges have been added */
-
-    s3latid_t latfinal;         /* Lattice entry determined to be final end point */
-
+  externalLM *eLM;
+  int32 eLMSize; 
+  
 } dag_t;
 
-srch_hyp_t *s3dag_dag_search (char *utt);
+s3_dag_srch_hyp_t *s3dag_dag_search (char *utt);
 int32 s3dag_dag_load (char *file);
 int32 dag_destroy ( void );
 void dag_init (dict_t* _dict);
 
 #endif
+

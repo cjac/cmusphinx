@@ -675,9 +675,11 @@ mdef_init(const char *mdeffile, int32 breport)
     int32 s, ci, cd;
     mdef_t *m;
 
-    if (!mdeffile)
-        E_FATAL("No mdef-file\n");
-
+    if (!mdeffile) {
+/*Yannick, LIUM: Why do we need mdef to rescore word-lattices?         E_FATAL("No mdef-file\n");*/
+      E_WARN("mdef not defined. But is it really necessary? We continue! LIUM, Yannick\n");
+      return NULL;
+    }
     if (breport)
         E_INFO("Reading model definition: %s\n", mdeffile);
 

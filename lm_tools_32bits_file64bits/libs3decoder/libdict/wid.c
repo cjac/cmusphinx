@@ -109,7 +109,7 @@ wid_dict_lm_map(dict_t * dict, lm_t * lm, int32 lw)
     }
 
     n = 0;
-    for (u = 0; u < lm_n_ug(lm); u++) {
+    for (u = 0; u < lm_n_ng(lm,1); u++) {
 
 #if 0
         E_INFO("u: %d, lm_wordstr(lm,u) %s, w %d\n", u, lm_wordstr(lm, u),

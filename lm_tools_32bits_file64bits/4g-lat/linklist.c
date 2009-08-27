@@ -47,10 +47,10 @@
  * 
  * HISTORY
  * 
- * $Log$
- * Revision 1.2  2004/09/13  08:13:27  arthchan2003
+ * $Log: linklist.c,v $
+ * Revision 1.2  2004/09/13 08:13:27  arthchan2003
  * update copyright notice from 200x to 2004
- * 
+ *
  * Revision 1.1  2004/08/09 00:17:13  arthchan2003
  * Incorporating s3.0 align, at this point, there are still some small problems in align but they don't hurt. For example, the score doesn't match with s3.0 and the output will have problem if files are piped to /dev/null/. I think we can go for it.
  *
@@ -165,7 +165,7 @@ char *__listelem_alloc__ (int32 elemsize, char *caller_file, int32 caller_line)
 }
 
 
-void listelem_free (char *elem, int32 elemsize)
+void listelem_free_es (char *elem, int32 elemsize)
 {
     char **cpp;
     list_t *prev, *list;

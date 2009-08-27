@@ -40,11 +40,14 @@
  */
 
 
+/** \file lm_attfsm.c
+    \brief Language model dumping in FSM format
+
+	Mainly adapted from LIUM Sphinx's modification.
+	Also doesn't work for class-based LM and bigram at this point.
+*/
+
 /*
- * lm_attfsm.c -- language model dumping in FSM format. Mainly adapted
- * from LIUM Sphinx's modification. Also doesn't work for class-based
- * LM and bigram at this point. 
- *
  * **********************************************
  * CMU ARPA Speech Project
  *
@@ -54,11 +57,17 @@
  * 
  * HISTORY
  * $Log: lm_attfsm.c,v $
+ * 2008/06/27  N. Coetmeur, supervised by Y. Esteve
+ * Adjust comments for compatibility with Doxygen 1.5.6
+ *
+ * 2008/06/20  N. Coetmeur, supervised by Y. Esteve
+ * Some changes for compatibility with new lm.h file.
+ *
  * Revision 1.2  2006/02/23 04:08:36  arthchan2003
  * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH
  * 1, Added lm_3g.c - a TXT-based LM routines.
  * 2, Added lm_3g_dmp.c - a DMP-based LM routines.
- * 3, (Contributed by LIUM) Added lm_attfsm.c - convert lm to FSM
+ * 3, (Contributed by LIUM) Added lm_attfsm.c - convert LM to FSM
  * 4, Added lmset.c - a wrapper for the lmset_t structure.
  *
  * Revision 1.1.2.1  2006/01/16 19:57:28  arthchan2003
@@ -69,24 +78,46 @@
 
 #include "lm.h"
 
+
+/**
+ \brief Return absolute first trigram index for bigram (i, bgptr[j].wid)
+ \return First trigram index
+*/
 static int32
-idx_tg_hist(lm_t * lm, bg_t * bgptr, int32 i, int32 j)
-{                               /* return absolute first trigram index for bigram (i, bgptr[j].wid) */
+idx_tg_hist	(	lm_t * lm,		/**< In: language model */
+				ng_t * bgptr,	/**< In: bigrams list */
+				int32 	i,		/**< In: index of first word from the bigram */
+				int32 	j		/**< In: index of the bigram in the list */
+				)
+{
     int32 b;
 
     b = lm->ug[i].firstbg + j;
-    return (lm->tg_segbase[b >> lm->log_bg_seg_sz] + bgptr[j].firsttg);
+    return (lm->ng_segbase[2][b >> (lm->log_ng_seg_sz[1])] + bgptr[j].firstnng);
 }
 
+/**
+ \brief Return absolute first trigram index for 32-bits bigram (i, bgptr[j].wid)
+ \return First trigram index
+*/
 static int32
-idx_tg32_hist(lm_t * lm, bg32_t * bgptr, int32 i, int32 j)
-{                               /* return absolute first trigram index for bigram (i, bgptr[j].wid) */
+idx_tg32_hist	( lm_t 		* 	lm,		/**< In: language model */
+				  ng32_t 	* 	bgptr,	/**< In: 32-bits bigrams list */
+				  int32 		i,		/**< In: index of first word
+															  from the bigram */
+				  int32 		j		/**< In: index of the bigram
+																  in the list */
+				  )
+{
     int32 b;
 
     b = lm->ug[i].firstbg + j;
-    return (lm->tg_segbase[b >> lm->log_bg_seg_sz] + bgptr[j].firsttg);
+    return (lm->ng_segbase[2][b >> (lm->log_ng_seg_sz[1])] + bgptr[j].firstnng);
 }
 
+/*
+   Write a LM in FST format
+*/
 int32
 lm_write_att_fsm(lm_t * lm, const char *filename)
 {
@@ -94,20 +125,22 @@ lm_write_att_fsm(lm_t * lm, const char *filename)
     int32 i, j, k, l, nb_bg, nb_bg2, nb_tg, bowt;
     char filesymbolsname[2048];
 
-    bg_t *bgptr, *bgptr2;
-    tg_t *tgptr;
+    ng_t *bgptr, *bgptr2;
+    ng_t *tgptr;
 
-    bg32_t *bgptr32, *bgptr32_2;
-    tg32_t *tgptr32;
+    ng32_t *bgptr32, *bgptr32_2;
+    ng32_t *tgptr32;
     int32 is32bits;
-    s3lmwid32_t wid32_bg;
-    s3lmwid32_t wid32_tg;
+    s3lmwid32_t wid32_bg, wid32_tg;
+    s3lmwid32_t wid32_ng[2];
 
     short prune_lowprobtg = 0;
 
-    int32 st_ug = lm_n_ug(lm) + 1, st_end = lm_n_ug(lm) + 2;    /* unigram state, end state */
-    int32 nbwtg = lm_n_ug(lm) + 3;      /* Number of id states used without trigrams */
-    int32 id_hist1, id_hist2;   /* indexes of trigram histories */
+    int32 st_ug = lm_n_ng(lm,1) + 1, st_end = lm_n_ng(lm,1) + 2;
+		/* unigram state, end state */
+    int32 nbwtg = lm_n_ng(lm,1) + 3;
+		/* Number of id states used without trigrams */
+    int32 id_hist1, id_hist2; /* Indexes of trigram histories */
 
     is32bits = lm->is32bits;
     sprintf(filesymbolsname, "%s.sym", filename);
@@ -115,61 +148,83 @@ lm_write_att_fsm(lm_t * lm, const char *filename)
     if (!(file = fopen(filesymbolsname, "w")))
         E_FATAL("fopen(%s,w) failed\n", file);
     fprintf(file, "<eps>\t0\n");
-    for (i = 0; i < lm_n_ug(lm); i++)
-        fprintf(file, "%s\t%d\n", lm->wordstr[i], i + 1);       /* i+1 because id of <eps> HAS TO be EQUAL to 0 */
+    for (i = 0; i < lm_n_ng(lm,1); i++)
+        fprintf(file, "%s\t%d\n", lm->wordstr[i], i + 1);
+			/* i+1 because id of <eps> HAS TO be EQUAL to 0 */
     fclose(file);
 
-    if (!(file = fopen(filename, "w")))
-        E_FATAL("fopen(%s,w) failed\n", file);
+    if (!(file = fopen (filename, "w")))
+        E_FATAL ("fopen(%s,w) failed\n", file);
 
-    if (lm_n_ug(lm) <= 0)
-        E_FATAL("ngram1=%d", lm_n_ug(lm));
+    if (lm_n_ng (lm,1) <= 0)
+        E_FATAL("ngram1=%d", lm_n_ng (lm,1));
 
 
     /* Start state */
 
-    for (i = 0; i < lm_n_ug(lm); i++) {
+    for (i = 0; i < lm_n_ng(lm,1); i++) {
         if (i % 1000 == 0)
-            fprintf(stderr, ".");
+            fprintf (stderr, ".");
 
         if (i == lm->finishlwid) {
-            fprintf(file, "%d\t%d\t%d\t%f\n", st_ug, st_end,
+            fprintf (file, "%d\t%d\t%d\t%f\n", st_ug, st_end,
                     lm->finishlwid + 1, -lm->ug[i].prob.f);
         }
         else {
             if (i != lm->startlwid) {
-                fprintf(file, "%d\t%d\t%d\t%f\n", st_ug, i, i + 1, -lm->ug[i].prob.f);  /* 1g->2g */
+                fprintf (file, "%d\t%d\t%d\t%f\n",
+						 st_ug, i, i + 1, -lm->ug[i].prob.f); /* 1g->2g */
             }
-            fprintf(file, "%d\t%d\t0\t%f\n", i, st_ug, -lm->ug[i].bowt.f);      /* 2g->1g */
+            fprintf (file, "%d\t%d\t0\t%f\n",
+					 i, st_ug, -lm->ug[i].bowt.f); /* 2g->1g */
 
 
-            nb_bg = is32bits ? lm_bg32list(lm, i, &bgptr32, &bowt) : lm_bglist(lm, i, &bgptr, &bowt);   /* bowt not used ... */
+            nb_bg = is32bits ?
+				      lm_ng32list(lm, 2, (s3lmwid32_t *)&i, &bgptr32, &bowt)
+				    : lm_nglist(lm, 2, (s3lmwid32_t *)&i, &bgptr, &bowt);
+						/* bowt not used... */
 
             for (j = 0; j < nb_bg; j++) {
 
                 wid32_bg = is32bits ? bgptr32[j].wid : bgptr[j].wid;
                 if (wid32_bg != lm->finishlwid) {
 
-                    /*32/16 bits code */
+                    /* 32/16 bits code */
                     id_hist1 = is32bits ? idx_tg32_hist(lm, bgptr32, i, j)
                         : idx_tg_hist(lm, bgptr, i, j);
 
+					wid32_ng[0]=i;
+					wid32_ng[1]=
+						is32bits
+						? bgptr32[j].wid
+						: (s3lmwid32_t)bgptr[j].wid;
                     nb_tg =
                         is32bits
-                        ? lm_tg32list(lm, i,
-                                      bgptr32[j].wid, &tgptr32, &bowt)
-                        : lm_tglist(lm, i, bgptr[j].wid, &tgptr, &bowt);
+                        ? lm_ng32list(lm, 3, wid32_ng, &tgptr32, &bowt)
+                        : lm_nglist(lm, 3, wid32_ng, &tgptr, &bowt);
 
                     if (nb_tg > 0) {
                         if (is32bits)
-                            fprintf(file, "%d\t%d\t%d\t%f\n", i, id_hist1 + nbwtg, bgptr32[j].wid + 1, -lm->bgprob[bgptr32[j].probid].f);       /* 2g->3g */
+                            fprintf (file, "%d\t%d\t%d\t%f\n", i,
+									 id_hist1 + nbwtg, bgptr32[j].wid + 1,
+									 -lm->ngprob[1][bgptr32[j].probid].f);
+										/* 2g->3g */
                         else
-                            fprintf(file, "%d\t%d\t%d\t%f\n", i, id_hist1 + nbwtg, bgptr[j].wid + 1, -lm->bgprob[bgptr[j].probid].f);   /* 2g->3g */
+                            fprintf (file, "%d\t%d\t%d\t%f\n", i,
+									 id_hist1 + nbwtg, bgptr[j].wid + 1,
+									 -lm->ngprob[1][bgptr[j].probid].f);
+										/* 2g->3g */
                     }
                     if (is32bits)
-                        fprintf(file, "%d\t%d\t0\t%f\n", id_hist1 + nbwtg, bgptr32[j].wid, -lm->tgbowt[bgptr32[j].bowtid].f);   /* 3g->2g */
+                        fprintf (file, "%d\t%d\t0\t%f\n", id_hist1 + nbwtg,
+								 bgptr32[j].wid,
+								 -lm->ngbowt[2][bgptr32[j].bowtid].f);
+									/* 3g->2g */
                     else
-                        fprintf(file, "%d\t%d\t0\t%f\n", id_hist1 + nbwtg, bgptr[j].wid, -lm->tgbowt[bgptr[j].bowtid].f);       /* 3g->2g */
+                        fprintf (file, "%d\t%d\t0\t%f\n", id_hist1 + nbwtg,
+								 bgptr[j].wid,
+								 -lm->ngbowt[2][bgptr[j].bowtid].f);
+									/* 3g->2g */
 
                     for (k = 0; k < nb_tg; k++) {       /* 3g->3g */
 
@@ -181,26 +236,25 @@ lm_write_att_fsm(lm_t * lm, const char *filename)
                                 fprintf(file, "%d\t%d\t%d\t%f\n",
                                         id_hist1 + nbwtg, st_end,
                                         tgptr32[k].wid + 1,
-                                        -lm->tgprob[tgptr32[k].probid].f);
+                                        -lm->ngprob[2][tgptr32[k].probid].f);
                             else
                                 fprintf(file, "%d\t%d\t%d\t%f\n",
                                         id_hist1 + nbwtg, st_end,
                                         tgptr[k].wid + 1,
-                                        -lm->tgprob[tgptr[k].probid].f);
+                                        -lm->ngprob[2][tgptr[k].probid].f);
                         }
                         else {
-                            /* bowt not used ... */
+                            /* bowt not used... */
 
-                            /*32/16 bits code */
+                            /* 32/16 bits code */
+							wid32_bg = is32bits ? bgptr32[j].wid : bgptr[j].wid;
                             nb_bg2 =
-                                is32bits ? lm_bg32list(lm, bgptr32[j].wid,
-                                                       &bgptr32_2,
-                                                       &bowt) :
-                                lm_bglist(lm, bgptr[j].wid, &bgptr2,
-                                          &bowt);
-                            l = is32bits ? find_bg32(bgptr32_2, nb_bg2,
+                                is32bits ? lm_ng32list(lm, 2, &wid32_bg,
+                                                       &bgptr32_2, &bowt) :
+                                lm_nglist(lm, 2, &wid32_bg, &bgptr2, &bowt);
+                            l = is32bits ? find_ng32(bgptr32_2, nb_bg2,
                                                      tgptr32[k].
-                                                     wid) : find_bg(bgptr2,
+                                                     wid) : find_ng(bgptr2,
                                                                     nb_bg2,
                                                                     tgptr
                                                                     [k].
@@ -219,17 +273,16 @@ lm_write_att_fsm(lm_t * lm, const char *filename)
                                                     bgptr[j].wid, l);
 
                                     if (is32bits) {
+										wid32_ng[0]=bgptr32[j].wid;
+										wid32_ng[1]=tgptr32[k].wid;
+
                                         if (prune_lowprobtg) {
                                             if (lm->
-                                                tgprob[tgptr32[k].probid].
+                                                ngprob[2][tgptr32[k].probid].
                                                 f >
                                                 (lm->
-                                                 tgbowt[bgptr32[j].bowtid].
-                                                 f + lm_bg_score(lm,
-                                                                 bgptr32
-                                                                 [j].wid,
-                                                                 tgptr32
-                                                                 [k].wid,
+                                                 ngbowt[2][bgptr32[j].bowtid].
+                                                 f + lm_ng_score(lm,2,wid32_ng,
                                                                  0))) {
                                                 fprintf(file,
                                                         "%d\t%d\t%d\t%f\n",
@@ -237,7 +290,7 @@ lm_write_att_fsm(lm_t * lm, const char *filename)
                                                         id_hist2 + nbwtg,
                                                         tgptr32[k].wid + 1,
                                                         -lm->
-                                                        tgprob[tgptr32[k].
+                                                        ngprob[2][tgptr32[k].
                                                                probid].f);
                                             }
                                         }
@@ -247,21 +300,20 @@ lm_write_att_fsm(lm_t * lm, const char *filename)
                                                     id_hist1 + nbwtg,
                                                     id_hist2 + nbwtg,
                                                     tgptr32[k].wid + 1,
-                                                    -lm->tgprob[tgptr32[k].
+                                                    -lm->ngprob[2][tgptr32[k].
                                                                 probid].f);
                                         }
                                     }
                                     else {
+										wid32_ng[0]=bgptr[j].wid;
+										wid32_ng[1]=tgptr[k].wid;
+
                                         if (prune_lowprobtg) {
                                             if (lm->
-                                                tgprob[tgptr[k].probid].f >
+                                                ngprob[2][tgptr[k].probid].f >
                                                 (lm->
-                                                 tgbowt[bgptr[j].bowtid].
-                                                 f + lm_bg_score(lm,
-                                                                 bgptr[j].
-                                                                 wid,
-                                                                 tgptr[k].
-                                                                 wid,
+                                                 ngbowt[2][bgptr[j].bowtid].
+                                                 f + lm_ng_score(lm,2,wid32_ng,
                                                                  0))) {
                                                 fprintf(file,
                                                         "%d\t%d\t%d\t%f\n",
@@ -269,7 +321,7 @@ lm_write_att_fsm(lm_t * lm, const char *filename)
                                                         id_hist2 + nbwtg,
                                                         tgptr[k].wid + 1,
                                                         -lm->
-                                                        tgprob[tgptr[k].
+                                                        ngprob[2][tgptr[k].
                                                                probid].f);
                                             }
                                         }
@@ -279,7 +331,7 @@ lm_write_att_fsm(lm_t * lm, const char *filename)
                                                     id_hist1 + nbwtg,
                                                     id_hist2 + nbwtg,
                                                     tgptr[k].wid + 1,
-                                                    -lm->tgprob[tgptr[k].
+                                                    -lm->ngprob[2][tgptr[k].
                                                                 probid].f);
                                         }
                                     }
@@ -290,9 +342,15 @@ lm_write_att_fsm(lm_t * lm, const char *filename)
                 }
                 else {
                     if (is32bits)
-                        fprintf(file, "%d\t%d\t%d\t%f\n", i, st_end, bgptr32[j].wid + 1, -lm->bgprob[bgptr32[j].probid].f);     /* 2g->2g */
+                        fprintf (file, "%d\t%d\t%d\t%f\n",
+								 i, st_end, bgptr32[j].wid + 1,
+								 -lm->ngprob[1][bgptr32[j].probid].f);
+									/* 2g->2g */
                     else
-                        fprintf(file, "%d\t%d\t%d\t%f\n", i, st_end, bgptr[j].wid + 1, -lm->bgprob[bgptr[j].probid].f); /* 2g->2g */
+                        fprintf (file, "%d\t%d\t%d\t%f\n",
+								 i, st_end, bgptr[j].wid + 1,
+								 -lm->ngprob[1][bgptr[j].probid].f);
+									/* 2g->2g */
                 }
             }
         }

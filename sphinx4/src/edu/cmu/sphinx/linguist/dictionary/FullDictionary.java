@@ -159,6 +159,8 @@ public class FullDictionary implements Dictionary {
                 loadDictionary(fillerDictionaryFile.openStream(), true);
             loadTimer.stop();
             allocated = true;
+            //dump(); cela peut servir
+	    logger.info("end loading dicts");
         }
     }
 
@@ -196,7 +198,7 @@ public class FullDictionary implements Dictionary {
         String word;
         while ((word = est.getString()) != null) {
             word = removeParensFromWord(word);
-            word = word.toLowerCase();
+            //word = word.toLowerCase(); paul 
             List units = new ArrayList(20);
             String unitText;
             while ((unitText = est.getString()) != null) {
@@ -306,7 +308,7 @@ public class FullDictionary implements Dictionary {
      * @see edu.cmu.sphinx.linguist.dictionary.Word
      */
     public Word getWord(String text) {
-        text = text.toLowerCase();
+        //text = text.toLowerCase();
         Word word = lookupWord(text);
         if (word == null) {
             logger.warning("Missing word: " + text);
@@ -417,8 +419,23 @@ public class FullDictionary implements Dictionary {
     /**
      * Dumps this FullDictionary to System.out.
      */
+
     public void dump() {
         System.out.println(wordDictionary.size() + " words");
-        System.out.print(toString());
+
+
+        SortedMap sorted = new TreeMap(wordDictionary);
+	sorted.putAll(fillerDictionary);
+        for (Iterator i = sorted.keySet().iterator(); i.hasNext();) {
+	    String result = "";        
+            String text = (String) i.next();
+            Word word = getWord(text);
+            Pronunciation[] pronunciations = word.getPronunciations(null);
+            result += (word + "\n");
+            for (int p = 0; p < pronunciations.length; p++) 
+                result += ("   " + pronunciations[p].toString() + "\n");
+	    System.out.print(result);   
+        }
+        
     }
 }

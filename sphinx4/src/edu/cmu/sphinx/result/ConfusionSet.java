@@ -11,10 +11,10 @@
  */
 package edu.cmu.sphinx.result;
 
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.Iterator;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.ArrayList;
+import java.util.Comparator;
 
 /**
  * A confusion set is a set of words with their associated posteriors.
@@ -24,31 +24,30 @@ import java.util.TreeMap;
  * 
  * @author pgorniak
  */ 
-public class ConfusionSet extends TreeMap {
-    
+public class ConfusionSet extends ArrayList<WordResult> {
+    private boolean tri=false;
+    private boolean hasFiller=false;
+    public void setHasFiller(boolean b) {
+	this.hasFiller=b;
+    }
+    public boolean hasFiller() {
+	return hasFiller;
+    }
     /**
      * Add a word hypothesis to this confusion set.
      * 
      * @param word the hypothesis to add
      */
+    static Comparator<WordResult> comp= new Comparator<WordResult> (){ 
+	public int compare (WordResult wr1,WordResult wr2){
+	    return Double.compare(wr2.getConfidence(),wr1.getConfidence());}
+    };
+
     public void addWordHypothesis(WordResult word) {
-        Set wordSet = getWordSet(word.getConfidence());
-        if (wordSet == null) {
-            wordSet = new HashSet();
-            put(new Double(word.getConfidence()),wordSet);
-        }
-        wordSet.add(word);
+         add(word);
     }
-    
-    /**
-     * Get the word set with this confidence.
-     * 
-     * @param posterior the confidence (posterior)
-     * @return a set of hypotheses with this confidence, null if no such hypotheses
-     * 
-     */
-    public Set getWordSet(double posterior) {
-        return (Set)get(new Double(posterior)); 
+    public void sort(){
+	Collections.sort(this,comp);
     }
     
     /**
@@ -59,18 +58,15 @@ public class ConfusionSet extends TreeMap {
      * @return a set of best hypotheses
      * 
      */
-    public Set getBestHypothesisSet() {
-        return (Set)get(lastKey()); 
-    }
-    
-    /**
-     * Return the single best hypothesis. Breaks ties arbitrarily.
-     * 
-     * @return the best hypothesis stored in this confusion set (by confidence)
-     */
+    //    public WordResult get(int n){
+    //	if (!tri) {
+    //	    tri=true; /// this order is fondamental sort call get
+    //    Collections.sort(this,comp);
+    //}
+    //return super.get(n);
+    //}
     public WordResult getBestHypothesis() {
-        Set s = getBestHypothesisSet();
-        return (WordResult)s.iterator().next();
+	return get(0); 
     }
     
     /**
@@ -79,7 +75,7 @@ public class ConfusionSet extends TreeMap {
      * @return the highes posterior
      */
     public double getBestPosterior() {
-        return ((Double)lastKey()).doubleValue();
+        return get(0).getConfidence();
     }
 
     /**
@@ -91,17 +87,15 @@ public class ConfusionSet extends TreeMap {
      *     for the given word is found
      */
     public WordResult getWordResult(String word) {
-        for (Iterator i = values().iterator(); i.hasNext(); ) {
-            Set wordSet = (Set) i.next();
-            for (Iterator r = wordSet.iterator(); r.hasNext(); ) {
-                WordResult wordResult = (WordResult) r.next();
-                String resultSpelling 
-                    = wordResult.getPronunciation().getWord().getSpelling();
-                if (resultSpelling.equals(word)) {
-                    return wordResult;
-                }
-            }
-        }
+        for (Iterator<WordResult> i = this.iterator(); i.hasNext(); ) {
+             WordResult wordResult =  i.next();
+	     String resultSpelling 
+		 = wordResult.getWord().getSpelling();
+	     if (resultSpelling.equals(word)) {
+		 return wordResult;
+	     }
+	}
+        
         return null;
     }
 
@@ -112,15 +106,25 @@ public class ConfusionSet extends TreeMap {
      */
     public void dump(String name) {
         System.out.print(name + " :");
-        for (Iterator i = values().iterator(); i.hasNext(); ) {
-            Set wordSet = (Set) i.next();
-            for (Iterator r = wordSet.iterator(); r.hasNext();) {
-                WordResult wordResult = (WordResult) r.next();
-                System.out.print
-                    (" " + 
-                     wordResult.getPronunciation().getWord().getSpelling());
-            }
-        }
+        for (Iterator <WordResult> i = this.iterator(); i.hasNext(); ) {
+	    WordResult wordResult = i.next();
+	    System.out.print
+		(" " + 
+		 wordResult.getPronunciation().getWord().getSpelling());
+	}
+        
         System.out.println();
     }
+    public String toString() {
+	StringBuffer s=new StringBuffer();
+        for ( WordResult wr: this){   
+	    s.append(wr.toString());
+	    s.append(" ");
+	    s.append(wr.getConfidence());
+	    s.append(",");
+	}
+	return s.toString();
+    }
+
 }
+

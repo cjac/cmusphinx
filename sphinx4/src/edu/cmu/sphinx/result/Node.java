@@ -30,22 +30,23 @@ import java.io.PrintWriter;
 /**
  * Nodes are part of Lattices.  The represent theories that words were spoken over a given time.
  */
-public class Node {
+public class Node implements  NodeEdge{
     protected static int nodeCount = 0; // used to generate unique IDs for new Nodes.
 
     protected String id;
     protected Word word;
     protected int beginTime = -1;
     protected int endTime = -1;
-    protected Vector enteringEdges;
-    protected Vector leavingEdges;
+    protected int firstEndTime = -1;
+    protected Vector <Edge> enteringEdges;
+    protected Vector <Edge> leavingEdges;
     protected double forwardScore;
     protected double backwardScore;
     protected double posterior;
-    
+    protected Word best;    
     {
-        enteringEdges = new Vector();
-        leavingEdges = new Vector();
+        enteringEdges = new Vector<Edge>();
+        leavingEdges = new Vector<Edge>();
         nodeCount++;
     }
 
@@ -135,8 +136,8 @@ public class Node {
      * could be found.
      */
     public Edge getEdgeFromNode(Node n) {
-        for (Iterator j = enteringEdges.iterator(); j.hasNext();) {
-            Edge e = (Edge) j.next();
+        for (Iterator <Edge> j = enteringEdges.iterator(); j.hasNext();) {
+            Edge e = j.next();
             if (e.getFromNode() == n) {
                 return e;
             }
@@ -154,8 +155,8 @@ public class Node {
         if (enteringEdges.size() != n.getEnteringEdges().size()) {
             return false;
         }
-        for (Iterator i = enteringEdges.iterator(); i.hasNext();) {
-            Edge e = (Edge) i.next();
+        for (Iterator <Edge> i = enteringEdges.iterator(); i.hasNext();) {
+            Edge e =  i.next();
             Node fromNode = e.getFromNode();
             if (!n.hasEdgeFromNode(fromNode)) {
                 return false;
@@ -174,8 +175,8 @@ public class Node {
         if (leavingEdges.size() != n.getLeavingEdges().size()) {
             return false;
         }
-        for (Iterator i = leavingEdges.iterator(); i.hasNext();) {
-            Edge e = (Edge) i.next();
+        for (Iterator <Edge> i = leavingEdges.iterator(); i.hasNext();) {
+            Edge e =  i.next();
             Node toNode = e.getToNode();
             if (!n.hasEdgeToNode(toNode)) {
                 return false;
@@ -189,7 +190,7 @@ public class Node {
      *
      * @return Edges to this Node
      */
-    public Collection getEnteringEdges() {
+    public Collection <Edge>  getEnteringEdges() {
         return enteringEdges;
     }
 
@@ -198,7 +199,7 @@ public class Node {
      *
      * @return Edges from this Node
      */
-    public Collection getLeavingEdges() {
+    public Collection <Edge> getLeavingEdges() {
         return leavingEdges;
     }
 
@@ -208,8 +209,8 @@ public class Node {
      *
      * @return a copy of the edges from this node
      */
-    public Collection getCopyOfLeavingEdges() {
-        return new Vector(leavingEdges);
+    public Collection<Edge> getCopyOfLeavingEdges() {
+        return new Vector<Edge>(leavingEdges);
     }
 
     /**
@@ -256,7 +257,9 @@ public class Node {
     public String getId() {
         return id;
     }
-
+    public int getIdInt() {
+	return Integer.parseInt(id);
+    }
     /**
      * Get the word associated with this Node
      *
@@ -283,9 +286,26 @@ public class Node {
      *
      * @return the end time, or -1 if the frame number if is unknown
      */
+    
     public int getEndTime() {
+        if (endTime==-1)
+	    calculateEndTime();
         return endTime;
     }
+    public int getFirstEndTime() {
+	if (firstEndTime==-1) { 
+	    Iterator e = leavingEdges.iterator();
+            firstEndTime=Integer.MAX_VALUE;
+	    while (e.hasNext()) {
+		Edge edge = (Edge)e.next();
+		if (edge.getToNode().getBeginTime()-1 <firstEndTime) {
+                firstEndTime = edge.getToNode().getBeginTime()-1;
+		}
+
+	    }
+	}
+	return firstEndTime;
+	}
 
     /**
      * Returns a description of this Node that contains the word, the
@@ -293,9 +313,12 @@ public class Node {
      *
      * @return a description of this Node
      */
-    public String toString() {
-        return ("Node(" + word.getSpelling() + "," + getBeginTime() + "|" + 
-		getEndTime() + ")");
+    public String toString() { 
+	String posterior = "" + getPosterior();
+        if (getPosterior() == LogMath.getLogZero()) {
+            posterior = "log zero";}
+        return ("N"+id+"(" + word.getSpelling() + "," + getBeginTime() + "|" + 
+		getEndTime()+"|"+posterior + ")");
     }
 
     /**
@@ -319,10 +342,14 @@ public class Node {
      * @param f
      * @throws IOException
      */
-    void dump(PrintWriter f) throws IOException {
+    void dump(PrintWriter f) { // throws IOException {
+	String posterior = "" + getPosterior();
+        if (getPosterior() == LogMath.getLogZero()) {
+            posterior = "log zero";
+	}
         f.println("node: " + id + " " + word.getSpelling() + 
-                //" a:" + getForwardProb() + " b:" + getBackwardProb()
-                " p:" + getPosterior());
+		  " a:" + getForwardScore() + " b:" + getBackwardScore()+
+		  " p:" + posterior + " first:" + getBeginTime() + " last:" + getEndTime());
     }
 
     /**
@@ -381,7 +408,18 @@ public class Node {
         return id.hashCode();
     }
     
-    
+    public void setBest (Word best) {
+	this.best=best;
+    }
+    public Word getBest() {
+	return best;
+    }
+    public boolean getIsNotPruned() {
+
+	for (Edge e : getLeavingEdges())
+            if (e.getNoPruned() ) return true;
+	return getLeavingEdges().size()==0; //the last is not pruned
+    }    
     /**
      * Assumes ids are unique node identifiers
      * 
@@ -406,47 +444,72 @@ public class Node {
             }
         }
     }
+    private void calculateEndTime() {
+        endTime = -1;
+        Iterator e = leavingEdges.iterator();
+        while (e.hasNext()) {
+            Edge edge = (Edge)e.next();
+            if (edge.getToNode().getBeginTime()-1 >endTime) {
+                endTime = edge.getToNode().getBeginTime()-1;
+            }
+        }
+    }
         
     /**
      * Get the nodes at the other ends of outgoing edges of this node.
      * 
-     * @return a list of child nodes
+     * @return a list of child nodes selon pruned
      */
-    public List getChildNodes() {
+    public List<Node> getChildNodes(boolean pruned) {
         LinkedList childNodes = new LinkedList();
         Iterator e = leavingEdges.iterator();
         while (e.hasNext()) {
             Edge edge = (Edge)e.next();
-            childNodes.add(edge.getToNode());
+            if (pruned || edge.getNoPruned())
+		childNodes.add(edge.getToNode());
         }
         return childNodes;
     }
     
-    protected boolean isAncestorHelper(List children, Node node) {
-        Iterator i = children.iterator();
+    
+    protected boolean isAncestorHelper(List<Node> children, Node node) {
+        Iterator <Node> i = children.iterator();
         while(i.hasNext()) {
-            Node n = (Node)i.next();
+            Node n = i.next();
+            if (parcours.contains(n)) continue;
+            
             if (n.equals(node)) {
                 return true;
             }
-            if (isAncestorHelper(n.getChildNodes(),node)) {
+            parcours.add(n);
+            if ( (n.getFirstEndTime() <= node.getBeginTime()) && 
+		 isAncestorHelper(n.getChildNodes(false),node)) {
                 return true;
             }
         }
         return false;
     }
-    
+    private static java.util.Set parcours =new java.util.HashSet<Node>();
     /**
      * Check whether this node is an ancestor of another node.
      * 
      * @param node the Node to check
      * @return whether this node is an ancestor of the passed in node.
      */
+    public boolean isAncestorOf(NodeEdge n) {
+	return isAncestorOf(n.getFromNode());
+    }
+    public Node getFromNode() {
+	return this;
+    }
+    
     public boolean isAncestorOf(Node node) {
         if (this.equals(node)) {
             return true; // node is its own ancestor
         }
-        return isAncestorHelper(this.getChildNodes(),node);
+         parcours.clear();
+        return (getFirstEndTime() <= node.getBeginTime()) &&  
+	    isAncestorHelper(this.getChildNodes(false),node);
     }
     
     /**

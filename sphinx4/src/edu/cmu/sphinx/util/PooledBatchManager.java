@@ -41,7 +41,7 @@ public class PooledBatchManager implements BatchManager {
     private  FileLock lock;
     private PrintStream oldOut;
     private FileFilter testFileFilter = new TestFileFilter();
-
+    private boolean modeCtl;
 
     /**
      * Creates a pooled batch manager
@@ -53,7 +53,20 @@ public class PooledBatchManager implements BatchManager {
     public PooledBatchManager(String filename, int skip) {
         this.batchFile = filename;
         this.skip = skip;
+        this.modeCtl =false;
     }
+  /** Creates a pooled batch manager
+     *
+     * @param filename the name of the batch file
+     * @param skip items to skip between runs
+     */
+
+      public PooledBatchManager(String filename, int skip, boolean modeCtl) {
+        this.batchFile = filename;
+        this.skip = skip;
+        this.modeCtl=modeCtl;
+    }
+
     /**
      * Starts processing the batch
      *
@@ -267,8 +280,13 @@ public class PooledBatchManager implements BatchManager {
             throw new IOException("Bad batch file size");
         }
         String line = (String) list.get(0);
-        return new BatchItem(BatchFile.getFilename(line),
-                        BatchFile.getReference(line));
+
+	if (modeCtl) 
+	    return new BatchItem(line.split(" +"));
+	else
+            return new BatchItem(BatchFile.getFilename(line),
+                            BatchFile.getReference(line));
+       
     }
 }
 

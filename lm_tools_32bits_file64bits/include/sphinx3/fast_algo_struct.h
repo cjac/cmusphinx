@@ -121,6 +121,7 @@
 #include <s3types.h>
 #include <mdef.h>
 #include <ascr.h>
+#include <logmath.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -279,7 +280,8 @@ beam_t *beam_init (
     float64 wd,  /**< Input: word beam */
     float64 wdend,  /**< Input: word end beam. */
     int32 ptranskip, /**< Input: whether to apply phoneme transition beam rather than word beam.*/
-    int32 n_ciphone  /**< Input: number of ciphone to initialized arrays used in word end pruning. */
+    int32 n_ciphone,  /**< Input: number of ciphone to initialized arrays used in word end pruning. */
+    logmath_t *logmath
     );
 
 
@@ -336,7 +338,8 @@ fast_gmm_t *fast_gmm_init (int32 down_sampling_ratio, /**<  Input: The frame dow
 			   float64 cibeam,  /**< Input: CI phone beam */
 			   float32 tighten_factor, /**< Input : A tightening factor used in down sampling */
 			   int32 max_cd,    /**< Input: Max CD senone to be computed */
-			   int32 n_ci_sen /**< Input: no. of ci senone, use to initialize  the ci_occ array*/
+			   int32 n_ci_sen, /**< Input: no. of ci senone, use to initialize  the ci_occ array*/
+			   logmath_t *logmath
     );
 
 /** report the content of the fast_gmm_t data structure*/
@@ -355,7 +358,8 @@ void fast_gmm_free (fast_gmm_t *fg /**< Input: structure to free*/
  */
 pl_t* pl_init(int32 pheurtype, /**< Input: Phoneme lookahead heuristic types TBD: (NOT DETAIL ENOUGH)*/
 	      int32 pl_beam,  /**< Input: Phoneme lookahead beam */
-	      int32 n_ciphone /**< Input: Number of CI phones used in the cache size. */
+	      int32 n_ciphone, /**< Input: Number of CI phones used in the cache size. */
+	      logmath_t *logmath
     );
 
 /** report the content of the phoneme lookahead data structure pl_t */

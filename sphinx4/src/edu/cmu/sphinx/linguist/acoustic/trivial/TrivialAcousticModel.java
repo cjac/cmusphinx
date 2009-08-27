@@ -341,7 +341,8 @@ class TrivialHMMState implements HMMState {
         return which;
     }
 
-
+    public long getId() {
+	return 0;}
     /**
      * Gets the score for this HMM state
      *
@@ -351,6 +352,9 @@ class TrivialHMMState implements HMMState {
      */
     public float getScore(Data feature) {
         return 0.0f;
+    }
+    public double getScoreDouble(Data feature)
+  { throw new Error("pas implemente");
     }
 
     /**

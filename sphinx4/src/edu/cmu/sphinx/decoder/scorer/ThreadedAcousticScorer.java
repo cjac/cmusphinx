@@ -27,7 +27,7 @@ import edu.cmu.sphinx.util.props.PropertyException;
 import edu.cmu.sphinx.util.props.PropertySheet;
 import edu.cmu.sphinx.util.props.PropertyType;
 import edu.cmu.sphinx.util.props.Registry;
-
+import edu.cmu.sphinx.decoder.search.Token; // a voir
 /**
  * An acoustic scorer that breaks the scoring up into a configurable number of
  * separate threads.
@@ -289,6 +289,14 @@ public class ThreadedAcousticScorer implements AcousticScorer {
             dpe.printStackTrace();
             return best;
         }
+        if (false &&  best!=null){
+	    float maxi = - Float.MAX_VALUE;
+	    for (Object o : scoreableList) 
+		if ( ((Token) o).getAcousticScore()>maxi) maxi =  ((Token) o).getAcousticScore();
+	    // float maxi =best.getScore();
+	    for (Object o : scoreableList)
+		((Scoreable) o).normalizeScore(maxi);
+	}
         return best;
     }
 

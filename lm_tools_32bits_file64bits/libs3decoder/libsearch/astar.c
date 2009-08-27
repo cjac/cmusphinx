@@ -162,7 +162,7 @@
 #include "search.h"
 #include "logs3.h"
 #include "vithist.h"
-
+#include "s3_paul.h"
 
 /* ---------------------------- NBEST CODE ---------------------------- */
 
@@ -177,6 +177,7 @@ typedef struct ppath_s {
     int32 lscr;         /** LM score for this node given past history */
     int32 pscr;         /** Path score (from initial node) ending at this node startfrm */
     int32 tscr;         /** pscr + heuristic score (this node startfrm -> end of utt) */
+    int32 num;    /** pour etre compatible avec s3_paul */
     uint32 histhash;    /** Hash value of complete history, for spotting duplicates */
     int32 pruned;       /** If superseded by another with same history and better score */
     struct ppath_s *hashnext;   /** Next node with same hashmod value */
@@ -202,9 +203,14 @@ struct astar_s {
     int32 n_ppath;           /** #Partial paths allocated (to control memory usage) */
     int32 maxppath;          /** Max partial paths allowed before aborting */
     int32 beam;
+    int32 timeForBeam;
     int32 besttscr;
     int32 n_pop, n_exp, n_pp;
     float32 lwf;
+    float32 startTime;
+    char showName[100];
+    char * uttName;
+
     aheap_t *heap_root;
 #define HISTHASH_MOD	200003  /* A prime */
 /**
@@ -430,10 +436,17 @@ ppath_seg_write(FILE * fp, ppath_t * pp, dict_t *dict, lm_t *lm, int32 ascr)
     /* FIXME: This will be wrong if lwf != 1.0 */
     lscr_base = pp->hist ? lm_rawscore(lm, pp->lscr) : 0;
 
-    fprintf(fp, " %d %d %d %s",
+/*    fprintf(fp, " %d %d %d %s",
             pp->dagnode->sf, ascr, lscr_base, dict_wordstr(dict,
                                                            pp->dagnode->
                                                            wid));
+*/    
+
+    fprintf(fp, " %d %lf %lf %s",
+            pp->dagnode->sf, logs3_to_log(ascr), logs3_to_log(lscr_base), dict_wordstr(dict,
+                                                           pp->dagnode->
+                                                           wid));
+
 }
 
 
@@ -451,7 +464,8 @@ nbest_hyp_write(FILE * fp, ppath_t * top, dict_t *dict, lm_t *lm, int32 pscr, in
             assert(pp->lscr == 0);
     }
 
-    fprintf(fp, "T %d A %d L %d", pscr, pscr - lscr, lscr_base);
+/*    fprintf(fp, "T %d A %d L %d", pscr, pscr - lscr, lscr_base);*/
+  fprintf(fp, "T %lf A %lf L %lf", logs3_to_log(pscr), logs3_to_log(pscr - lscr), logs3_to_log(lscr_base));
 
     ppath_seg_write(fp, top, dict, lm, pscr - top->pscr);
 
@@ -476,7 +490,6 @@ astar_init(dag_t *dag, dict_t *dict, lm_t *lm, fillpen_t *fpen, float64 beam, fl
     astar->heap_root = NULL;
     astar->ppath_list = NULL;
     astar->hash_list = (ppath_t **) ckd_calloc(HISTHASH_MOD, sizeof(ppath_t *));
-
     for (i = 0; i < HISTHASH_MOD; i++)
         astar->hash_list[i] = NULL;
 
@@ -508,6 +521,7 @@ astar_init(dag_t *dag, dict_t *dict, lm_t *lm, fillpen_t *fpen, float64 beam, fl
 
     astar->n_pop = astar->n_exp = astar->n_pp = 0;
     astar->besttscr = (int32) 0x80000000;
+    astar->timeForBeam = -1;
 
     return astar;
 }
@@ -531,13 +545,14 @@ astar_next_ppath(astar_t *astar)
     dagnode_t *d;
     daglink_t *l;
     int32 lscr, pscr, tscr;
-    s3wid_t bw0, bw1, bw2;
+    s3wid_t bw0, bw1, bw2, bw3;
     int32 ppathdebug;
     dict_t *dict = astar->dict;
     lm_t *lm = astar->lm;
     fillpen_t *fpen = astar->fpen;
     float64 lwf = astar->lwf;
-
+    s3lmwid32_t lwid[4];
+		
     ppathdebug = cmd_ln_boolean_r(astar->dag->config, "-ppathdebug");
     while (astar->heap_root) {
         /* Extract top node from heap */
@@ -552,33 +567,51 @@ astar_next_ppath(astar_t *astar)
         if (top->dagnode == astar->dag->final.node) /* Complete hypothesis; return */
             return top;
 
+
+/* C'EST ICI QU'IL FAUT ALLER CHERCHER 3 MOTS DANS L'HISTORIQUE */
         /* Find two word (trigram) history beginning at this node */
+
+        bw0 = bw1 = bw2 = BAD_S3WID;
         pp = (dict_filler_word(dict, top->dagnode->wid))
             ? top->lmhist : top;
         if (pp) {
-            bw1 = dict_basewid(dict, pp->dagnode->wid);
+            bw2 = dict_basewid(dict, pp->dagnode->wid);
             pp = pp->lmhist;
-            bw0 = pp ? dict_basewid(dict, pp->dagnode->wid) : BAD_S3WID;
+            if (pp) {
+              bw1 = dict_basewid(dict, pp->dagnode->wid);
+              pp = pp->lmhist;
+              if (pp) 
+                bw0 = dict_basewid(dict, pp->dagnode->wid);
+            }
+/* Plus la peine : initialisation avant les tests            else
+              bw0 = bw1 = BAD_S3WID;
+*/              
         }
-        else
-            bw0 = bw1 = BAD_S3WID;
-
+/* idem        else
+            bw0 = bw1 = bw2 = BAD_S3WID;
+*/
         /* Expand to successors of top (i.e. via each link leaving top) */
         d = top->dagnode;
+        lwid[0] = (bw0 == BAD_S3WID) ? BAD_LMWID(lm) : lm->dict2lmwid[bw0];
+        lwid[1] = (bw1 == BAD_S3WID) ? BAD_LMWID(lm) : lm->dict2lmwid[bw1];
+        lwid[2] = (bw2 == BAD_S3WID) ? BAD_LMWID(lm) : lm->dict2lmwid[bw2];
+
         for (l = d->succlist; l; l = l->next) {
             assert(l->node->reachable && (!l->bypass));
 
             /* Obtain LM score for link */
-            bw2 = dict_basewid(dict, l->node->wid);
+            bw3 = dict_basewid(dict, l->node->wid);
+            lwid[3] = lm->dict2lmwid[bw3];
+
+
             lscr =
-                (dict_filler_word(dict, bw2))
-                ? fillpen(fpen, bw2)
-                : lwf * lm_tg_score(lm,
-                                    (bw0 == BAD_S3WID)
-                                    ? BAD_LMWID(lm) : lm->dict2lmwid[bw0],
-                                    (bw1 == BAD_S3WID)
-                                    ? BAD_LMWID(lm) : lm->dict2lmwid[bw1],
-                                    lm->dict2lmwid[bw2], bw2);
+                (dict_filler_word(dict, bw3))
+                ? fillpen(fpen, bw3)
+                : lwf * lm_ng_score(lm, 4, lwid, bw3);
+
+//fprintf(stderr, "%d <= %s lm_ng_score(lm, 4, lwid, bw3),    lm_best_4g_score(lm, lmmax, lwid, bw2);           
+
+
 
             if (astar->dag->lmop++ > astar->dag->maxlmop) {
                 E_ERROR("Max LM ops (%d) exceeded\n", astar->dag->maxlmop);
@@ -589,11 +622,16 @@ astar_next_ppath(astar_t *astar)
             pscr = top->pscr + l->ascr + lscr;
             tscr = pscr + l->hscr;
 
-            if (ppathdebug) {
+            if (0&&ppathdebug) {
                 printf("pscr= %11d, tscr= %11d, sf= %5d, %s%s\n",
                        pscr, tscr, l->node->sf, dict_wordstr(dict,
                                                              l->node->wid),
                        (tscr - astar->beam >= astar->besttscr) ? "" : " (pruned)");
+            }
+            if (ppathdebug) {
+                printf ("pscr= %11d, hscr= %11d, tscr= %11d, lscr=%7d, sf= %5d, %s%s %d\n",
+                        pscr, l->hscr, tscr,lscr, l->node->sf, dict_wordstr(dict, l->node->wid),
+                        (tscr-astar->beam >= astar->besttscr) ? "" : " (pruned)", astar->besttscr);
             }
 
             /* Insert extended path if within beam of best so far */
@@ -605,8 +643,10 @@ astar_next_ppath(astar_t *astar)
                     return NULL;
                 }
 
-                if (tscr > astar->besttscr)
-                    astar->besttscr = tscr;
+                if ( tscr > astar->besttscr) { 
+                  astar->besttscr = tscr;
+                  astar->timeForBeam = l->node->sf;
+                }
             }
         }
         if (l)                  /* Above loop was aborted */
@@ -651,16 +691,16 @@ astar_next_hyp(astar_t *astar)
 
 void
 nbest_search(dag_t *dag, char *filename, char *uttid, float64 lwf,
-             dict_t *dict, lm_t *lm, fillpen_t *fpen)
-{
+             dict_t *dict, lm_t *lm, fillpen_t *fpen,FILE * ctmfp)
+{    
     FILE *fp;
     float64 fbeam;
     int32 nbest_max, n_hyp;
     int32 besthyp, worsthyp;
-    ppath_t *top;
+    ppath_t *top, * theBest=NULL;
     int32 ispipe;
     astar_t *astar;
-
+    int rangTheBest=-1;
     fbeam = cmd_ln_float64_r(dag->config, "-beam");
     astar = astar_init(dag, dict, lm, fpen, fbeam, lwf);
 
@@ -669,12 +709,18 @@ nbest_search(dag_t *dag, char *filename, char *uttid, float64 lwf,
         E_ERROR("fopen_comp (%s,w) failed\n", filename);
         fp = stdout;
     }
+    /* pour imprimer la best dans le bon format */
+    sscanf(uttid,"%[^-]-%f",astar->showName,&(astar->startTime));
+    astar->uttName=uttid;
+
     E_INFO("Writing N-Best list to %s\n", filename);
     fprintf(fp, "# %s\n", uttid);
     fprintf(fp, "# frames %d\n", dag->nfrm);
-    fprintf(fp, "# logbase %e\n", cmd_ln_float32_r(dag->config, "-logbase"));
-    fprintf(fp, "# langwt %e\n", cmd_ln_float32_r(dag->config, "-lw") * lwf);
-    fprintf(fp, "# inspen %e\n", cmd_ln_float32_r(dag->config, "-wip"));
+/*    fprintf(fp, "# logbase %e\n", cmd_ln_float32_r(dag->config, "-logbase"));*/
+    fprintf(fp, "# logBase natural\n");
+    fprintf(fp, "# langWt %e\n", cmd_ln_float32_r(dag->config, "-lw") * lwf);
+/*    fprintf(fp, "# inspen %e\n", cmd_ln_float32_r(dag->config, "-wip"));*/
+    fprintf(fp, "# logWip %e\n", logs3_to_log(lm->wip));
     fprintf(fp, "# beam %e\n", fbeam);
 
     /* Astar-search */
@@ -687,19 +733,32 @@ nbest_search(dag_t *dag, char *filename, char *uttid, float64 lwf,
         top = astar_next_ppath(astar);
         if (top == NULL)
             break;
-        nbest_hyp_write(fp, top, dict, lm,
+        if (0) nbest_hyp_write(fp, top, dict, lm,
                         top->pscr + dag->final.ascr,
                         dag->nfrm);
         n_hyp++;
-        if (besthyp < top->pscr)
+        if (besthyp < top->pscr) {
+            theBest=top;
+            rangTheBest=n_hyp-1;
             besthyp = top->pscr;
+        }
         if (worsthyp > top->pscr)
             worsthyp = top->pscr;
     }
+    if (theBest) nbest_hyp_write(fp, theBest, dict, lm,
+                                 theBest->pscr + dag->final.ascr,
+                                 dag->nfrm);
 
+    if (theBest && ctmfp) 
+        s3paul_imprimer(ctmfp,theBest,dag->final.ascr,astar,theBest->dagnode->sf);
     fprintf(fp, "End; best %d worst %d diff %d beam %d\n",
             besthyp + dag->final.ascr, worsthyp + dag->final.ascr,
             worsthyp - besthyp, astar->beam);
+    fprintf(stderr,"------- rang %7d/%d\n",rangTheBest/(n_hyp+1));
+    fprintf(stderr, "%s End; best %d worst %d diff %d beam %d\n",uttid,
+            besthyp + dag->final.ascr, worsthyp + dag->final.ascr,
+            worsthyp - besthyp, astar->beam);
+
     fclose_comp(fp, ispipe);
     if (n_hyp <= 0) {
         unlink(filename);

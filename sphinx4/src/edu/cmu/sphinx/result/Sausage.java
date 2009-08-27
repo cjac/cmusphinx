@@ -13,7 +13,8 @@
  */
 
 package edu.cmu.sphinx.result;
-
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Iterator;
@@ -21,8 +22,11 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
 import java.util.Vector;
-
+import java.util.Locale;
+import java.util.ArrayList;
 import edu.cmu.sphinx.util.LogMath;
+import java.io.File;
+import java.util.regex.Pattern;
 
 /**
  * A Sausage is a sequence of confusion sets, one for each position in an utterance. 
@@ -31,15 +35,58 @@ import edu.cmu.sphinx.util.LogMath;
  */
 
 public class Sausage implements ConfidenceResult {
-    protected List confusionSets;
+    protected List<ConfusionSet> confusionSets;
     
+
+
+    public Sausage(File f,float seuil,float aveceps ,float sanseps) throws IOException{
+	confusionSets=new ArrayList<ConfusionSet>();
+	BufferedReader reader = new BufferedReader(new FileReader(f));
+        Pattern p=Pattern.compile("\\s+");
+        String aline = null, line = null;
+        int aid=-1;
+	boolean haseps=false;
+	while ((line = reader.readLine()) != null) {
+            if (line.length() > 0) {
+		
+	        String l[]=p.split(line);
+		if (l.length<3) {
+		    System.err.println("ligne courte "+line+"\n");
+		continue;
+	    }
+		int id1 = Integer.parseInt(l[0]);
+		int id2 = Integer.parseInt(l[1]);
+		if (l[2].equals("!NULL")) break;
+		Double proba = (Double.parseDouble(l[3]));
+		String m=l[2];
+		if (aid!=id1) haseps=false;
+		if (m.equals("eps") ){
+		    haseps=true;
+		    if (proba<seuil) continue;
+		}else
+		    {
+			if (haseps && proba<aveceps) continue;
+			if (!haseps && proba<sanseps) continue;
+		    }
+
+
+		if (confusionSets.size()<=id1) confusionSets.add(new ConfusionSet());
+		addWordHypothesis(id1,m,proba,null);
+		aid =id1;
+	    }
+	}
+	reader.close();
+    }
+
+
+
     /**
      * Construct a new sausage.
      * 
      * @param size The number of word slots in the sausage
      */
     public Sausage(int size) {
-        confusionSets = new Vector(size);
+        confusionSets = new Vector<ConfusionSet>(size);
         for (int i=0;i<size;i++) {
             confusionSets.add(new ConfusionSet());
         }
@@ -67,22 +114,29 @@ public class Sausage implements ConfidenceResult {
             int index = i.nextIndex();
             ConfusionSet set = (ConfusionSet)i.next();
             float sum = LogMath.getLogZero();
-            for (Iterator j=set.keySet().iterator();j.hasNext();) {
-                sum = logMath.addAsLinear(sum,((Double)j.next()).floatValue());
+            for (Iterator <WordResult>  j=set.iterator();j.hasNext();) {
+                sum = logMath.addAsLinear(sum,(float)j.next().getConfidence());
             }
-            if (sum < LogMath.getLogOne() - 10) {
+            if (sum < LogMath.getLogOne() - 20) {
                 float remainder = logMath.subtractAsLinear
                     (LogMath.getLogOne(), sum);
-                addWordHypothesis(index,"<noop>",remainder, logMath);
-            } else {
-                ConfusionSet newSet = new ConfusionSet();
-                for (Iterator j=set.keySet().iterator();j.hasNext();) {
-                    Double oldProb = (Double)j.next();
-                    Double newProb = new Double(oldProb.doubleValue() - sum);
-                    newSet.put(newProb,set.get(oldProb));
-                }
-                confusionSets.set(index,newSet);
+                addWordHypothesis(index,"eps",remainder, logMath);
+
             }
+
+	    set.sort();
+// 	    else 
+// 		if (false)	{
+// 		    ConfusionSet newSet = new ConfusionSet();
+// 		    for (Iterator j=set.keySet().iterator();j.hasNext();) {
+// 			Double oldProb = (Double)j.next();
+// 			Double newProb = new Double(oldProb.doubleValue() - sum);
+// 			newSet.put(newProb,set.get(oldProb));
+// 		    }
+// 		    confusionSets.set(index,newSet);
+// 		}
+
+	    
         }
     }
     
@@ -130,9 +184,9 @@ public class Sausage implements ConfidenceResult {
      * @param pos the word slot to look at
      * @return the word with the highest posterior in the slot
      */
-    public Set getBestWordHypothesis(int pos) {        
+    public WordResult getBestWordHypothesis(int pos) {        
         ConfusionSet set = (ConfusionSet)confusionSets.get(pos);
-        return (Set)set.get(set.lastKey());
+        return set.get(0);
     }
 
     /**
@@ -144,7 +198,7 @@ public class Sausage implements ConfidenceResult {
 
     public double getBestWordHypothesisPosterior(int pos) {
         ConfusionSet set = (ConfusionSet)confusionSets.get(pos);
-        return ((Double)set.lastKey()).doubleValue();        
+        return set.get(0).getConfidence();        
     }
     
     /**
@@ -167,12 +221,40 @@ public class Sausage implements ConfidenceResult {
         return confusionSets.size();
     }
     
+    public void dumpFSM(java.io.File file,float limEps,float limWord) {
+	try	{
+	    java.io.PrintWriter f = new java.io.PrintWriter(file);
+	    int count =0;
+	    for (ConfusionSet set : confusionSets) {
+		WordResult best =set.getBestHypothesis();
+		if (!best.toString().equals("esp") || 
+		    (set.size()>=2 && set.get(1).getConfidence()>limWord))
+		    for (WordResult wr :set) {
+			if (!best.toString().equals("esp")&& wr.getConfidence()<limWord) break;
+                        if (!best.toString().equals("esp") || wr.getConfidence()>limEps)
+			    f.printf(Locale.US,"%-4d %-4d %-10s %.3g\n",
+				     count,count+1,wr.toString(), wr.getLogMath().logToLinear((float)wr.getConfidence()));
+		    }
+		count++;
+	    }
+	    f.printf(Locale.US,"%-4d %-4d %-10s %.3g\n",
+		     count,count+1,"!NULL",1.0f);
+	    f.println(count+1);
+	    f.close();
+	}
+	catch (IOException e) {e.printStackTrace();
+	    throw new Error(e.toString());}
+    }
+
+
     /**
      * Write this sausage to an aisee format text file.
      * @param fileName The file to write to.
      * @param title the title to give the graph.
      */
     public void dumpAISee(String fileName, String title) {
+     
+       
         try {
             System.err.println("Dumping " + title + " to " + fileName);
             FileWriter f = new FileWriter(fileName);
@@ -184,21 +266,20 @@ public class Sausage implements ConfidenceResult {
             while (i.hasNext()) {
                 int index = i.nextIndex();
                 ConfusionSet set = (ConfusionSet)i.next();
-                Iterator j = set.keySet().iterator();
+                Iterator <WordResult> j = set.iterator();
                 f.write("node: { title: \"" + index + "\" label: \"" + index + "\"}\n");
+		
                 while (j.hasNext()) {
-                    Double prob = (Double)j.next();
-                    String word = "";
-                    Set wordSet = (Set)set.get(prob);
-                    for (Iterator w = wordSet.iterator();w.hasNext();) {
-                        word += w.next();
-                        if (w.hasNext()) {
-                            word += "/";
-                        }
-                    }
+                    WordResult wr = j.next();
+		    double pr;
+		    if (wr.getLogMath()!=null)
+			pr= wr.getLogMath().logToLinear((float)wr.getConfidence());
+		    else
+			pr=wr.getConfidence();
+		String  prob=String.format(Locale.US,"%.3g",pr);
                     f.write("edge: { sourcename: \"" + index
                             + "\" targetname: \"" + (index + 1)
-                            + "\" label: \"" + word + ":" + prob + "\" }\n");
+                            + "\" label: \"" + wr + ": " + prob + "\" }\n");
                 }
             }
             f.write("node: { title: \"" + size() + "\" label: \"" + size() + "\"}\n");            

@@ -24,6 +24,7 @@ class NGramBuffer {
     private int position;
     private boolean bigEndian;
     private boolean used;
+    private int bytesPerIDField;
 
 
     /**
@@ -32,11 +33,12 @@ class NGramBuffer {
      * @param buffer the byte[] with trigrams
      * @param numberNGrams the number of N-gram
      */
-    public NGramBuffer(byte[] buffer, int numberNGrams, boolean bigEndian) {
+    public NGramBuffer(byte[] buffer, int numberNGrams, boolean bigEndian, int bytesPerIDField) {
         this.buffer = buffer;
         this.numberNGrams = numberNGrams;
-	this.bigEndian = bigEndian;
-	this.position = 0;
+        this.bigEndian = bigEndian;
+        this.position = 0;
+        this.bytesPerIDField = bytesPerIDField;
     }
 
 
@@ -71,6 +73,16 @@ class NGramBuffer {
 
 
     /**
+     * Returns the number of bytes used by ID fields in this buffer.
+     *
+     * @return the number of bytes for an ID field in this buffer
+     */
+    public int getBytesPerIDField() {
+        return bytesPerIDField;
+    }
+
+
+    /**
      * Returns the position of the buffer.
      *
      * @return the position of the buffer
@@ -92,7 +104,7 @@ class NGramBuffer {
 
     /**
      * Returns the word ID of the nth follower, assuming that the ID
-     * is the first two bytes of the NGram entry.
+     * is the first field of the NGram entry.
      *
      * @param nthFollower starts from 0 to (numberFollowers - 1).
      *
@@ -101,7 +113,7 @@ class NGramBuffer {
     public final int getWordID(int nthFollower) {
         int nthPosition = nthFollower * (buffer.length/numberNGrams);
         setPosition(nthPosition);
-        return readTwoBytesAsInt();
+        return readIDField();
     }
 
 
@@ -134,6 +146,51 @@ class NGramBuffer {
 	    position += 2;
 	    return value;
         }
+    }
+
+
+    /**
+     * Reads the next four bytes from the buffer's current position as an
+     * integer.
+     *
+     * @return the next two bytes as an integer
+     */
+    public final int readFourBytesAsInt() {
+        if (bigEndian) {
+            int value = (0x000000ff & buffer[position++]);
+            value <<= 8;
+            value |= (0x000000ff & buffer[position++]);
+            value <<= 8;
+            value |= (0x000000ff & buffer[position++]);
+            value <<= 8;
+            value |= (0x000000ff & buffer[position++]);
+            return value;
+        } else {
+            int value = (0x000000ff & buffer[position+3]);
+            value <<= 8;
+            value |= (0x000000ff & buffer[position+2]);
+            value <<= 8;
+            value |= (0x000000ff & buffer[position+1]);
+            value <<= 8;
+            value |= (0x000000ff & buffer[position]);
+            position += 4;
+            return value;
+        }
+    }
+
+
+    /**
+     * Reads an ID field (word ID, probability ID, etc.) from the buffer's current
+     * position as an integer. The number of bytes read depends of the size of an
+     * ID field, which can be 2 or 4 bytes depending on the format of the LM file.
+     *
+     * @return the next two or four bytes as an integer
+     */
+    public final int readIDField() {
+        if (bytesPerIDField == 2)
+            return readTwoBytesAsInt();
+        else
+            return readFourBytesAsInt();
     }
 
 

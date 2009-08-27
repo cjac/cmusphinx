@@ -84,7 +84,17 @@ public class FloatData implements Data, Cloneable {
     public long getCollectTime() {
         return collectTime;
     }
-
+    public String toString() {
+	boolean pasFirst=false;
+	StringBuffer sb=new StringBuffer();
+	for( int i=0; i<values.length; i++) {
+	    if (pasFirst)
+		sb.append(" ");
+	    pasFirst=true;
+	    sb.append(values[i]);
+	}
+	return sb.toString();
+    }
 
     /**
      * Returns a clone of this Data object.

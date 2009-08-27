@@ -82,7 +82,7 @@
 #define _LIB_GS_H_
 
 #include <s3types.h>
-#include "logs3.h"
+#include <logmath.h>
 #include <stdio.h>
 
 /**  \file gs.h
@@ -119,6 +119,7 @@ extern "C" {
  *  Wrapper structure of the gaussian selection algorithm
  */
 typedef struct gs_s {
+    logmath_t *logmath;
     int32 n_mgau;  /**< number of GMMs */
     int32 n_feat;  /**< number of streams */
     int32 n_code;  /**< number of code word */
@@ -139,7 +140,8 @@ int32 gs_display(char *file, /**< file to display*/
     );
 
 /** Read the Gaussian selector */
-gs_t* gs_read(const char *file /**< a file to display */
+gs_t* gs_read(const char *file, /**< a file to display */
+	      logmath_t *logmath
     );
 
 /** Choose the closet Gaussian codebook to use */

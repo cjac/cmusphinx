@@ -16,7 +16,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.StringTokenizer;
-
+import  edu.cmu.sphinx.linguist.dictionary.Word;
 /**
  * Edges are part of Lattices.  They connect Nodes, and contain the score
  * associated with that sequence.
@@ -26,7 +26,9 @@ public class Edge {
     protected double lmScore;
     protected Node fromNode;
     protected Node toNode;
-
+    protected double pscore;
+    protected int beginTime=-1;
+    protected int endTime=-1;
     /**
      * Create an Edge from fromNode to toNode with acoustic and
      * Language Model scores.
@@ -46,7 +48,7 @@ public class Edge {
 
     public String toString() {
         return "Edge(" + fromNode + "-->" + toNode + "[" + acousticScore
-                + "," + lmScore + "])";
+                + "," + lmScore +","+pscore+ "])";
     }
 
     /**
@@ -78,7 +80,7 @@ public class Edge {
      * @param f
      * @throws IOException
      */
-    void dump(PrintWriter f) throws IOException {
+    void dump(PrintWriter f) { //  throws IOException {
         f.println( "edge: " + fromNode.getId() + " " + toNode.getId() + " "
                     + acousticScore + " " + lmScore );
     }
@@ -125,7 +127,32 @@ public class Edge {
     public Node getToNode() {
         return toNode;
     }
+    public void getBeginTime(){
+	if (beginTime!=-1)
+	    return beginTime;
+	return beginTime=getFromNode().getBeginTime();
+    }
+  public void getEndTime(){
+	if (endTime!=-1)
+	    return endTime;
+	return endTime=getToNode().getBeginTime();
+    }
+    public Word  getWord() {
+	return getFromNode().getWord();
+    }
+    public void setPscore(double p) {
+	pscore=p;
+    }
+    public double getPosterior(){
+	return pscore;
+    }
+    public double getPscore() {
+	return pscore;
+    }
 
+    public isAncestorOf(Edge e) {
+	return getToNode)().isAncestorOf(e.getFromNode());
+    }
     /**
      * Sets the acoustic score
      *

@@ -56,7 +56,8 @@ class HMMTree {
     private float languageWeight;
     private Map endNodeMap;
     private WordNode sentenceEndWordNode;
-
+    private float logFillerInsertionProbability=0;
+    private float logSilenceInsertionProbability=0;
     /**
      * Creates the HMMTree
      *
@@ -79,7 +80,12 @@ class HMMTree {
         compile();
         Timer.stop("Create HMMTree");
     }
-
+  HMMTree(HMMPool pool, Dictionary dictionary, LanguageModel lm,
+	  boolean addFillerWords, float languageWeight, float logFillerInsertionProbability,float logSilenceInsertionProbability){
+      this( pool, dictionary,lm,  addFillerWords, languageWeight);
+      this.logFillerInsertionProbability= logFillerInsertionProbability;
+      this.logSilenceInsertionProbability= logSilenceInsertionProbability;
+  }
 
 
     /**
@@ -170,12 +176,20 @@ class HMMTree {
      * Dumps the tree
      *
      */
-    void dumpTree() {
+ public   void dumpTree() {
         System.out.println("Dumping Tree ...");
         Map dupNode = new HashMap();
-        dumpTree(0, getInitialNode(), dupNode);
+        for (Object key : entryPointTable.entryPoints.keySet()) {
+	    System.out.println("unit : " +key);
+	    EntryPoint ep = (EntryPoint) entryPointTable.entryPoints.get(key);
+	    for (Object keynode : ep.unitToEntryPointMap.keySet()) {
+		System.out.println("contexte :" + keynode);
+		dumpTree(0, (Node)ep.unitToEntryPointMap.get(keynode) , dupNode);
+	    }
+	}
+	//        dumpTree(0, getInitialNode(), dupNode);
         System.out.println("... done Dumping Tree");
-    }
+ }
 
     /**
      * Dumps the tree
@@ -348,11 +362,18 @@ class HMMTree {
         if (!word.isFiller()) {
             Word[] wordArray = new Word[1];
             wordArray[0] = word;
-            prob = lm.getProbability(WordSequence.getWordSequence(wordArray));
-            // System.out.println("gwup: " + word + " " + prob);
-            prob *= languageWeight;
-        }
-        return prob;
+            prob = lm.getProbability(WordSequence.getWordSequence(wordArray));}
+	else 
+            {if (word.isSilence()) 
+		    prob=logFillerInsertionProbability;
+		else
+		    prob= logFillerInsertionProbability;//paul cela n'est point satisfaisant pour les <SIL>
+	    }   
+
+    // System.out.println("gwup: " + word + " " + prob);
+	prob *= languageWeight;
+        
+	return prob;
     }
 
     /**
@@ -398,7 +419,8 @@ class HMMTree {
      * into the lex tree. 
      */
     class EntryPointTable {
-	private Map entryPoints;
+	//private 
+	public Map entryPoints;
 
 
         /**

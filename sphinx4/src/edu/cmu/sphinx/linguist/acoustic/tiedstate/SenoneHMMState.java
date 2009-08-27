@@ -82,6 +82,9 @@ public class SenoneHMMState implements HMMState {
         return senone.getScore(feature);
     }
 
+    public double getScoreDouble(Data feature) {
+	return senone.getScoreDouble(feature);
+    }
 
     /**
      * Gets the scores for each mixture component in this HMM state
@@ -144,7 +147,7 @@ public class SenoneHMMState implements HMMState {
     public final boolean isEmitting() {
 	return isEmitting;
     }
-
+    public long getId() { return senone.getID();}
 
     /**
      * Retrieves the state of successor states for this state

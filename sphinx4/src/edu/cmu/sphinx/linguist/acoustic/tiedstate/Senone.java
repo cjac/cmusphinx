@@ -31,8 +31,8 @@ public interface Senone extends Serializable {
      * @return 		the score for this senone in LogMath log base
      */
     public float getScore(Data feature);
-
-
+    public double getScoreDouble (Data feature);
+    public void resetTransfo();
     /**
      * Calculates the component scores for the mixture components in
      * this senone based upon the given feature.

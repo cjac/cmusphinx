@@ -18,13 +18,15 @@ import edu.cmu.sphinx.frontend.Data;
 import edu.cmu.sphinx.linguist.dictionary.Pronunciation;
 import edu.cmu.sphinx.linguist.dictionary.Word;
 import edu.cmu.sphinx.util.LogMath;
-
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 /**
  * Represents a single word result with associated scoring and 
  * timing information.
  * 
  * @author pgorniak
  */
+
 public class SimpleWordResult implements WordResult {
     Word word;
     int startFrame;
@@ -39,12 +41,18 @@ public class SimpleWordResult implements WordResult {
      * @param w the word
      * @param confidence the confidence for this word
      */
+
+    Pattern filler= Pattern.compile("(<s>)|(</s>)|(<sil>)|(\\[\\S+])");
+    
     public SimpleWordResult(String w, double confidence, LogMath logMath) {
         Pronunciation[] pros = { Pronunciation.UNKNOWN };
-        this.word = new Word(w,pros,false);
+	Matcher m=filler.matcher(w);
+
+        this.word = new Word(w,pros,m.find());
         this.confidence = confidence;
-        this.score = logMath.getLogZero();
+        this.score = LogMath.getLogZero();
         this.logMath = logMath;
+	//	System.err.println("_____" +w +" "+ this.word.isFiller());
     }
     
     /**
@@ -91,11 +99,14 @@ public class SimpleWordResult implements WordResult {
      * @see edu.cmu.sphinx.result.WordResult#getConfidence()
      */
     public double getConfidence() {
+    	if (this.logMath !=null) {
         if (confidence > LogMath.getLogOne()) {
-            return LogMath.getLogOne();
-        } else {
-            return confidence;
-        }
+            	return 	LogMath.getLogOne();
+        } 	else {	
+            return 	confidence;
+        }		
+    	}	
+    	else return confidence;
     }
 
     /**
@@ -124,6 +135,10 @@ public class SimpleWordResult implements WordResult {
      */
     public int getEndFrame() {
         return endFrame;
+    }
+
+    public Word getWord() {
+	return this.word;
     }
 
     /**

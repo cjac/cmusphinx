@@ -151,7 +151,7 @@ public class GaussianMixture implements Senone {
 	    // Total += Mixture[i].score * MixtureWeight[i]
 	    logTotal = logMath.addAsLinear(logTotal,
 		 mixtureComponents[i].getScore(feature)+
-		 logMixtureWeights[i]);
+					   logMixtureWeights[i]);    //paul j'ai des doutes sur ce truc 
 	}
 
 	return logTotal;

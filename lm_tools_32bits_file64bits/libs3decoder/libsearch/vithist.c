@@ -189,8 +189,8 @@ vithist_init(kbcore_t * kbc, int32 wbeam, int32 bghist, int32 report)
     wp = (wordprob_t *) ckd_calloc(dict_size(dict), sizeof(wordprob_t));
 
     for (i = 0; i < kbc->lmset->n_lm; i++) {
-        if (lm_n_ug(lmset->lmarray[i]) > max) {
-            max = lm_n_ug(lmset->lmarray[i]);
+        if (lm_n_ng(lmset->lmarray[i],1) > max) {
+            max = lm_n_ng(lmset->lmarray[i],1);
         }
     }
     /*E_INFO("Allocation for viterbi history, finall size %d\n",max); */
@@ -495,7 +495,7 @@ vithist_rescore(vithist_t * vh, kbcore_t * kbc,
                 int32 pred, int32 type, int32 rc)
 {
     vithist_entry_t *pve, tve;
-    s3lmwid32_t lwid;
+    s3lmwid32_t lwid, lwid_t[3];
     int32 se, fe;
     int32 i;
 
@@ -557,10 +557,10 @@ vithist_rescore(vithist_t * vh, kbcore_t * kbc,
 
             if (pve->valid) {
 		tve.path.score = pve->path.score + tve.ascr;
-		tve.lscr = lm_tg_score(kbcore_lm(kbc),
-				       pve->lmstate.lm3g.lwid[1],
-				       pve->lmstate.lm3g.lwid[0],
-				       lwid, wid);
+        lwid_t[0] = pve->lmstate.lm3g.lwid[1];
+        lwid_t[1] = pve->lmstate.lm3g.lwid[0];
+        lwid_t[2] = lwid;
+		tve.lscr = lm_ng_score(kbcore_lm(kbc), 3, lwid_t, wid);
 		tve.path.score += tve.lscr;
                 if ((tve.path.score - vh->wbeam) >= vh->bestscore[vh->n_frm]) {
                     tve.path.pred = i;
@@ -764,6 +764,7 @@ vithist_utt_end(vithist_t * vh, kbcore_t * kbc)
     int32 sv, nsv, scr, bestscore, bestvh, vhid;
     vithist_entry_t *ve, *bestve = 0;
     s3lmwid32_t endwid = BAD_S3LMWID32;
+    s3lmwid32_t lwid[3];
     lm_t *lm;
     dict_t *dict;
 
@@ -792,14 +793,16 @@ vithist_utt_end(vithist_t * vh, kbcore_t * kbc)
     dict = kbcore_dict(kbc);
 
     endwid = lm_finishwid(lm);
+    lwid[2] = endwid;
 
     for (i = sv; i < nsv; i++) {
 	ve = vithist_id2entry(vh, i);
-	scr = ve->path.score;
+    lwid[0] = ve->lmstate.lm3g.lwid[1];
+    lwid[1] = ve->lmstate.lm3g.lwid[0];
+
+    scr = ve->path.score;
 	scr +=
-	    lm_tg_score(lm, ve->lmstate.lm3g.lwid[1],
-			ve->lmstate.lm3g.lwid[0], endwid,
-			dict_finishwid(dict));
+	    lm_ng_score(lm, 3, lwid, dict_finishwid(dict));
 
 	if (bestscore < scr) {
 	    bestscore = scr;
@@ -858,7 +861,7 @@ vithist_partialutt_end(vithist_t * vh, kbcore_t * kbc)
     int32 f, i;
     int32 sv, nsv, scr, bestscore, bestvh;
     vithist_entry_t *ve, *bestve;
-    s3lmwid32_t endwid;
+    s3lmwid32_t endwid, lwid[3];
     lm_t *lm;
     dict_t *dict;
 
@@ -883,18 +886,19 @@ vithist_partialutt_end(vithist_t * vh, kbcore_t * kbc)
     lm = kbcore_lm(kbc);
     dict = kbcore_dict(kbc);
     endwid = lm_finishwid(lm);
+    lwid[2] = endwid;
 
     bestscore = MAX_NEG_INT32;
     bestvh = -1;
 
     for (i = sv; i < nsv; i++) {
 	ve = vithist_id2entry(vh, i);
+    lwid[0] = ve->lmstate.lm3g.lwid[1];
+    lwid[1] = ve->lmstate.lm3g.lwid[0];
 
         scr = ve->path.score;
         scr +=
-            lm_tg_score(lm, ve->lmstate.lm3g.lwid[1],
-                        ve->lmstate.lm3g.lwid[0], endwid,
-                        dict_finishwid(dict));
+            lm_ng_score(lm, 3, lwid, dict_finishwid(dict));
 
         if (bestscore < scr) {
             bestscore = scr;
@@ -1560,13 +1564,13 @@ lat_seg_lscr(latticehist_t * lathist, s3latid_t l, lm_t * lm,
              int32 isCand)
 {
     s3wid_t bw0, bw1, bw2;
-    s3lmwid32_t lw0;
+    s3lmwid32_t lwid[3];
     int32 lscr, bowt, bo_lscr;
-    tg_t *tgptr;
-    bg_t *bgptr;
+    ng_t *tgptr;
+    ng_t *bgptr;
 
-    tg32_t *tgptr32;
-    bg32_t *bgptr32;
+    ng32_t *tgptr32;
+    ng32_t *bgptr32;
     int is32bits;
 
     is32bits = lm->is32bits;
@@ -1584,12 +1588,13 @@ lat_seg_lscr(latticehist_t * lathist, s3latid_t l, lm_t * lm,
                      dict);
 
     /*    E_INFO("lathist->lattice[l].history %d , bw0 %d, bw1 %d. bw2 %d\n",lathist->lattice[l].history,bw0,bw1,bw2); */
-    lw0 =
+    lwid[0] =
         IS_S3WID(bw0) ? lm->
         dict2lmwid[dict_basewid(dict, bw0)] : BAD_LMWID(lm);
+    lwid[1] = lm->dict2lmwid[dict_basewid(dict, bw1)];
+    lwid[2] = lm->dict2lmwid[bw2];
     lscr =
-        lm_tg_score(lm, lw0, lm->dict2lmwid[dict_basewid(dict, bw1)],
-                    lm->dict2lmwid[bw2], bw2);
+        lm_ng_score(lm, 3, lwid, bw2);
     if (isCand)
         return lscr;
 
@@ -1598,39 +1603,22 @@ lat_seg_lscr(latticehist_t * lathist, s3latid_t l, lm_t * lm,
 
 
     if (is32bits) {
-        if ((IS_S3WID(bw0)) && (lm_tg32list(lm,
-                                            lm->
-                                            dict2lmwid[dict_basewid
-                                                       (dict, bw0)],
-                                            lm->
-                                            dict2lmwid[dict_basewid
-                                                       (dict, bw1)],
-                                            &tgptr32, &bowt) > 0))
+        if ((IS_S3WID(bw0)) && (lm_ng32list(lm, 3, lwid, &tgptr32, &bowt) > 0))
             bo_lscr = bowt;
-        if (lm_bg32list
-            (lm, lm->dict2lmwid[dict_basewid(dict, bw1)], &bgptr32,
-             &bowt) > 0)
+        if (lm_ng32list(lm, 2, &(lwid[1]), &bgptr32, &bowt) > 0)
             bo_lscr += bowt;
     }
     else {
-        if ((IS_S3WID(bw0)) && (lm_tglist(lm,
-                                          lm->
-                                          dict2lmwid[dict_basewid
-                                                     (dict, bw0)],
-                                          lm->
-                                          dict2lmwid[dict_basewid
-                                                     (dict, bw1)], &tgptr,
+        if ((IS_S3WID(bw0)) && (lm_nglist(lm, 3, lwid, &tgptr,
                                           &bowt) > 0))
             bo_lscr = bowt;
-        if (lm_bglist
-            (lm, lm->dict2lmwid[dict_basewid(dict, bw1)], &bgptr,
-             &bowt) > 0)
+        if (lm_nglist(lm, 2, &(lwid[1]), &bgptr, &bowt) > 0)
             bo_lscr += bowt;
 
     }
+    lwid[0] = lm->dict2lmwid[dict_basewid(dict, bw2)];
     bo_lscr +=
-        lm_ug_score(lm, lm->dict2lmwid[dict_basewid(dict, bw2)],
-                    dict_basewid(dict, bw2));
+        lm_ng_score(lm, 1, lwid, dict_basewid(dict, bw2));
 
     return ((lscr > bo_lscr) ? lscr : bo_lscr);
 }

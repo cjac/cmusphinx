@@ -46,6 +46,9 @@
  * 
  * HISTORY
  * $Log$
+ * 2008/09/19  N. Coetmeur, supervised by Y. Esteve
+ * Add lmmax parameter in language_model_command_line_macro
+ *
  * Revision 1.1  2006/04/05  20:27:30  dhdfu
  * A Great Reorganzation of header files and executables
  * 
@@ -200,7 +203,7 @@ us a better architecture.
     { "-lm", \
       ARG_STRING, \
       NULL, \
-      "Word trigram language model input file" }, \
+      "Word language model input file" }, \
     { "-lmctlfn", \
       ARG_STRING, \
       NULL, \
@@ -212,7 +215,11 @@ us a better architecture.
     { "-lmname", \
       ARG_STRING, \
       NULL, \
-      "Name of language model in -lmctlfn to use for all utterances" }, 
+      "Name of language model in -lmctlfn to use for all utterances" }, \
+    { "-lmmax", \
+      ARG_STRING, \
+      NULL, \
+      "Maximum language model input file" }, 
 
 #if 0 
           /* Comment out because I don't know what is the meaning of Sphinx 2 fsg control file means. */

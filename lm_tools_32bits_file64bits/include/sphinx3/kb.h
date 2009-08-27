@@ -198,13 +198,8 @@ typedef struct {
 
 /** Initialize the kb */
 S3DECODER_EXPORT
-void kb_init (kb_t *kb /**< In/Out: A empty kb_t */
-    );
-
-/** Initialize the kb (re-entrant version) */
-S3DECODER_EXPORT
-void kb_init_r(kb_t *kb, /**< In/Out: A empty kb_t */
-               cmd_ln_t *config /**< In: The command-line object */
+void kb_init(kb_t *kb, /**< In/Out: An empty kb_t */
+             cmd_ln_t *config /**< In: The command-line object */
     );
 
   

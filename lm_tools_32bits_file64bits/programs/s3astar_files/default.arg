@@ -1,0 +1,15 @@
+	-ctl /lium/parolee/unsaved/yannick/dataASTAR/data/20070710_1900_inter.ctl
+	-dagfudge 0
+	-dict /lium/parolee/unsaved/yannick/dataASTAR/data/dico_ester2
+	-fdict /lium/parolee/unsaved/yannick/dataASTAR/data/dico-noyau.filler
+	-fillprob 0.02 
+	-inlatdir /lium/parolee/unsaved/yannick/dataASTAR/data/lattices/20070710_1900_inter
+	-lm /lium/parolee/unsaved/yannick/dataASTAR/data/4g1.DMP
+	-lmmax /lium/parolec/coetmeur/4g1.MAX
+	-lw 9.5
+	-logbase 1.0003 
+	-min_endfr 1
+	-maxlpf 100000
+	-nbest 200
+	-nbestdir outputNbest
+	-wip 0.7 

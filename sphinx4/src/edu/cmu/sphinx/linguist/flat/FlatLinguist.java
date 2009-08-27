@@ -116,7 +116,7 @@ public class FlatLinguist implements Linguist, Configurable {
     /**
      * Default value of PROP_ADD_OUT_OF_GRAMMAR_BRANCH.
      */
-    public final static boolean PROP_ADD_OUT_OF_GRAMMAR_BRANCH_DEFAULT = false;
+    public final static boolean PROP_ADD_OUT_OF_GRAMMAR_BRANCH_DEFAULT=  false;
 
     
     /**
@@ -169,6 +169,7 @@ public class FlatLinguist implements Linguist, Configurable {
     // ------------------------------------
     private float logWordInsertionProbability;
     private float logSilenceInsertionProbability;
+    private float logFillerInsertionProbability;
     private float logUnitInsertionProbability;
     private float logOutOfGrammarBranchProbability;
     private float logPhoneInsertionProbability;
@@ -218,8 +219,9 @@ public class FlatLinguist implements Linguist, Configurable {
         registry.register(PROP_LOG_MATH, PropertyType.COMPONENT);
         registry.register(PROP_WORD_INSERTION_PROBABILITY, PropertyType.DOUBLE);
         registry.register(PROP_SILENCE_INSERTION_PROBABILITY,
-                PropertyType.DOUBLE);
+			  PropertyType.DOUBLE);
         registry.register(PROP_UNIT_INSERTION_PROBABILITY, PropertyType.DOUBLE);
+	registry.register(PROP_FILLER_INSERTION_PROBABILITY, PropertyType.DOUBLE);
         registry.register(PROP_LANGUAGE_WEIGHT, PropertyType.FLOAT);
         registry.register(PROP_SHOW_SEARCH_SPACE, PropertyType.BOOLEAN);
         registry.register(PROP_DUMP_GSTATES, PropertyType.BOOLEAN);
@@ -249,13 +251,18 @@ public class FlatLinguist implements Linguist, Configurable {
         unitManager = (UnitManager) ps.getComponent(PROP_UNIT_MANAGER,
                 UnitManager.class);
         
-        // get the rest of the configuration data
+        // get the rest of the configuration data 
+	languageWeight = ps.getFloat(Linguist.PROP_LANGUAGE_WEIGHT,
+                PROP_LANGUAGE_WEIGHT_DEFAULT);
         logWordInsertionProbability = logMath.linearToLog(ps.getDouble(
                 PROP_WORD_INSERTION_PROBABILITY,
-                PROP_WORD_INSERTION_PROBABILITY_DEFAULT));
+                PROP_WORD_INSERTION_PROBABILITY_DEFAULT))*languageWeight;
         logSilenceInsertionProbability = logMath.linearToLog(ps.getDouble(
                 PROP_SILENCE_INSERTION_PROBABILITY,
-                PROP_SILENCE_INSERTION_PROBABILITY_DEFAULT));
+                PROP_SILENCE_INSERTION_PROBABILITY_DEFAULT))*languageWeight;
+	logFillerInsertionProbability = logMath.linearToLog(ps.getDouble(
+                PROP_FILLER_INSERTION_PROBABILITY,
+                PROP_FILLER_INSERTION_PROBABILITY_DEFAULT))*languageWeight;
         logUnitInsertionProbability = logMath.linearToLog(ps.getDouble(
                 PROP_UNIT_INSERTION_PROBABILITY,
                 PROP_UNIT_INSERTION_PROBABILITY_DEFAULT));
@@ -383,7 +390,9 @@ public class FlatLinguist implements Linguist, Configurable {
     public float getLogSilenceInsertionProbability() {
         return logSilenceInsertionProbability;
     }
-
+  public float getLogFillerInsertionProbability() {
+        return logFillerInsertionProbability;
+    }
     /**
      * Compiles the grammar into a sentence hmm. A GrammarJob is created for
      * the initial grammar node and added to the GrammarJob queue. While there
@@ -682,7 +691,7 @@ public class FlatLinguist implements Linguist, Configurable {
                 // add a silence to the ending context since we want to
                 // include an optional transition to a silence unit at
                 // the end of all words
-                endingContexts.add(UnitContext.SILENCE);
+		//paul  endingContexts.add(UnitContext.SILENCE);
             }
             return endingContexts;
         }
@@ -785,6 +794,9 @@ public class FlatLinguist implements Linguist, Configurable {
             if (list != null && list.size() > 0) {
                 return (SentenceHMMState) list.get(0);
             } else {
+
+		for (Object o : entryPoints.keySet())
+		    System.err.println ("entry point:" +o +":::"+((List) entryPoints.get(o)).size());
                 return null;
             }
         }
@@ -1027,7 +1039,7 @@ public class FlatLinguist implements Linguist, Configurable {
                     + "," + startingContext + "])-G" + getNode().getID();
             PronunciationState ps = new PronunciationState(pname,
                     pronunciation, which);
-            T("     Expanding " + ps.getPronunciation() + " for lc "
+            T("     Expanding "+ pname +":" + ps.getPronunciation() + " for lc "
                     + leftContext);
             ContextPair cp = ContextPair.get(leftContext, startingContext);
             List epList = (List) entryPoints.get(cp);
@@ -1089,7 +1101,10 @@ public class FlatLinguist implements Linguist, Configurable {
             UnitState unitState = new ExtendedUnitState(parent, which, cdUnit);
             float logInsertionProbability;
             if (unitState.getUnit().isFiller()) {
-                logInsertionProbability = logSilenceInsertionProbability;
+		if (unitState.getUnit().isSilence())
+		    logInsertionProbability = logSilenceInsertionProbability;
+else
+                logInsertionProbability = logFillerInsertionProbability;
             } else if (unitState.getWhich() == 0) {
                 logInsertionProbability = logWordInsertionProbability;
             } else {
@@ -1102,13 +1117,13 @@ public class FlatLinguist implements Linguist, Configurable {
             if (existingState != null) {
                 attachState(tail, existingState, logOne, logOne,
                         logInsertionProbability);
-                // T(" Folding " + existingState);
+                 T(" Folding " + existingState);
                 return null;
             } else {
                 attachState(tail, unitState, logOne, logOne,
                         logInsertionProbability);
                 addStateToCache(unitState);
-                // T(" Attaching " + unitState);
+                T(" Attaching " + unitState);
                 tail = expandUnit(unitState);
                 // if we are attaching the last state of a word, then
                 // we add it to the exitPoints table. the exit points
@@ -1119,13 +1134,14 @@ public class FlatLinguist implements Linguist, Configurable {
                             leftContext, units[which]);
                     ContextPair cp = ContextPair.get(nextLeftContext,
                             actualRightContext);
-                    // T(" Adding to exitPoints " + cp);
+                    T(" Adding to exitPoints " + cp);
                     addExitPoint(cp, tail);
                     // if we have encountered a last unit with a right
                     // context of silence, then we add a silence unit
                     // to this unit. the silence unit has a self
                     // loopback.
-                    if (actualRightContext == UnitContext.SILENCE) {
+                    // et non parce que si derriere il y a un vrai Sil ce n'est pas vrai;
+                    if ( false && actualRightContext == UnitContext.SILENCE) {
                         SentenceHMMState silTail;
                         UnitState silUnit = new ExtendedUnitState(parent,
                                 which + 1, UnitManager.SILENCE);
@@ -1300,7 +1316,7 @@ public class FlatLinguist implements Linguist, Configurable {
             SentenceHMMState tail = getHMMStates(unit);
             // if the unit is a silence unit add a loop back from the
             // tail silence unit
-            if (unit.getUnit().isSilence()) {
+            if (false && unit.getUnit().isSilence()) { //je vire loopsilence
                 // add the loopback, but don't expand it // anymore
                 attachState(tail, unit, logOne, logOne,
                         logSilenceInsertionProbability);
@@ -1379,7 +1395,7 @@ public class FlatLinguist implements Linguist, Configurable {
          */
         void connect() {
             GrammarArc[] arcs = getSuccessors();
-            // T("Connecting " + node.getWord());
+            T("Connecting " + ((node.isEmpty() ? node +"empty" : node.getWord())));
             for (int i = 0; i < arcs.length; i++) {
                 GState gstate = getGState(arcs[i].getGrammarNode());
                 if (!gstate.getNode().isEmpty()

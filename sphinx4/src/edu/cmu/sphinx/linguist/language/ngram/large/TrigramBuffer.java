@@ -26,8 +26,8 @@ class TrigramBuffer extends NGramBuffer {
      * @param numberNGrams the number of trigram follows in the byte[]
      */
     public TrigramBuffer(byte[] trigramsOnDisk,
-			 int numberNGrams, boolean bigEndian) {
-        super(trigramsOnDisk, numberNGrams, bigEndian);
+			 int numberNGrams, boolean bigEndian, int bytesPerIDField) {
+        super(trigramsOnDisk, numberNGrams, bigEndian, bytesPerIDField);
     }
 
 
@@ -70,8 +70,8 @@ class TrigramBuffer extends NGramBuffer {
      * @return the TrigramProbability of the nth follower
      */
     public final int getProbabilityID(int nthFollower) {
-        int nthPosition = nthFollower * LargeTrigramModel.BYTES_PER_TRIGRAM;
-        setPosition(nthPosition + 2); // the 2 is to skip the word ID
-        return readTwoBytesAsInt();
+        int nthPosition = nthFollower * LargeTrigramModel.ID_FIELDS_PER_TRIGRAM * getBytesPerIDField();
+        setPosition(nthPosition + getBytesPerIDField()); // to skip the word ID
+        return readIDField();
     }
 }

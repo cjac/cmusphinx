@@ -23,8 +23,10 @@ import edu.cmu.sphinx.frontend.DataProcessingException;
 import edu.cmu.sphinx.frontend.DoubleData;
 import edu.cmu.sphinx.util.props.PropertyException;
 import edu.cmu.sphinx.util.props.PropertySheet;
+import edu.cmu.sphinx.util.props.PropertyType;
 import edu.cmu.sphinx.util.props.Registry;
-
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * Applies cepstral mean normalization (CMN), sometimes called channel
@@ -59,17 +61,27 @@ import edu.cmu.sphinx.util.props.Registry;
  * @see LiveCMN
  */
 public class BatchCMN extends BaseDataProcessor {
-    
+    /**
+     * The SphinxProperty specifying whether the input is in binary.
+     */
+    public final static String PROP_AGC = "AGC";
+    /**
+     * The default value for PROP_AGC.
+     */
+    public final static boolean PROP_AGC_DEFAULT = false;
+
     private double[] sums;           // array of current sums
+    private double maxi; // max of c0
     private List cepstraList;
     private int numberDataCepstra;
-
-
+    private boolean agc;
+    private Logger logger;
     /* (non-Javadoc)
      * @see edu.cmu.sphinx.util.props.Configurable#register(java.lang.String, edu.cmu.sphinx.util.props.Registry)
      */
     public void register(String name, Registry registry) throws PropertyException {
         super.register(name, registry);
+	registry.register(PROP_AGC, PropertyType.BOOLEAN);
         
     }
 
@@ -79,16 +91,25 @@ public class BatchCMN extends BaseDataProcessor {
      */
     public void newProperties(PropertySheet ps) throws PropertyException {
         super.newProperties(ps);
+	 agc = ps.getBoolean(PROP_AGC, PROP_AGC_DEFAULT);
+         logger = ps.getLogger();
     }
 
     /**
      * Initializes this BatchCMN.
      *
      */
+    int gicle=0;
+    int compte=0;
     public void initialize() {
         super.initialize();
         sums = null;
         cepstraList = new LinkedList();
+	maxi = -Double.MAX_VALUE;
+	/* java.util.Scanner sc = new java.util.Scanner(System.in);
+        System.err.println(" on entre gicle :");
+	gicle  = sc.nextInt();
+	 compte=0;*/
     }
 
 
@@ -99,6 +120,9 @@ public class BatchCMN extends BaseDataProcessor {
         sums = null; // clears the sums array
 	cepstraList.clear();
 	numberDataCepstra = 0;
+        maxi = -Double.MAX_VALUE;
+	compte=0;
+      
     }
 
 
@@ -115,8 +139,9 @@ public class BatchCMN extends BaseDataProcessor {
 
         Data output = null;
 
-        if (cepstraList.size() > 0) {
+        if (cepstraList.size() > gicle ) {  // il y avait 0
             output = (Data) cepstraList.remove(0);
+
         } else {
             reset();
             // read the cepstra of the entire utterance, calculate
@@ -159,11 +184,12 @@ public class BatchCMN extends BaseDataProcessor {
                         }
                     }
 		    // add the cepstrum data to the sums
-                    for (int j = 0; j < cepstrumData.length; j++) {
+		    if (maxi < cepstrumData[0]) maxi = cepstrumData[0];
+		    for (int j = 0; j < cepstrumData.length; j++) {
                         sums[j] += cepstrumData[j];
                     }
                     cepstraList.add(input);
-
+		    
                 } else if (input instanceof DataEndSignal) {
                     cepstraList.add(input);
                     break;
@@ -186,17 +212,29 @@ public class BatchCMN extends BaseDataProcessor {
         for (int i = 0; i < sums.length; i++) {
             sums[i] /= numberDataCepstra;
         }
-
+        if (logger.isLoggable(Level.FINE))
+	    logger.fine("normalize "+ cepstraList.size() + "trames");
         for (Iterator iterator = cepstraList.iterator(); iterator.hasNext();) {
             Data cepstrumObject = (Data) iterator.next();
             if (cepstrumObject instanceof DoubleData) {
                 double[] cepstrum = ((DoubleData) cepstrumObject).getValues();
-                for (int j = 0; j < cepstrum.length; j++) {
-                    cepstrum[j] -= sums[j]; // sums[] is now the means[]
-                }
+		if (agc) cepstrum[0] -= maxi;
+		else
+		    cepstrum[0] -= sums[0];
+		for (int j = 1; j < cepstrum.length; j++) {
+                    cepstrum[j] -= sums[j]; // sums[] is now the means[]	  
+		}		 
+		if (false && compte <200) {
+		    
+		    System.out.printf("%3d",compte++);
+		    for (double f : cepstrum) 
+			System.out.printf(" %9.5f",f);
+		    System.out.println();
+		}
+		
             }
         }
     }
-
+    
 
 }

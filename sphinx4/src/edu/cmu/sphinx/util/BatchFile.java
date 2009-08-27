@@ -32,11 +32,10 @@ public class BatchFile {
      *
      * @return a List of the lines in a batch file
      */
-    public static List getLines(String batchFile) throws IOException {
-        return getLines(batchFile, 0);
+    public static List <String>  getLines(String batchFile) throws IOException {
+        return getLines(batchFile, 0, 0);
     }
-
-    /**
+   /**
      * Returns a List of the lines in a batch file.
      *
      * @param batchFile the batch file to read
@@ -44,13 +43,24 @@ public class BatchFile {
      *
      * @return a List of the lines in a batch file
      */
-    public static List getLines(String batchFile, int skip) throws IOException {
+    public static  List <String> getLines(String batchFile, int skip) throws IOException {     return  getLines(batchFile,skip,0);
+    }
+    /**
+     * Returns a List of the lines in a batch file.
+     *
+     * @param batchFile the batch file to read
+     * @param skip the number of lines to skip between items
+     * @param beginSkip the number of lines to skip at begin
+     * @return a List of the lines in a batch file
+     */
+    public static  List <String>  getLines(String batchFile, int skip , int beginSkip) throws IOException {
         int curCount = skip;
-	List list = new ArrayList();
+	List<String> list = new  ArrayList <String> ();
 	BufferedReader reader = new BufferedReader(new FileReader(batchFile));
 
 	String line = null;
-
+        while ((beginSkip>0) &&  ((line = reader.readLine()) != null))
+	    if (line.length() > 0) beginSkip--;
 	while ((line = reader.readLine()) != null) {
             if (line.length() > 0) {
                 if (++curCount >= skip) {

@@ -45,17 +45,16 @@
  * 
  * HISTORY
  * 
- * 
- * 
- * 27-Jul-04    ARCHAN (archan@cs.cmu.edu) at Carnegie Mellon Unversity
- *              First incorporate it from s3 code base
+ * $Log: main_dag.c,v $
+ * 2008/06/20  N. Coetmeur, supervised by Y. Esteve
+ * Adapt with new LM Ng model :
+ * - Adjust parameters of lm_rawscore function
+ * - Replace lm_read function by lm_read_advance2
  *
- * 
- * $Log$
- * Revision 1.4  2004/10/07  22:46:26  dhdfu
+ * Revision 1.4  2004/10/07 22:46:26  dhdfu
  * Fix compiler warnings that are also real bugs (but why does this
  * function take an int32 when -lw is a float parameter?)
- * 
+ *
  * Revision 1.3  2004/09/13 08:13:28  arthchan2003
  * update copyright notice from 200x to 2004
  *
@@ -64,6 +63,9 @@
  *
  * Revision 1.1  2004/08/20 08:25:19  arthchan2003
  * Sorry, I forget to add the main of dag.c
+ *
+ * 27-Jul-04    ARCHAN (archan@cs.cmu.edu) at Carnegie Mellon Unversity
+ *              First incorporate it from s3 code base
  *
  * Revision 1.2  2002/12/03 23:02:37  egouvea
  * Updated slow decoder with current working version.
@@ -112,13 +114,12 @@
 #endif
 #include <assert.h>
 
-#include <libutil/libutil.h>
+#include "libutil.h"
 
 #include "s3types.h"
 #include "s3_dag.h"
 #include "logs3.h"
-#include "tmat.h"
-#include "mdef.h"
+
 #include "dict.h"
 #include "lm.h"
 #include "fillpen.h"
@@ -126,13 +127,10 @@
 #include "wid.h"
 
 
-static mdef_t *mdef;		/* Model definition */
 extern dict_t *dict;            /* The dictionary */
 extern lm_t *lm ;               /* The lm */
+extern lm_t *lm3g; /* 3g lm to compute word posteriors */
 extern fillpen_t *fpen;         /* The filler penalty structure */
-
-extern s3lmwid_t *dict2lmwid;   /* Mapping from decoding dictionary wid's to lm 
-ones.  They may not be the same! */
 
 static s3wid_t startwid, finishwid, silwid;
 
@@ -156,10 +154,6 @@ static arg_t defn[] = {
       ARG_INT32,
       "1",
       "Determines whether to use the log3 table or to compute the values at run time."},
-    { "-mdeffn",
-      ARG_STRING,
-      NULL,
-      "Model definition input file: triphone -> senones/tmat tying" },
     { "-dictfn",
       ARG_STRING,
       NULL,
@@ -172,6 +166,10 @@ static arg_t defn[] = {
       ARG_STRING,
       NULL,
       "Language model input file (precompiled .DMP file)" },
+    { "-lm3gPAP",
+      ARG_STRING,
+      NULL,
+      "Trigram language model input file (precompiled .DMP file): to compute correctly word posteriors when the 4g LM uses Kneser-Ney smoothing (however, word posteriors are computed with trigrams). It's better to use non-Kneser-Ney smoothing to estimate this LM (bigrams will be used to prune the dag)" },
     { "-langwt",
       ARG_FLOAT32,
       "9.5",
@@ -224,10 +222,23 @@ static arg_t defn[] = {
       ARG_INT32,
       "100000000",
       "Max LMops in utterance after which it is aborted; controls CPU use (see maxlpf)" },
-    { "-maxedge",
+{ "-gram",
+      ARG_INT32,
+      "3",
+      "n-gram" },       
+
+    { "-dumplattice",
+      ARG_INT32,
+      "0",
+      "comme son nom l indique"},
+{ "-maxedge",
       ARG_INT32,
       "2000000",
       "Max DAG edges allowed in utterance; aborted if exceeded; controls memory usage" },
+    { "-maxlink",
+      ARG_INT32,
+      "2000000",
+      "Max DAG edges after pruning by map" },
     { "-inlatdir",
       ARG_STRING,
       NULL,
@@ -275,12 +286,12 @@ static int32 cmdline_parse (int argc, char *argv[])
     printf ("\n\n");
     fflush (stdout);
 
-    cmd_ln_parse (defn,argc, argv);
+    cmd_ln_parse (defn,argc, argv, 0);
 
     logfp = NULL;
-    if ((logfile = (char *)cmd_ln_access("-logfn")) != NULL) {
+    if ((logfile = (char *)cmd_ln_str("-logfn")) != NULL) {
 	if ((logfp = fopen(logfile, "w")) == NULL) {
-	    E_ERROR("fopen(%s,w) failed; logging to stdout/stderr\n");
+	    E_ERROR("fopen(%%s,w) failed; logging to stdout/stderr\n");
 	} else {
 	    orig_stdout = *stdout;	/* Hack!! To avoid hanging problem under Linux */
 	    orig_stderr = *stderr;	/* Hack!! To avoid hanging problem under Linux */
@@ -313,13 +324,13 @@ static int32 cmdline_parse (int argc, char *argv[])
 static void models_init ( void )
 {
     /* HMM model definition */
-    mdef = mdef_init ((char *) cmd_ln_access("-mdeffn"));
+
 
     /* Dictionary */
-    dict = dict_init (mdef,
-		      (char *) cmd_ln_access("-dictfn"),
-		      (char *) cmd_ln_access("-fdictfn"),
-		      0);
+    dict = dict_init (NULL,
+		      cmd_ln_str("-dictfn"),
+		      cmd_ln_str("-fdictfn"),
+		      0, 0, 0);
 
     /* HACK!! Make sure S3_SILENCE_WORD, S3_START_WORD and S3_FINISH_WORD are in dictionary */
     silwid = dict_wordid (dict,S3_SILENCE_WORD);
@@ -338,28 +349,64 @@ static void models_init ( void )
     {
       char *lmfile;
 
-      lmfile = (char *) cmd_ln_access("-lmfn");
+      lmfile = (char *)cmd_ln_str("-lmfn");
       if (! lmfile)
 	E_FATAL("-lmfn argument missing\n");
 
-      lm = lm_read (lmfile, 
-		    *(float32 *)cmd_ln_access("-langwt"),
-		    *(float32 *)cmd_ln_access("-inspen"),
-		    *(float32 *)cmd_ln_access("-ugwt"));
+      lm = lm_read_advance2 (lmfile, "default",
+		    *(float64 *)cmd_ln_access("-langwt"),
+		    *(float64 *)cmd_ln_access("-inspen"),
+		    *(float64 *)cmd_ln_access("-ugwt"),
+			0, NULL, 1,
+			cmd_ln_int32 ("-lminmemory"));
 
 
 
       /* Filler penalties */
-      fpen = fillpen_init (dict,(char *) cmd_ln_access("-fillpenfn"),
-		    *(float32 *)cmd_ln_access("-silpen"),
-		    *(float32 *)cmd_ln_access("-noisepen"),
-		    *(float32 *)cmd_ln_access("-langwt"),
-		    *(float32 *)cmd_ln_access("-inspen"));
+      fpen = fillpen_init (dict,cmd_ln_str("-fillpenfn"),
+		    *(float64 *)cmd_ln_access("-silpen"),
+		    *(float64 *)cmd_ln_access("-noisepen"),
+		    *(float64 *)cmd_ln_access("-langwt"),
+		    *(float64 *)cmd_ln_access("-inspen"));
+			
+			lm->dict2lmwid = wid_dict_lm_map(dict, lm, *(float32 *)cmd_ln_access("-langwt"));
     }
 
-    dict2lmwid = wid_dict_lm_map(dict, lm, *(float32 *)cmd_ln_access("-langwt"));
-}
+		
+    /* LM 3G*/
+		{
+			char *lmfile=NULL;
 
+			lmfile = (char *)cmd_ln_str("-lm3gPAP");
+			if (!lmfile) {
+				lm3g = NULL;
+				if ( *(int32 *)cmd_ln_access("-gram") == 4)
+					E_WARN("-lm3gPAP argument missing: BE SURE THAT 4G LM DOESN'T USE KNESER-NEY DISCOUNTING METHOD\n");
+			}
+			else {
+
+				lm3g = lm_read_advance2 (lmfile, "default",
+					*(float64 *)cmd_ln_access("-langwt"),
+					*(float64 *)cmd_ln_access("-inspen"),
+					*(float64 *)cmd_ln_access("-ugwt"),
+					0, NULL, 1,
+					cmd_ln_int32 ("-lminmemory"));
+
+
+
+				/* Filler penalties */
+				fpen = fillpen_init (dict,cmd_ln_str("-fillpenfn"),
+					*(float64 *)cmd_ln_access("-silpen"),
+					*(float64 *)cmd_ln_access("-noisepen"),
+					*(float64 *)cmd_ln_access("-langwt"),
+					*(float64 *)cmd_ln_access("-inspen"));
+				lm3g->dict2lmwid = wid_dict_lm_map(dict, lm3g, *(float32 *)cmd_ln_access("-langwt"));
+			}
+		}
+			
+		
+}
+ 
 
 /*
  * Write exact hypothesis.  Format:
@@ -375,33 +422,39 @@ static void models_init ( void )
  */
 static void log_hypseg (char *uttid,
 			FILE *fp,	/* Out: output file */
-			srch_hyp_t *hypptr,	/* In: Hypothesis */
+			s3_dag_srch_hyp_t *hypptr,	/* In: Hypothesis */
 			int32 nfrm)	/* In: #frames in utterance */
 {
-    srch_hyp_t *h;
+    s3_dag_srch_hyp_t *h;
     int32 ascr, lscr, tscr;
-    
+    char rep[1024], loc[1024];
+    float32 debut, longu;
+      sscanf(uttid,"%[^-]-%f-%f-%s",rep,&debut,&longu,loc); 
     ascr = lscr = tscr = 0;
     for (h = hypptr; h; h = h->next) {
 	ascr += h->ascr;
 	if (dict_basewid(dict,h->wid) != startwid) {
-	    lscr += lm_rawscore (lm,h->lscr, 1.0);
+	    lscr += lm_rawscore (lm,h->lscr);
 	} else {
 	    assert (h->lscr == 0);
 	}
 	tscr += h->ascr + h->lscr;
     }
 
-    fprintf (fp, "%s T %d A %d L %d", uttid, tscr, ascr, lscr);
+    //   fprintf (fp, "%s T %d A %d L %d", uttid, tscr, ascr, lscr);
     
     if (! hypptr)	/* HACK!! */
-	fprintf (fp, " (null)\n");
+      //	fprintf (fp, " (null)\n")
+;
     else {
-	for (h = hypptr; h; h = h->next) {
-	    lscr = (dict_basewid(dict,h->wid) != startwid) ? lm_rawscore (lm,h->lscr, 1.0) : 0;
-	    fprintf (fp, " %d %d %d %s", h->sf, h->ascr, lscr, dict_wordstr (dict,h->wid));
+      for (h = hypptr; h; h = h->next) {float duree,sf = h->sf-1; sf /= 100.0; sf += debut;
+      if (h->next) duree = (h->next->sf-h->sf)/100.0 ;
+      else duree = longu-sf ;
+	    lscr = (dict_basewid(dict,h->wid) != startwid) ? lm_rawscore (lm,h->lscr) : 0;
+	    fprintf (fp,"%s 1 %0.2f %0.2f  %7d %7d %.5f %s %s\n",rep,sf,duree, h->ascr, lscr, logs3_to_p(h->pap), dict_wordstr (dict,h->wid),uttid);
 	}
-	fprintf (fp, " %d\n", nfrm);
+	
+      //	fprintf (fp, " %d\n", nfrm);
     }
     
     fflush (fp);
@@ -409,9 +462,9 @@ static void log_hypseg (char *uttid,
 
 
 /* Write hypothesis in old (pre-Nov95) NIST format */
-static void log_hypstr (FILE *fp, srch_hyp_t *hypptr, char *uttid, int32 scr)
+static void log_hypstr (FILE *fp, s3_dag_srch_hyp_t *hypptr, char *uttid, int32 scr)
 {
-    srch_hyp_t *h;
+    s3_dag_srch_hyp_t *h;
     s3wid_t w;
 
     if (! hypptr)	/* HACK!! */
@@ -433,9 +486,9 @@ static void log_hypstr (FILE *fp, srch_hyp_t *hypptr, char *uttid, int32 scr)
 
 
 /* Log hypothesis in detail with word segmentations, acoustic and LM scores  */
-static void log_hyp_detailed (FILE *fp, srch_hyp_t *hypptr, char *uttid, char *LBL, char *lbl)
+static void log_hyp_detailed (FILE *fp, s3_dag_srch_hyp_t *hypptr, char *uttid, char *LBL, char *lbl)
 {
-    srch_hyp_t *h;
+    s3_dag_srch_hyp_t *h;
     int32 ascr_norm, lscr;
 
     ascr_norm = 0;
@@ -460,8 +513,8 @@ static void log_hyp_detailed (FILE *fp, srch_hyp_t *hypptr, char *uttid, char *L
 /* Decode the given mfc file and write result to matchfp and matchsegfp */
 static void decode_utt (char *uttid, FILE *matchfp, FILE *matchsegfp)
 {
-    char dagfile[1024];
-    srch_hyp_t *h, *hyp;
+    char rep[1024],loc[1024], dagfile[1024];
+    s3_dag_srch_hyp_t *h, *hyp;
     char *latdir, *latext;
     int32 nfrm, ascr, lscr;
 
@@ -470,10 +523,12 @@ static void decode_utt (char *uttid, FILE *matchfp, FILE *matchsegfp)
     ptmr_start (&tm_utt);
 
     
-    latdir = (char *) cmd_ln_access ("-inlatdir");
-    latext = (char *) cmd_ln_access ("-latext");
-    if (latdir)
-	sprintf (dagfile, "%s/%s.%s", latdir, uttid, latext);
+    latdir = (char *)cmd_ln_str ("-inlatdir");
+    latext = (char *)cmd_ln_str ("-latext");
+    if (latdir){
+      sscanf(uttid,"%[^-]-%s",rep,loc);
+      sprintf (dagfile, "%s/%s/%s.%s", latdir,rep, uttid, latext);
+    }
     else
 	sprintf (dagfile, "%s.%s", uttid, latext);
 
@@ -499,6 +554,11 @@ static void decode_utt (char *uttid, FILE *matchfp, FILE *matchsegfp)
 	  
 	  lm_cache_stats_dump (lm);
 	  lm_cache_reset (lm);
+		
+		if (lm3g) {
+			lm_cache_stats_dump (lm3g);
+			lm_cache_reset (lm3g);
+		}
 	}else{
 	  E_ERROR("DAG search (%s) failed\n", uttid);
 	  hyp = NULL;
@@ -541,7 +601,7 @@ static void process_ctlfile ( void )
     int32 ctloffset, ctlcount;
     int32 i, k, sf, ef;
     
-    if ((ctlfile = (char *) cmd_ln_access("-ctlfn")) == NULL)
+    if ((ctlfile = (char *)cmd_ln_str("-ctlfn")) == NULL)
 	E_FATAL("No -ctlfn argument\n");
     
     E_INFO("Processing ctl file %s\n", ctlfile);
@@ -549,7 +609,7 @@ static void process_ctlfile ( void )
     if ((ctlfp = fopen (ctlfile, "r")) == NULL)
 	E_FATAL("fopen(%s,r) failed\n", ctlfile);
     
-    if ((matchfile = (char *) cmd_ln_access("-matchfn")) == NULL) {
+    if ((matchfile = (char *)cmd_ln_str("-matchfn")) == NULL) {
 	E_WARN("No -matchfn argument\n");
 	matchfp = NULL;
     } else {
@@ -557,7 +617,7 @@ static void process_ctlfile ( void )
 	    E_ERROR("fopen(%s,w) failed\n", matchfile);
     }
     
-    if ((matchsegfile = (char *) cmd_ln_access("-matchsegfn")) == NULL) {
+    if ((matchsegfile = (char *)cmd_ln_str("-matchsegfn")) == NULL) {
 	E_WARN("No -matchsegfn argument\n");
 	matchsegfp = NULL;
     } else {
@@ -566,7 +626,7 @@ static void process_ctlfile ( void )
     }
     
     ctloffset = *((int32 *) cmd_ln_access("-ctloffset"));
-    if (! cmd_ln_access("-ctlcount"))
+	if (! cmd_ln_access("-ctlcount")->ptr)
 	ctlcount = 0x7fffffff;	/* All entries processed if no count specified */
     else
 	ctlcount = *((int32 *) cmd_ln_access("-ctlcount"));
@@ -679,7 +739,7 @@ static int32 load_argfile (char *file, char *pgm, char ***argvout)
 }
 
 
-main (int32 argc, char *argv[])
+int main (int32 argc, char *argv[])
 {
     char *str;
     
@@ -735,9 +795,8 @@ main (int32 argc, char *argv[])
 
     E_INFO("%s COMPILED ON: %s, AT: %s\n\n", argv[0], __DATE__, __TIME__);
     
-    if ((cmd_ln_access("-mdeffn") == NULL) ||
-	(cmd_ln_access("-dictfn") == NULL) ||
-	(cmd_ln_access("-lmfn") == NULL))
+    if (
+	(cmd_ln_access("-dictfn") == NULL))
 	E_FATAL("Missing -mdeffn, -dictfn, or -lmfn argument\n");
     
     /*
@@ -746,16 +805,16 @@ main (int32 argc, char *argv[])
      * to be maintained in int32 variables without significant loss of precision.
      */
     if (cmd_ln_access("-logbase") == NULL)
-	logs3_init (1.0001);
+	logs3_init (1.0001, 0, cmd_ln_int32 ("-log3table"));
     else {
-	float32 logbase;
+	float64 logbase;
     
-	logbase = *((float32 *) cmd_ln_access("-logbase"));
+	logbase = *((float64 *) cmd_ln_access("-logbase"));
 	if (logbase <= 1.0)
 	    E_FATAL("Illegal log-base: %e; must be > 1.0\n", logbase);
 	if (logbase > 1.1)
 	    E_WARN("Logbase %e perhaps too large??\n", logbase);
-	logs3_init ((float64) logbase);
+	logs3_init (logbase, 0, cmd_ln_int32 ("-log3table"));
     }
     
     /* Read in input databases */
@@ -782,9 +841,9 @@ main (int32 argc, char *argv[])
     fflush (stdout);
 
 #if (! WIN32)
-    system ("ps auxwww | grep s3dag");
+    // system ("ps auxwww | grep s3dag");
 #endif
-
+   
     /* Hack!! To avoid hanging problem under Linux */
     if (logfp) {
 	fclose (logfp);
@@ -793,4 +852,5 @@ main (int32 argc, char *argv[])
     }
 
     exit(0);
+	return EXIT_SUCCESS; /* compiler is happy */
 }

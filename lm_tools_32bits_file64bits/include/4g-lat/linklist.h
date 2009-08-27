@@ -64,7 +64,7 @@ char *__listelem_alloc__ (int32 elemsize, char *file, int32 line);
 #define listelem_alloc(sz)	__listelem_alloc__((sz),__FILE__,__LINE__)
 
 /* Free link-list element of given size */
-void listelem_free (char *elem, int32 elemsize);
+void listelem_free_es (char *elem, int32 elemsize);
 
 /* Print #allocation, #free operation stats */
 void linklist_stats ( void );

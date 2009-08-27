@@ -30,7 +30,7 @@ import edu.cmu.sphinx.util.props.PropertyException;
 import edu.cmu.sphinx.util.props.PropertySheet;
 import edu.cmu.sphinx.util.props.PropertyType;
 import edu.cmu.sphinx.util.props.Registry;
-
+import java.util.logging.Logger;
 
 /**
  * Produces Mel-cepstrum data from an InputStream.
@@ -84,15 +84,16 @@ public class StreamCepstrumSource extends BaseDataProcessor {
     private boolean binary;
     private ExtendedStreamTokenizer est; // for ASCII files
     private DataInputStream binaryStream; // for binary files
-    private int numPoints;
-    private int curPoint;
+    private long numPoints;
+    private long curPoint;
     private int cepstrumLength;
     private int frameShift;
     private int frameSize;
     private int sampleRate;
     private long firstSampleNumber;
     private boolean bigEndian = true;
-
+    private Logger logger;
+    private long debut;
     /*
      * (non-Javadoc)
      * 
@@ -126,6 +127,7 @@ public class StreamCepstrumSource extends BaseDataProcessor {
         sampleRate = ps.getInt(PROP_SAMPLE_RATE, PROP_SAMPLE_RATE_DEFAULT);
         frameShift = DataUtil.getSamplesPerWindow(sampleRate, frameShiftMs);
         frameSize = DataUtil.getSamplesPerShift(sampleRate, frameSizeMs);
+	logger = ps.getLogger();
     }
 
     /**
@@ -139,9 +141,7 @@ public class StreamCepstrumSource extends BaseDataProcessor {
         firstSampleNumber = 0;
         bigEndian = true;
     }
- 
-
-    /**
+	/**
      * Sets the InputStream to read cepstral data from.
      *
      * @param is the InputStream to read cepstral data from
@@ -150,26 +150,72 @@ public class StreamCepstrumSource extends BaseDataProcessor {
      *
      * @throws IOException if an I/O error occurs
      */
-    public void setInputStream(InputStream is, boolean bigEndian) 
+	
+	
+	
+	 public void setInputStream(InputStream is, boolean bigEndian) 
+	 throws IOException {
+		 setInputStream(is,bigEndian,0,-1);
+	 }
+
+    /**
+     * Sets the InputStream to read cepstral data from.
+     *
+     * @param is the InputStream to read cepstral data from
+     * @param bigEndian true if the InputStream data is in big-endian,
+     *     false otherwise
+     * @param startSentence start of the sentence in frame
+     * @param endSentence end of the sentence in frame
+     * @throws IOException if an I/O error occurs
+     */
+    public void setInputStream(InputStream is, boolean bigEndian,long startSentence, long endSentence) 
 	throws IOException {	
 	this.bigEndian = bigEndian;
+        debut =startSentence;
+	if (startSentence>=3) startSentence-=3;
+	long sizeSentence = (endSentence>0) ? endSentence + 4  - startSentence:-1;
 	if (binary) {
 	    binaryStream = new DataInputStream(new BufferedInputStream(is));
 	    if (bigEndian) {
 		numPoints = binaryStream.readInt();
-		System.out.println("BigEndian");
+		logger.info("BigEndian "+ numPoints);
 	    } else {
 		numPoints = Utilities.readLittleEndianInt(binaryStream);
-		System.out.println("LittleEndian");
-	    }
-	    System.out.println("Frames: " + numPoints/cepstrumLength);
+		logger.info("LittleEndian "+ numPoints);
+	    }   numPoints /= cepstrumLength;
+	    // size en bits et il en faut 8 pour faire 1 byte
+		if (startSentence >0) {
+		    long l=startSentence*cepstrumLength*(Float.SIZE/8);
+		    if (logger.isLoggable(java.util.logging.Level.FINER))
+			logger.finer("biz "+ startSentence + " " +
+				     cepstrumLength + " " + (Float.SIZE/8));
+			logger.info("skipping begin: "+l);
+			while (l >0){
+			    l-= binaryStream.skipBytes((int)l);
+				if (l>0)
+				    logger.info("skipping reste: "+l);
+			}
+		numPoints -= startSentence;
+		}
+		if (sizeSentence>0 && sizeSentence < numPoints) 
+			numPoints = sizeSentence;
+	    
+	    logger.info("Frames: " + numPoints+ " " + sizeSentence);
 	} else {
 	    est = new ExtendedStreamTokenizer(is, false);
 	    numPoints = est.getInt("num_frames");
 	    est.expectString("frames");
+		
+		if (startSentence >0) {
+			for (int i=0 ;i<startSentence*cepstrumLength; i++)
+		est.getFloat("cepstrum data");
+		numPoints -= startSentence;
+		}
+		if (sizeSentence>0 && sizeSentence<numPoints) numPoints=sizeSentence;
+		
 	}
 	curPoint = -1;
-        firstSampleNumber = 0;
+        firstSampleNumber = startSentence*frameShift+frameSize/2; // il y avait 0
     }
 
 
@@ -196,13 +242,13 @@ public class StreamCepstrumSource extends BaseDataProcessor {
                     (firstSampleNumber - frameShift + frameSize - 1);
             }
             // send a DataEndSignal
-            int numberFrames = curPoint / frameSize;
+            int numberFrames = (int) (curPoint);//  / frameSize);
             int totalSamples = (numberFrames - 1) * frameShift + frameSize;
             long duration = (long)
                 (((double)totalSamples/(double)sampleRate) * 1000.0);
 
             data = new DataEndSignal(duration);
-
+	    logger.info(debut+ "fin: " + curPoint + "    "+ duration);
             try {
                 binaryStream.close();
                 curPoint++;
@@ -212,6 +258,7 @@ public class StreamCepstrumSource extends BaseDataProcessor {
             }
 	} else if (curPoint > numPoints) {
             data = null;
+	    logger.info(debut+ "pas de fin: " + curPoint);
 	} else {
             double[] vectorData = new double[cepstrumLength];
             long collectTime = System.currentTimeMillis();
@@ -228,19 +275,22 @@ public class StreamCepstrumSource extends BaseDataProcessor {
                     } else {
                         vectorData[i] = (double) est.getFloat("cepstrum data");
                     }
-                    curPoint++;
+ 
                 } catch (IOException ioe) {
                     throw new DataProcessingException
                         ("IOException reading from cepstrum stream.");
-                }
-	    }
 
-	    // System.out.println("Read: " + curPoint);
+		}
+	    }
+	    curPoint++;
+
+	 
 	    data  = new DoubleData
                 (vectorData, sampleRate, collectTime, firstSampleNumber);
             firstSampleNumber += frameShift;
 	    // System.out.println(data);
 	}
+	if  (logger.isLoggable(java.util.logging.Level.FINER)) logger.finer(debut+ "Read: " + curPoint);
 	return data;
     }
 }

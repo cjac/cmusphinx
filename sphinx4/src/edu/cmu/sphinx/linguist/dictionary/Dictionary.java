@@ -119,6 +119,9 @@ public interface Dictionary extends Configurable {
      * 
      * @see edu.cmu.sphinx.linguist.dictionary.Pronunciation
      */
+
+
+    public java.util.List<Word> getChoix(String nom);
     public Word getWord(String text);
 
     /**

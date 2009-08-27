@@ -61,6 +61,8 @@ public class AlternateHypothesisManager {
             viterbiLoserMap.put(token, list);
         }
         list.add(predecessor);
+        if (false && list.size() >= 2* maxEdges) 
+	    System.err.println( "cela deborde :" + token);
     }
 
     /**
@@ -88,10 +90,12 @@ public class AlternateHypothesisManager {
         while (iterator.hasNext()) {
             Object key = iterator.next();
             List list = (List) viterbiLoserMap.get(key);
+            //System.out.printf(" %d \n",list.size());
             Collections.sort(list, Token.COMPARATOR);
             List newList = list.subList(0, list.size() > max ? max : list.size());
             viterbiLoserMap.put(key, newList);
-        }
+        } 
+        //System.out.println();
     }
 
 

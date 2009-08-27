@@ -81,6 +81,7 @@
 
 
 #include <s3types.h>
+#include <logmath.h>
 #include "bio.h"
 
 /** \file interp.h \brief Interpolation of CD/CI senones.
@@ -100,6 +101,7 @@ extern "C" {
  * \brief Wrapper structure of CD/CI interpolation
  */
 typedef struct {
+    logmath_t *logmath;
     int32 n_sen;	/**< #senones */
 
     /**
@@ -120,7 +122,8 @@ typedef struct {
  * contents.
  * @return an initialized interp_t structure 
  */
-interp_t *interp_init (const char *interpfile	/* In: interpolation weights file */
+interp_t *interp_init (const char *interpfile,	/* In: interpolation weights file */
+		       logmath_t *logmath
     );
 
 /**

@@ -218,7 +218,8 @@ public class MixtureComponent  {
 	     - logPreComputedGaussianFactor;
 
 	 // The sqrt above is a 0.5 multiplicative factor in log scale.
-	 return logPreComputedGaussianFactor * 0.5f;
+	 return this.logPreComputedGaussianFactor = logPreComputedGaussianFactor * 0.5f;
+	 // obligatoire for mllr Dynamic 
      }
 
     /**
@@ -237,33 +238,60 @@ public class MixtureComponent  {
 	 * <b>B</b> are the transformation matrix and vector,
 	 * respectively.
 	 */
-	meanTransformed = new float[this.mean.length];
-	for (i = 0; i < this.meanTransformationVector.length; i++) {
-	    float tmpMean = 0.0f;
-	    for (j = 0; j < this.meanTransformationMatrix[i].length; j++) {
-		tmpMean += this.mean[j] * this.meanTransformationMatrix[i][j];
+
+	if (meanTransformationVector !=null) {
+	    meanTransformed = new float[this.mean.length];
+	    for (i = 0; i < this.meanTransformationVector.length; i++) {
+		float tmpMean = 0.0f;
+		for (j = 0; j < this.meanTransformationMatrix[i].length; j++) {
+		    tmpMean += this.mean[j] * this.meanTransformationMatrix[i][j];
+		}
+		this.meanTransformed[i] = tmpMean 
+		    + this.meanTransformationVector[i];
 	    }
-	    this.meanTransformed[i] = tmpMean 
-		+ this.meanTransformationVector[i];
 	}
+	else meanTransformed=mean; 
 	/**
 	 * We do analogously with the variance. In this case, we also
 	 * invert the variance, and work with precision instead of
 	 * variance.
 	 */
-	precisionTransformed = new float[this.variance.length];
-        for (i = 0; i < this.varianceTransformationVector.length; i++) {
-	    float tmpVariance = 0.0f;
-	    for (j = 0; j < this.varianceTransformationMatrix[i].length; j++) {
-		tmpVariance += this.variance[j] 
-		    * this.varianceTransformationMatrix[i][j];
+	/** because mllr n'est pas sur les variances 
+	 * donc une seule fois la transfo des variances
+	 */
+
+	/* ouais mais dans le cas de split il faut peut etre changez cela a voir
+	 */
+
+	if (varianceTransformationVector !=null) {
+	    if (precisionTransformed==null) {
+		precisionTransformed = new float[this.variance.length];
+		
+		for (i = 0; i < this.varianceTransformationVector.length; i++) {
+		    float tmpVariance = 0.0f;
+		    for (j = 0; j < this.varianceTransformationMatrix[i].length; j++) {
+			tmpVariance += this.variance[j] 
+			    * this.varianceTransformationMatrix[i][j];
+		    }
+		    tmpVariance += this.varianceTransformationVector[i];
+		    if (tmpVariance < varianceFloor) {
+			tmpVariance = varianceFloor;
+		    }
+		    precisionTransformed[i] = 1.0f / (-2.0f * tmpVariance);
+		}
+		
 	    }
-	    tmpVariance += this.varianceTransformationVector[i];
-	    if (tmpVariance < varianceFloor) {
-		tmpVariance = varianceFloor;
-	    }
-	    precisionTransformed[i] = 1.0f / (-2.0f * tmpVariance);
 	}
+	
+	else
+	    {
+		if (precisionTransformed==null) 
+		    precisionTransformed = new float[this.variance.length];
+		for (i = 0; i < this.variance.length; i++){  
+            if (variance[i]<this.varianceFloor) variance[i]=varianceFloor;			
+			precisionTransformed[i] = 1.0f / (-2.0f * this.variance[i]); 
+		}	
+	    }
+	
     }
 }
-

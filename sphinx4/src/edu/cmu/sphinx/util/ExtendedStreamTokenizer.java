@@ -100,9 +100,9 @@ public class ExtendedStreamTokenizer {
      * @param reader the source of the data
      * @param eolIsSignificant true if eol is significant
      */
-    public ExtendedStreamTokenizer(Reader reader, boolean eolIsSignificant) {
+    public ExtendedStreamTokenizer(InputStreamReader reader, boolean eolIsSignificant) {
 	this.reader = new BufferedReader(reader);
-
+        System.out.println("je lis les fichiers en "+ reader.getEncoding());//paul 
 	st = new StreamTokenizer(reader);
 	st.resetSyntax();
 	st.whitespaceChars(0, 32);

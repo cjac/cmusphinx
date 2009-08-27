@@ -38,6 +38,7 @@ public class CompositeSenone implements Senone, Serializable {
 
     transient volatile private Data logLastDataScored;
     transient volatile private float logLastScore;
+    transient volatile private double lastScore;
 
    /**
     * a factory method that creates a CompositeSenone from a list of
@@ -94,6 +95,7 @@ public class CompositeSenone implements Senone, Serializable {
 	if (feature == logLastDataScored) {
 	    logScore = logLastScore;
 	} else {
+	    lastScore=-1.0;
             if (wantMaxScore) {
                 for (int i = 0; i < senones.length; i++) {
                     float newScore = senones[i].getScore(feature);
@@ -116,6 +118,14 @@ public class CompositeSenone implements Senone, Serializable {
 	return logScore + weight;
     }
 
+   public double getScoreDouble(Data feature) {
+       throw new Error ("not implemented");
+
+// 	if (feature == logLastDataScored) {
+// 	   return lastScore;
+// 	}
+// 	return lastScore=logMath.logToLinear(getScore(feature));
+   }
 
     /**
      * Calculate scores for each component in the senone's

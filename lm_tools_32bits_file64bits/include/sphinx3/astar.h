@@ -66,7 +66,7 @@ typedef struct astar_s astar_t;
  * Initialize A* search
  **/
 S3DECODER_EXPORT
-astar_t *astar_init(dag_t *dag, dict_t *dict, lm_t *lm,
+astar_t *astar_init(dag_t *dag, dict_t *dict, lm_t *lm, 
                     fillpen_t *fpen,
                     float64 beam, /**< Pruning beam width */
                     float64 lwf   /**< Language weight factor (usually 1.0) */
@@ -92,7 +92,7 @@ glist_t astar_next_hyp(astar_t *astar);
  */
 S3DECODER_EXPORT
 void nbest_search(dag_t *dag, char *filename, char *uttid, float64 lwf,
-                  dict_t *dict, lm_t *lm, fillpen_t *fpen);
+                  dict_t *dict, lm_t *lm, fillpen_t *fpen,FILE * ctmfp);
 
 #ifdef __cplusplus
 }

@@ -105,6 +105,7 @@
 #include <mdef.h>
 #include <ascr.h>
 #include <cmd_ln.h>
+#include <logmath.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -155,7 +156,8 @@ ms_mgau_model_t* ms_mgau_init (const char *meanfile,	/**< In: File containing me
 			       const char* senmgau,	/**< In: type of the gaussians distribution, .cont. or .semi. FIX 
 							   me! This is confusing!*/
 			       const char* lambdafile, /**< In: Interplation file */
-			       int32 topn        /**< In: Top-n gaussian will be computed */
+			       int32 topn,        /**< In: Top-n gaussian will be computed */
+			       logmath_t *logmath
     );
 
 /** Free memory allocated by ms_mgau_init */
@@ -172,18 +174,11 @@ int32 ms_cont_mgau_frame_eval (ascr_t *ascr,   /**< In: An ascr object*/
 
 S3DECODER_EXPORT
 int32 model_set_mllr(ms_mgau_model_t* msg, /**< The model-stream Gaussian distribution model */
-		     const char *mllrfile, /**< The MLLR file name */
-		     const char *cb2mllrfile, /**< The codebook to MLLR file name */
-		     feat_t* fcb,            /**< FCB object */
-		     mdef_t *mdef            /**< A model definition */
-    );
-
-int32 model_set_mllr_r(ms_mgau_model_t* msg, /**< The model-stream Gaussian distribution model */
-                       const char *mllrfile, /**< The MLLR file name */
-                       const char *cb2mllrfile, /**< The codebook to MLLR file name */
-                       feat_t* fcb,            /**< FCB object */
-                       mdef_t *mdef,            /**< A model definition */
-                       cmd_ln_t *config
+                     const char *mllrfile, /**< The MLLR file name */
+                     const char *cb2mllrfile, /**< The codebook to MLLR file name */
+                     feat_t* fcb,            /**< FCB object */
+                     mdef_t *mdef,            /**< A model definition */
+                     cmd_ln_t *config
     );
 
 #ifdef __cplusplus

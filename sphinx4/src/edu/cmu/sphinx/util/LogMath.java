@@ -10,7 +10,7 @@
  *
  */
 package edu.cmu.sphinx.util;
-
+import java.util.Locale;
 import java.util.logging.Logger;
 import edu.cmu.sphinx.util.props.Configurable;
 import edu.cmu.sphinx.util.props.PropertyException;
@@ -118,10 +118,11 @@ public final class LogMath implements Configurable {
         // We compute the min value by computing the log of the min
         // (absolute) value that a float can hold.
         minLogValue = linearToLog(Double.MIN_VALUE);
+	logger.info(String.format(Locale.US," max log : %12g minLOG %12g" , maxLogValue,minLogValue ));
         if (useAddTable) {
             // Now create the addTable table.
             // summation needed in the loop
-            float innerSummation;
+        
             // First decide number of elements.
             int entriesInTheAddTable;
             final int veryLargeNumberOfEntries = 150000;
@@ -167,13 +168,14 @@ public final class LogMath implements Configurable {
                     + " entries.");
             theAddTable = new float[entriesInTheAddTable];
             for (int index = 0; index < entriesInTheAddTable; index++) {
-                // This loop implements the expression:
+            double  innerSummation;
+		// This loop implements the expression:
                 //
                 // log( 1.0 + power(base, index))
                 //
                 // needed to add two numbers in the log domain.
-                innerSummation = (float) logToLinear(-index);
-                innerSummation += 1.0f;
+                innerSummation =  logToLinear(-index);
+                innerSummation += 1.0;
                 theAddTable[index] = linearToLog(innerSummation);
             }
         }

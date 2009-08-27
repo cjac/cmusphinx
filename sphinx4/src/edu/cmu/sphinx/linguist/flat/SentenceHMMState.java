@@ -405,11 +405,18 @@ public abstract class  SentenceHMMState implements Serializable, SearchState  {
      * Dumps this state
      */
     private void dump() {
-	System.out.println(" ----- " + getTitle() + " ---- ");
+      if (this instanceof HMMStateState && this.isEmitting()) 
+	  return;
+      System.out.println(" ---- " + getTitle() + " - "+this+"::"+
+			 hashCode()+":" + getClass().getName()+" o:"+
+			 getOrder());
         for (int i = 0; i < getSuccessors().length; i++) {
 	    SentenceHMMStateArc arc = (SentenceHMMStateArc) getSuccessors()[i];
+	    SearchState tr=arc.getState();
 	    System.out.println("   -> " +
-                    arc.getState().toPrettyString());
+			       tr.toPrettyString() + " " +
+			       
+			       tr.hashCode()+":" + tr.getClass().getName() );
 	}
     }
 
@@ -686,16 +693,17 @@ public abstract class  SentenceHMMState implements Serializable, SearchState  {
 	List queue = new LinkedList();
 
 	queue.add(start);
-
+	visitedStates.add(start);
 	while (queue.size() > 0) {
 	    SentenceHMMState state = (SentenceHMMState) queue.remove(0);
-	    visitedStates.add(state);
+	    //visitedStates.add(state);
+            state.dump();// on ne dump pas 
 	    SentenceHMMStateArc[] successors = state.getSuccessorArray();
 	    for (int i = 0; i < successors.length; i++) {
 		SentenceHMMStateArc arc = successors[i];
 		SentenceHMMState nextState = (SentenceHMMState) arc.getState();
 		if (!visitedStates.contains(nextState)) {
-		    queue.add(nextState);
+		    queue.add(nextState);visitedStates.add(nextState);//paul
 		}
 	    }
 	}

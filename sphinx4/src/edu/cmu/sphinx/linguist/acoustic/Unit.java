@@ -144,9 +144,9 @@ public class  Unit {
     public String toString() {
 	if (key == null) {
             if (context == Context.EMPTY_CONTEXT) {
-                key =  (filler ? "*" :"") + name;
+                key =  (filler ? "" :"") + name+"[-,-]";
             } else {
-                key =  (filler ? "*" :"") + name + "[" + context + "]";
+                key =  (filler ? "" :"") + name + "[" + context + "]";
             }
 	}
 	return key;

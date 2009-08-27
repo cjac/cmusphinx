@@ -47,6 +47,9 @@
  * HISTORY
  * 
  * $Log: dag.c,v $
+ * 2008/09/19  N. Coetmeur, supervised by Y. Esteve
+ * Add LM Max library for use lm_best_4g_score function in dag_compute_hscr
+ *
  * Revision 1.3  2006/02/28 02:06:46  egouvea
  * Updated MS Visual C++ 6.0 support files. Fixed things that didn't
  * compile in Visual C++ (declarations didn't match, etc). There are
@@ -387,6 +390,7 @@ dag_bestpath(dag_t * dagp,      /* A pointer of the dag */
     dagnode_t *d, *pd;
     daglink_t *pl;
     int32 lscr, score;
+    s3lmwid32_t lwid[3];
 
     assert(!l->pscr_valid);
 
@@ -401,6 +405,10 @@ dag_bestpath(dag_t * dagp,      /* A pointer of the dag */
 
         return 0;
     }
+
+    /* init lwid table */
+    lwid[1] = dict2lmwid[dict_basewid(dict, d->wid)];
+    lwid[2] = dict2lmwid[dict_basewid(dict, src->wid)];
 
     /* Search all predecessor links of l */
     for (pl = d->predlist; pl; pl = pl->next) {
@@ -422,21 +430,13 @@ dag_bestpath(dag_t * dagp,      /* A pointer of the dag */
         score = pl->pscr + l->ascr;
         if (score > l->pscr) {      /* rkm: Added 20-Nov-1996 */
             /* FIXME: This scales the wip implicitly */
-            if (pd)
-                lscr = lwf * lm_tg_score(lm,
-                                         dict2lmwid[dict_basewid
-                                                    (dict, pd->wid)],
-                                         dict2lmwid[dict_basewid
-                                                    (dict, d->wid)],
-                                         dict2lmwid[dict_basewid
-                                                    (dict, src->wid)],
+            if (pd) {
+                lwid[0] = dict2lmwid[dict_basewid(dict, pd->wid)];
+                lscr = lwf * lm_ng_score(lm, 3, lwid,
                                          dict_basewid(dict, src->wid));
+            }
             else
-                lscr = lwf * lm_bg_score(lm,
-                                         dict2lmwid[dict_basewid
-                                                    (dict, d->wid)],
-                                         dict2lmwid[dict_basewid
-                                                    (dict, src->wid)],
+                lscr = lwf * lm_ng_score(lm, 2, &(lwid[1]),
                                          dict_basewid(dict, src->wid));
             score += lscr;
 
@@ -501,23 +501,33 @@ dag_destroy(dag_t * dagp)
  * exit node.
  */
 void
-dag_compute_hscr(dag_t *dag, dict_t *dict, lm_t *lm, float64 lwf)
+dag_compute_hscr(dag_t *dag, dict_t *dict, lm_t *lm, lm_max_t *lmmax, float64 lwf)
 {
     dagnode_t *d, *d1, *d2;
     daglink_t *l1, *l2;
-    s3wid_t bw0, bw1, bw2;
+    s3wid_t sbw0, bw0, bw1, bw2, bw_moins1, sauve_bw_moins1;
     int32 hscr, best_hscr;
+    s3lmwid32_t lwid[4];
 
     for (d = dag->list; d; d = d->alloc_next) {
-        bw0 =
+        bw0 = sbw0 =
             dict_filler_word(dict, d->wid)
             ? BAD_S3WID
             : dict_basewid(dict, d->wid);
-
+             bw_moins1=BAD_S3WID;
+        if (bw0 != BAD_S3WID) {
+          for(l1 = d->predlist; l1; l1 = l1->next)
+            if (!dict_filler_word(dict, l1->node->wid)) {
+              bw_moins1 = dict_basewid(dict, l1->node->wid);
+              break; /* topologie espéciale graphes : ATTENTION, il y a encore un pb quand bw0= </s>*/
+            }
+        }
+        sauve_bw_moins1 = bw_moins1;
         /* For each link from d, compute heuristic score */
         for (l1 = d->succlist; l1; l1 = l1->next) {
             assert(l1->node->reachable);
-
+            bw0 = sbw0;
+            bw_moins1 = sauve_bw_moins1;
             d1 = l1->node;
             if (d1 == dag->final.node)
                 l1->hscr = 0;
@@ -528,28 +538,30 @@ dag_compute_hscr(dag_t *dag, dict_t *dict, lm_t *lm, float64 lwf)
                     : dict_basewid(dict, d1->wid);
                 if (NOT_S3WID(bw1)) {
                     bw1 = bw0;
-                    bw0 = BAD_S3WID;
+                    bw0 = bw_moins1;
+                    bw_moins1 = BAD_S3WID;
                 }
 
                 best_hscr = (int32) 0x80000000;
+                lwid[0] = (bw_moins1 == BAD_S3WID) ? BAD_LMWID(lm) : lm->dict2lmwid[bw_moins1];
+                lwid[1] = (bw0 == BAD_S3WID) ? BAD_LMWID(lm) : lm->dict2lmwid[bw0];
+                lwid[2] = (bw1 == BAD_S3WID) ? BAD_LMWID(lm) : lm->dict2lmwid[bw1];
                 for (l2 = d1->succlist; l2; l2 = l2->next) {
                     d2 = l2->node;
                     if (dict_filler_word(dict, d2->wid))
                         continue;
 
                     bw2 = dict_basewid(dict, d2->wid);
+                    lwid[3] = lm->dict2lmwid[bw2];
 
                     /* ARCHAN , bw2 is bypassed, so we can savely ignored it */
                     hscr = l2->hscr
                         + l2->ascr
                         /* FIXME: This scales the wip implicitly */
-                        + lwf * lm_tg_score(lm,
-                                            (bw0 == BAD_S3WID)
-                                            ? BAD_LMWID(lm) : lm->dict2lmwid[bw0],
-                                            (bw1 == BAD_S3WID)
-                                            ? BAD_LMWID(lm) : lm->dict2lmwid[bw1],
-                                            lm->dict2lmwid[bw2], bw2);
-
+                        /*+ lwf * lm_ng_score(lm, 3, lwid, bw2);*/
+//                        + lwf * lm_best_4g_score(lm, lmmax, lwid, bw2);
+                        + lwf * lm_ng_score(lm, 4, lwid, bw2);
+//fprintf(stderr, "%d\n", lm_best_4g_score(lm, lmmax, lwid, bw2));
 
                     if (hscr > best_hscr)
                         best_hscr = hscr;

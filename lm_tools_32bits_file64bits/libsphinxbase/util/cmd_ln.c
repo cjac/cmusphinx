@@ -501,7 +501,7 @@ cmd_ln_parse_r(cmd_ln_t *inout_cmdln, const arg_t * defn, int32 argc, char *argv
         arg_t *argdef;
         cmd_ln_val_t *val;
         void *v;
-
+fprintf(stderr, "%d\n", j);
         if (j + 1 >= argc) {
             cmd_ln_print_help_r(cmdln, stderr, defn);
             E_ERROR("Argument value for '%s' missing\n", argv[j]);
@@ -706,7 +706,9 @@ cmd_ln_parse_file_r(cmd_ln_t *inout_cmdln, const arg_t * defn, const char *filen
      * set as invoked program name.
      */
     argv_size = 10;
-    argc = 1;
+//    argc = 1; Bizarre, Yannick, LIUM
+    argc = 0;
+
     f_argv = ckd_calloc(argv_size, sizeof(char *));
     f_argv[0] = ckd_calloc(1, sizeof(char *));
     f_argv[0][0] = '\0';
@@ -714,6 +716,7 @@ cmd_ln_parse_file_r(cmd_ln_t *inout_cmdln, const arg_t * defn, const char *filen
 
     do {
         ch = fgetc(file);
+        
         /* Handle quoted arguments */
         if (ch == '"' || ch == '\'') {
             if (quoting == ch) /* End a quoted section with the same type */
@@ -734,12 +737,13 @@ cmd_ln_parse_file_r(cmd_ln_t *inout_cmdln, const arg_t * defn, const char *filen
                 ckd_free(f_argv);
                 f_argv = tmp_argv;
                 argv_size *= 2;
-            }
+         }
             /* add the string to the list of arguments */
             f_argv[argc] = ckd_calloc(len + 1, sizeof(char));
             strncpy(f_argv[argc], str, len);
             f_argv[argc][len] = '\0';
             len = 0;
+fprintf(stderr, "%d %s\n", argc, f_argv[argc]);
             argc++;
 
             for (; ch != EOF && strchr(" \t\r\n", ch); ch = fgetc(file));

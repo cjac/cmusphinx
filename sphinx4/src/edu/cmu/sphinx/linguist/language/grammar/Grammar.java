@@ -90,7 +90,7 @@ public abstract class Grammar implements Configurable {
     // Configuration data
     // -----------------------------
     private String name;
-    private Logger logger;
+    protected Logger logger;
     private boolean showGrammar;
     private boolean optimizeGrammar = true;
     private boolean addSilenceWords = false;
@@ -194,20 +194,22 @@ public abstract class Grammar implements Configurable {
             } else if (addSilenceWords) {
                 addSilenceWords();
             }
-
+  if (showGrammar) {
+      dumpGrammar("grammarnoop.gdl");
+  }
             if (optimizeGrammar) {
                 optimizeGrammar();
             }
             dumpStatistics();
             if (showGrammar) {
-                dumpGrammar("grammar.gdl");
-                dumpRandomSentences("sentences.txt", 100);
+		//   dumpGrammar("grammar.gdl");
+		//        dumpRandomSentences("sentences.txt", 100);
                 logger.info("Total number of nodes " + grammarNodes.size());
             }
             postProcessed = true;
         }
     }
-
+    
     /**
      * Dumps statistics for this grammar
      *  

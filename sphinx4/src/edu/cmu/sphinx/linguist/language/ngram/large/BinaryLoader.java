@@ -18,7 +18,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
 import edu.cmu.sphinx.linguist.dictionary.Dictionary;
 import edu.cmu.sphinx.util.LogMath;
 import edu.cmu.sphinx.util.Utilities;
@@ -28,14 +30,14 @@ import edu.cmu.sphinx.util.Utilities;
  * Statistical Language Modelling Toolkit.
  * 
  * Note that all probabilites in the grammar are stored in LogMath log base
- * format. Language Probabilties in the language model file are stored in log
+ * format. Language Probabilities in the language model file are stored in log
  * 10 base. They are converted to the LogMath logbase.
  */
 class BinaryLoader {
     private static final String DARPA_LM_HEADER = "Darpa Trigram LM";
     private static final int LOG2_BIGRAM_SEGMENT_SIZE_DEFAULT = 9;
     private static final float MIN_PROBABILITY = -99.0f;
-    private static final int MAX_PROB_TABLE_SIZE = 65536;
+    private static final int MAX_PROB_TABLE_SIZE = java.lang.Integer.MAX_VALUE;
 
     private LogMath logMath;
     private int maxNGram;
@@ -43,6 +45,7 @@ class BinaryLoader {
     private float languageWeight;
     private double wip;
     private boolean bigEndian = true;
+    private int bytesPerIDField;
     private boolean applyLanguageWeightAndWip;
 
     private int bytesRead = 0;
@@ -226,7 +229,16 @@ class BinaryLoader {
     public boolean getBigEndian() {
         return bigEndian;
     }
-
+    
+    /**
+     * Returns the number of bytes used by ID fields in this file.
+     *
+     * @return the number of bytes for an ID field in this file
+     */
+    public int getBytesPerIDField() {
+        return bytesPerIDField;
+    }
+    
     /**
      * Loads the contents of the memory-mapped file starting at the given
      * position and for the given size, into a byte buffer. This method is
@@ -328,13 +340,13 @@ class BinaryLoader {
             headerLength = Utilities.swapInteger(headerLength);
             if (headerLength == (DARPA_LM_HEADER.length() + 1)) {
                 bigEndian = false;
-                // System.out.println("Little-endian");
+                System.out.println("Little-endian " +headerLength);
             } else {
                 throw new Error("Bad binary LM file magic number: "
                         + headerLength + ", not an LM dumpfile?");
             }
         } else {
-            // System.out.println("Big-endian");
+           System.out.println("Big-endian");
         }
 
         // read and verify standard header string
@@ -353,11 +365,15 @@ class BinaryLoader {
         logBigramSegmentSize = LOG2_BIGRAM_SEGMENT_SIZE_DEFAULT;
 
         // read version number, if present. it must be <= 0.
-
         int version = readInt(stream, bigEndian);
-        // System.out.println("Version: " + version);
+         System.out.println("Version: " + version);
 
+        bytesPerIDField = 2; // by default, we consider the file to be a 16-bit LM
         if (version <= 0) { // yes, its the version number
+            // Check if the file is a 32-bit LM according to the version number
+            if (version <= -3)
+                bytesPerIDField = 4;
+            
             readInt(stream, bigEndian); // read and skip timestamp
 
             // read and skip format description
@@ -366,17 +382,24 @@ class BinaryLoader {
                 if ((formatLength = readInt(stream, bigEndian)) == 0) {
                     break;
                 }
-                bytesRead += stream.skipBytes(formatLength);
+		System.out.format(" je saute %d \n",formatLength);
+		if (formatLength <-1) {
+		    if (formatLength==161) formatLength +=0;
+		String s= readString(stream,formatLength-1);
+		readByte(stream);
+		System.out.println("=====>" +s);}
+		else
+		              bytesRead += stream.skipBytes(formatLength);
             }
 
             // read log bigram segment size if present
-            if (version <= -2) {
+            if (version == -2) {
                 logBigramSegmentSize = readInt(stream, bigEndian);
                 if (logBigramSegmentSize < 1 || logBigramSegmentSize > 15) {
-                    throw new Error("log2(bg_seg_sz) outside range 1..15");
+                    throw new Error("log2(bg_seg_sz) outside range 1..15 "+logBigramSegmentSize);
                 }
             }
-
+	    System.out.println(" logbigramsize " + logBigramSegmentSize);
             numberUnigrams = readInt(stream, bigEndian);
         } else {
             numberUnigrams = version;
@@ -412,17 +435,18 @@ class BinaryLoader {
         // skip all the bigram entries, the +1 is the sentinel at the end
         if (numberBigrams > 0) {
             bigramOffset = bytesRead;
+	    System.out.println("bigramOffset :" + bigramOffset);
             int bytesToSkip = (numberBigrams + 1)
-                    * LargeTrigramModel.BYTES_PER_BIGRAM;
+                    * LargeTrigramModel.ID_FIELDS_PER_BIGRAM * getBytesPerIDField();
             stream.skipBytes(bytesToSkip);
             bytesRead += bytesToSkip;
         }
-
+	System.out.println("triOffset :" + bytesRead);
         // skip all the trigram entries
         if (numberTrigrams > 0) {
             trigramOffset = bytesRead;
             int bytesToSkip = numberTrigrams
-                    * LargeTrigramModel.BYTES_PER_TRIGRAM;
+                    * LargeTrigramModel.ID_FIELDS_PER_TRIGRAM * getBytesPerIDField();
             stream.skipBytes(bytesToSkip);
             bytesRead += bytesToSkip;
         }
@@ -546,7 +570,7 @@ class BinaryLoader {
             int numberUnigrams, boolean bigEndian) throws IOException {
 
         UnigramProbability[] unigrams = new UnigramProbability[numberUnigrams];
-
+	
         for (int i = 0; i < numberUnigrams; i++) {
 
             // read unigram ID, unigram probability, unigram backoff weight
@@ -554,7 +578,8 @@ class BinaryLoader {
 
             // if we're not reading the sentinel unigram at the end,
             // make sure that the unigram IDs are consecutive
-            if (i != (numberUnigrams - 1)) {
+            if (unigramID==-1&& i !=(numberUnigrams-1)) unigramID=i; // nouvelle version sphinx3_lm_convert (3.7) he oui .....
+	    if (i != (numberUnigrams - 1)) {
                 assert(unigramID == i);
             }
 
@@ -643,9 +668,11 @@ class BinaryLoader {
         StringBuffer buffer = new StringBuffer();
         byte[] bytes = new byte[length];
         bytesRead += stream.read(bytes);
+	Charset cs = Charset.forName("ISO-8859-1");
+	CharBuffer cb = cs.decode(ByteBuffer.wrap(bytes));
 
         for (int i = 0; i < length; i++) {
-            buffer.append((char) bytes[i]);
+            buffer.append(cb.get()); //buffer.append((char) bytes[i]);
         }
         return buffer.toString();
     }
@@ -669,14 +696,16 @@ class BinaryLoader {
         StringBuffer buffer = new StringBuffer();
         byte[] bytes = new byte[length];
         bytesRead += stream.read(bytes);
-
+	Charset cs = Charset.forName("ISO-8859-1");
+	CharBuffer cb = cs.decode(ByteBuffer.wrap(bytes));
+	
         int s = 0;
         for (int i = 0; i < length; i++) {
-            char c = (char) bytes[i];
+            char c =cb.get();// (char) bytes[i];
             bytesRead++;
             if (c == '\0') {
                 // if its the end of a string, add it to the 'words' array
-                words[s] = buffer.toString().toLowerCase();
+                words[s] = buffer.toString(); //paul  .toLowerCase();
                 buffer = new StringBuffer();
                 if (words[s].equals(Dictionary.SENTENCE_START_SPELLING)) {
                     startWordID = s;
@@ -688,6 +717,10 @@ class BinaryLoader {
                 buffer.append(c);
             }
         }
+	System.out.format("%s:%s: %d %d \n", Dictionary.SENTENCE_START_SPELLING,
+			  Dictionary.SENTENCE_END_SPELLING,
+			  startWordID,
+			  endWordID);
         assert(s == numberUnigrams);
         return words;
     }

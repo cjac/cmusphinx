@@ -476,7 +476,10 @@ public class LexTreeLinguist implements Linguist {
         hmmPool = new HMMPool(acousticModel, logger, unitManager);
 
         hmmTree = new HMMTree(hmmPool, dictionary, languageModel,
-                addFillerWords, languageWeight);
+			      addFillerWords, languageWeight,
+
+      logFillerInsertionProbability, logSilenceInsertionProbability);
+        //hmmTree.dumpTree();//paul
 
         hmmPool.dumpInfo();
 
@@ -587,7 +590,7 @@ public class LexTreeLinguist implements Linguist {
         public int hashCode() {
             int hashCode = fullWordHistories
                     ? wordSequence.hashCode() * 37
-                    : 37;
+		: 37*wordSequence.getNewWord().hashCode();
             hashCode += node.hashCode();
             return hashCode;
         }
@@ -604,9 +607,15 @@ public class LexTreeLinguist implements Linguist {
                 return true;
             } else if (o instanceof LexTreeState) {
                 LexTreeState other = (LexTreeState) o;
-                boolean wordSequenceMatch = fullWordHistories ? wordSequence
-                        .equals(other.wordSequence) : true;
-                return node == other.node && wordSequenceMatch;
+		//paul modif 
+		// au mini one word dans history 
+		// == is fast 
+                return node == other.node && 
+		    (fullWordHistories ? wordSequence
+		     .equals(other.wordSequence) : 
+		     wordSequence.getNewWord().equals(other.wordSequence.getNewWord()));
+
+
             } else {
                 return false;
             }
@@ -761,10 +770,16 @@ public class LexTreeLinguist implements Linguist {
                 smearTerm = getSmearTermFromLanguageModel(nextWordSequence);
                 // System.out.println("LP " + nextWordSequence + " " +
                 // logProbability);
-                probability *= languageWeight;
+                probability *= languageWeight;}
+		else
+		    // modif paul coherence sphinx3
+		    probability = languageWeight*( lastUnit.getBaseUnit().isSilence() ? logSilenceInsertionProbability :
+						   logFillerInsertionProbability);
+
+
                 // subtract off the previously applied smear probability
                 arcProbability = probability - previous.getSmearProb();
-            }
+		// fin du if not filler before 
             if (nextWord == sentenceEndWord) {
                 // System.out.println("LP " + nextWordSequence + " " +
                 // logProbability);
@@ -789,7 +804,8 @@ public class LexTreeLinguist implements Linguist {
         SearchStateArc createUnitStateArc(HMMNode hmmNode, LexTreeState previous) {
             SearchStateArc arc;
             // System.out.println("CUSA " + hmmNode);
-            float insertionProbability = calculateInsertionProbability(hmmNode);
+            float insertionProbability =(previous instanceof LexTreeWordState? logWordInsertionProbability :0) +
+		logUnitInsertionProbability ;// calculateInsertionProbability(hmmNode);
             float probability = getUnigramSmear(hmmNode)
                     + previous.getSmearTerm();
             float arcProbability = probability - previous.getSmearProb();
@@ -837,7 +853,7 @@ public class LexTreeLinguist implements Linguist {
          */
         public String toString() {
             return "lt-" + node + " " + getProbability() + "{" + wordSequence
-                    + "}";
+		+ "} :" + getOrder();
         }
 
         /**
@@ -1519,6 +1535,12 @@ public class LexTreeLinguist implements Linguist {
         public boolean isWordStart() {
             return false;
         }        
+
+	public String toString() {
+	    return "lt- " + getProbability() + "{" + getWordHistory()
+     + "} :";
+	    //   return super.toString() + "unit pre" +lastNode + "fin pre";
+	}
     }
 
     /**
@@ -1602,6 +1624,7 @@ public class LexTreeLinguist implements Linguist {
      * @return the smear term for the word sequence
      */
     private float getSmearTermFromLanguageModel(WordSequence ws) {
+	if (true) return logOne;//paul (il y a comme un truc)
         return languageModel.getSmear(ws);
     }
 

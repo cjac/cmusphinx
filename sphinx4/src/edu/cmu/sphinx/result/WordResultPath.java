@@ -63,7 +63,9 @@ public class WordResultPath extends Vector implements Path {
         Iterator i = iterator();
         while (i.hasNext()) {
             WordResult wr = (WordResult)i.next();
+
             confidence += wr.getConfidence();
+	    //  System.err.println(wr +" "+ wr.getConfidence()+" "+ confidence );
         }
         return confidence;
     }

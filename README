@@ -1,0 +1,82 @@
+Original files of the future LIUM contributions to the CMU Sphinx Project
+LIUM - University of Le Mans, France
+
+Contributors:
+Paul Deléglise, Professor : major contributor
+Yannick Estève, Associate Professor (mainly language modeling and linguistic rescoring)
+Sylvain Meignier, Associate Professor (mainly audio segmentation and speaker diarization)
+Nicolas Coëtmeur, Computer Engineer, ex-LIUM.
+
+Contact:
+Yannick Estève
+LIUM - University of Le Mans, France
+http://www-lium.univ-lemans.fr/~esteve/research.html
+
+
+
+
+INFORMATION
+-----------
+
+Files in these sub-directories are parts of source code of the ASR system developed by the LIUM (Computer Sciences Laboratory of the University of Le Mans, France). 
+The LIUM's ASR system is based on the CMU Sphinx Project : it is a multi-pass system using the sphinx3 tools during some passes and evolutions of the s4 tools in the other ones.
+
+Unfortunately, our code was not written in the objective to distribute it, but only for an internal use to make some scientific experiments. As we think now that some of our work can be benefit for the Sphinx community, we plan to integrate them into the canonical versions of the sX.x decoders.
+
+
+Before starting this porting work, we have decided to check this work into a LIUM branch of the Sphinx Project: files in these sub-
+directories are a first part of this work. 
+
+Another sub-directory will be added soon concerning Sphinxtrain.
+
+People who want to help us to port this are welcome.
+
+
+Sub-directories
+---------------
+
+sphinx4: the LIUM's version of Sphinx 4 ("as is"), including acoustic rescoring tool of word-graphes and another version of a confusion network generator used for MPE training of acoustic models.
+
+lm_tools_32bits_file64bits: C library to manage n-gram model whatever n. Including a version of lm_convert and tools to rescore lattice-word with 4-gram (or more with few modifications).
+
+
+
+WARNING
+-------
+
+As said above, these source codes were initially written for an internal use by a little team of researchers. Please be (very) tolerant with us: sometimes there are no comment, sometimes they are in French, sometimes in a bad english. More, variable or function names can be understandable. During the porting work, be confident that will be corrected, of course.
+
+
+REFERENCES
+----------
+
+	About the LIUM ASR system:
+	--------------------------
+	Paul Deléglise, Yannick Estève, Sylvain Meignier, Teva Merlin (2009), Improvements to the LIUM French ASR system based on CMU Sphinx: what helps to significantly reduce the word error rate?, In: Interspeech 2009, 6-10 démbre 2009, Brighton, UK
+
+	Paul Deléglise, Yannick Estève, Sylvain Meignier, Teva Merlin (2005), The LIUM speech transcription system: a CMU Sphinx III-based system for french broadcast news, In: Interspeech'05, ISCA, Sept 2005, Lisbon.
+	
+	
+	
+	About some recent LIUM works using the LIUM ASR system:
+	-----------------------------------------------
+
+	Antoine Laurent, Teva Merlin, Sylvain Meignier, Yannick Estève, Paul Deléglise (2009), Iterative filtering of phonetic transcriptions of proper nouns, In: ICASSP 2009, April 19-24, 2009, Taipei (Taiwan).
+	
+	Vincent Jousse, Simon Petitrenaud, Sylvain Meignier, Yannick Estève, Christine Jacquin (2009), Automatic named identification of speakers using diarization and ASR systems, In: ICASSP 2009, 19-24 avril 2009, Taipei (Taiwan).
+	
+	Richard Dufour, Vincent Jousse, Yannick Estève, Fréric Béchet, Georges Linarès (2009), Spontaneous Speech Characterization and Detection in Large Audio Database, In: 13-th International Conference on Speech and Computer SPECOM 2009, June 21-25,  2009, St Petersburg (Russia).
+
+	Antoine Laurent, Paul Deléglise, Sylvain Meignier (2009), Grapheme to phoneme conversion using an SMT system, In: Interspeech 2009, 6-10 September 2009, Brighton, UK.
+
+	Benjamin Lecouteux, Georges Linarès, Yannick Estève, Guillaume Gravier (2008), Generalized driven decoding for speech recognition system combination, In: IEEE ICASSP 2008, March 30 - April 4, 2008, Las Vegas (Nevada, USA).
+	
+	Dufour R., Estève Y. (2008), Correcting ASR outputs: specific solutions to specific errors in French, In: IEEE Workshop on Spoken Language Technology (SLT 2008), December 15-18, Goa (India).
+	
+	Laurent A., Merlin T., Meignier S., Estève Y., Deléglise P. (2008), Combined systems for automatic phonetic transcription of proper nouns, In: LREC 2008, 28-30 May 2008, Marrakech (Morocco).
+	
+	Bazillon T., Estève Y., Luzzati D. (2008), Manual vs assisted transcription of prepared and spontaneous speech, In: LREC 2008, 28-30 mai 2008, Marrakech (Maroc).
+	
+	Yannick Estève, Sylvain Meignier, Paul Deléglise, Julie Mauclair (2007), Extracting true speaker identities from transcriptions, In: Interspeech 2007, August 27-31, 2007, Antwerp (Belgium).
+	
+	

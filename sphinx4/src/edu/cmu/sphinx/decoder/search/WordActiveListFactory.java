@@ -183,12 +183,16 @@ public class WordActiveListFactory implements ActiveListFactory {
             Map countMap = new HashMap();
             Collections.sort(tokenList, Token.COMPARATOR);
             // remove word duplicates
+	    //int kDump=0;
+	    // boolean b=false;
             for (ListIterator i = tokenList.listIterator(); i.hasNext(); ) {
                 Token token = (Token) i.next();
                 WordSearchState wordState = 
                     (WordSearchState) token.getSearchState();
 
                 Word word = wordState.getPronunciation().getWord();
+		// if  (token.getFrameNumber() ==100)                    
+		//    System.err.println (kDump++ + ":" +token);
 
                 // only allow  maxFiller words
                 if (maxFiller > 0) {
@@ -220,7 +224,10 @@ public class WordActiveListFactory implements ActiveListFactory {
             if (tokenList.size() > absoluteBeamWidth) {
                 tokenList = tokenList.subList(0, absoluteBeamWidth);
             }
-
+	    //   kDump=0;
+	    //if (b)
+	    //	for (Object o : tokenList)                     
+	    //	    System.err.println ("select : "+ kDump++ + ":" +o);
             return this;
         }
 

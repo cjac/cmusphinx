@@ -111,6 +111,7 @@
 
 
 #include "s3types.h"
+#include <logmath.h>
 #include "ms_gauden.h"
 
 /** \file ms_senone.h
@@ -138,6 +139,7 @@ typedef uint32 senprob_t;	/**< Senone logs3-probs, truncated to 8 bits */
  * logs3 domain, and finally truncated to 8 bits precision to conserve memory space.
  */
 typedef struct {
+    logmath_t *logmath;
     senprob_t ***pdf;		/**< gaussian density mixture weights, organized two possible
                                    ways depending on n_gauden:
                                    if (n_gauden > 1): pdf[sen][feat][codeword].  Not an
@@ -166,7 +168,8 @@ senone_t *senone_init (const char *mixwfile,		/**< In: mixing weights file */
 		       const char *mgau_mapfile,	/**< In: file specifying mapping from each
 			        			   senone to mixture gaussian codebook.
 				        		   If NULL all senones map to codebook 0 */
-		       float32 mixwfloor	/**< In: Floor value for senone weights */
+		       float32 mixwfloor,	/**< In: Floor value for senone weights */
+		       logmath_t *logmath
     );
 
 /** Release memory allocated by senone_init. */

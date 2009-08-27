@@ -10,16 +10,24 @@
  *
  */
 package edu.cmu.sphinx.result;
-
+import java.util.zip.GZIPOutputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.PrintWriter;
 import java.util.Collection;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.zip.GZIPInputStream;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -32,11 +40,15 @@ import java.util.Vector;
 import edu.cmu.sphinx.decoder.search.AlternateHypothesisManager;
 import edu.cmu.sphinx.decoder.search.Token;
 import edu.cmu.sphinx.linguist.WordSearchState;
+import edu.cmu.sphinx.linguist.HMMSearchState;
 import edu.cmu.sphinx.linguist.dictionary.Dictionary;
 import edu.cmu.sphinx.linguist.dictionary.Pronunciation;
 import edu.cmu.sphinx.linguist.dictionary.Word;
-import edu.cmu.sphinx.util.LogMath;
+import edu.cmu.sphinx.linguist.acoustic.Unit;
 
+import edu.cmu.sphinx.util.LogMath;
+import edu.cmu.sphinx.linguist.language.ngram.LanguageModel;
+import edu.cmu.sphinx.linguist.WordSequence;
 /**
  * <p>
  * Provides recognition lattice results. Lattices are created from
@@ -132,19 +144,25 @@ public class Lattice {
 
     protected Node initialNode;
     protected Node terminalNode;
-    protected Set edges;
-    protected Map nodes;
+    protected HashSet <Edge>  edges;
+    protected Map<String,Node> nodes;
     protected double logBase;
     protected LogMath logMath;
+    private float wipLocal;
     private Set visitedWordTokens;
     private AlternateHypothesisManager loserManager;
-
+    private Map<Token,Integer> nodesId;
+     Node[] lesNoeuds=null;
+    private Map <Word,Float> fillerScore= new HashMap<Word,Float>();
+    private int countNode=0;
+    private boolean keepAll=false;
+    private int nframe=0;
     /**
      * Create an empty Lattice.
      */
     protected Lattice() {
         edges = new HashSet();
-        nodes = new HashMap();
+        nodes = new HashMap<String,Node>();
     }
 
     /**
@@ -154,7 +172,9 @@ public class Lattice {
 	this();
 	this.logMath = logMath;
     }
-
+    public Lattice(Result result){
+	this(result,false);
+    }
     /**
      * Create a Lattice from a Result.
      *
@@ -163,30 +183,59 @@ public class Lattice {
      *
      * @param result the result to convert into a lattice
      */
-    public Lattice(Result result) {
+    private int profond=0;
+    public Lattice(Result result,boolean keepAll) {
 	this(result.getLogMath());
+	this.keepAll=keepAll;
+	nframe=result.getFrameNumber();
 	visitedWordTokens = new HashSet();
+        nodesId= new HashMap<Token,Integer> ();
+        countNode=0; 
         loserManager = result.getAlternateHypothesisManager();
         if (loserManager != null) {
             loserManager.purge();
         }
-
         for (Iterator i = result.getResultTokens().iterator(); i.hasNext();) {
             Token token = (Token) i.next();
             while (token != null && !token.isWord()) {
 		token = token.getPredecessor();
             }
+	    // System.err.println("in lattice "+ token + " w="+ token.getWord());
             assert token.getWord().isSentenceEndWord();
 	    if (terminalNode == null) {
 		terminalNode = new Node(getNodeID(result.getBestToken()),
-					token.getWord(), -1, -1);
+					token.getWord(),
+					((WordSearchState) token.getSearchState()).isWordStart() ?token.getFrameNumber():-1 ,
+					result.getFrameNumber());
 		addNode(terminalNode);
 	    }
+	    profond=3;
             collapseWordToken(token);
         }
+	System.err.println(" vu node:" + countNode + " token:" + visitedWordTokens.size()); //+" "+ countWord(result));
+      
     }
-
-
+    private Set toto;// cele ne marche avec des lattices trop big.
+    private int countWord(Result result)
+    {  toto= new HashSet();
+	int c;
+        for (Iterator i = result.getResultTokens().iterator(); i.hasNext();) {
+            Token token = (Token) i.next();    
+            parcours(token);
+	    
+	}
+	c= toto.size();
+        toto.clear();
+	return c;
+    }
+    private void parcours(Token t) {
+	if (t==null) return;
+        if (t.isWord()) toto.add(t.getSearchState());
+	parcours(t.getPredecessor());
+	if (loserManager != null&& loserManager.getAlternatePredecessors(t)!=null) 
+	    for ( Object o : loserManager.getAlternatePredecessors(t))
+		parcours((Token) o);
+    }
     /**
      * Returns the node corresponding to the given word token.
      *
@@ -194,28 +243,70 @@ public class Lattice {
      *
      * @return the node of the given token
      */
+
+    private HashMap<String,Word> dicoPho= new HashMap<String,Word>();
     private Node getNode(Token token) {
-        if (token.getWord().isSentenceEndWord()) {
+        if (token.isWord() && token.getWord().isSentenceEndWord()) {
             return terminalNode;
         }
-        Node node = (Node) nodes.get(getNodeID(token));
+        Node node =  nodes.get(getNodeID(token));
         if (node == null) {
-	    WordSearchState wordState = 
-		(WordSearchState) token.getSearchState();
-            
-	    int startFrame = -1;
-            int endFrame = -1;
+	    if (token.getSearchState() instanceof WordSearchState) {
+		WordSearchState wordState = 
+		    (WordSearchState) token.getSearchState();
+		
+		int startFrame = -1;
+		int endFrame = -1;
+		
+		if (wordState.isWordStart()) {
+		    startFrame = token.getFrameNumber();
+		} else {
+		    endFrame = token.getFrameNumber();
+		    {Token pred=token.getPredecessor();
+			while (pred!=null && !pred.isWord())
+			    pred=pred.getPredecessor();
+			if (pred!=null)
+			    startFrame= pred.getFrameNumber()+1;
+		    }
+		}
+		
 
-            if (wordState.isWordStart()) {
-                startFrame = token.getFrameNumber();
-            } else {
-                endFrame = token.getFrameNumber();
-            }
-
-            node = new Node(getNodeID(token), token.getWord(),
+		node = new Node(getNodeID(token), token.getWord(),
 			    startFrame, endFrame);
+	    }
+	    else {
+		//is not a word
+		int startFrame = -1;
+		int endFrame =  token.getFrameNumber();
+		 {Token pred=token.getPredecessor();
+		     if (pred!=null)
+			 startFrame= pred.getFrameNumber()+1;
+		 }
+		 Unit base =((HMMSearchState)token.getSearchState()).getHMMState().getHMM().getUnit().getBaseUnit();
+		 String nom ="ph_"+base.getName();
+		 Word word=null;
+		 if (dicoPho.containsKey(nom))
+		     word= dicoPho.get(nom);
+		 else {
+		     Unit [] units=new Unit[1];
+		     units[0]=base;
+		     Pronunciation[] pros=new Pronunciation[1];
+		     pros[0]= new Pronunciation(units,null,null,1.f);
+		     word =new Word(nom,pros,false);
+		     dicoPho.put(nom,word);
+		 
+		 // il serait bon de faire un dico pour les phonemes et
+		 // confucius c'est fait mas pas teste
+		     pros[0].setWord(word);
+		 }
+ 
+		 node=new Node(getNodeID(token),word,
+			    startFrame, endFrame);
+
+	    }
             addNode(node);
         }
+	
         return node;
     }
 
@@ -231,17 +322,48 @@ public class Lattice {
         if (visitedWordTokens.contains(token)) {
             return;
         }
+	if (false && profond-- >0 ) {
+	    System.err.println( token+ " "+getNode(token) + " pred ");// + token.getPredecessor());
+	    System.err.println(token.getWordPath(true));
+	    {  List list = (loserManager !=null) ?loserManager.getAlternatePredecessors(token):null;
+		if (list==null) System.err.println("pas de loser");
+		else  for (Iterator i = list.iterator(); i.hasNext();) {
+			Token loser = (Token) i.next();
+			System.err.print("--------"+loser + " pred ");// +  loser.getPredecessor() +" ");
+			System.err.println(loser.getWordPath(true));
+			
+		    }
+	    }
+	}
+	
         visitedWordTokens.add(token);
         collapseWordPath(getNode(token), token.getPredecessor(),
-                         token.getAcousticScore(), token.getLanguageScore());
+                         token.getScore()-token.getPredecessor().getScore(),
+			 token.getLanguageScore()+token.getInsertionProbability() -token.getPredecessor().getLanguageScore()-
+			 token.getPredecessor().getInsertionProbability());
+
         if (loserManager != null) {
             List list = loserManager.getAlternatePredecessors(token);
             if (list != null) {
                 for (Iterator i = list.iterator(); i.hasNext();) {
                     Token loser = (Token) i.next();
-                    collapseWordPath(getNode(token), loser,
-                                     token.getAcousticScore(),
-                                     token.getLanguageScore());
+		    if (false) 
+			
+			// modif 21/09/2007 wordprunning change
+			// pour recuperer score corect sur le loser.
+			collapseWordPath(getNode(token), loser, token.getScore()-loser.getScore(),
+                                    
+                                     token.getLanguageScore()+token.getInsertionProbability()
+				     -loser.getLanguageScore()-
+				      loser.getInsertionProbability());
+		    else
+			collapseWordPath(getNode(token), loser.getPredecessor(),
+                         loser.getScore()-loser.getPredecessor().getScore(),
+			 loser.getLanguageScore()+loser.getInsertionProbability()- 
+					 loser.getPredecessor().getLanguageScore()-
+					 loser.getPredecessor().getInsertionProbability());
+		   
+
                 }
             }
         }
@@ -258,7 +380,9 @@ public class Lattice {
      */
     private void collapseWordPath(Node parentWordNode, Token token,
                                   float acousticScore, float languageScore) {
-        if (token.isWord()) {
+  
+
+        if (token.isWord()|| keepAll) {
             /*
              * If this is a word, create a Node for it, and then create an
              * edge from the Node to the parentWordNode
@@ -306,17 +430,135 @@ public class Lattice {
      * @param token the token associated with the Node
      *
      * @return an ID for the Node
+     *  il faut mieux recrire cela.
      */
+
     private String getNodeID(Token token) {
-        return Integer.toString(token.hashCode());
+	Integer p = nodesId.get(token);
+	if (p==null)
+	    nodesId.put(token,p=countNode++);
+	return p.toString();
+       
+	///    return Integer.toString(token.hashCode());
     }
 
     /**
-     * Create a Lattice from a LAT file.  LAT files are created by
-     * the method Lattice.dump()
-     *
+     * Create a Lattice from a HTK  file.
+     *      *
      * @param fileName
      */
+
+    public Lattice(LogMath logMath,Dictionary dico,  java.io.File fileName) throws IOException {
+	this();
+	this.logMath = logMath;
+	Pattern egal,blanc,card,noeud,arc,cardFinal,startend;
+	ArrayList<Node> desNoeuds = new ArrayList<Node>(300);
+        egal=Pattern.compile("=");
+        blanc=Pattern.compile("\\s+");
+        int nombreNoeud,nombreArc;
+	//	try
+	{
+            System.err.println("Loading from " + fileName);
+	    
+            // load the nodes
+            LineNumberReader in = new LineNumberReader(new InputStreamReader(new GZIPInputStream(new java.io.FileInputStream( fileName))));
+	    int last=-1;
+	    int lePremierNoeud=0;
+            String line;
+	    line=in.readLine();
+            if (!line.equals("VERSION=1.0")) {
+		throw new Error(line);}
+            line=in.readLine();
+            String [] dec=egal.split(line);
+            if (!dec[0].equals("lmscale")) throw new Error(line+"lmscale");
+	    line=in.readLine();
+            dec=egal.split(line);
+	    if (!dec[0].equals("wdpenalty")) throw new Error(line+"wip");
+	    this. wipLocal= logMath.lnToLog(Float.parseFloat(dec[1]));
+	    card=Pattern.compile("N=(\\d+)\\s+L=(\\d+)");
+	    cardFinal=Pattern.compile("N=(\\d+)\\s+L=(\\d+)\\s+F=(\\d+)");
+	    startend=Pattern.compile("start=(\\d+)\\s+end=(\\d+)");
+	    //lesNoeuds= new Node[nombreNoeud];
+            noeud=Pattern.compile("I=(\\d+)\\s+t=(\\S+)\\s+W=(\\S+)\\s+v=(\\d+)");
+            arc = Pattern.compile("J=(\\d+)\\s+S=(\\S+)\\s+E=(\\S+)\\s+a=(\\S+)\\s+l=(\\S+)");
+	    nombreNoeud=-1;nombreArc=-1;
+	    while ((line = in.readLine()) != null) {
+		Matcher ml=noeud.matcher(line);
+		if (ml.find()) {
+		    int i=Integer.parseInt(ml.group(1));
+		    int t=Math.round( (Float.parseFloat(ml.group(2))*100));
+		    String mot=ml.group(3);
+		    int v=Integer.parseInt(ml.group(4));
+                    if (nombreNoeud<0 || i<nombreNoeud-1) 
+			desNoeuds.add(addNode(Integer.toString(i),dico.getWord(mot),t,-1));
+		    else
+			desNoeuds.add(addNode(Integer.toString(i),dico.getWord(mot),t,t));
+		} else
+		   {Matcher al=arc.matcher(line);
+		       if (al.find()) {
+			   Node debut=desNoeuds.get(Integer.parseInt(al.group(2)));
+                           Node fin=desNoeuds.get(Integer.parseInt(al.group(3)));
+			   float a= logMath.lnToLog(Float.parseFloat(al.group(4)));
+			   float l=logMath.lnToLog(Float.parseFloat(al.group(5)));
+			   if (debut.getWord().isFiller())
+			       fillerScore.put(debut.getWord(),l);
+                           addEdge(debut,fin,a,l);
+		       }
+		       else 
+			   {Matcher stend=startend.matcher(line);
+			       if (stend.find()) {
+				   last=Integer.parseInt(stend.group(2));
+				   lePremierNoeud=Integer.parseInt(stend.group(1));
+			       }
+			       else
+				   { 
+				       Matcher m=card.matcher(line);
+				       if(!m.find())
+					   throw new Error("SYNTAX ERROR: " + fileName +				 
+							   "[" + in.getLineNumber() + "] " + line);
+				       nombreNoeud= Integer.parseInt(m.group(1));
+				       nombreArc = Integer.parseInt(m.group(2));
+				       m=cardFinal.matcher(line);
+				       if (m.find())
+					   last =  Integer.parseInt(m.group(3));
+			   
+				   }
+		       }
+		   }
+	    }
+	    //lesNoeudsdesNoeuds.toArray();
+	    if (last<0){
+		lesNoeuds = desNoeuds.toArray(new Node[0]);
+		last=lesNoeuds.length-1;
+	    }
+            setInitialNode(desNoeuds.get(lePremierNoeud));
+            setTerminalNode(desNoeuds.get(last));
+	    if (desNoeuds.get(last).getEndTime() ==-1)
+		desNoeuds.get(last).setEndTime(desNoeuds.get(last).getEndTime());
+		
+            if (nombreNoeud != nodes.size() ||
+		nombreArc !=edges.size())
+		throw new Error("nb noeud et nb arc");
+	    //final et initial nodes
+	}
+	for (Node n : desNoeuds)
+	    n.tri(1);
+// 		catch (Exception e) {
+// 		    e.printStackTrace();
+// 		    throw new Error( e.toString());
+//         }
+// dumpAISee("titi","titi",true);
+ if (false) 
+     for (Edge e : edges) {
+	 System.err.println(e);
+     }
+    }
+
+    
+    
+    
+    
+    
     public Lattice(String fileName) {
         try {
             System.err.println("Loading from " + fileName);
@@ -503,7 +745,7 @@ public class Lattice {
      * @return the Node
      */
     protected Node getNode(String id) {
-        return (Node) (nodes.get(id));
+        return  (nodes.get(id));
     }
 
     /**
@@ -513,7 +755,7 @@ public class Lattice {
      *
      * @return a copy of the collection of Nodes
      */
-    protected Collection getCopyOfNodes() {
+    protected Collection <Node> getCopyOfNodes() {
         return new Vector(nodes.values());
     }
 
@@ -522,7 +764,7 @@ public class Lattice {
      *
      * @return the colllection of all Nodes
      */
-    public Collection getNodes() {
+    public Collection <Node> getNodes() {
         return nodes.values();
     }
 
@@ -539,8 +781,11 @@ public class Lattice {
      *
      * @return the set of all edges
      */
-    public Collection getEdges() {
+    public Collection <Edge> getEdges() {
         return edges;
+    }
+    public Collection <Edge> getCopyEdges() {
+	return (Collection <Edge>)edges.clone();
     }
 
     /**
@@ -551,6 +796,9 @@ public class Lattice {
      * @param title
      */
     public void dumpAISee(String fileName, String title) {
+	dumpAISee( fileName, title,false);
+    }
+    public void dumpAISee(String fileName, String title,boolean tout) {
         try {
             System.err.println("Dumping " + title + " to " + fileName);
             FileWriter f = new FileWriter(fileName);
@@ -574,11 +822,12 @@ public class Lattice {
             f.write( "yspace: 10\n");
             */
 
-            for (Iterator i = nodes.values().iterator(); i.hasNext();) {
-                ((Node) (i.next())).dumpAISee(f);
+            for (Iterator <Node> i = nodes.values().iterator(); i.hasNext();) {
+                ((Node) (i.next())).dumpAISee(f,logMath);
             }
-            for (Iterator i = edges.iterator(); i.hasNext();) {
-                ((Edge) (i.next())).dumpAISee(f);
+            for (Edge e : edges) {
+		if (e.getIsNotPruned()|| tout )
+		    e.dumpAISee(f,logMath);
             }
             f.write("}\n");
             f.close();
@@ -587,16 +836,109 @@ public class Lattice {
         }
     }
 
+    /** eclate les mots composees 
+     * a faire avant dump because
+     * apres graphe pas tres coherent
+     *enfin je sais pas
+     */
+ public   Lattice compound(boolean compound) {
+	if (! compound) return this;
+	for (Node n :nodes.values().toArray(new Node [0])) {
+	    if (n.getWord().getCompound()==null) continue;
+	    Collection <Edge> sortie =n.getCopyOfLeavingEdges();
+	    Word [] comp=n.getWord().getCompound();
+	    int debut= n.getBeginTime();
+	    int fin =n.getEndTime();
+	    int duree=	 (n.getEndTime()-n.getBeginTime())/comp.length;
+	    n.removeLeavingEdges();
+	    n.setWord(comp[0]);
+	    Node an=n;
+	    for (int i=1 ; i<comp.length;i++){
+		Node n1=addNode(comp[i],debut+=duree,fin);
+		addEdge(an,n1,0.0,0.0);
+		an=n1;
+	    }
+	    for (Edge e:sortie) {
+		an.addLeavingEdge(e);
+		e.setFromNode(an);
+	    }
+	}
+	return this;
+    }
+
+    /** dump sphinx3.0 facon
+     *
+     *
+     *
+     */
+  protected void dumpS3(PrintWriter out) { // throws IOException {
+        //System.err.println( "Dumping to " + out );
+      lesNoeuds = nodes.values().toArray(new Node[0]);
+      Arrays.sort(lesNoeuds,new Comparator<Node>() {
+	      public int compare(Node n1,Node n2) {
+		  if (n1.getBeginTime()==n2.getBeginTime())
+		      return -(n1.getEndTime()- n2.getEndTime());
+		  return -(n1.getBeginTime()- n2.getBeginTime());
+	      }
+	  });
+      
+      out.println("# getcwd: jenesaispas");
+      out.println("# -logbase " + logMath.getLogBase()); 
+      out.println("#");
+      out.println("Frames " + nframe);
+      out.println("#");
+      out.format("Nodes %d (NODEID WORD STARTFRAME FIRST-ENDFRAME LAST-ENDFRAME)\n",lesNoeuds.length);
+     for (int i=0 ;i<lesNoeuds.length ;i++) {
+	  lesNoeuds[i].dumpS3(out,i);
+      }
+     
+     out.format("Initial %s\nFinal %s\n", initialNode.getId(),terminalNode.getId());
+     out.format("BestSegAscr 0 (NODEID ENDFRAME ASCORE)\n");
+     out.println("#\nEdges (FROM-NODEID TO-NODEID ASCORE)");
+        for (Iterator i = edges.iterator(); i.hasNext();) {
+            ((Edge) (i.next())).dumpS3(out);
+        }
+	out.println("End");
+	out.close();
+    }
+
+    /**
+     * Dump the Lattice as a .LAT file.  Used to save Lattices as
+     * ASCII files for testing and experimentation.
+     *
+     * @param file
+     */
+    public void dumpS3(java.io.File file) {
+        try {
+            dumpS3(new PrintWriter( new OutputStreamWriter(
+							 new GZIPOutputStream(new java.io.FileOutputStream(file)))));
+        } catch (IOException e) {
+            throw new Error(e.toString());
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     /**
      * Dump the Lattice as a .LAT file
      *
      * @param out
-     * @throws IOException
+     * @throws IOException false  PrinterWriter do not throw IOexception
      */
-    protected void dump(PrintWriter out) throws IOException {
+    protected void dump(PrintWriter out) { // throws IOException {
         //System.err.println( "Dumping to " + out );
-        for (Iterator i = nodes.values().iterator(); i.hasNext();) {
+        for (Iterator <Node> i = nodes.values().iterator(); i.hasNext();) {
             ((Node) (i.next())).dump(out);
         }
         for (Iterator i = edges.iterator(); i.hasNext();) {
@@ -605,7 +947,7 @@ public class Lattice {
         out.println("initialNode: " + initialNode.getId());
         out.println("terminalNode: " + terminalNode.getId());
         out.println("logBase: " + logMath.getLogBase());
-        out.flush();
+	out.close();
     }
 
     /**
@@ -784,7 +1126,7 @@ public class Lattice {
     }
     
     boolean checkConsistency() {
-        for (Iterator i = nodes.values().iterator(); i.hasNext();) {
+        for (Iterator <Node> i = nodes.values().iterator(); i.hasNext();) {
             Node n = (Node) i.next();
             for (Iterator j = n.getEnteringEdges().iterator(); j.hasNext();) {
                 Edge e = (Edge) j.next();
@@ -861,7 +1203,7 @@ public class Lattice {
      *        in generating the scores in the lattice
      */
     public void computeNodePosteriors(float languageModelWeight) {
-        computeNodePosteriors(languageModelWeight, false);
+        computeNodePosteriors(languageModelWeight, true );// a voir
     }
 
 
@@ -928,6 +1270,181 @@ public class Lattice {
         }
     }
 
+   /**
+     * Compute the utterance-level posterior for every node in the lattice, 
+     * i.e. the probability that this node occurs on any path through the 
+     * lattice. Uses a forward-backward algorithm specific to the nature of
+     * non-looping left-to-right lattice structures.
+     * 
+     * Node posteriors can be retrieved by calling getPosterior() on Node 
+     * objects.
+     * 
+     * @param languageModelWeight the language model weight that was used
+     *        in generating the scores in the lattice
+     * @param useAcousticScoresOnly use only the acoustic scores to compute
+     *               the posteriors, ignore the language weight and scores
+     */
+    public void computeNodePosteriors(float languageModelWeight,
+                                      boolean useAcousticScoresOnly, float pourcent,float seuilabs, float wip,LanguageModel lm,float scale) {      
+
+        lm=null;   // version avec des vrais graphes et pas des treillis.
+	if (lm!= null) lm.start();
+        //forward
+        if (wip>0) wip =logMath.linearToLog(wip);
+	else
+	    wip = wipLocal;
+	System.err.format("wip %f   wipLocal %f %s\n",wip,wipLocal,"  "+useAcousticScoresOnly);
+	if (lesNoeuds == null) {
+	    lesNoeuds= getNodes().toArray(new Node[0]);
+	    Arrays.sort(lesNoeuds,new Comparator<Node>() {
+				 public int compare(Node n1,Node n2) {
+				     if (n1.getBeginTime()==n2.getBeginTime()){
+				     if (n1.getEndTime()==-2) return 1 ;
+				     if (n2.getEndTime()==-2) return -1 ;
+				     return  n1.getEndTime()- n2.getEndTime();
+				     }
+				     return n1.getBeginTime()- n2.getBeginTime();
+				 }
+			     });
+
+	}
+	Node []  sortedNodes = lesNoeuds; // c'est htk graphe
+	for (Node currentNode : sortedNodes){ 
+	    currentNode.setForwardScore(LogMath.getLogZero());
+	    currentNode.setBackwardScore(LogMath.getLogZero());
+	}
+	//        dumpAISee("tutu","tutu",true);
+        initialNode.setForwardScore(LogMath.getLogOne());
+        if ( sortedNodes[0] != initialNode) {
+	    System.err.println ("proble "+ sortedNodes.length+ " "+initialNode +"  first:" + sortedNodes[0]);
+	    return;}
+
+        int mina =(sortedNodes[sortedNodes.length-1].getEndTime()- sortedNodes[0].getBeginTime());
+	System.err.println("mina :" + mina);
+	for (Node currentNode : sortedNodes) {
+            if (currentNode.getForwardScore() == LogMath.getLogZero())
+		{ //System.err.println("\n machin " + currentNode);
+		continue;}
+	    //System.err.print("\tpaul :"+currentNode+ " "+ currentNode.getForwardScore());//debug a virer
+	    if (lm!=null && currentNode.getWord().isFiller()) {
+		double mini= LogMath.getLogZero();
+		Word best=null;
+		for (Edge e : currentNode.getEnteringEdges())
+		    {if (e.getFromNode().getForwardScore()>mini){
+			    mini=e.getFromNode().getForwardScore();
+			    if (e.getFromNode().getBest()!=null)
+				best=e.getFromNode().getBest();
+			    else best=e.getFromNode().getWord();
+			}
+		    }
+		currentNode.setBest(best);
+	    }
+            Collection currentEdges = currentNode.getLeavingEdges();
+            for (Iterator i = currentEdges.iterator();i.hasNext();) {
+                Edge edge = (Edge)i.next();
+                if (lm!=null) {
+		    if(edge.getToNode().getWord().isFiller()&& (!edge.getToNode().getWord().isSentenceEndWord())){
+			Float l= fillerScore.get(edge.getToNode().getWord());
+			if (l!=null)
+			edge.setLMScore(l);
+		    }
+		    else {
+		       
+			edge.setLMScore(lm.getProbability(WordSequence.getWordSequence(currentNode.getBest()==null? currentNode.getWord():currentNode.getBest(),edge.getToNode().getWord())));
+		    }
+		}
+			
+
+                double forwardProb = edge.getFromNode().getForwardScore();
+                forwardProb += computeEdgeScore
+                    (edge, languageModelWeight, useAcousticScoresOnly,wip,scale);
+                edge.getToNode().setForwardScore
+                    (logMath.addAsLinear
+                     ((float)forwardProb,
+                      (float)edge.getToNode().getForwardScore()));
+            }
+        }
+        if (lm!=null) lm.stop();
+        //backward
+        
+        terminalNode.setBackwardScore(LogMath.getLogOne());
+        assert sortedNodes[sortedNodes.length-1] == terminalNode;
+        double normalizationFactor = terminalNode.getForwardScore();
+        for (int iNode = sortedNodes.length-1; iNode>=0 ;iNode--) {            
+            Node currentNode =  sortedNodes[iNode];
+            Collection currentEdges = currentNode.getLeavingEdges();
+            for (Iterator i = currentEdges.iterator();i.hasNext();) {
+                Edge edge = (Edge)i.next();
+                double backwardProb = edge.getToNode().getBackwardScore();
+		if (backwardProb == LogMath.getLogZero() )
+		    continue;
+                backwardProb += computeEdgeScore
+                    (edge, languageModelWeight, useAcousticScoresOnly,wip,scale);
+                edge.getFromNode().setBackwardScore
+                    (logMath.addAsLinear((float)backwardProb,
+					 (float)edge.getFromNode().getBackwardScore()));
+            }
+	    if ( currentNode.getForwardScore() != LogMath.getLogZero() && 
+		 currentNode.getBackwardScore() != LogMath.getLogZero())
+		{
+		currentNode.setPosterior((currentNode.getForwardScore() + 
+					  currentNode.getBackwardScore()) - normalizationFactor);
+		//		System.err.println("garde : "+ currentNode.getBackwardScore()+ " n: "+ currentNode+ " i:"+iNode);// debug
+		}
+	    else {
+		//System.err.println("remove : "+ currentNode.getForwardScore()+ " n: "+ currentNode+ " i:"+iNode);
+		removeNodeAndEdges(currentNode);
+	    }
+        }
+	System.err.print("alpha :" +sortedNodes[sortedNodes.length-1].getForwardScore() +
+			   " beta:" +sortedNodes[0].getBackwardScore());
+        lesNoeuds=null;// c'est plus l'etat 
+        //inner
+ //        double normalizationFactor = terminalNode.getForwardScore();
+//         for(Iterator i=nodes.values().iterator();i.hasNext();) {
+//             Node node = (Node)i.next();
+//             node.setPosterior((node.getForwardScore() + 
+//                                node.getBackwardScore()) - normalizationFactor);
+//         } 
+
+
+
+	for (Edge e: getEdges()) {
+	    e.setPscore((e.getFromNode().getForwardScore()+
+			 computeEdgeScore(e, languageModelWeight, useAcousticScoresOnly,wip,scale) +
+			e.getToNode().getBackwardScore())- normalizationFactor);
+        }
+	//je  ferais bien un coup d'optmisation avant de filtre
+	if (seuilabs>0.00001) { // c'est un truc a affiner 
+	    LatticeOptimizerBis optime= new LatticeOptimizerBis(this,true);
+	optime.optimize();
+	}
+        Edge[] lesEdges = (Edge []) getEdges().toArray(new Edge[0]);
+	System.err.print(" nb Edge avant "+ lesEdges.length);
+        Arrays.sort(lesEdges, new Comparator<Edge>() {
+	    public int compare(Edge o1, Edge o2) {
+		double l= -o1.getPscore() +o2.getPscore();
+		if (l<0.0) return -1;
+                if (l>0) return 1;
+                return 0;
+	    }
+	});
+	if (lesEdges.length<100*pourcent) {
+	    mina=lesEdges.length-1;seuilabs=0.01f;
+	}
+	else
+	mina= Math.min(lesEdges.length-1,Math.max(mina,(int)Math.round(pourcent*(lesEdges.length-1)/100.0)));
+	//System.err.println (lesEdges[0]+ " " +lesEdges[lesEdges.length-1]+" seuil"
+	//		    + lesEdges[mina]+ " post:"+ logMath.logToLinear((float)lesEdges[mina].getPosterior() )  +
+	System.err.println (" nombremax :" + mina);
+	float seuilAbsolu=logMath.linearToLog(seuilabs);	
+        for (int i=0 ; i<=mina;i++){Edge e2= lesEdges[i];
+	    if(e2.getPosterior()<seuilAbsolu) { System.err.format("post: nb %d   sabs %f sl%f\n",i,seuilabs,seuilAbsolu); break;}
+	    e2.setNoPruned(true);
+	}
+
+    }
+
 
     /**
      * Computes the score of an edge.
@@ -935,7 +1452,7 @@ public class Lattice {
      * @param edge the edge which score we want to compute
      * @param languageModelWeight the language model weight to use
      *
-     * @return the score of an edge
+     * @return the score of an edge/languageModelWeight
      */
     private double computeEdgeScore(Edge edge, float languageModelWeight,
                                     boolean useAcousticScoresOnly) {
@@ -943,6 +1460,14 @@ public class Lattice {
             return edge.getAcousticScore();
         } else {
             return (edge.getAcousticScore() + edge.getLMScore())/languageModelWeight;
+        }
+    }
+    private double computeEdgeScore(Edge edge, float languageModelWeight,
+                                    boolean useAcousticScoresOnly,float wip,float scale) {
+        if (useAcousticScoresOnly) {
+            return (edge.getAcousticScore()+wip)/scale;
+        } else {
+            return (edge.getAcousticScore()+wip +languageModelWeight*edge.getLMScore())/scale;
         }
     }
 

@@ -65,6 +65,7 @@ logmath_init(float64 base, int shift, int use_table)
     uint32 maxyx, i;
     float64 byx;
     int width;
+float64 udb;
 
     /* Check that the base is correct. */
     if (base <= 1.0) {
@@ -97,6 +98,7 @@ logmath_init(float64 base, int shift, int use_table)
     lmath->t.width = width;
     /* Figure out size of add table required. */
     byx = 1.0; /* Maximum possible base^{y-x} value - note that this implies that y-x == 0 */
+udb = 1.0/base;
     for (i = 0;; ++i) {
         float64 lobyx = log(1.0 + byx) * lmath->inv_log_of_base; /* log_{base}(1 + base^{y-x}); */
         int32 k = (int32) (lobyx + 0.5 * (1<<shift)) >> shift; /* Round to shift */
@@ -108,7 +110,8 @@ logmath_init(float64 base, int shift, int use_table)
         /* This table is indexed by -(y-x), so we multiply byx by
          * base^{-1} here which is equivalent to subtracting one from
          * (y-x). */
-        byx /= base;
+/*        byx /= base;
+*/byx *= udb;
     }
     i >>= shift;
 
@@ -154,7 +157,8 @@ logmath_init(float64 base, int shift, int use_table)
             break;
 
         /* Decay base^{y-x} exponentially according to base. */
-        byx /= base;
+/*        byx /= base;
+*/byx *= udb;
     }
 
     return lmath;
@@ -455,7 +459,8 @@ logmath_log(logmath_t *lmath, float64 p)
 float64
 logmath_exp(logmath_t *lmath, int logb_p)
 {
-    return pow(lmath->base, (float64)(logb_p << lmath->t.shift));
+/*    return pow(lmath->base, (float64)(logb_p << lmath->t.shift));
+*/return (exp((float64)logb_p * lmath->log_of_base));
 }
 
 int
