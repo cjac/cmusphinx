@@ -128,21 +128,16 @@ will need the SPHINX <keyword>trainer</keyword> and a SPHINX
 <keyword>decoder</keyword>.
 </p>
 
-<p>
-You will be given instructions on how to download, compile, and run
-the components needed to build a complete speech recognition
-system. Namely, you will be given instructions on how to use <a
-href="#SphinxTrain">SphinxTrain</a> and you will have to choose one of
-<a href="#pocketsphinx">PocketSphinx</a>, 
-<a href="#sphinx2">SPHINX-2</a>, <a href="#sphinx3">SPHINX-3</a>, <a
-href="#sphinx3flat">SPHINX-3 Flat</a>, or <a
-href="#sphinx4">SPHINX-4</a>. Please check a <a
-href="#setupdecode">short description</a> for capabilities of each of
-these, or the <a href="http://cmusphinx.org">CMUSphinx</a> project
-page for more details. This tutorial does not instruct you on how to
-build a language model, but you can check the <a
-href="http://www.speech.cs.cmu.edu/SLM_info.html">CMU SLM Toolkit</a>
-page for an excellent manual.
+<p> 
+You will be given instructions on how to download, compile, and run the
+components needed to build a complete speech recognition system. Namely,
+you will be given instructions on how to use <a
+href="#SphinxTrain">SphinxTrain</a> and <a href="#sphinx3">SPHINX-3</a>.
+Please check a <href="http://cmusphinx.org">CMUSphinx</a> project page
+for more details on available decoders and their applications. This
+tutorial does not instruct you on how to build a language model, but you
+can check the <a href="http://www.speech.cs.cmu.edu/SLM_info.html">CMU
+SLM Toolkit</a> page for an excellent manual.
 </p>
 
 <p>
@@ -272,11 +267,7 @@ the SPHINX decoders. The following instructions detail the steps.
 <h3><a name="setuprequire"></a>Required software before you start</h3>
 
 <p>You will need Perl to run the provided scripts, and a C compiler to
-compile the source code. Additionally, if you choose to use SPHINX-4,
-you will need the Java (TM) Runtime Environment and, if you need to
-compile code, the Java platform compiler. You may also want to
-measure the word error rate using a word alignment program, such as
-NIST's <code>sclite</code>.
+compile the source code.
 </p>
 
 <h4>Perl</h4>
@@ -302,35 +293,16 @@ perl ppm install File::Copy
 
 <h4>C Compiler</h4>
 
-<p>SphinxTrain, PocketSphinx, SPHINX-2, and SPHINX-3 use GNU autoconf
-to find out basic information about your system, and should compile on
-most Unix and Unix-like systems, and certainly on Linux. The code
-compiles using GNU's make and GNU's C compiler (<code>gcc</code>),
-available in all Linux distributions, and available for free for most
-platforms.
-</p>
+<p>SphinxTrain and SPHINX-3 use GNU autoconf to find out basic
+information about your system, and should compile on most Unix and
+Unix-like systems, and certainly on Linux. The code compiles using GNU's
+make and GNU's C compiler (<code>gcc</code>), available in all Linux
+distributions, and available for free for most platforms. </p>
 
 <p>We also provide files supporting compilation using Microsoft's
 Visual C++, i.e., the solution (<code>.sln</code>) and project
 (<code>.vcproj</code>) files needed to compile code in native Windows
 format.
-</p>
-
-<h4>Java Platform</h4>
-
-<p>The Java platform is not necessary for SphinxTrain, PocketSphinx,
-SPHINX-2, or SPHINX-3. However, SPHINX-4 was written in the Java
-Programming Language. You can download the binaries directly, which
-you can use in any platform if you have the Java Runtime Environment
-(JRE). If you want to compile the SPHINX-4 code, you will also need
-the Java JDK. Both the JRE and the JDK are available at the <a
-href="http://java.sun.com">Java Technology</a> site.
-</p>
-
-<p>In addition to the Java compiler, you will also need
-<code>ant</code> to compile. <code>ant</code> is similar to
-<code>make</code> and is available from <a
-href="http://ant.apache.org/">apache.org</a>.
 </p>
 
 <h4><a name="alignment"></a>Word Alignment</h4>
@@ -518,13 +490,6 @@ these can be described as follows.</p>
 
 <ul>
 
-<li><a href="#sphinx2">SPHINX-2</a>: Uses semi-continuous HMMs. It is
-the fastest decoder we have, but since it employs an older technology,
-its accuracy is usually less than the other decoders. However, since
-it has been around for longer, it has features the others still lack,
-such as dynamic language model change. Models and incoming features
-are very rigidly defined.</li>
-
 <li><a href="#pocketsphinx">PocketSphinx</a>: This is a modernized
 version of Sphinx-2, specially optimized for embedded and handheld
 systems.  It also consumes on average 20% less memory and 5-20% less
@@ -535,230 +500,16 @@ the interface and feature set may be unstable.</li>
 handle both live and batch decoding.  Currently, it is the decoder most
 actively developed.</li>
 
-<li><a href="#sphinx3flat">SPHINX-3 Flat Decoder</a>: Uses continuous
-HMMs. <i>It has support for linux/unix only</i>. It is the most
-accurate decoder we have for large vocabulary tasks. It provides much
-more flexibility in model and incoming feature definition.</li>
-
 <li><a href="#sphinx4">SPHINX-4</a>: Uses continuous HMMs. It was
 written in the Java programming language. It provides high flexibility
 and great accuracy and speed for small tasks.</li>
 </ul>
 
-<p><b><a name="sphinx2">SPHINX-2</b></p>
+For your application you can choose any decoder suitable for you, but 
+in this tutorial we'll use SPHINX-3 as a base decoder. It's a good idea
+to test your model with SPHINX-3 first to detect errors on early stages.
 
-<h4>Code retrieval</h4> 
-
-<p>SPHINX-2 can be retrieved using <a href="#sphinx2svn">subversion</a> (svn) or by
-downloading a <a href="#sphinx2tarball">tarball</a>. svn makes it
-easier to update the code as new changes are added to the repository,
-but requires you to install svn. The tarball is more readily
-available. SPHINX-2 is also available as a <a
-href="http://sourceforge.net/project/showfiles.php?group_id=1904&package_id=1908">release</a>
-from <a href="http://sourceforge.net">SourceForge.net</a>. Since the
-release is a tarball, we will not provide separate instructions for
-installation of the release.</p>
-
-<p>You can find more information about svn at the <a
-href="http://subversion.tigris.org/">SVN Home</a>.</p>
-
-<ul>
-<li><a name="sphinx2svn">Using svn
-<pre>
-svn co https://cmusphinx.svn.sourceforge.net:/svnroot/cmusphinx/trunk/sphinx2
-</pre>
-</li>
-<li><a name="sphinx2tarball">Using the tarball, download the <a
-href="http://cmusphinx.org/download/nightly/sphinx2.nightly.tar.gz">sphinx2
-tarball</a> by clicking on the link and choosing "Save" when the
-dialog window appears. Save it to the same <code>tutorial</code>
-directory. Extract the contents as follows.
-<ul>
-<li>
-In Windows, using the Windows Explorer, go to the
-<code>tutorial</code> directory, right-click the sphinx2 tarball, and
-choose "Extract to here" in the WinZip menu.
-</li>
-<li>
-In Linux/Unix:
-<pre>
-gunzip -c sphinx2.nightly.tar.gz | tar xf -
-</pre>
-</li>
-</ul>
-</li>
-</ul>
-
-<p>Further details about download options are available in the <a
-href="http://cmusphinx.org/">cmusphinx.org</a> page, under the header
-<i>Download instructions</i>
-</p>
-
-<p>By the time you finish this, you will have a <code>tutorial</code>
-directory with the following contents</p>
-<pre>
-<ul><li>tutorial<ul><li>an4</li><li>an4_sphere.tar.gz</li><li>SphinxTrain</li><li>SphinxTrain.nightly.tar.gz</li><li>sphinx2</li><li>sphinx2.nightly.tar.gz</li></ul></li></ul></pre>
-<p>Or</p>
-<pre>
-<ul><li>tutorial<ul><li>rm1</li><li>rm1_cepstra.tar.gz</li><li>SphinxTrain</li><li>SphinxTrain.nightly.tar.gz</li><li>sphinx2</li><li>sphinx2.nightly.tar.gz</li></ul></li></ul></pre>
-<h4>Compilation</h4>
-<p>In Linux/Unix:</p>
-<pre>
-cd sphinx2
-# If you used svn, you will need to run autogen.sh, commented out
-# here. If you downloaded the tarball, you do not need to run it.
-#
-# ./autogen.sh
-configure --prefix=`pwd`/build
-make
-make install
-</pre>
-<p>In Windows:
-</p>
-<ol>
-<li>Double click the file
-<code>tutorial/sphinx2/sphinx2.sln</code>. This will open MS
-Visual C++, if you have it installed. If you do not, please contact <a
-href="http://www.microsoft.com">Microsoft</a>.
-</li>
-<li>In the Menu <code>Build</code> choose <code>Batch Build</code>,
-and select all items. Click on <code>Rebuild All</code> This will
-build all executables in the SPHINX-2 package.
-</li>
-</ol>
-<h4>Tutorial Setup</h4>
-
-<p>After compiling the code, you will have to setup the tutorial by
-copying all relevant executables and scripts to the same area as the
-data. Assuming your current working directory is
-<code>tutorial</code>, you will need to do the following.</p>
-<pre>
-cd sphinx2
-# If you installed AN4
-perl scripts/setup_tutorial.pl an4
-# If you installed RM1
-perl scripts/setup_tutorial.pl rm1
-</pre>
-
-<p><b><a name="pocketsphinx">PocketSphinx</b></p>
-
-<h4>Code retrieval</h4> 
-
-<p>PocketSphinx can be retrieved using <a href="#pocketsphinxsvn">subversion</a> (svn) or by
-downloading a <a href="#pocketsphinxtarball">tarball</a>. svn makes it
-easier to update the code as new changes are added to the repository,
-but requires you to install svn. The tarball is more readily
-available. PocketSphinx is also available as a <a
-href="http://sourceforge.net/project/showfiles.php?group_id=1904&package_id=1908">release</a>
-from <a href="http://sourceforge.net">SourceForge.net</a>. Since the
-release is a tarball, we will not provide separate instructions for
-installation of the release.</p>
-
-<p>You can find more information about svn at the <a
-href="http://subversion.tigris.org/">SVN Home</a>.</p>
-
-<ul>
-<li><a name="pocketsphinxsvn">Using svn
-<pre>
-svn co https://cmusphinx.svn.sourceforge.net:/svnroot/cmusphinx/trunk/sphinxbase
-svn co https://cmusphinx.svn.sourceforge.net:/svnroot/cmusphinx/trunk/pocketsphinx
-</pre>
-</li>
-<li><a name="pocketsphinxtarball">Using the tarball, download the <a
-href="http://cmusphinx.org/download/nightly/pocketsphinx.nightly.tar.gz">pocketsphinx</a>
-and <a
-href="http://cmusphinx.org/download/nightly/sphinxbase.nightly.tar.gz">sphinxbase</a>
-tarballs by clicking on the link and choosing "Save" when the
-dialog window appears. Save them to the same <code>tutorial</code>
-directory. Extract the contents as follows.
-<ul>
-<li>
-In Windows, using the Windows Explorer, go to the
-<code>tutorial</code> directory, right-click the sphinxbase and pocketsphinx tarballs, and
-choose "Extract to here" in the WinZip menu.
-</li>
-<li>
-In Linux/Unix:
-<pre>
-gunzip -c sphinxbase.nightly.tar.gz | tar xf -
-gunzip -c pocketsphinx.nightly.tar.gz | tar xf -
-</pre>
-</li>
-</ul>
-</li>
-</ul>
-
-<p>Further details about download options are available in the <a
-href="http://cmusphinx.org/">cmusphinx.org</a> page, under the header
-<i>Download instructions</i>
-</p>
-
-<p>By the time you finish this, you will have a <code>tutorial</code>
-directory with the following contents</p>
-<pre>
-<ul><li>tutorial<ul><li>an4</li><li>an4_sphere.tar.gz</li><li>SphinxTrain</li><li>SphinxTrain.nightly.tar.gz</li><li>pocketsphinx</li><li>pocketsphinx.nightly.tar.gz</li><li>sphinxbase</li><li>sphinxbase.nightly.tar.gz</li></ul></li></ul></pre>
-<p>Or</p>
-<pre>
-<ul><li>tutorial<ul><li>rm1</li><li>rm1_cepstra.tar.gz</li><li>SphinxTrain</li><li>SphinxTrain.nightly.tar.gz</li><li>pocketsphinx</li><li>pocketsphinx.nightly.tar.gz</li><li>sphinxbase</li><li>sphinxbase.nightly.tar.gz</li></ul></li></ul></pre>
-<h4>Compilation</h4>
-<p>In Linux/Unix:</p>
-<pre>
-# Compile sphinxbase
-cd sphinxbase
-# If you used svn, you will need to run autogen.sh, commented out
-# here. If you downloaded the tarball, you do not need to run it.
-#
-# ./autogen.sh
-./configure --enable-fixed --disable-shared
-make
-
-# Compile pocketsphinx
-cd pocketsphinx
-# If you used svn, you will need to run autogen.sh, commented out
-# here. If you downloaded the tarball, you do not need to run it.
-#
-# ./autogen.sh
-./configure --prefix=`pwd`/build --with-sphinxbase=`pwd`/../sphinxbase --disable-shared
-make
-make install
-</pre>
-<p>In Windows, if you download SphinxBase from the release system, please rename it (e.g. from 'sphinxbase-0.1') to 'sphinxbase' and then:
-</p>
-<ol>
-<li>Double click the file
-<code>tutorial/sphinxbase/sphinxbase.sln</code>. This will open MS
-Visual C++, if you have it installed. If you do not, please contact <a
-href="http://www.microsoft.com">Microsoft</a>.
-</li>
-<li>In the Menu <code>Build</code> choose <code>Batch Build</code>,
-and select all items. Click on <code>Rebuild All</code> This will
-build all libraries in the SphinxBase package.
-</li>
-<li>Double click the file
-<code>tutorial/pocketsphinx/pocketsphinx.sln</code>. This will open MS
-Visual C++, if you have it installed. If you do not, please contact <a
-href="http://www.microsoft.com">Microsoft</a>.
-</li>
-<li>In the Menu <code>Build</code> choose <code>Batch Build</code>,
-and select all items. Click on <code>Rebuild All</code> This will
-build all executables in the PocketSphinx package.
-</li>
-</ol>
-<h4>Tutorial Setup</h4>
-
-<p>After compiling the code, you will have to setup the tutorial by
-copying all relevant executables and scripts to the same area as the
-data. Assuming your current working directory is
-<code>tutorial</code>, you will need to do the following.</p>
-<pre>
-cd pocketsphinx
-# If you installed AN4
-perl scripts/setup_tutorial.pl an4
-# If you installed RM1
-perl scripts/setup_tutorial.pl rm1
-</pre>
-
-<p><b><a name="sphinx3">SPHINX-3</b></p>
+<p><b><a name="sphinx3">SPHINX-3 Installation</b></p>
 
 <h4>Code retrieval</h4> 
 
@@ -876,165 +627,6 @@ perl scripts/setup_tutorial.pl an4
 perl scripts/setup_tutorial.pl rm1
 </pre>
 
-<p><b><a name="sphinx3flat">SPHINX-3 Flat Decoder</b></p>
-
-<h4>Code retrieval</h4> 
-
-<p>SPHINX-3 Flat can be retrieved using <a href="#s3flatsvn">subversion</a> (svn) or by
-downloading a <a href="#s3flattarball">tarball</a>. svn makes it
-easier to update the code as new changes are added to the repository,
-but requires you to install svn. The tarball is more readily
-available.</p>
-
-<p>You can find more information about svn at the <a
-href="http://subversion.tigris.org/">SVN Home</a>.</p>
-
-<ul>
-<li><a name="s3flatsvn">Using svn
-<pre>
-svn co https://cmusphinx.svn.sourceforge.net:/svnroot/cmusphinx/trunk/archive_s3/s3 s3flat
-</pre>
-</li>
-<li><a name="s3flattarball">Using the tarball, download the <a
-href="http://cmusphinx.org/download/nightly/s3flat.nightly.tar.gz">s3flat
-tarball</a> by clicking on the link and choosing "Save" when the
-dialog window appears. Save it to the same <code>tutorial</code>
-directory. Extract the contents as follows.
-<ul>
-<li>
-In Windows, using the Windows Explorer, go to the
-<code>tutorial</code> directory, right-click the s3flat tarball, and
-choose "Extract to here" in the WinZip menu.
-</li>
-<li>
-In Linux/Unix:
-<pre>
-gunzip -c s3flat.nightly.tar.gz | tar xf -
-</pre>
-</li>
-</ul>
-</li>
-</ul>
-
-<p>Further details about download options are available in the <a
-href="http://cmusphinx.org/">cmusphinx.org</a> page, under the header
-<i>Download instructions</i>
-</p>
-
-<p>By the time you finish this, you will have a <code>tutorial</code>
-directory with the following contents</p>
-<pre>
-<ul><li>tutorial<ul><li>an4</li><li>an4_sphere.tar.gz</li><li>SphinxTrain</li><li>SphinxTrain.nightly.tar.gz</li><li>s3flat</li><li>s3flat.nightly.tar.gz</li></ul></li></ul></pre>
-<p>Or</p>
-<pre>
-<ul><li>tutorial<ul><li>rm1</li><li>rm1_cepstra.tar.gz</li><li>SphinxTrain</li><li>SphinxTrain.nightly.tar.gz</li><li>s3flat</li><li>s3flat.nightly.tar.gz</li></ul></li></ul></pre>
-<h4>Compilation</h4>
-<p>In Linux/Unix:</p>
-<pre>
-cd s3flat
-# MACHINE is one of <i>alpha</i>, <i>alpha_osf1</i>, <i>hp</i>, <i>hp700_ux</i>, <i>sun4</i>, <i>linux</i>
-make S3ROOT=`pwd` MACHINE=linux
-</pre>
-<p>In Windows: SPHINX-3 Flat decoder is <i>not</i> supported in Windows.
-</p>
-<h4>Tutorial Setup</h4>
-
-<p>After compiling the code, you will have to setup the tutorial by
-copying all relevant executables and scripts to the same area as the
-data. Assuming your current working directory is
-<code>tutorial</code>, you will need to do the following.
-</p>
-<pre>
-cd s3flat
-# If you installed AN4
-perl scripts/setup_tutorial.pl an4
-# If you installed RM1
-perl scripts/setup_tutorial.pl rm1
-</pre>
-
-<p><b><a name="sphinx4">SPHINX-4</b></p>
-<p>Section forthcoming.</p>
-<!--
-<h4>Code retrieval</h4> 
-
-<p>SPHINX-4 can be retrieved using <a href="#sphinx4svn">subversion</a> (svn) or by
-downloading a <a href="#sphinx4tarball">tarball</a>. svn makes it
-easier to update the code as new changes are added to the repository,
-but requires you to install svn. The tarball is more readily
-available. SPHINX-4 is also available as a <a
-href="http://sourceforge.net/project/showfiles.php?group_id=1904&package_id=117949">release</a>
-from <a href="http://sourceforge.net">SourceForge.net</a>. Since the
-release is a tarball, we will not provide separate instructions for
-installation of the release. Notice that one of the SPHINX-4 release
-files already has the binary files, so you do not have to worry about
-compiling it.
-</p>
-
-<p>You can find more information about svn at the <a
-href="http://subversion.tigris.org/">SVN Home</a>.</p>
-
-<ul>
-<li><a name="sphinx4svn">Using svn
-<pre>
-svn co https://cmusphinx.svn.sourceforge.net:/svnroot/cmusphinx/trunk/sphinx4
-</pre>
-</li>
-<li><a name="sphinx4tarball">Using the tarball, download the <a
-href="http://cmusphinx.org/download/nightly/sphinx4.nightly.tar.gz">sphinx4
-tarball</a> by clicking on the link and choosing "Save" when the
-dialog window appears. Save it to the same <code>tutorial</code>
-directory. Extract the contents as follows.
-<ul>
-<li>
-In Windows, using the Windows Explorer, go to the
-<code>tutorial</code> directory, right-click the sphinx4 tarball, and
-choose "Extract to here" in the WinZip menu.
-</li>
-<li>
-In Linux/Unix:
-<pre>
-gunzip -c sphinx4.nightly.tar.gz | tar xf -
-</pre>
-</li>
-</ul>
-</li>
-</ul>
-
-<p>Further details about download options are available in the <a
-href="http://cmusphinx.org/">cmusphinx.org</a> page, under the header
-<i>Download instructions</i>
-</p>
-
-<p>By the time you finish this, you will have a <code>tutorial</code>
-directory with the following contents</p>
-<pre>
-<ul><li>tutorial<ul><li>an4</li><li>an4_sphere.tar.gz</li><li>SphinxTrain</li><li>SphinxTrain.nightly.tar.gz</li><li>sphinx4</li><li>sphinx4.nightly.tar.gz</li></ul></li></ul></pre>
-<p>Or</p>
-<pre>
-<ul><li>tutorial<ul><li>rm1</li><li>rm1_cepstra.tar.gz</li><li>SphinxTrain</li><li>SphinxTrain.nightly.tar.gz</li><li>sphinx4</li><li>sphinx4.nightly.tar.gz</li></ul></li></ul></pre>
-<h4>Compilation</h4>
-<p>In all platforms:</p>
-<pre>
-cd sphinx4
-ant
-</pre>
-<h4>Tutorial Setup</h4>
-<p><b><font color=red>Section under construction</font></b></p>
-
-<p>After compiling the code, you will have to setup the tutorial by
-copying all relevant executables and scripts to the same area as the
-data. Assuming your current working directory is
-<code>tutorial</code>, you will need to do the following.
-</p>
-<pre>
-cd sphinx4
-# If you installed AN4
-perl scripts/setup_tutorial.pl an4
-# If you installed RM1
-perl scripts/setup_tutorial.pl rm1
-</pre>
-<p><b><font color=red>End of section under construction</font></b></p>
--->
 <h2><a name="prelimtraining"></a>How to perform a preliminary training run</h2>
 
 <p>Go to the directory where you installed the data. If you have been
@@ -1059,7 +651,7 @@ cd ..\rm1
 
 <p>
 The scripts should work "out of the box", unless you are training
-models for PocketSphinx or SPHINX-2. In this case, you have to edit
+models for PocketSphinx. In this case, you have to edit
 the file <code>etc/sphinx_train.cfg</code>, uncommenting the line
 defining the variable <code>$CFG_HMM_TYPE</code> so that it looks like
 the box below.
@@ -1200,7 +792,7 @@ Note that in the process of going through the scripts in
 <code>00*</code> through <code>99*</code>, you will have generated
 several sets of acoustic models, each of which could be used for
 recognition. Notice also that some of the steps are required only for
-the creation of semi-continuous models, such as those used by SPHINX-2. If
+the creation of semi-continuous models. If
 you execute these steps while creating continuous models, the scripts
 will benignly do nothing. Once the jobs launched from
 <code>20.ci_hmm</code> have run to completion, you will have trained
@@ -1219,11 +811,7 @@ models. The CD-tied models are trained in many stages. We begin with 1
 Gaussian per state HMMs, following which we train 2 Gaussian per state
 HMMs and so on till the desired number of Gaussians per State have
 been trained. The jobs in <code>50.cd-hmm_tied</code> will automatically
-train all these intermediate CD-tied models. Stages
-<code>90.deleted-interpolation</code> and
-<code>99.make_s2_models</code> are meaningful only if you are training
-models for SPHINX-2. Deleted interpolation smooths the HMMs, which are
-then converted to the format used by SPHINX-2. At the end of
+train all these intermediate CD-tied models.  At the end of
 <i>any</i> stage you may use the models for recognition. Remember that
 you may decode even while the training is in progress, provided you
 are certain that you have crossed the stage which generates the models
@@ -1250,7 +838,7 @@ training process will be explained in greater detail later in this
 document. If, however, you trained semi-continuous models with AN4,
 the final models will be located at
 <code>./model_parameters/an4.1000.s2models</code>, where you will find
-all files need to decode with SPHINX-2.
+all files need to decode with pocketsphinx.
 </p>
 
 <p>
@@ -1625,16 +1213,15 @@ path (do not change if you have decided not to change the dictionary)
 <li><code>$CFG_HMM_TYPE = </code> this variable could have the values
 <code>.semi.</code> or <code>.cont.</code>. Notice the dots "."
 surrounding the string. Use <code>.semi.</code> if you are training
-semi-continuous HMMs (required for SPHINX-2), or <code>.cont.</code>
+semi-continuous HMMs, mostly for Pocketsphinx, or <code>.cont.</code>
 if you are training continuous HMMs (required for SPHINX-4, and the
-most common choice for SPHINX-3 and SPHINX-3 Flat decoder)
+most common choice for SPHINX-3)
 </li>
 
 <br>
 
-<li><code>$CFG_STATESPERHMM = </code> if you are using SPHINX-2, this
-variable has to be 5. If you are using any other decoder, it could be
-any integer, but we recommend 3 or 5. The number of states in an HMMs
+<li><code>$CFG_STATESPERHMM = </code> it could be any integer, but we 
+recommend 3 or 5. The number of states in an HMMs
 is related to the time-varying characteristics of the sound
 units. Sound units which are highly time-varying need more states to
 represent them. The time-varying nature of the sounds is also partly
@@ -1661,9 +1248,9 @@ the HMM topology file, conveniently named
 <br>
 
 <li>
-<code>$CFG_FINAL_NUM_DENSITIES =</code> if you are using sphinx-2, set
+<code>$CFG_FINAL_NUM_DENSITIES =</code> if you are training semi-continuous models, set
 this number, as well as <code>$CFG_INITIAL_NUM_DENSITIES</code>, to
-256. If you are using other decoders, set
+256. For continuous, set
 <code>$CFG_INITIAL_NUM_DENSITIES</code> to 1 and
 <code>$CFG_FINAL_NUM_DENSITIES</code> to any number from 1 to 8. Going
 beyond 8 is not advised because of the small training data set you
@@ -1684,8 +1271,7 @@ states are called tied states (also referred to as senones). The
 number of mixtures you train will ultimately be exactly equal to the
 number of tied states you specify, which in turn can be controlled by
 the <code>$CFG_N_TIED_STATES</code> parameter described
-below. SPHINX-2 internally requires you to set the variables to 256,
-since it uses semi-continuous HMMs.
+below.
 </li>
 
 <br>
@@ -1805,13 +1391,11 @@ databases with different complexities.
 
 <br>
 
-<li><code>$DEC_CFG_MODEL_NAME = </code> the model name. Unless you are
-using SPHINX-2, it defaults to using the context dependent (CD) tied
-state models with the number of senones and number of densities
-specified in the training step. You are encouraged to also use the CD
-untied and also the context independent (CI) models to get a sense to
-how accuracy changes.
-</li>
+<li><code>$DEC_CFG_MODEL_NAME = </code> the model name. It defaults to
+using the context dependent (CD) tied state models with the number of
+senones and number of densities specified in the training step. You are
+encouraged to also use the CD untied and also the context independent
+(CI) models to get a sense to how accuracy changes. </li>
 
 <br>
 
@@ -2783,26 +2367,4 @@ Last modified: Fri Sep 12 11:06:36 EDT 2008
 </i>
 <br>
 
-
 </body></html>
-
-<!-- revision 1.7 2006/08/02 15:33:32 egouvea -->
-<!-- Fixed typo. -->
-
-<!-- revision 1.6 2006/08/02 15:30:54 egouvea -->
-<!-- Disabled section about sphinx-4. -->
-
-<!-- revision 1.5 2006/07/14 16:25:48 egouvea -->
-<!-- Updated link to sflogo -->
-
-<!-- revision 1.4 2006/05/04 20:10:14 egouvea -->
-<!-- Updated the tutorial documentation to use svn instead of cvs -->
-
-<!-- revision 1.3 2006/03/21 22:55:30 egouvea -->
-<!-- Fixed date and authorship. -->
-
-<!-- revision 1.2 2006/03/21 22:32:46 egouvea -->
-<!-- Fixed typos, and wrong reference to numbers -->
-
-<!-- revision 1.1 2005/11/07 17:08:03 egouvea -->
-<!-- Added the open source tutorial -->
