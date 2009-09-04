@@ -251,7 +251,7 @@ process_ctl_line(ps_decoder_t *ps, cmd_ln_t *config,
                          * (cmd_ln_float32_r(config, "-samprate")
                             / cmd_ln_int32_r(config, "-frate"))
                          + (cmd_ln_float32_r(config, "-samprate")
-                            * cmd_ln_int32_r(config, "-wlen")));
+                            * cmd_ln_float32_r(config, "-wlen")));
         }
         sf = (int32)(sf
                      * (cmd_ln_float32_r(config, "-samprate")
