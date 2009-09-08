@@ -8,7 +8,6 @@ libpocketsphinx_la_SOURCES =			\
 	acmod.c					\
 	bin_mdef.c				\
 	blkarray_list.c				\
-	dict.c					\
 	dict2pid.c				\
 	fillpen.c				\
 	fsg_history.c				\
@@ -43,7 +42,6 @@ noinst_HEADERS =				\
 	ngram_search.h				\
 	bin_mdef.h				\
 	blkarray_list.h				\
-	dict.h					\
 	dict2pid.h				\
 	fillpen.h				\
 	fsg_history.h				\
