@@ -292,7 +292,7 @@ s3dict_init(bin_mdef_t * mdef, const char *dictfile, const char *fillerfile,
     int32 n;
     char line[1024];
     s3dict_t *d;
-    s3cipid_t i, sil;
+    s3cipid_t sil;
 
     if (!dictfile)
         E_FATAL("No dictionary file\n");
@@ -362,25 +362,6 @@ s3dict_init(bin_mdef_t * mdef, const char *dictfile, const char *fillerfile,
         E_INFO("%d words read\n", d->n_word - d->filler_start);
     }
     sil = bin_mdef_silphone(mdef);
-#if 0
-    for (n = i = 0; i < mdef->n_ciphone; ++i) {
-        /*
-         * SIL is disguised as <sil>
-         */
-        if (i != sil && bin_mdef_is_fillerphone(mdef, i)) {
-            /*
-             * Add as a filler word, like ++NOISE++
-             */
-            snprintf(line, sizeof(line), "+%s+", bin_mdef_ciphone_str(mdef, i));
-            if (s3dict_wordid(d, line) == BAD_S3WID) {
-                E_INFO("Adding filler word: %s\n", line);
-                s3dict_add_word(d, line, &i, 1);
-                ++n;
-            }
-        }
-    }
-    E_INFO("Added %d fillers from mdef file\n", n);
-#endif
     if (s3dict_wordid(d, S3_START_WORD) == BAD_S3WID) {
         s3dict_add_word(d, S3_START_WORD, &sil, 1);
     }

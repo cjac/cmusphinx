@@ -50,6 +50,7 @@
 #include "pocketsphinx_internal.h"
 #include "ps_lattice_internal.h"
 #include "phone_loop_search.h"
+#include "fsg_search_internal.h"
 #include "tst_search.h"
 #include "ngram_search.h"
 #include "ngram_search_fwdtree.h"
@@ -206,24 +207,19 @@ ps_reinit(ps_decoder_t *ps, cmd_ln_t *config)
 
     /* Determine whether we are starting out in FSG or N-Gram search mode. */
     if (cmd_ln_str_r(ps->config, "-fsg") || cmd_ln_str_r(ps->config, "-jsgf")) {
-#if 0
         ps_search_t *fsgs;
 
-        /* Dictionary and triphone mappings (depends on acmod). */
-        if ((ps->dict = dict_init(ps->config, ps->acmod->mdef)) == NULL)
+        if ((ps->d2p = dict2pid_build(ps->acmod->mdef, ps->dict, FALSE, ps->lmath)) == NULL)
             return -1;
-
-        if ((fsgs = fsg_search_init(ps->config, ps->acmod, ps->dict)) == NULL)
+        if ((fsgs = fsg_search_init(ps->config, ps->acmod, ps->dict, ps->d2p)) == NULL)
             return -1;
         fsgs->pls = ps->phone_loop;
         ps->searches = glist_add_ptr(ps->searches, fsgs);
         ps->search = fsgs;
-#endif
     }
     else if (cmd_ln_str_r(ps->config, "-tst")) {
         ps_search_t *tstg;
 
-        /* Composite triphones used for TST, not for ngram-search */
         if ((ps->d2p = dict2pid_build(ps->acmod->mdef, ps->dict, TRUE, ps->lmath)) == NULL)
             return -1;
         if ((tstg = tst_search_init(ps->config, ps->acmod, ps->dict, ps->d2p)) == NULL)
@@ -236,7 +232,6 @@ ps_reinit(ps_decoder_t *ps, cmd_ln_t *config)
              || (lmctl = cmd_ln_str_r(ps->config, "-lmctl"))) {
         ps_search_t *ngs;
 
-        /* Composite triphones used for TST, not for ngram-search */
         if ((ps->d2p = dict2pid_build(ps->acmod->mdef, ps->dict, FALSE, ps->lmath)) == NULL)
             return -1;
         if ((ngs = ngram_search_init(ps->config, ps->acmod, ps->dict, ps->d2p)) == NULL)
@@ -247,6 +242,12 @@ ps_reinit(ps_decoder_t *ps, cmd_ln_t *config)
     }
     /* Otherwise, we will initialize the search whenever the user
      * decides to load an FSG or a language model. */
+    else {
+        /* Major hack, we just assume that composite triphones (which
+         * actually are not that useful) and hence TST won't be used. */
+        if ((ps->d2p = dict2pid_build(ps->acmod->mdef, ps->dict, FALSE, ps->lmath)) == NULL)
+            return -1;
+    }
 
     /* Initialize performance timer. */
     ps->perf.name = "decode";
@@ -391,15 +392,14 @@ ps_get_fsgset(ps_decoder_t *ps)
 fsg_set_t *
 ps_update_fsgset(ps_decoder_t *ps)
 {
-    /* ps_search_t *search; */
+    ps_search_t *search;
 
-#if 0
     /* Look for FSG search. */
     search = ps_find_search(ps, "fsg");
     if (search == NULL) {
         /* Initialize FSG search. */
         search = fsg_search_init(ps->config,
-                                 ps->acmod, ps->dict);
+                                 ps->acmod, ps->dict, ps->d2p);
         search->pls = ps->phone_loop;
         ps->searches = glist_add_ptr(ps->searches, search);
     }
@@ -410,8 +410,6 @@ ps_update_fsgset(ps_decoder_t *ps)
     }
     ps->search = search;
     return (fsg_set_t *)search;
-#endif
-    return NULL;
 }
 
 int

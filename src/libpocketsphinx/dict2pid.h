@@ -200,7 +200,7 @@ typedef struct {
 
 
     s3ssid_t ***rdiph_rc;	/**< For multi-phone words, [base][lc][rc] -> ssid; filled out for
-				   word-initial base x lc combinations in current vocabulary */
+				   word-final base x lc combinations in current vocabulary */
 
     xwdssid_t **rssid;          /**< Right context state sequence id table 
                                    First dimension: base phone,
@@ -209,7 +209,7 @@ typedef struct {
 
 
     s3ssid_t ***lrdiph_rc;      /**< For single-phone words, [base][lc][rc] -> ssid; filled out for
-                                   word-initial base x lc combinations in current vocabulary */
+                                   single-phone base x lc combinations in current vocabulary */
 
     xwdssid_t **lrssid;          /**< Left-Right context state sequence id table 
                                     First dimension: base phone,

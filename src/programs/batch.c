@@ -173,7 +173,12 @@ read_mfc_file(FILE *infh, int sf, int ef, int *out_nfr, int ceplen)
     nfr = ef - sf;
     mfcs = ckd_calloc_2d(nfr, ceplen, sizeof(**mfcs));
     floats = (float32 *)mfcs[0];
-    fread(floats, 4, nfr * ceplen, infh);
+    if (fread(floats, 4, nfr * ceplen, infh) != nfr * ceplen) {
+        E_ERROR_SYSTEM("Failed to read %d items from mfcfile");
+        fclose(infh);
+        ckd_free_2d(mfcs);
+        return NULL;
+    }
     if (swap) {
         for (i = 0; i < nfr * ceplen; ++i)
             SWAP_FLOAT32(&floats[i]);

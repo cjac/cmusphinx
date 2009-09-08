@@ -11,6 +11,9 @@ libpocketsphinx_la_SOURCES =			\
 	dict.c					\
 	dict2pid.c				\
 	fillpen.c				\
+	fsg_history.c				\
+	fsg_lextree.c				\
+	fsg_search.c				\
 	hmm.c					\
 	kdtree.c				\
 	lextree.c				\
