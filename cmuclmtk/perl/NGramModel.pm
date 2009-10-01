@@ -405,6 +405,11 @@ sub estimate {
 	$vocab = Vocabulary->new(transcripts => $self->{transcripts},
 				 %{$self->{opts}});
     }
+    # Add context cues to the vocabulary, or the world will explode
+    foreach my $ctx (@{$self->{opts}{context}}) {
+	$self->log_message("Adding context word $ctx to vocabulary");
+	$vocab->add_closure_word($ctx);
+    }
 
     # Dump vocabulary according to options
     my $vocabfile = $self->tempfile("vocab");
