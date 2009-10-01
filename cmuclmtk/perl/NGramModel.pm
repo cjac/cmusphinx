@@ -196,8 +196,13 @@ sub initialize {
     }
     $opts{cutoffs} = [split ",", $opts{cutoffs}]
 	if defined $opts{cutoffs};
-    $opts{disc_ranges} = [split ",", $opts{disc_ranges}]
-	if defined $opts{disc_ranges};
+    if (defined $opts{disc_ranges}) {
+	$opts{disc_ranges} = [split ",", $opts{disc_ranges}];
+    }
+    else {
+	$opts{disc_ranges} = [0];
+	push @{$opts{disc_ranges}}, 7 for (2..$opts{n});
+    }
     $self->{inputfilter} = $opts{inputfilter}->new(%opts)
 	if defined($opts{inputfilter});
     $self->{smoothing} = $opts{smoothing}->new(%opts)
@@ -435,6 +440,7 @@ sub estimate {
 		       -vocab => $vocabfile,
 		       -arpa => $arpalmfile,
 		       -context => $contextfile,
+		       -vocab_type => $self->{opts}{open} ? 1 : 0,
 		       -n => $self->{opts}{n},
 		       $self->{smoothing}->args()])
 	or die "idngram2lm failed with status $?";

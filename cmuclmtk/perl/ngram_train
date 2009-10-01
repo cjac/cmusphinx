@@ -61,6 +61,7 @@ GetOptions(\%opts,
 	   "tempdir|t=s",
 	   "bindir=s",
 	   "n=i",
+	   "open",
 	   "output|o=s",
 	   "lmctl=s",
 	   "probdef=s",
@@ -164,6 +165,11 @@ input.
 Number of words of context to use in building a language model, i.e.,
 the N in the N-gram model.  Default value is 3.
 
+=item B<--open>
+
+Build an open-vocabulary model.  These are not terribly useful for
+speech recognition.
+
 =item B<--tempdir> | B<-t> I<TEMPDIR>
 
 Directory to use for storing temporary files.  If not specified, a
@@ -215,7 +221,10 @@ from the model training.
 =item B<--disc_ranges> I<N,N,N...>
 
 This option is followed by a comma-separated list of integers.  These
-are the discounting ranges to use for Good-Turing smoothing.
+are the discounting ranges to use for Good-Turing smoothing.  If
+building an open-vocabulary model it's advisable to set the first one
+to non-zero, in order to reserve some probability mass for unknown
+unigrams.
 
 =item B<--oov_fraction> I<OOV_FRACTION>
 
