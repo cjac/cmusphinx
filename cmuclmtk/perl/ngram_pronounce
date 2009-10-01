@@ -40,11 +40,13 @@ use Getopt::Long;
 use IO::File;
 use Pod::Usage;
 use File::Temp qw(tempdir);
-use File::Spec::Functions qw(catfile);
+use File::Spec::Functions qw(catfile catdir updir);
 
 Getopt::Long::Configure('bundling', 'no_getopt_compat');
 
-my %opts;
+my %opts = (
+	    bindir => catdir(dirname($0), updir(), "bin")
+	   );
 GetOptions(\%opts,
 	   'indict|i=s',
 	   'indef|d=s',

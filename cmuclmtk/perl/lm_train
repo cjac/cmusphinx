@@ -33,13 +33,16 @@
 
 use strict;
 use File::Basename qw(dirname);
+use File::Spec::Functions qw(catdir updir);
 use lib dirname($0);
 use NGramFactory;
 use Getopt::Long;
 use Pod::Usage;
 
 Getopt::Long::Configure("no_getopt_compat", "bundling");
-my %opts;
+my %opts = (
+	    bindir => catdir(dirname($0), updir(), "bin")
+	   );
 GetOptions(\%opts,
 	   "help|h",
 	   "verbose|v",

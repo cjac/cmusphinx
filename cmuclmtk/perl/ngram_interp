@@ -32,7 +32,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use strict;
-use File::Spec::Functions qw(catfile);
+use File::Spec::Functions qw(catfile catdir);
 use File::Basename qw(basename dirname);
 use lib dirname($0);
 use Getopt::Long;
@@ -41,7 +41,9 @@ use LMTraining;
 
 Getopt::Long::Configure("no_getopt_compat", "bundling");
 
-my %opts;
+my %opts = (
+	    bindir => catdir(dirname($0), "..", "bin")
+	   );
 GetOptions(\%opts, "help|h", "bindir=s", "output|o=s", "verbose|v", "reverse", "all")
     or pod2usage(-verbose => 1, -exitval => 1);
 pod2usage(-verbose => 1, -exitval => 0) if $opts{help};

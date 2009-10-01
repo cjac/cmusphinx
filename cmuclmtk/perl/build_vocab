@@ -33,7 +33,7 @@
 
 use strict;
 use File::Basename qw(basename dirname);
-use File::Spec::Functions qw(catfile);
+use File::Spec::Functions qw(catfile catdir);
 use lib dirname($0);
 use LMTraining;
 use Getopt::Long;
