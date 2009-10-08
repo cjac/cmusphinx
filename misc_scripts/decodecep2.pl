@@ -39,7 +39,6 @@ use strict;
 use File::Basename;
 use File::Spec;
 use File::Path;
-#use lib dirname($0)."/modules/Config-General-2.24/blib/lib/";
 use lib dirname($0);
 use Config::General;
 use Sys::Hostname;
@@ -74,7 +73,7 @@ my @argspec = ('npart=i', 'part=i', 'ctlfile=s', 'cepext=s', 'cepdir=s',
 	       'rawdir=s', 'expid=s', 'feat=s', 'acmoddir=s', 'mdef=s',
 	       'mean=s', 'var=s', 'mixw=s', 'tmat=s', 'args=s', 'ceplen=i',
 	       'mfclogdir=s', 'lattice', 'matchseg', 'matchconf', 'help|h|?', 'logdir=s',
-	       'config=s', 'pl_window=i', 'pl_beam=s', 'pheurtype=i', 'op_mode=s',
+	       'config|cfg=s', 'pl_window=i', 'pl_beam=s', 'pheurtype=i', 'op_mode=s',
 	       'wend_beam=s', 'dsratio=i', 'cond_ds=i', 'ci_pbeam=s',
 	       'gsfile=s', 'svqfile=s', 'svq4svq=i', 'subvqbeam=s', 'inlatdir=s',
 	       'latext=s',
