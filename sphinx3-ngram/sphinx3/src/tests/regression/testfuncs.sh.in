@@ -1,0 +1,69 @@
+# Utility functions and parameters for regression tests
+
+# Predefined directories you may need
+# Stupid CMU Facilities autoconf doesn't do @abs_top_builddir@
+builddir="@top_builddir@"
+sourcedir="@top_srcdir@"
+sbtests="@sphinxbase@/test"
+tests="$sourcedir/src/tests/regression"
+programs="$builddir/src/programs"
+hmmdir="$sourcedir/model/hmm"
+lmdir="$sourcedir/model/lm"
+hub4am="$hmmdir/hub4_cd_continuous_8gau_1s_c_d_dd"
+an4lm="$lmdir/an4"
+
+# Automatically report failures on exit
+failures=""
+trap "report_failures" 0
+
+run_program() {
+    program="$1"
+    shift
+    $builddir/libtool --mode=execute "$programs/$program" $@
+}
+
+debug_program() {
+    program="$1"
+    shift
+    $builddir/libtool --mode=execute gdb --args "$programs/$program" $@
+}
+
+memcheck_program() {
+    program="$1"
+    shift
+    $builddir/libtool --mode=execute valgrind --leak-check=full "$programs/$program" $@
+}
+
+pass() {
+    title="$1"
+    echo "$title PASSED"
+}
+
+fail() {
+    title="$1"
+    echo "============="
+    echo "$title FAILED"
+    echo "============="
+    failures="$failures,$title"
+}
+
+compare_table() {
+    title="$1"
+    shift
+    if perl "$sbtests/compare_table.pl" $@ | grep SUCCESS >/dev/null 2>&1; then
+	pass "$title"
+    else
+	fail "$title"
+    fi 
+}
+
+report_failures() {
+    if test x"$failures" = x; then
+	echo "All sub-tests passed"
+	exit 0
+    else
+	echo $failures >>failures
+	echo "Sub-tests failed:$failures" | sed -e 's/,/ /g'
+	exit 1
+    fi
+}

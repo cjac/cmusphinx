@@ -1,0 +1,2 @@
+./testlogs3 1.0003 10.5 0.02 0.8202 > _testlogs3_1.out 2>&1 
+diff ./_testlogs3_1.out ./_testlogs3_1.res

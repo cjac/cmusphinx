@@ -1,0 +1,318 @@
+body
+	{width:534px;
+	height:400px;}
+.T
+	{text-align:left;
+	font-family:Arial;
+	font-weight:bold;
+	color:#CCFFFF;
+	mso-color-index:3;
+	font-size:171%;}
+.BB
+	{mso-special-format:bullet·;
+	color:#FF3300;
+	mso-color-index:5;
+	font-family:Symbol;}
+.B
+	{text-align:left;
+	font-family:Arial;
+	font-weight:bold;
+	color:white;
+	mso-color-index:1;
+	font-size:114%;}
+.B1B
+	{mso-special-format:bullet·;
+	color:#FF3300;
+	mso-color-index:5;
+	font-family:Symbol;
+	font-size:100%;}
+.B1
+	{text-align:left;
+	font-family:Arial;
+	font-weight:bold;
+	color:white;
+	mso-color-index:1;
+	font-size:95%;}
+.B2B
+	{mso-special-format:bullet·;
+	color:#FF3300;
+	mso-color-index:5;
+	font-family:Symbol;
+	font-size:100%;}
+.B2
+	{text-align:left;
+	font-family:Arial;
+	font-weight:bold;
+	color:white;
+	mso-color-index:1;
+	font-size:85%;
+	mso-margin-left-alt:684;
+	mso-text-indent-alt:540;}
+.B3B
+	{mso-special-format:bulletu;
+	color:#FF3300;
+	mso-color-index:5;
+	font-family:"Monotype Sorts";
+	font-size:63%;}
+.B3
+	{font-family:"Trebuchet MS";
+	mso-margin-left-alt:900;
+	mso-text-indent-alt:756;}
+.B4B
+	{mso-special-format:bullet–;
+	color:white;
+	mso-color-index:1;
+	font-size:100%;}
+.B4
+	{mso-margin-left-alt:1116;
+	mso-text-indent-alt:972;}
+.N
+	{text-align:left;
+	font-family:"Times New Roman";
+	color:black;
+	mso-color-index:1;
+	font-size:114%;
+	mso-line-spacing:"100 0 0";}
+.O
+	{text-align:left;
+	font-family:"Times New Roman";
+	color:white;
+	mso-color-index:1;
+	font-size:114%;}
+.CBB
+	{mso-special-format:nobullet·;
+	color:#FF3300;
+	mso-color-index:5;
+	font-family:Symbol;}
+.CB
+	{text-align:center;
+	font-family:Arial;
+	font-weight:bold;
+	color:white;
+	mso-color-index:1;
+	font-size:114%;}
+.CB1B
+	{mso-special-format:nobullet·;
+	color:#FF3300;
+	mso-color-index:5;
+	font-family:Symbol;
+	font-size:100%;}
+.CB1
+	{font-family:Arial;
+	font-weight:bold;
+	font-size:95%;}
+.CB2B
+	{mso-special-format:nobullet·;
+	color:#FF3300;
+	mso-color-index:5;
+	font-family:Symbol;
+	font-size:100%;}
+.CB2
+	{font-family:Arial;
+	font-weight:bold;
+	font-size:85%;
+	mso-margin-left-alt:540;
+	mso-text-indent-alt:540;}
+.CB3B
+	{mso-special-format:nobulletu;
+	color:#FF3300;
+	mso-color-index:5;
+	font-family:"Monotype Sorts";
+	font-size:63%;}
+.CB3
+	{font-family:"Trebuchet MS";
+	mso-margin-left-alt:756;
+	mso-text-indent-alt:756;}
+.CB4B
+	{mso-special-format:nobullet–;
+	color:white;
+	mso-color-index:1;
+	font-size:100%;}
+.CB4
+	{mso-margin-left-alt:972;
+	mso-text-indent-alt:972;}
+.CT
+	{text-align:left;
+	font-family:Arial;
+	font-weight:bold;
+	color:#CCFFFF;
+	mso-color-index:3;
+	font-size:171%;}
+.HBB
+	{mso-special-format:bullet·;
+	color:#FF3300;
+	mso-color-index:5;
+	font-family:Symbol;}
+.HB
+	{font-family:Arial;
+	font-weight:bold;
+	font-size:95%;}
+.HB1B
+	{mso-special-format:bullet·;
+	color:#FF3300;
+	mso-color-index:5;
+	font-family:Symbol;
+	font-size:100%;}
+.HB1
+	{font-family:Arial;
+	font-weight:bold;
+	font-size:85%;}
+.HB2B
+	{mso-special-format:bullet·;
+	color:#FF3300;
+	mso-color-index:5;
+	font-family:Symbol;
+	font-size:100%;}
+.HB2
+	{font-family:Arial;
+	font-weight:bold;
+	font-size:76%;
+	mso-margin-left-alt:684;
+	mso-text-indent-alt:540;}
+.HB3B
+	{mso-special-format:bulletu;
+	color:#FF3300;
+	mso-color-index:5;
+	font-family:"Monotype Sorts";
+	font-size:63%;}
+.HB3
+	{font-family:"Trebuchet MS";
+	mso-margin-left-alt:900;
+	mso-text-indent-alt:756;}
+.HB4B
+	{mso-special-format:bullet–;
+	color:white;
+	mso-color-index:1;
+	font-size:100%;}
+.HB4
+	{mso-margin-left-alt:1116;
+	mso-text-indent-alt:972;}
+.QBB
+	{mso-special-format:bullet·;
+	color:#FF3300;
+	mso-color-index:5;
+	font-family:Symbol;}
+.QB
+	{font-family:Arial;
+	font-weight:bold;
+	font-size:85%;}
+.QB1B
+	{mso-special-format:bullet·;
+	color:#FF3300;
+	mso-color-index:5;
+	font-family:Symbol;
+	font-size:100%;}
+.QB1
+	{font-family:Arial;
+	font-weight:bold;
+	font-size:76%;}
+.QB2B
+	{mso-special-format:bullet·;
+	color:#FF3300;
+	mso-color-index:5;
+	font-family:Symbol;
+	font-size:100%;}
+.QB2
+	{font-family:Arial;
+	font-weight:bold;
+	font-size:66%;
+	mso-margin-left-alt:684;
+	mso-text-indent-alt:540;}
+.QB3B
+	{mso-special-format:bulletu;
+	color:#FF3300;
+	mso-color-index:5;
+	font-family:"Monotype Sorts";
+	font-size:63%;}
+.QB3
+	{font-family:"Trebuchet MS";
+	mso-margin-left-alt:900;
+	mso-text-indent-alt:756;}
+.QB4B
+	{mso-special-format:bullet–;
+	color:white;
+	mso-color-index:1;
+	font-size:100%;}
+.QB4
+	{mso-margin-left-alt:1116;
+	mso-text-indent-alt:972;}
+.TblB
+	{mso-special-format:nobullet·;
+	color:#FF3300;
+	mso-color-index:5;
+	font-family:Symbol;}
+.Tbl
+	{font-family:Arial;
+	font-weight:bold;
+	font-size:95%;}
+.Tbl1B
+	{mso-special-format:nobullet·;
+	color:#FF3300;
+	mso-color-index:5;
+	font-family:Symbol;
+	font-size:100%;}
+.Tbl1
+	{font-family:Arial;
+	font-weight:bold;
+	font-size:85%;}
+.Tbl2B
+	{mso-special-format:nobullet·;
+	color:#FF3300;
+	mso-color-index:5;
+	font-family:Symbol;
+	font-size:100%;}
+.Tbl2
+	{font-family:Arial;
+	font-weight:bold;
+	font-size:76%;
+	mso-margin-left-alt:684;
+	mso-text-indent-alt:540;}
+.Tbl3B
+	{mso-special-format:nobulletu;
+	color:#FF3300;
+	mso-color-index:5;
+	font-family:"Monotype Sorts";
+	font-size:63%;}
+.Tbl3
+	{font-family:"Trebuchet MS";
+	mso-margin-left-alt:900;
+	mso-text-indent-alt:756;}
+.Tbl4B
+	{mso-special-format:nobullet–;
+	color:white;
+	mso-color-index:1;
+	font-size:100%;}
+.Tbl4
+	{mso-margin-left-alt:1116;
+	mso-text-indent-alt:972;}
+.defaultB
+	{mso-special-format:nobullet•;}
+.default
+	{text-align:left;
+	font-family:Arial;
+	font-weight:normal;
+	font-style:normal;
+	text-decoration:none;
+	text-shadow:none;
+	text-effect:none;
+	mso-fareast-hint:no;
+	layout-flow:horizontal;
+	color:white;
+	mso-color-index:1;
+	font-size:85%;
+	mso-text-raise:0%;
+	mso-line-spacing:"100 0 0";
+	mso-margin-left-alt:0;
+	mso-text-indent-alt:0;
+	mso-char-wrap:0;
+	mso-kinsoku-overflow:0;
+	direction:ltr;
+	mso-word-wrap:1;
+	mso-vertical-align-special:baseline;
+	mso-ansi-language:EN-US;}
+a:link
+	{color:#33CCFF !important;}
+a:active
+	{color:#FF3300 !important;}
+a:visited
+	{color:#DDDDDD !important;}

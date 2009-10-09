@@ -1,0 +1,55 @@
+This is the Sphinx 3.7 code from revision 9287 of the SVN, enhanced with LIUM's modifications and tools. All code written by Paul Deleglise, Yannick Esteve, Nicolas Coetmeur and Anthony Rousseau.
+
+Basically, the LIUM's modifications to Sphinx implement a generalized representation of laguage modeling, porting the 3-gram current one to n-gram. The LM structure has been redesigned, and the LM functions now work with n-grams for a N value (i.e. N=3 for trigrams, N=4 for quadrigrams, ...). Many other fuctions have been generalized (functions with 'ug', 'bg' or 'tg' in their names now share a common one with 'ng' in it, also using the N value as a parameter, with a few exceptions). The tools have been modified, especially lm_convert which is now able to read and dump n-grams models. The code is also now able to manage large files by using 64 bits instead of 32.
+
+Here is the list of modified files from revision 9287:
+
+In sphinxbase:
+
+*.h files:
+	- no changes
+
+*.c files:
+	- logmath.c (minor changes)
+
+
+In sphinx3:
+
+*.h files:
+	- astar.h
+	- cmdln_macro.h
+	- dag.h
+	- lm.h
+
+*.c files:
+	- libam:
+		* mdef.c
+
+	- libcfg:
+		* s3_cfg.c (minor changes)
+
+	- libconfidence:
+		* confidence.c
+
+	- liblm:
+		* lm.c
+		* lm_ng.c (derived from lm_3g.c)
+		* lm_ng_dmp.c (derived from lm_3g_dmp.c)
+		* lm_attfsm.c
+		* lm_debug.c
+
+	- libsearch:
+		* astar.c
+		* dag.c
+		* flat_fwd.c
+		* srch_allphone.c
+		* srch_flat_fwd.c
+		* srch_time_switch_tree.c
+		* vithist.c
+
+	- programs:
+		* main_astar.c
+		* main_lm_convert.c
+
+
+It seems that the --enable-shared should be set to no when running ./autogen.sh or ./configure by appending "--enable-shared=no" to the command line.
