@@ -1,4 +1,4 @@
-AM_CPPFLAGS = -Ilibs -Iliblmest -Iwin32
+AM_CPPFLAGS = -I${srcdir}/libs -I${srcdir}/liblmest -I${srcdir}/win32
 
 SUBDIRS  = liblmest libs . programs
 

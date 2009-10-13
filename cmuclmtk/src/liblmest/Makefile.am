@@ -1,4 +1,4 @@
-AM_CPPFLAGS = -I../libs -I../win32
+AM_CPPFLAGS = -I${top_srcdir}/src/libs -I${top_srcdir}/src/win32
 
 lib_LIBRARIES = liblmest.a
 liblmest_a_SOURCES = \
