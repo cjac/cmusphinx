@@ -301,6 +301,39 @@ int main (int argc, char **argv) {
 			       arpa_lm,
 			       include_unks,
 			       log_base);
+	  }else
+	    /* do perplexity sentence by sentence [20090612] (air) */
+	    if (!strcmp(args[0],"uttperp")) {
+	      FILE *uttfh,*tempfh;
+	      char utt[4096]; /* live dangerously... */
+	      char tmpfil[128];
+	      if ((uttfh = fopen(text_stream_filename,"r")) == NULL) {
+		printf("Error: can't open %s\n",text_stream_filename);
+		exit(1);
+	      }
+	      strcpy(tmpfil,tempnam(NULL,"uttperp_"));
+	      while ( ! feof(uttfh) ) {
+		fscanf(uttfh,"%[^\n]\n",utt);
+		tempfh = fopen(tmpfil,"w");
+		fprintf(tempfh,"%s\n",utt);
+		fclose(tempfh);
+		compute_perplexity(&ng,
+				   &arpa_ng,
+				   tmpfil,  /* text_stream_filename, */
+				   probs_stream_filename,
+				   annotation_filename,
+				   oov_filename,
+				   fb_list_filename,
+				   backoff_from_unk_inc,
+				   backoff_from_unk_exc,
+				   backoff_from_ccs_inc,
+				   backoff_from_ccs_exc,
+				   arpa_lm,
+				   include_unks,
+				   log_base);
+	      }
+	      fclose(uttfh);
+	      // unlink(tmpfil);
 	  }else if(!strcmp(args[0],"validate")){
 	    if (num_of_args != n) 
 	      fprintf(stderr,"Error : must specify %d words of context.\n",n-1);
