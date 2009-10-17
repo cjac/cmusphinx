@@ -5,7 +5,7 @@ import os
 if os.name == 'nt':
     define_macros = [('WIN32', '1')]
 else:
-    define_macors = []
+    define_macros = []
 
 module = Extension('_sphinx3',
                    include_dirs = ['../../sphinxbase/include',
