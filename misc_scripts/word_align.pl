@@ -11,6 +11,7 @@ use strict;
 use Getopt::Long;
 use Pod::Usage;
 use vars qw($Verbose $CER $IgnoreUttID);
+use encoding 'utf8';
 
 my ($help,%hyphash);
 GetOptions(
@@ -49,7 +50,6 @@ while (defined(my $ref_utt = <REF>)) {
     my $hyp_uttid;
 
     ($ref_utt,$ref_uttid)=s3_magic_norm($ref_utt);
-    $ref_uttid = "" unless defined $ref_uttid;
 
 
     if(defined $IgnoreUttID){
@@ -72,8 +72,8 @@ while (defined(my $ref_utt = <REF>)) {
     my @hyp_words = split ' ', $hyp_utt;
     if ($CER) {
 	# Split the text into an array of characters
-	@ref_words = split_hex_chars(@ref_words);
-	@hyp_words = split_hex_chars(@hyp_words);
+	@ref_words = map { split "" } @ref_words;
+	@hyp_words = map { split "" } @hyp_words;
     }
 
     my (@align_matrix, @backtrace_matrix);
@@ -92,10 +92,19 @@ while (defined(my $ref_utt = <REF>)) {
 	my ($ref, $hyp) = @$_;
 	my $width = 0;
 
-	# Capitalize errors (they already are...), lowercase matches
-	if (defined($ref) and defined($hyp) and $ref eq $hyp) {
-	    $ref = lc $ref;
-	    $hyp = lc $hyp;
+	if ($CER) {
+	    # Assume this is Chinese, no capitalization so put ** around errors
+	    if (defined($ref) and defined($hyp) and $ref ne $hyp) {
+		$ref = "*$ref*";
+		$hyp = "*$hyp*";
+	    }
+	}
+	else {
+	    # Capitalize errors (they already are...), lowercase matches
+	    if (defined($ref) and defined($hyp) and $ref eq $hyp) {
+		$ref = lc $ref;
+		$hyp = lc $hyp;
+	    }
 	}
 
 	# Replace deletions with ***
@@ -131,17 +140,6 @@ my $acc = $total_match/$total_words;
 printf("TOTAL Words: %d Correct: %d Errors: %d\nTOTAL Percent correct = %.2f%% Error = %.2f%% Accuracy = %.2f%%\n",
        $total_words, $total_match, $total_cost, $acc*100, $error*100, 100-$error*100);
 print "TOTAL Insertions: $total_ins Deletions: $total_del Substitutions: $total_subst\n";
-
-# Split hexadecimal representation into 16-bit "characters"
-sub split_hex_chars {
-    my @tmp;
-    foreach my $w (@_) {
-	while ($w =~ /(....)/g) {
-	    push @tmp, $1;
-	}
-    }
-    return @tmp;
-}
 
 # This function normalizes a line of a match file. 
 sub s3_magic_norm{
