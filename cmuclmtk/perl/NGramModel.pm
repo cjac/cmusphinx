@@ -407,6 +407,7 @@ sub estimate {
     my $vocab = $self->{opts}{vocabulary};
     unless (defined($vocab)) {
 	# Pass along any options that might be useful
+	$self->log_message("Building vocabulary");
 	$vocab = Vocabulary->new(transcripts => $self->{transcripts},
 				 %{$self->{opts}});
     }
@@ -442,6 +443,8 @@ sub estimate {
 		       -context => $contextfile,
 		       -vocab_type => $self->{opts}{open} ? 1 : 0,
 		       -n => $self->{opts}{n},
+		       '-four_byte_counts',
+		       '-calc_mem',
 		       $self->{smoothing}->args()])
 	or die "idngram2lm failed with status $?";
 
