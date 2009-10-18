@@ -92,7 +92,8 @@ while (defined(my $ref_utt = <REF>)) {
 	my ($ref, $hyp) = @$_;
 	my $width = 0;
 
-	if ($CER) {
+	if ($CER or
+	    (defined($ref) and defined($hyp) and $ref =~ /\p{InCJKUnifiedIdeographs}/)) {
 	    # Assume this is Chinese, no capitalization so put ** around errors
 	    if (defined($ref) and defined($hyp) and $ref ne $hyp) {
 		$ref = "*$ref*";
