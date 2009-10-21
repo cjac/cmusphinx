@@ -119,6 +119,7 @@ while (defined(my $ref_utt = <REF>)) {
 	$ref_align .= sprintf("%-*s ", $width, $ref);
 	$hyp_align .= sprintf("%-*s ", $width, $hyp);
     }
+    $ref_uttid = "" unless defined $ref_uttid; # avoid warnings
     print "$ref_align ($ref_uttid)\n$hyp_align ($hyp_uttid)\n";
 
     # Print out the word error and accuracy rates

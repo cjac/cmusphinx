@@ -76,7 +76,7 @@ my @argspec = ('npart=i', 'part=i', 'ctlfile=s', 'cepext=s', 'cepdir=s',
 	       'config|cfg=s', 'pl_window=i', 'pl_beam=s', 'pheurtype=i', 'op_mode=s',
 	       'wend_beam=s', 'dsratio=i', 'cond_ds=i', 'ci_pbeam=s',
 	       'gsfile=s', 'svqfile=s', 'svq4svq=i', 'subvqbeam=s', 'inlatdir=s',
-	       'latext=s', 'lpbeam=s', 'lponlybeam=s',
+	       'latext=s', 'lpbeam=s', 'lponlybeam=s', 'succtab=s',
 	       'vqeval=i', 'gs4gs=i', 'bin=s', 'lminmemory=i', 'dither',
 	       'lmctlfile=s', 'lmname=s', 'ctl_lm=s', 'ctl_mllr=s', 's3',
 	       's3_3', 's3_3align', 's3_X', 's3_lp', 'ctlpath', 'fwdflat=s', 'bestpath=s',
@@ -464,7 +464,7 @@ my @s3xopts = qw(mdef mean var mixw tmat dictfn fdictfn lw uw wip dither lda lda
 		 rawext cepext adcin adchdr adcendian allphone compallsen
 		 upperf lowerf nfilt wlen srate frate nfft cachesen silpen
 		 fwdtree fwdflat bestpath fwdflatlw bestpathlw lmfile
-		 fwdflatefwid fwdflatsfwin kdtree kdmaxbbi
+		 fwdflatefwid fwdflatsfwin kdtree kdmaxbbi succtab
 		 sendumpfn fwdflatbeam fwdflatnwbeam noisepen hmmdir
                  lpbeam lponlybeam
 	       );
