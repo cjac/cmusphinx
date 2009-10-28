@@ -53,7 +53,7 @@ void display_fof_array(ngram_sz_t *num_kgrams,
 
   for (i=0;i<=n-2;i++) {
     fprintf(fp,"\n%d-grams occurring:\tN times\t\t> N times\tSug. -spec_num value\n",i+2);
-    fprintf(fp,"%7ld\t\t\t\t\t\t%7d\t\t%7d\n",0,(int)num_kgrams[i],((int)((double)num_kgrams[i]*1.01))+10);
+    fprintf(fp,"%7d\t\t\t\t\t\t%7lld\t\t%7d\n",0,num_kgrams[i],((int)((double)num_kgrams[i]*1.01))+10);
     t = num_kgrams[i];
     for (j=1;j<=fof_size;j++) {
       t -= fof_array[i][j];
@@ -125,7 +125,7 @@ void display_stats(ng_t *ng) {
   
   int i;
 
-  fprintf(stderr,"This is a %d-gram language model, based on a vocabulary of %d words,\n",(int)ng->n,ng->vocab_size);
+  fprintf(stderr,"This is a %hu-gram language model, based on a vocabulary of %lld words,\n",ng->n,ng->vocab_size);
   fprintf(stderr,"  which begins \"%s\", \"%s\", \"%s\"...\n",ng->vocab[1],ng->vocab[2],ng->vocab[3]);
 
   if (ng->no_of_ccs == 1) 

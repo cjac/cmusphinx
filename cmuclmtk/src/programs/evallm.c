@@ -228,7 +228,7 @@ int main (int argc, char **argv) {
 	
 	arpa_ng.context_cue[(unsigned short) current_cc_id] = 1;
 	arpa_ng.no_of_ccs++;
-	fprintf(stderr,"Context cue word : %s id = %d\n",current_cc,current_cc_id);
+	fprintf(stderr,"Context cue word : %s id = %lld\n",current_cc,current_cc_id);
       }
       rr_iclose(context_cues_fp);
     }

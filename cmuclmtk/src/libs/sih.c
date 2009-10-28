@@ -268,7 +268,7 @@ void *sih_val_write_to_file(sih_t *ht, FILE *fp, char *filename, int verbosity)
        rr_fwrite((char*)&null_char,sizeof(char),1,fp,"null");
   }
   if (verbosity) fprintf(stderr,
-     "%s: a hash table of %d entries (%d non-empty) was written to '%s'\n",
+     "%s: a hash table of %lld entries (%lld non-empty) was written to '%s'\n",
       rname, ht->nslots, ht->nentries, filename);
 
   return(0); /* Not relevant, but stops compilation warnings. */
@@ -329,7 +329,7 @@ void *sih_val_read_from_file(sih_t *ht, FILE *fp, char *filename, int verbosity)
     quit(-1,"%s ERROR: some strings remained unaccounted for in %s\n",
 	     rname, filename);
   if (verbosity) fprintf(stderr,
-     "%s: a hash table of %d entries (%d non-empty) was read from '%s'\n",
+     "%s: a hash table of %lld entries (%lld non-empty) was read from '%s'\n",
       rname, ht->nslots, ht->nentries, filename);
 
   return(0); /* Not relevant, but stops compilation warnings. */

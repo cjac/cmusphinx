@@ -134,17 +134,17 @@ void write_arpa_num_grams(FILE* fp,ng_t* ng, arpa_lm_t *arpa_ng, flag is_arpa)
   
   if(is_arpa){
 
-    fprintf(fp,"ngram 1=%ld\n",(1+arpa_ng->vocab_size-arpa_ng->first_id));
+    fprintf(fp,"ngram 1=%lld\n",(1+arpa_ng->vocab_size-arpa_ng->first_id));
 
     for (i=1;i<=arpa_ng->n-1;i++) 
-      fprintf(fp,"ngram %d=%ld\n",i+1,arpa_ng->num_kgrams[i]);
+      fprintf(fp,"ngram %d=%lld\n",i+1,arpa_ng->num_kgrams[i]);
 
   }else{
 
-    fprintf(fp,"ngram 1=%ld\n",(1+ng->vocab_size-ng->first_id));
+    fprintf(fp,"ngram 1=%lld\n",(1+ng->vocab_size-ng->first_id));
 
     for (i=1;i<=ng->n-1;i++) 
-      fprintf(fp,"ngram %d=%ld\n",i+1,ng->num_kgrams[i]);
+      fprintf(fp,"ngram %d=%lld\n",i+1,ng->num_kgrams[i]);
 
   }
 }

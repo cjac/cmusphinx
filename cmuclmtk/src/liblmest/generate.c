@@ -172,7 +172,7 @@ void generate_words(ng_t *png,arpa_lm_t *pang, int num_words,int random_seed,cha
       if (p>acc) 
 	fprintf(stderr, "WARNING: The sum over w3 of Pr(w3|%s,%s) was %f,"
 		"which was less than the randomly generated number %f.\n",
-		acc,lm_vocab[sought_trigram[0]],lm_vocab[sought_trigram[1]],p);
+		lm_vocab[sought_trigram[0]],lm_vocab[sought_trigram[1]],acc,p);
     }else {
       acc=1.0;
       for (j=lm_vocab_sz; j>=0; --j){
@@ -186,7 +186,7 @@ void generate_words(ng_t *png,arpa_lm_t *pang, int num_words,int random_seed,cha
       if (p<acc)
 	fprintf(stderr, "WARNING: 1-(sum over w3 of Pr(w3|%s,%s) was %f,"
 		"which was greater than the randomly generated number %f.\n",
-		acc,lm_vocab[sought_trigram[0]],lm_vocab[sought_trigram[1]],p);
+		lm_vocab[sought_trigram[0]],lm_vocab[sought_trigram[1]],acc,p);
     }
 
     fprintf(output_file,"%s ",lm_vocab[sought_trigram[2]]);
