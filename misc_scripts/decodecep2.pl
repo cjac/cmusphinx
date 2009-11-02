@@ -249,7 +249,7 @@ sub network_path {
 }
 
 my ($ctlcount, $ctloffset);
-my ($logfile, $matchfile, $matchsegfile, $matchconffile);
+my ($logfile, $matchfile, $matchsegfile, $matchconffile, $ctmfile);
 if (defined($options{part}) and defined($options{npart})) {
     open CTLFILE, "<$options{ctlfile}" or die "Failed to open $options{ctlfile}: $!\n";
     my $lines;
