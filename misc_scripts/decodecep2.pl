@@ -72,7 +72,8 @@ sub system_log {
 my @argspec = ('npart=i', 'part=i', 'ctlfile=s', 'cepext=s', 'cepdir=s',
 	       'rawdir=s', 'expid=s', 'feat=s', 'acmoddir=s', 'mdef=s',
 	       'mean=s', 'var=s', 'mixw=s', 'tmat=s', 'args=s', 'ceplen=i',
-	       'mfclogdir=s', 'lattice', 'matchseg', 'matchconf', 'help|h|?', 'logdir=s',
+	       'mfclogdir=s', 'lattice', 'matchseg', 'matchconf', 'ctm',
+	       'help|h|?', 'logdir=s',
 	       'config|cfg=s', 'pl_window=i', 'pl_beam=s', 'pheurtype=i', 'op_mode=s',
 	       'wend_beam=s', 'dsratio=i', 'cond_ds=i', 'ci_pbeam=s',
 	       'gsfile=s', 'svqfile=s', 'svq4svq=i', 'subvqbeam=s', 'inlatdir=s',
@@ -265,12 +266,14 @@ if (defined($options{part}) and defined($options{npart})) {
     $matchfile = "$resultdir/$options{expid}.$options{part}.match";
     $matchsegfile = "$resultdir/$options{expid}.$options{part}.matchseg";
     $matchconffile = "$resultdir/$options{expid}.$options{part}.matchconf";
+    $ctmfile = "$resultdir/$options{expid}.$options{part}.ctm";
 }
 else {
     $logfile = "$resultdir/$options{expid}.log";
     $matchfile = "$resultdir/$options{expid}.match";
     $matchsegfile = "$resultdir/$options{expid}.matchseg";
     $matchconffile = "$resultdir/$options{expid}.matchconf";
+    $ctmfile = "$resultdir/$options{expid}.ctm";
 }
 
 if (defined($cmdargs{pbs})) {
@@ -459,8 +462,8 @@ my %s3newmap = (dictfn => 'dict', fdictfn => 'fdict', tmat => 'tmat',
 my @s3xopts = qw(mdef mean var mixw tmat dictfn fdictfn lw uw wip dither lda ldadim
 		 feat agc varnorm ctlfile cepdir cmn beam pbeam wbeam ceplen op_mode
 		 svqfile lmctlfile lmname vqeval ci_pbeam cond_ds svq4svq inlatdir latext
-		 gs4gs pl_window pl_beam pheurtype wend_beam ctl_lm logbase
-		 ctl_mllr Nlextree subvqbeam tighten_factor dsratio senmgau
+		 gs4gs pl_window pl_beam pheurtype wend_beam ctl_lm logbase backtrace
+		 ctl_mllr Nlextree subvqbeam tighten_factor dsratio senmgau dictcase
 		 rawext cepext adcin adchdr adcendian allphone compallsen
 		 upperf lowerf nfilt wlen srate frate nfft cachesen silpen
 		 fwdtree fwdflat bestpath fwdflatlw bestpathlw lmfile
@@ -472,6 +475,7 @@ my @s3xopts = qw(mdef mean var mixw tmat dictfn fdictfn lw uw wip dither lda lda
 my %s3xmap = (dictfn => 'dict', fdictfn => 'fdict', tmat => 'tmat', silpen => 'silprob',
 	      gsfile => 'gs', svqfile => 'subvq', lmfile => 'lm', srate => 'samprate',
 	      dsratio=> 'ds', ctlfile => 'ctl', lmctlfile => 'lmctlfn', noisepen => 'fillprob',
+	      silpen => 'silprob',
 	      fwdflatnwbeam => 'fwdflatwbeam', hmmdir => 'hmm', sendumpfn => 'sendump');
 
 my @s2opts = qw(mapfn phnfn cbdir hmmdir hmmdirlist dictfn fdictfn ctlfile cepdir rawdir
@@ -500,6 +504,7 @@ if (defined($options{s3_3}) or defined($options{s3_X})){
     push @cmdoptions, -hyp => $matchfile;
     push @cmdoptions, -hypseg => $matchsegfile if defined($options{matchseg});
     push @cmdoptions, -hypconf => $matchconffile if defined($options{matchconf});
+    push @cmdoptions, -ctm => $ctmfile if defined($options{ctm});
     push @cmdoptions, -outlatdir => $outlatdir if defined($options{lattice});
 }
 elsif(defined($options{s3})) {
@@ -678,6 +683,7 @@ if (!defined($options{part}) and defined($options{reffile})) {
 	if ($options{matchconf}) {
 	    open MATCHCONFFILE, ">$matchconffile" or die "Failed to open $matchconffile: $!";
 	}
+	my @ctms;
 	for (my $i = 1; $i <= $options{npart}; ++$i) {
 	    my $partfile = "$resultdir/$options{expid}.$i.match";
 	    open PART, "<$partfile" or die "No match file $partfile: $!";
@@ -701,10 +707,29 @@ if (!defined($options{part}) and defined($options{reffile})) {
 		}
 		close PART;
 	    }
+	    if ($options{ctm}) {
+		my $partfile = "$resultdir/$options{expid}.$i.ctm";
+		open PART, "<$partfile" or die "No match file $partfile: $!";
+		while (<PART>) {
+		    chomp;
+		    push @ctms, [split];
+		}
+		close PART;
+	    }
 	}
 	close MATCHFILE;
 	close MATCHSEGFILE if $options{matchseg};
 	close MATCHCONFFILE if $options{matchconf};
+	if ($options{ctm}) {
+	    open CTMFILE, ">$ctmfile" or die "Failed to open $ctmfile: $!";
+	    @ctms = sort { $$a[0] cmp $$b[0]
+			       or $$a[1] cmp $$b[1]
+			       or $$a[2] <=> $$b[2] } @ctms;
+	    foreach my $c (@ctms) {
+		print CTMFILE "@$c\n";
+	    }
+	    close CTMFILE;
+	}
     }
     unlink($alignfile);
     die "$matchfile is not created, Did you specify -npart?\n" unless -s $matchfile;
