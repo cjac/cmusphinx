@@ -291,7 +291,8 @@ sub run_qsub {
     }
     my $cmdtxt = "$qsub --cwd '$basedir' $deptxt -q $qname -e '$efile' -o '$ofile' ".
       "-J $jobname -- '$cmd' @args";
-    $cmdtxt .= " -part $part" if $part;
+    $cmdtxt .= " -part $part" if $part > 0;
+    $cmdtxt .= " -alignonly" if $part == -1; # FIXME
     my $jobid = `$cmdtxt`; # FIXME...
     if ($jobid =~ /^Job <(.+)>$/) {
 	return $1;
@@ -349,7 +350,7 @@ if (defined($cmdargs{pbs})) {
 	my $efile = network_path($hostname, "$resultdir/$cmdargs{expid}.align.err");
 	my $ofile = network_path($hostname, "$resultdir/$cmdargs{expid}.align.out");
 	my $jobname = substr($qexpid, 0, 15-length(".aln")) . ".aln";
-	$alignjob = run_qsub($qsub, $qname, $basedir, $jobname, $efile, $ofile, 0,
+	$alignjob = run_qsub($qsub, $qname, $basedir, $jobname, $efile, $ofile, -1,
 			     $self, \%cmdargs, \@jobs);
     }
     else {
