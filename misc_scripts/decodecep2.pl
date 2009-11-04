@@ -73,7 +73,7 @@ my @argspec = ('npart=i', 'part=i', 'ctlfile=s', 'cepext=s', 'cepdir=s',
 	       'rawdir=s', 'expid=s', 'feat=s', 'acmoddir=s', 'mdef=s',
 	       'mean=s', 'var=s', 'mixw=s', 'tmat=s', 'args=s', 'ceplen=i',
 	       'mfclogdir=s', 'lattice', 'matchseg', 'matchconf', 'ctm',
-	       'help|h|?', 'logdir=s',
+	       'help|h|?', 'logdir=s', 'wait',
 	       'config|cfg=s', 'pl_window=i', 'pl_beam=s', 'pheurtype=i', 'op_mode=s',
 	       'wend_beam=s', 'dsratio=i', 'cond_ds=i', 'ci_pbeam=s',
 	       'gsfile=s', 'svqfile=s', 'svq4svq=i', 'subvqbeam=s', 'inlatdir=s',
@@ -276,6 +276,31 @@ else {
     $ctmfile = "$resultdir/$options{expid}.ctm";
 }
 
+sub run_qsub {
+    my ($qsub, $qname, $basedir, $jobname, $efile, $ofile, $part,
+	$cmd, $cmdargs, $deps) = @_;
+    # Quoted args for the shell
+    my @args;
+    while (my ($k, $v) = each %$cmdargs) {
+	push @args, "-$k" => "'$v'" if defined $v;
+    }
+    # Build a dependency string if requested
+    my $deptxt = "";
+    if (defined($deps) and @$deps) {
+	$deptxt = "-Wdepend=afterok:" . join ':', @$deps;
+    }
+    my $cmdtxt = "$qsub --cwd '$basedir' $deptxt -q $qname -e '$efile' -o '$ofile' ".
+      "-J $jobname -- '$cmd' @args";
+    $cmdtxt .= " -part $part" if $part;
+    my $jobid = `$cmdtxt`; # FIXME...
+    if ($jobid =~ /^Job <(.+)>$/) {
+	return $1;
+    }
+    else {
+	die "FAIL: $cmd";
+    }
+}
+
 if (defined($cmdargs{pbs})) {
     # Adjust some options and re-run self in PBS queue
     my $qsub = dirname($0)."/qsub.pl";
@@ -308,59 +333,60 @@ if (defined($cmdargs{pbs})) {
     }
     $qexpid =~ tr/_//d;
 
+    my $alignjob;
     if (defined($npart)) {
 	my @jobs;
 	for (my $i = 1; $i <= $cmdargs{npart}; ++$i) {
-	    # Quoted args for the shell
-	    my @args;
-	    while (my ($k, $v) = each %cmdargs) {
-		push @args, "-$k" => "'$v'" if defined $v;
-	    }
 	    my $jobname = substr($qexpid, 0, 15-length(".$i")) . ".$i";
 	    my $efile = network_path($hostname, "$resultdir/$jobname.err");
 	    my $ofile = network_path($hostname, "$resultdir/$jobname.out");
-	    print "$qsub --cwd '$basedir' -q $qname -e '$efile' -o '$ofile' -J $jobname -- '$self' @args -part $i\n";
-	    my $jobid = `$qsub --cwd '$basedir' -q $qname -e '$efile' -o '$ofile' -J $jobname -- '$self' @args -part $i`; # FIXME...
-	    if ($jobid =~ /^Job <(.+)>$/) {
-		print "Part $i = job $1\n";
-		push @jobs, $1;
-	    }
-	    else {
-		die "qsub failed";
-	    }
+	    my $jobid = run_qsub($qsub, $qname, $basedir, $jobname, $efile, $ofile, $i,
+				 $self, \%cmdargs);
+	    push @jobs, $jobid;
 	}
-	my $deps = "-Wdepend=afterok:" . join ':', @jobs;
+	# Wait a little while for jobs to reach the queue (HACK!)
+	sleep 2;
 	my $efile = network_path($hostname, "$resultdir/$cmdargs{expid}.align.err");
 	my $ofile = network_path($hostname, "$resultdir/$cmdargs{expid}.align.out");
 	my $jobname = substr($qexpid, 0, 15-length(".aln")) . ".aln";
-	# Wait a little while for jobs to reach the queue (HACK!)
-	sleep 2;
-	# Unquoted args for system()
-	my @args;
-	while (my ($k, $v) = each %cmdargs) {
-	    push @args, "-$k" => $v if defined $v;
-	}
-	system_log(undef, $qsub, $deps, -J => $jobname, '--cwd' => $basedir,
-		   -q => $qname, -e => $efile, -o => $ofile,
-		   '--', $self, @args, '-alignonly');
+	$alignjob = run_qsub($qsub, $qname, $basedir, $jobname, $efile, $ofile, 0,
+			     $self, \%cmdargs, \@jobs);
     }
     else {
 	my $jobname = "$cmdargs{expid}";
 	my $efile = network_path($hostname, "$resultdir/$jobname.err");
 	my $ofile = network_path($hostname, "$resultdir/$jobname.out");
-	# Unquoted args for system()
-	my @args;
-	while (my ($k, $v) = each %cmdargs) {
-	    push @args, "-$k" => $v if defined $v;
-	}
-	system_log(undef, $qsub, -J => $qexpid, -q => $qname, '--cwd' => $basedir,
-		   -e => $efile, -o => $ofile, '--', $self, @args);
+	$alignjob = run_qsub($qsub, $qname, $basedir, $jobname, $efile, $ofile, 0,
+			     $self, \%cmdargs);
     }
 
+    sub query_job {
+	my $jobid = shift;
+	open QSTAT, "qstat $jobid 2>&1|" or die "Failed to fork: $!";
+	# FIXME: There is actually a way to get the exit status of a job
+	while (<QSTAT>) {
+	    return 1 if /Unknown/;
+	    return 1 if /\bC\b/;
+	    return -1 if /\bE\b/;
+	}
+	close QSTAT;
+	return 0;
+    }
+
+    if ($options{wait}) {
+	print STDERR "waiting for job $alignjob..";
+	while (1) {
+	    print STDERR ".";
+	    my $rv = query_job($alignjob);
+	    last if $rv == 1;
+	    sleep 5;
+	}
+	print STDERR "\n";
+    }
     exit;
 }
 
-if (defined($options{alignonly})) {
+if ($options{alignonly}) {
     # Yes, I know, this is awful
     goto ALIGNONLY;
 }
@@ -664,7 +690,7 @@ if ($options{debug}) {
     system($options{bin}, @cmdoptions);
 }
 else {
-    print("$options{bin} @cmdoptions >> $logfile \n")
+    print("$options{bin} @cmdoptions >> $logfile 2>&1\n")
 	unless $options{silent};
     close(LOGFILE);
     system_log($logfile, $options{bin}, @cmdoptions);
