@@ -378,7 +378,7 @@ if (defined($cmdargs{pbs})) {
 	while (1) {
 	    print STDERR ".";
 	    my $rv = query_job($alignjob);
-	    last if $rv == 1;
+	    last if $rv;
 	    sleep 5;
 	}
 	print STDERR "\n";
