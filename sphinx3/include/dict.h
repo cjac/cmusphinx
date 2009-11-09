@@ -167,6 +167,8 @@ dict_t *dict_init (mdef_t *mdef,	/**< For looking up CI phone IDs; NULL if none,
 					   in which case CI phones kept internally */
 		   const char *dictfile,	/**< Main dictionary file */
 		   const char *fillerfile,	/**< Filler dictionary file */
+                   int autofill,        /**< Automatically add filler words */
+                   int autofillphone,   /**< Automatically add filler phones (for allphone) */
 		   int useLTS,          /**< Whether to use letter-to-sound rules */
 		   int breport          /**< Whether we should report the progress */
     );

@@ -306,7 +306,9 @@ models_init(void)
     dict = dict_init(mdef,
                      cmd_ln_str_r(config, "-dict"),
                      cmd_ln_str_r(config, "-fdict"),
-                     cmd_ln_int32_r(config, "-lts_mismatch"), 1);
+		     cmd_ln_boolean_r(config, "-lts_mismatch"),
+		     cmd_ln_boolean_r(config, "-mdef_fillers"),
+		     FALSE, TRUE);
 
     /* LM Set */
     lmset = lmset_init(cmd_ln_str_r(config, "-lm"),

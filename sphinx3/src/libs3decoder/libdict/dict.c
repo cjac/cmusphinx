@@ -310,7 +310,8 @@ dict_read(FILE * fp, dict_t * d)
 }
 
 dict_t *
-dict_init(mdef_t * mdef, const char *dictfile, const char *fillerfile, int useLTS, int breport)
+dict_init(mdef_t * mdef, const char *dictfile, const char *fillerfile,
+	  int useLTS, int autofill, int autofillphone, int breport)
 {
     FILE *fp, *fp2;
     int32 n;
@@ -401,23 +402,27 @@ dict_init(mdef_t * mdef, const char *dictfile, const char *fillerfile, int useLT
              * SIL is disguised as <sil>
              */
             if (i != sil && mdef_is_fillerphone(mdef, i)) {
-                /*
-                 * Add as a filler word, like ++NOISE++
-                 */
-                snprintf(line, sizeof(line), "+%s+", mdef_ciphone_str(mdef, i));
-                if (dict_wordid(d, line) == BAD_S3WID) {
-                    E_INFO("Adding filler word: %s\n", line);
-                    dict_add_word(d, line, &i, 1);
-                    ++n;
-                }
+		if (autofill) {
+		    /*
+		     * Add as a filler word, like ++NOISE++
+		     */
+		    snprintf(line, sizeof(line), "+%s+", mdef_ciphone_str(mdef, i));
+		    if (dict_wordid(d, line) == BAD_S3WID) {
+			E_INFO("Adding filler word: %s\n", line);
+			dict_add_word(d, line, &i, 1);
+			++n;
+		    }
+		}
                 /*
                  * Add as a pure filler phone for the allphone decoder
                  */
-                if (dict_wordid(d, mdef_ciphone_str(mdef, i)) == BAD_S3WID) {
-                    E_INFO("Adding filler phone: %s\n", mdef_ciphone_str(mdef, i));
-                    dict_add_word(d, (char*)mdef_ciphone_str(mdef, i), &i, 1);
-                    ++n;
-                }
+		if (autofillphone) {
+		    if (dict_wordid(d, mdef_ciphone_str(mdef, i)) == BAD_S3WID) {
+			E_INFO("Adding filler phone: %s\n", mdef_ciphone_str(mdef, i));
+			dict_add_word(d, (char*)mdef_ciphone_str(mdef, i), &i, 1);
+			++n;
+		    }
+		}
             }
         }
         E_INFO("Added %d fillers from mdef file\n", n);

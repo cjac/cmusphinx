@@ -293,6 +293,10 @@ us a better architecture.
       ARG_STRING, \
       NULL, \
       "Silence and filler (noise) word pronunciation dictionary input file" }, \
+    { "-mdef_fillers", \
+      ARG_BOOLEAN, \
+      "no", \
+      "Automatically add filler words from the model definition file" }, \
     { "-lts_mismatch", \
       ARG_BOOLEAN, \
       "no", \
