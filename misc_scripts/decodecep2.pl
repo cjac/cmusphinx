@@ -73,8 +73,9 @@ my @argspec = ('npart=i', 'part=i', 'ctlfile=s', 'cepext=s', 'cepdir=s',
 	       'rawdir=s', 'expid=s', 'feat=s', 'acmoddir=s', 'mdef=s',
 	       'mean=s', 'var=s', 'mixw=s', 'tmat=s', 'args=s', 'ceplen=i',
 	       'mfclogdir=s', 'lattice', 'matchseg', 'matchconf', 'ctm',
-	       'help|h|?', 'logdir=s', 'wait',
-	       'config|cfg=s', 'pl_window=i', 'pl_beam=s', 'pheurtype=i', 'op_mode=s',
+	       'help|h|?', 'logdir=s', 'wait', 'tst=s', 'vhbeam=s',
+	       'config|cfg=s', 'pl_window=i', 'pl_beam=s', 'pl_pbeam=s',
+	       'pheurtype=i', 'op_mode=s',
 	       'wend_beam=s', 'dsratio=i', 'cond_ds=i', 'ci_pbeam=s',
 	       'gsfile=s', 'svqfile=s', 'svq4svq=i', 'subvqbeam=s', 'inlatdir=s',
 	       'latext=s', 'lpbeam=s', 'lponlybeam=s', 'succtab=s',
@@ -91,7 +92,7 @@ my @argspec = ('npart=i', 'part=i', 'ctlfile=s', 'cepext=s', 'cepdir=s',
 	       'mapfn=s', 'phnfn=s', 'cbdir=s', 'hmmdir=s', 'hmmdirlist=s',
 	       'adcin=s', "min_endfr=i", "dagfudge=i", 'srate=i', "insert_sil",
 	       'fwdflatefwid=i', 'fwdflatsfwin=i', 'sendumpfn=s', 'varfloor=s',
-	       'silent', 'cer'
+	       'silent', 'cer', 'fwdflatbeam=s', 'fwdflatwbeam|fwdflatnwbeam=s', 'topn_beam=s',
 	      );
 
 # Get options into a hash
@@ -494,9 +495,9 @@ my @s3xopts = qw(mdef mean var mixw tmat dictfn fdictfn lw uw wip dither lda lda
 		 rawext cepext adcin adchdr adcendian allphone compallsen
 		 upperf lowerf nfilt wlen srate frate nfft cachesen silpen
 		 fwdtree fwdflat bestpath fwdflatlw bestpathlw lmfile
-		 fwdflatefwid fwdflatsfwin kdtree kdmaxbbi succtab
-		 sendumpfn fwdflatbeam fwdflatnwbeam noisepen hmmdir
-                 lpbeam lponlybeam
+		 fwdflatefwid fwdflatsfwin kdtree kdmaxbbi succtab pl_pbeam
+		 sendumpfn fwdflatbeam fwdflatwbeam fwdflatnwbeam noisepen hmmdir
+                 lpbeam lponlybeam tst vhbeam topn_beam maxwpf maxhmmpf maxhistpf
 	       );
 
 my %s3xmap = (dictfn => 'dict', fdictfn => 'fdict', tmat => 'tmat', silpen => 'silprob',
