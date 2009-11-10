@@ -89,8 +89,8 @@ my @argspec = ('npart=i', 'part=i', 'ctlfile=s', 'cepext=s', 'cepdir=s',
 	       'maxhmmpf=i', 'maxwpf=i', 'maxcdsenpf=i', 'senmgau=s',
 	       'cmn=s', 'uw=s', 'wip=s', 'logbase=s', 'lmfile=s', 'mllr=s',
 	       'Nlextree=s', 'other=s', 'reffile=s', 'pbs', 'alignonly', 'qname=s',
-	       'mapfn=s', 'phnfn=s', 'cbdir=s', 'hmmdir=s', 'hmmdirlist=s',
-	       'adcin=s', "min_endfr=i", "dagfudge=i", 'srate=i', "insert_sil",
+	       'mapfn=s', 'phnfn=s', 'cbdir=s', 'hmmdir=s', 'hmmdirlist=s', 'adchdr=i',	       
+	       'adcin=s', "min_endfr=i", "dagfudge=i", 'srate=i', "insert_sil", 'zcae2=s',
 	       'fwdflatefwid=i', 'fwdflatsfwin=i', 'sendumpfn=s', 'varfloor=s',
 	       'silent', 'cer', 'fwdflatbeam=s', 'fwdflatwbeam|fwdflatnwbeam=s', 'topn_beam=s',
 	      );
@@ -492,7 +492,7 @@ my @s3xopts = qw(mdef mean var mixw tmat dictfn fdictfn lw uw wip dither lda lda
 		 svqfile lmctlfile lmname vqeval ci_pbeam cond_ds svq4svq inlatdir latext
 		 gs4gs pl_window pl_beam pheurtype wend_beam ctl_lm logbase backtrace
 		 ctl_mllr Nlextree subvqbeam tighten_factor dsratio senmgau dictcase
-		 rawext cepext adcin adchdr adcendian allphone compallsen
+		 rawext cepext adcin adchdr zcae2 adcendian allphone compallsen
 		 upperf lowerf nfilt wlen srate frate nfft cachesen silpen
 		 fwdtree fwdflat bestpath fwdflatlw bestpathlw lmfile
 		 fwdflatefwid fwdflatsfwin kdtree kdmaxbbi succtab pl_pbeam
