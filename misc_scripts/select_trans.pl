@@ -17,7 +17,8 @@ while (<CONTROL>) {
 }
 
 while (<>) {
-    my ($uttid) = (/\(([^()]+)\)$/);
+    my ($uttid) = (/\(([^()\s]+)\s*([^()\s]+)?\)$/);
+    $uttid = basename($uttid);
     if (exists $utts{$uttid}) {
 	$utts{$uttid} = $_;
     }
