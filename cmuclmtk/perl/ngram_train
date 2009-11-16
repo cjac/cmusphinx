@@ -167,8 +167,12 @@ the N in the N-gram model.  Default value is 3.
 
 =item B<--open>
 
-Build an open-vocabulary model.  These are not terribly useful for
-speech recognition.
+Build an open-vocabulary model.  The default is to build a
+closed-vocabulary model.  Note that with an open-vocabulary model you
+may wish to set the discounting range for unigrams to be non-zero.
+For typical speech recognizers, open-vocabulary models are defective,
+since <UNK> cannot be recognized, and discounting unigrams in
+particular makes no sense at all.
 
 =item B<--tempdir> | B<-t> I<TEMPDIR>
 
