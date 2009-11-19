@@ -80,7 +80,7 @@ my @argspec = ('npart=i', 'part=i', 'ctlfile=s', 'cepext=s', 'cepdir=s',
 	       'gsfile=s', 'svqfile=s', 'svq4svq=i', 'subvqbeam=s', 'inlatdir=s',
 	       'latext=s', 'lpbeam=s', 'lponlybeam=s', 'succtab=s',
 	       'vqeval=i', 'gs4gs=i', 'bin=s', 'lminmemory=i', 'dither',
-	       'lmctlfile=s', 'lmname=s', 'ctl_lm=s', 'ctl_mllr=s', 's3',
+	       'lmctlfile=s', 'lmname=s', 'lmnamectl=s', 'ctl_lm=s', 'ctl_mllr=s', 's3',
 	       's3_3', 's3_3align', 's3_X', 's3_lp', 'ctlpath', 'fwdflat=s', 'bestpath=s',
 	       's3_align', 's3_dag', 's3_new', 's2', 'compallsen', 'cachesen',
 	       'memchk', 'dictfn=s', 'fdictfn=s', 'debug', 'kdtree=s',
@@ -315,7 +315,7 @@ if (defined($cmdargs{pbs})) {
     # Queue jobs need to have the right path here!
     $cmdargs{logdir} = $options{logdir};
     foreach my $arg (qw(ctlfile cepdir rawdir acmoddir mdef mean var tmat mixw
-			lmfile lmctlfile bin lda sendumpfn inlatdir
+			lmfile lmctlfile lmnamectl mllrctl bin lda sendumpfn inlatdir
 			dictfn fdictfn mapfn phnfn cbdir hmmdir hmmdirlist
 			ctl_lm ctl_mllr mllrctl mllr gsfile svqfile reffile config logdir)) {
 
@@ -489,11 +489,11 @@ my %s3newmap = (dictfn => 'dict', fdictfn => 'fdict', tmat => 'tmat',
 
 my @s3xopts = qw(mdef mean var mixw tmat dictfn fdictfn lw uw wip dither lda ldadim
 		 feat agc varnorm ctlfile cepdir cmn beam pbeam wbeam ceplen op_mode
-		 svqfile lmctlfile lmname vqeval ci_pbeam cond_ds svq4svq inlatdir latext
+		 svqfile lmctlfile lmname lmnamectl vqeval ci_pbeam cond_ds svq4svq inlatdir latext
 		 gs4gs pl_window pl_beam pheurtype wend_beam ctl_lm logbase backtrace
 		 ctl_mllr Nlextree subvqbeam tighten_factor dsratio senmgau dictcase
 		 rawext cepext adcin adchdr zcae2 adcendian allphone compallsen
-		 upperf lowerf nfilt wlen srate frate nfft cachesen silpen
+		 upperf lowerf nfilt wlen srate frate samprate nfft cachesen silpen
 		 fwdtree fwdflat bestpath fwdflatlw bestpathlw lmfile mllrctl
 		 fwdflatefwid fwdflatsfwin kdtree kdmaxbbi succtab pl_pbeam
 		 sendumpfn fwdflatbeam fwdflatwbeam fwdflatnwbeam noisepen hmmdir
@@ -502,7 +502,7 @@ my @s3xopts = qw(mdef mean var mixw tmat dictfn fdictfn lw uw wip dither lda lda
 
 my %s3xmap = (dictfn => 'dict', fdictfn => 'fdict', tmat => 'tmat', silpen => 'silprob',
 	      gsfile => 'gs', svqfile => 'subvq', lmfile => 'lm', srate => 'samprate',
-	      dsratio=> 'ds', ctlfile => 'ctl', lmctlfile => 'lmctlfn', noisepen => 'fillprob',
+	      dsratio=> 'ds', ctlfile => 'ctl', lmctlfile => 'lmctl', noisepen => 'fillprob',
 	      silpen => 'silprob',
 	      fwdflatnwbeam => 'fwdflatwbeam', hmmdir => 'hmm', sendumpfn => 'sendump');
 
@@ -669,7 +669,7 @@ if ($options{memchk}) {
 					    File::Spec->updir, "libtool");
     }
     else {
-	unshift @cmdoptions, "--tool=memcheck", "--leak-check=full";
+	unshift @cmdoptions, "--tool=memcheck", "--leak-check=full", $options{bin};
 	$options{bin} = "valgrind";
     }
 }
