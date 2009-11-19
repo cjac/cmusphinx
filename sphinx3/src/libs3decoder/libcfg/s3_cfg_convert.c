@@ -339,7 +339,7 @@ s3_cfg_convert_to_fsg(s3_cfg_t *_cfg,s2_fsg_t **_fsg)
   s2_fsg_t *fsg=NULL;
   char *word;
 
-  item2state=hash_new(S3_CFG_NAME_HASH_SIZE,HASH_CASE_YES);
+  item2state=hash_table_new(S3_CFG_NAME_HASH_SIZE,HASH_CASE_YES);
   if (item2state==NULL)
     goto cleanup;
 
