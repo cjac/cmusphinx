@@ -32,7 +32,7 @@ class TestDecode(unittest.TestCase):
             _sphinx3.process_raw(data[start:end])
         _sphinx3.end_utt()
         text, segs = _sphinx3.get_hypothesis()
-        self.assertEqual(text, "K P I T T YES AND A U R G H")
+        self.assertEqual(text, "P I T YES AND U R G H")
 
     def test_decode_cep_file(self):
         text, segs = _sphinx3.decode_cep_file('../model/lm/an4/pittsburgh.littleendian.mfc')
