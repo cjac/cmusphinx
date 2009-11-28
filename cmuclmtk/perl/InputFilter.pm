@@ -374,11 +374,11 @@ sub normalize_transcript {
     my ($self, $transfile, $outfile, $outctl) = @_;
 
     if (defined($outfile)) {
-	$self->{outfile} = IO::File->new($outfile, "w")
+	$self->{outfile} = IO::File->new($outfile, ">:utf8")
 	    or die "Failed to open $outfile: $!";
     }
     if (defined($outctl)) {
-	$self->{outctl} = IO::File->new($outctl, "w")
+	$self->{outctl} = IO::File->new($outctl, ">:utf8")
 	    or die "Failed to open $outctl: $!";
     }
     $self->process_transcript($transfile);

@@ -68,7 +68,7 @@ sub initialize {
 
 sub load {
     my ($self, $file, $maxn) = @_;
-    my $fh = ref($file) ? $file : IO::File->new($file, "r");
+    my $fh = ref($file) ? $file : IO::File->new($file, "<:utf8");
     die "Failed to open $file: $!" unless defined $fh;
 
     my $ngrams = $self->{ngrams} = [];

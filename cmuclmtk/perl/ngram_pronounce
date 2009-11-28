@@ -42,6 +42,8 @@ use Pod::Usage;
 use File::Temp qw(tempdir);
 use File::Spec::Functions qw(catfile catdir updir);
 
+binmode STDOUT, ':utf8';
+
 Getopt::Long::Configure('bundling', 'no_getopt_compat');
 
 my %opts = (
@@ -120,10 +122,10 @@ if ($opts{indef}) {
 }
 
 # Get input dictionary
-# FIXME: We assume here that it is case insensitive
+# FIXME: We assume here that it is case insensitive (and UTF-8)
 my %indict;
 if (defined($opts{indict})) {
-    my $fh = IO::File->new($opts{indict}, "r")
+    my $fh = IO::File->new($opts{indict}, "<:utf8")
 	or die "Failed to open $opts{indict}: $!";
     while (<$fh>) {
 	chomp;
@@ -205,7 +207,15 @@ foreach (sort keys %unigram) {
 
     # Try to find the resulting parts in the input dictionary and
     # concatenate them if found
-    my @parts = split;
+    my @parts;
+    # Split Hanzi into individual characters
+    if (/\p{Han}/) {
+      @parts = split "";
+    }
+    # Otherwise use whitespace
+    else {
+      @parts = split;
+    }
     my @concat;
     while (@parts) {
 	last unless exists $indict{uc$parts[0]};
@@ -235,14 +245,14 @@ foreach (sort keys %unigram) {
 
 # Get Festival to do text-processing and synthesis on them
 my $tmpfile = catfile($opts{tempdir}, "words.in");
-my $fh = IO::File->new($tmpfile, "w")
+my $fh = IO::File->new($tmpfile, ">:utf8")
     or die "Failed to open $tmpfile: $!";
 foreach (@unknown) {
     print $fh qq{"$$_[1]"\n};
 }
 $fh->close();
 my $lispfile = catfile($opts{tempdir}, "pronounce.scm");
-$fh = IO::File->new($lispfile, "w");
+$fh = IO::File->new($lispfile, ">:utf8");
 print $fh qq((load "$opts{lexfile}")\n) if defined $opts{lexfile};
 print $fh qq((lex.select '$opts{lexicon})\n) if defined $opts{lexicon};
 if (defined($opts{phoneset})) {
@@ -270,7 +280,7 @@ print FESTIVAL qq{(load "$lispfile")};
 close FESTIVAL or die "Festival failed with code $?: $!";
 
 # Now read them in and merge them with the existing dictionary
-$fh = IO::File->new($outfile, "r")
+$fh = IO::File->new($outfile, "<:utf8")
     or die "Failed to open $outfile: $!";
 my $i = 0;
 while (<$fh>) {
@@ -293,7 +303,7 @@ while (<$fh>) {
 
 # Write out the merged dictionary
 if (defined($opts{outdict})) {
-    $fh = IO::File->new($opts{outdict}, "w")
+    $fh = IO::File->new($opts{outdict}, ">:utf8")
 	or die "Failed to open $opts{outdict}: $!";
 }
 else {

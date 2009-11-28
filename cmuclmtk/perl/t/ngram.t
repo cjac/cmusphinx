@@ -19,6 +19,6 @@ ok(abs($results->perplexity() - 15.99) < 0.1); # Ridiculously low as we'd expect
 ok($results->oov() eq '0.00%');
 ok($results = $ng->evaluate(["t/cmu.test.lsn"]));
 ok(abs($results->perplexity() - 15.99) < 0.1); # Ridiculously low as we'd expect
-my $fh = IO::File->new("t/cmu.test.lsn", "r");
+my $fh = IO::File->new("t/cmu.test.lsn", "<:utf8");
 ok($results = $ng->evaluate($fh));
 ok(abs($results->perplexity() - 15.99) < 0.1); # Ridiculously low as we'd expect

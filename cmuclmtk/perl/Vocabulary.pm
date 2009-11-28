@@ -141,7 +141,7 @@ sub words {
 sub add_transcript {
     my ($self, $file) = @_;
 
-    my $fh = ref($file) ? $file : IO::File->new($file, "r");
+    my $fh = ref($file) ? $file : IO::File->new($file, "<:utf8");
     die "Failed to open $file: $!" unless defined $fh;
     push @{$self->{sources}}, $file;
     local $_;
@@ -189,7 +189,7 @@ sub merge {
 sub load {
     my ($self, $file) = @_;
 
-    my $fh = ref($file) ? $file : IO::File->new($file, "r");
+    my $fh = ref($file) ? $file : IO::File->new($file, "<:utf8");
     die "Failed to open $file: $!" unless defined $fh;
     push @{$self->{sources}}, $file;
     my $words = $self->{words};
@@ -206,7 +206,7 @@ sub load {
 sub save {
     my ($self, $file) = @_;
 
-    my $fh = ref($file) ? $file : IO::File->new($file, "w");
+    my $fh = ref($file) ? $file : IO::File->new($file, ">:utf8");
     die "Failed to open $file: $!" unless defined $fh;
     my $words = $self->{words};
     my $date = localtime;
@@ -223,7 +223,7 @@ sub save {
 sub load_words {
     my ($self, $file) = @_;
 
-    my $fh = ref($file) ? $file : IO::File->new($file, "r");
+    my $fh = ref($file) ? $file : IO::File->new($file, "<:utf8");
     die "Failed to open $file: $!" unless defined $fh;
     push @{$self->{sources}}, $file;
     my $words = $self->{words};
@@ -239,7 +239,7 @@ sub load_words {
 
 sub save_words {
     my ($self, $file, @opts) = @_;
-    my $fh = ref($file) ? $file : IO::File->new($file, "w");
+    my $fh = ref($file) ? $file : IO::File->new($file, ">:utf8");
     die "Failed to open $file: $!" unless defined $fh;
     my @words = $self->words(@opts);
     my $date = localtime;

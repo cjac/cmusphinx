@@ -176,7 +176,7 @@ sub initialize {
 	$self->{tempdir} = File::Temp::tempdir(CLEANUP => 1);
     }
     if (defined($opts{logfile})) {
-	$self->{logfh} = IO::File->new($opts{logfile}, "a");
+	$self->{logfh} = IO::File->new($opts{logfile}, ">>:utf8");
     }
     elsif ($opts{verbose}) {
 	$self->{logfh} = \*STDERR;
@@ -185,7 +185,7 @@ sub initialize {
 	$self->load($opts{arpafile});
     }
     if (defined($opts{contextfile})) {
-	my $cfh = IO::File->new($opts{contextfile}, "r")
+	my $cfh = IO::File->new($opts{contextfile}, "<:utf8")
 	    or die "Failed to open $opts{contextfile}: $!";
 	local $_;
 	$opts{context} = [];
@@ -355,7 +355,7 @@ sub run {
 	close READER;
 	my $i = 0;
 	foreach my $in (@$input) {
-	    my $infh = IO::File->new($in, "r")
+	    my $infh = IO::File->new($in, "<:utf8")
 		or die "Failed to open $in: $!";
 	    while (<$infh>) {
 		# Remove utterance ID if present
@@ -468,7 +468,7 @@ sub evaluate {
     $testfile = $self->{opts}{outtrans};
     $testfile = $self->tempfile("testset")
 	unless defined $testfile;
-    my $testfh = IO::File->new($testfile, "w")
+    my $testfh = IO::File->new($testfile, ">:utf8")
 	or die "Failed to open temporary file $testfile: $!";
     if (ref $testset eq 'ARRAY') {
 	# An array ref of files to evaluate
@@ -545,7 +545,7 @@ sub evaluate_sentence {
 
     # Write sentence to a temporary file
     my $sfile = $self->tempfile("sentence");
-    my $fh = IO::File->new($sfile, "w")
+    my $fh = IO::File->new($sfile, ">:utf8")
 	or die "Failed to open $sfile: $!";
     chomp($sentence);
     $fh->print($sentence, "\n");
@@ -573,7 +573,7 @@ sub interpolate {
 		 -out_lambdas => $lambdas ]);
 
     # Look through the logfile to get the final perplexity
-    my $fh = IO::File->new($logfile, "r") or die "Failed to open $logfile: $!";
+    my $fh = IO::File->new($logfile, "<:utf8") or die "Failed to open $logfile: $!";
     local $_;
     my $pplx;
     while (<$fh>) {
@@ -613,11 +613,11 @@ sub save_transcripts {
     my ($self, $file) = @_;
 
     # Copy the (filtered) transcripts to the destination file
-    my $outfh = ref($file) ? $file : IO::File->new($file, "w");
+    my $outfh = ref($file) ? $file : IO::File->new($file, ">:utf8");
     die "Failed to open $file: $!" unless defined $file;
     local $_;
     foreach my $in (@{$self->{transcripts}}) {
-	my $infh = IO::File->new($in, "r")
+	my $infh = IO::File->new($in, "<:utf8")
 	    or die "Failed to open $in: $!";
 	while (<$infh>) {
 	    print $outfh $_
@@ -628,7 +628,7 @@ sub save_transcripts {
 
 sub save_context {
     my ($self, $contextfile) = @_;
-    my $fh = ref($contextfile) ? $contextfile : IO::File->new($contextfile, "w");
+    my $fh = ref($contextfile) ? $contextfile : IO::File->new($contextfile, ">:utf8");
     die "Failed to open $contextfile: $!" unless defined($fh);
     if (defined($self->{opts}{context})) {
 	$fh->print("$_\n") foreach @{$self->{opts}{context}};
@@ -639,7 +639,7 @@ sub save_context {
 sub save_probdef {
     my ($self, $file) = @_;
 
-    my $outfh = ref($file) ? $file : IO::File->new($file, "w");
+    my $outfh = ref($file) ? $file : IO::File->new($file, ">:utf8");
     die "Failed to open $file: $!" unless defined $file;
     my $classes = $self->{class};
 
@@ -662,7 +662,7 @@ sub save_probdef {
 sub save_lmctl {
     my ($self, $file, $lmfile, $probdeffile) = @_;
 
-    my $outfh = ref($file) ? $file : IO::File->new($file, "w");
+    my $outfh = ref($file) ? $file : IO::File->new($file, ">:utf8");
     die "Failed to open $file: $!" unless defined $file;
 
     $probdeffile = $self->tempfile("probdef")
