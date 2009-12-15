@@ -407,13 +407,6 @@ if(! -e $options{ACMODDIR}) {
     exit(-1);
 }
 
-if(!($options{s3_align} || $options{s3_allp})
-   && !(-e $options{lmfile} || -e $options{lmctlfile})) {
-    printf LOGFILE "LM file %s doesn't exist\n", $options{lmfile};
-    printf("LM file %s doesn't exist\n",$options{lmfile});
-    exit(-1);
-}
-
 if(! -e $options{ctlfile}) {
     printf LOGFILE "CTL file %s doesn't exist\n",$options{ctlfile};
     printf("CTL file %s doesn't exist\n",$options{ctlfile});
