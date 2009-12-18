@@ -84,7 +84,7 @@ my @argspec = ('npart=i', 'part=i', 'ctlfile=s', 'cepext=s', 'cepdir=s',
 	       's3_3', 's3_3align', 's3_X', 's3_lp', 'ctlpath', 'fwdflat=s', 'bestpath=s',
 	       's3_align', 's3_dag', 's3_new', 's2', 'compallsen', 'cachesen',
 	       'memchk', 'dictfn=s', 'fdictfn=s', 'debug', 'kdtree=s',
-	       'topn=i','silpen=s','noisepen=s','phonepen=s', 'lw=s',
+	       'topn=i','silpen=s','noisepen=s','phonepen=s', 'lw=s', 'input_endian=s',
 	       'beam=s', 'pbeam=s', 'wbeam=s', 'maxhistpf=i', "lda=s", "ldadim=i",
 	       'maxhmmpf=i', 'maxwpf=i', 'maxcdsenpf=i', 'senmgau=s', "mllrctl=s",
 	       'cmn=s', 'uw=s', 'wip=s', 'logbase=s', 'lmfile=s', 'mllr=s',
@@ -485,7 +485,7 @@ my @s3xopts = qw(mdef mean var mixw tmat dictfn fdictfn lw uw wip dither lda lda
 		 svqfile lmctlfile lmname lmnamectl vqeval ci_pbeam cond_ds svq4svq inlatdir latext
 		 gs4gs pl_window pl_beam pheurtype wend_beam ctl_lm logbase backtrace
 		 ctl_mllr Nlextree subvqbeam tighten_factor dsratio senmgau dictcase
-		 rawext cepext adcin adchdr zcae2 adcendian allphone compallsen
+		 rawext cepext adcin input_endian adchdr zcae2 adcendian allphone compallsen
 		 upperf lowerf nfilt wlen srate frate samprate nfft cachesen silpen
 		 fwdtree fwdflat bestpath fwdflatlw bestpathlw lmfile mllrctl
 		 fwdflatefwid fwdflatsfwin kdtree kdmaxbbi succtab pl_pbeam
