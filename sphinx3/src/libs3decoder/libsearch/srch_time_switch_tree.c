@@ -281,7 +281,7 @@ srch_TST_init(kb_t * kb, void *srch)
         unlinksilences(kbc->lmset->lmarray[i], kbc, kbc->dict);
 
     if (cmd_ln_int32_r(kbcore_config(kbc), "-Nstalextree"))
-        E_WARN("-Nstalextree is omitted in TST search.\n");
+        E_INFO("-Nstalextree is omitted in TST search.\n");
 
 
   /** STRUCTURE : allocation of the srch graphs */

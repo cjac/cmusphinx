@@ -1252,7 +1252,8 @@ lm_read_dump_ng(lm_t * lm, const char *file)
 lm_t *
 lm_read_dump(const char *file,        /**< The file name*/
              int lminmemory,        /**< Whether using in memory LM */
-             logmath_t *logmath
+             logmath_t *logmath,
+             int expect_dmp     /**< Show error if header not found */
     )
 {
     lm_t *lm;
@@ -1271,7 +1272,10 @@ lm_read_dump(const char *file,        /**< The file name*/
 
     /** Read header and compare byte order */
     if (lm_read_dump_header(lm, file) == LM_FAIL) {
-        E_ERROR("Error in reading the header of the DUMP file. \n");
+
+
+	if (0 && expect_dmp)
+            E_ERROR("Error in reading the header of the DUMP file. \n");
         fclose(lm->fp);
         ckd_free(lm);
         return NULL;
@@ -1288,7 +1292,7 @@ lm_read_dump(const char *file,        /**< The file name*/
     /** Read the version number and number of unigram */
     if (lm_read_dump_ver_nug(lm, file) == LM_FAIL) {
         E_ERROR
-            ("Error in reading the version name and number of unigram\n");
+            ("Error in reading the version name and number of unigram. \n");
         fclose(lm->fp);
         ckd_free(lm);
         return NULL;

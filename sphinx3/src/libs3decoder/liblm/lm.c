@@ -194,7 +194,8 @@ extern lm_t *lm_read_txt(const char *filename, /**< The file name */
 
 extern lm_t *lm_read_dump(const char *file,  /**< The file name*/
                           int lminmemory,  /**< Whether using in memory LM */
-                          logmath_t *logmath
+                          logmath_t *logmath,
+	                  int expect_dmp     /**< Show error if header not found */
     );
 
 
@@ -611,11 +612,10 @@ lm_read_advance2(const char *file, const char *lmname, float64 lw,
     /* ARCHAN: We should provide function pointer implementation at here. */
     if (fmt == NULL) {
         /**Automatically decide the LM format */
-        lm = lm_read_dump(file, lminmemory, logmath);
+        lm = lm_read_dump(file, lminmemory, logmath, 0);
         if (lm == NULL) {
             E_INFO("In lm_read, LM is not a DMP file. Trying to read it as a txt file\n");
             if (lminmemory == 0) {
-                E_WARN("On-disk LM not supported for text files, reading it into memory.\n");
                 lminmemory = 1;
             }
             lm = lm_read_txt(file, lminmemory, &err_no, 0, logmath); /* Not forcing 32bit LM */
@@ -662,7 +662,7 @@ lm_read_advance2(const char *file, const char *lmname, float64 lw,
 
     }
     else if (!strcmp(fmt, "DMP")) {
-        lm = lm_read_dump(file, lminmemory, logmath);
+        lm = lm_read_dump(file, lminmemory, logmath, 1);
         if (lm == NULL) {
             E_INFO
                 ("In lm_read, a DMP format reader is called, but lm cannot be read, Diagnosis: LM is corrupted or not enough memory.\n");
