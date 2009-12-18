@@ -1272,9 +1272,7 @@ lm_read_dump(const char *file,        /**< The file name*/
 
     /** Read header and compare byte order */
     if (lm_read_dump_header(lm, file) == LM_FAIL) {
-
-
-	if (0 && expect_dmp)
+	if (expect_dmp)
             E_ERROR("Error in reading the header of the DUMP file. \n");
         fclose(lm->fp);
         ckd_free(lm);
