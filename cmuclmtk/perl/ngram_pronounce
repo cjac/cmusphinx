@@ -126,46 +126,46 @@ if ($opts{indef}) {
 # FIXME: We assume here that it is case insensitive (and UTF-8)
 my %indict;
 sub read_dict {
-    my ($dictfn, $allwords, $keepnums) = @_;
+    my ($dict, $dictfn, $allwords, $keepnums) = @_;
     my $fh = IO::File->new($dictfn, "<:utf8")
 	or die "Failed to open $dictfn: $!";
     while (<$fh>) {
 	chomp;
 	my ($word, @phones) = split;
 	if ($word =~ s/\((\d+)\)$//) {
-	    unless (ref $indict{uc$word}) {
-		$indict{uc$word} = [ $indict{uc$word} ];
+	    unless (ref $dict->{uc$word}) {
+		$dict->{uc$word} = [ $dict->{uc$word} ];
 	    }
 	    if ($keepnums) {
-		$indict{uc$word}[$1-1] = "@phones";
+		$dict->{uc$word}[$1-1] = "@phones";
 	    }
 	    else {
 		my $dup;
-		foreach my $p (@{$indict{uc$word}}) {
+		foreach my $p (@{$dict->{uc$word}}) {
 		    $dup = ($p eq "@phones");
 		    last if $dup;
 		}
-		push @{$indict{uc$word}}, "@phones" unless $dup;
+		push @{$dict->{uc$word}}, "@phones" unless $dup;
 	    }
 	}
 	else {
 	    if ($keepnums) {
-		$indict{uc$word} = "@phones";
+		$dict->{uc$word} = "@phones";
 	    }
 	    else {
-		if (not exists $indict{uc$word}) {
-		    $indict{uc$word} = "@phones";
+		if (not exists $dict->{uc$word}) {
+		    $dict->{uc$word} = "@phones";
 		}
 		else {
-		    unless (ref $indict{uc$word}) {
-			$indict{uc$word} = [ $indict{uc$word} ];
+		    unless (ref $dict->{uc$word}) {
+			$dict->{uc$word} = [ $dict->{uc$word} ];
 		    }
 		    my $dup;
-		    foreach my $p (@{$indict{uc$word}}) {
+		    foreach my $p (@{$dict->{uc$word}}) {
 			$dup = ($p eq "@phones");
 			last if $dup;
 		    }
-		    push @{$indict{uc$word}}, "@phones" unless $dup;
+		    push @{$dict->{uc$word}}, "@phones" unless $dup;
 		}
 	    }
 	}
@@ -182,10 +182,11 @@ sub read_dict {
     }
 }
 if (defined($opts{indict})) {
-    read_dict($opts{indict}, $opts{allwords}, 1);
+    read_dict(\%indict, $opts{indict}, $opts{allwords}, 1);
 }
+my %unihan;
 if ($opts{mandarin}) {
-    read_dict(catfile(dirname($0), "unihan.dic"));
+    read_dict(\%unihan, catfile(dirname($0), "unihan.dic"));
 }
 
 # Expand all COMPOUND_WORDS in %unigram, because sphinx3_align wants
@@ -221,6 +222,11 @@ foreach (sort keys %unigram) {
     # Try to find this in the input dictionary
     if (exists $indict{uc$_}) {
 	$unigram{$orig} = $indict{uc$_};
+	next;
+    }
+    # Try Unihan too
+    elsif (exists $unihan{$_}) {
+	$unigram{$orig} = $unihan{$_};
 	next;
     }
 
@@ -262,16 +268,26 @@ foreach (sort keys %unigram) {
       @parts = split;
     }
     my @concat;
+    # FIXME: For Mandarin this isn't optimal, actually we want to try
+    # to find a segmentation of the compound in terms of existing
+    # words, not characters.
     while (@parts) {
-	last unless exists $indict{uc$parts[0]};
+	last unless exists $indict{uc$parts[0]} or exists $unihan{$parts[0]};
 	my $part = shift @parts;
 	if (ref $indict{uc$part}) {
 	    # If there are alternates take (1)
 	    # FIXME: hope it exists!
 	    push @concat, $indict{uc$part}[0];
 	}
-	else {
+	elsif (exists $indict{uc$part}) {
 	    push @concat, $indict{uc$part};
+	}
+	elsif (ref $unihan{$part}) {
+	    # If there are alternates take (1), as that is the most common
+	    push @concat, $unihan{$part}[0];
+	}
+	elsif (exists $unihan{$part}) {
+	    push @concat, $unihan{$part};
 	}
     }
     # Some parts left, so they weren't found

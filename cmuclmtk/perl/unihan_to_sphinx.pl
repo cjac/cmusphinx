@@ -40,7 +40,7 @@ use utf8;
 use open qw(:std :utf8);
 
 # Technically W and Y are not initials, but they work okay here
-my @initials = qw(B P M F T D N L G K H J Q X ZH CH R Z C S W Y);
+my @initials = qw(B P M F T D N L G K H J Q X ZH CH SH R Z C S H W Y);
 my $initrx = join '|', @initials;
 
 sub pinyin_to_sphinx {
@@ -56,12 +56,22 @@ sub pinyin_to_sphinx {
     elsif ($pinyin =~ /^(Y)(.*)$/) {
 	($initial, $final) = map lc, ($1, $2);
 	# Front the vowel but only if it's not u
-	$final =~ s/^u(\D+\d+)/ux$1/;
+	$final =~ s/^u(\D+\d)/ux$1/;
     }
     # Deal with null initials
     elsif ($pinyin =~ /^(([AEO]).*)$/) {
 	$initial = lc $2 . "s";
 	$final = lc $1;
+    }
+    # Deal with null finals
+    elsif ($pinyin =~ /^([ZCS]H)(I\d)/) {
+	($initial, $final) = map lc, ($1, $2);
+	# retroflex
+	$final =~ s/i/ib/;
+    }
+    elsif ($pinyin =~ /^([ZCS])(I\d)/) {
+	($initial, $final) = map lc, ($1, $2);
+	$final =~ s/i/if/;
     }
     else {
 	$pinyin =~ s/Ü/UX/g;
@@ -84,6 +94,10 @@ while (<>) {
 	my $char = chr(oct($code));
 	my $i = 1;
 	foreach (@readings) {
+	    # Sadly no neutral tone in our phoneset (no idea why...)
+	    next if /5$/;
+	    # And this just doesn't exist either for some reason
+	    next if /uxn3/;
 	    if ($i > 1) {
 		print "$char($i) $_\n";
 	    }
