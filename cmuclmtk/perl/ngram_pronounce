@@ -62,6 +62,7 @@ GetOptions(\%opts,
 	   'phoneset=s',
 	   'bindir=s',
 	   'allwords',
+	   'mandarin',
 	   'upper',
 	   'lower',
 	   'help|h')
@@ -101,7 +102,7 @@ if ($opts{invocab}) {
 if ($opts{inwfreq}) {
     foreach my $w (@{$opts{inwfreq}}) {
 	my $vocab = Vocabulary->new();
-	$vocab->load_words($w);
+	$vocab->load($w);
 	foreach my $word ($vocab->words()) {
 	    $unigram{$word} = undef;
 	}
@@ -124,9 +125,10 @@ if ($opts{indef}) {
 # Get input dictionary
 # FIXME: We assume here that it is case insensitive (and UTF-8)
 my %indict;
-if (defined($opts{indict})) {
-    my $fh = IO::File->new($opts{indict}, "<:utf8")
-	or die "Failed to open $opts{indict}: $!";
+sub read_dict {
+    my ($dictfn, $allwords, $keepnums) = @_;
+    my $fh = IO::File->new($dictfn, "<:utf8")
+	or die "Failed to open $dictfn: $!";
     while (<$fh>) {
 	chomp;
 	my ($word, @phones) = split;
@@ -134,13 +136,31 @@ if (defined($opts{indict})) {
 	    unless (ref $indict{uc$word}) {
 		$indict{uc$word} = [ $indict{uc$word} ];
 	    }
-	    $indict{uc$word}[$1-1] = "@phones";
+	    if ($keepnums) {
+		$indict{uc$word}[$1-1] = "@phones";
+	    }
+	    else {
+		push @{$indict{uc$word}}, "@phones";
+	    }
 	}
 	else {
-	    $indict{uc$word} = "@phones";
+	    if ($keepnums) {
+		$indict{uc$word} = "@phones";
+	    }
+	    else {
+		if (not exists $indict{uc$word}) {
+		    $indict{uc$word} = "@phones";
+		}
+		else {
+		    unless (ref $indict{uc$word}) {
+			$indict{uc$word} = [ $indict{uc$word} ];
+		    }
+		    push @{$indict{uc$word}}, "@phones";
+		}
+	    }
 	}
 	# Add this to the 1-grams if --allwords
-	if ($opts{allwords}) {
+	if ($allwords) {
 	    if ($opts{upper}) {
 		$word = uc $word;
 	    }
@@ -150,6 +170,12 @@ if (defined($opts{indict})) {
 	    $unigram{$word} = undef;
 	}
     }
+}
+if (defined($opts{indict})) {
+    read_dict($opts{indict}, $opts{allwords}, 1);
+}
+if ($opts{mandarin}) {
+    read_dict(catfile(dirname($0), "unihan.dic"));
 }
 
 # Expand all COMPOUND_WORDS in %unigram, because sphinx3_align wants
@@ -188,6 +214,12 @@ foreach (sort keys %unigram) {
 	next;
     }
 
+    # If Mandarin, assume any capitalized sequence is an acronym
+    if ($opts{mandarin} and /^[A-Z]+$/) {
+	print STDERR "Assuming $_ is an acronym\n";
+	$_ = join '_', split "", $_;
+    }
+
     # Deal with acronyms
     if (/^((?:[A-Za-z](?:_|$)){2,})(.*)$/) {
 	my $expand = $1;
@@ -204,6 +236,9 @@ foreach (sort keys %unigram) {
     tr/_-/ /;
     s/ $//;
     s/^ //;
+
+    # And continue if there is nothing left
+    next if /^\s*$/;
 
     # Try to find the resulting parts in the input dictionary and
     # concatenate them if found
@@ -294,10 +329,16 @@ while (<$fh>) {
 	s/\bAX\b/AH/g;
     }
 
-    # Get original orthography
-    my $orig = $unknown[$i++][0];
-    unless ($_ eq 'NIL') {
-	$unigram{$orig} = $_;
+    unless ($_ eq 'NIL' or /^\s*$/) {
+	# Get original orthography
+	my $orig = $unknown[$i++][0];
+	if ($opts{mandarin}) {
+	    # Find an appropriate transliteration
+	    # FIXME: Actually, don't, for the time being...
+	}
+	else {
+	    $unigram{$orig} = $_;
+	}
     }
 }
 
@@ -310,7 +351,7 @@ else {
     $fh = \*STDOUT;
 }
 foreach my $word (sort keys %unigram) {
-    unless (defined $unigram{$word}) {
+    unless (defined $unigram{$word} and $unigram{$word} =~ /\S/) {
 	warn "No pronunciation for $word, skipping";
 	next;
     }

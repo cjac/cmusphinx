@@ -353,6 +353,7 @@ sub run {
     my $pid;
     if ($pid = fork()) {
 	close READER;
+	binmode WRITER, ':utf8';
 	my $i = 0;
 	foreach my $in (@$input) {
 	    my $infh = IO::File->new($in, "<:utf8")
@@ -377,6 +378,7 @@ sub run {
     }
     elsif (defined($pid)) {
 	close WRITER;
+	binmode READER, ':utf8';
 	open STDIN, "<&READER" or die "Failed to dup STDIN: $!";
 	if (defined($output)) {
 	    open STDOUT, ">$output"
