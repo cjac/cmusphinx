@@ -140,7 +140,12 @@ sub read_dict {
 		$indict{uc$word}[$1-1] = "@phones";
 	    }
 	    else {
-		push @{$indict{uc$word}}, "@phones";
+		my $dup;
+		foreach my $p (@{$indict{uc$word}}) {
+		    $dup = ($p eq "@phones");
+		    last if $dup;
+		}
+		push @{$indict{uc$word}}, "@phones" unless $dup;
 	    }
 	}
 	else {
@@ -155,7 +160,12 @@ sub read_dict {
 		    unless (ref $indict{uc$word}) {
 			$indict{uc$word} = [ $indict{uc$word} ];
 		    }
-		    push @{$indict{uc$word}}, "@phones";
+		    my $dup;
+		    foreach my $p (@{$indict{uc$word}}) {
+			$dup = ($p eq "@phones");
+			last if $dup;
+		    }
+		    push @{$indict{uc$word}}, "@phones" unless $dup;
 		}
 	    }
 	}
