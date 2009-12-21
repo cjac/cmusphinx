@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl5
+#!/usr/bin/perl -w
 #
 #
 # This program is a perl version of left-right mandarin segmentor
@@ -25,10 +25,14 @@
 #
 # The format of the dictionary file is this:
 # for each line:
-# "Frequency\tchineseWord\n"
+# "chineseWord\tfrequency\n"
 
+use strict;
+use File::Spec::Functions;
+use File::Basename;
+use open qw(:std :utf8);
 
-if($ARGV[0] eq "-help"){
+if (@ARGV and $ARGV[0] eq "-help"){
 	print STDERR "\n-----------------------------------------------------------------------";
 	print STDERR "\nUsage:";
 	print STDERR "\n\tperl5 lrSegmenter.perl [freqFile] < srcMandarinFile > segmentedFile";
@@ -37,291 +41,242 @@ if($ARGV[0] eq "-help"){
 	exit;
 }
 
-if($ARGV[0] eq ""){
+my $dictFileName;
+unless (@ARGV) {
 	print STDERR "\nUsing default frequency dictionary\n";
-	$dictFileName="/afs/cs/user/joy/Joy-work/lrsegmenter/Mandarin.fre.ldc";
+	$dictFileName = catfile(dirname($0), "simplified_chinese.wfreq");
 }
 else{
-	$dictFileName=$ARGV[0];
+	$dictFileName = shift;
 }
 
+# Chinese word as key of the hash table, frequency is the value
+my %wordFreqList=();
+# Chinese character as key in the hash table, length of the longest word starting with
+my %longestWordListStart=();
+# this character is the value in the table
 
-%wordFreqList=();				#Chinese word as key of the hash table, frequency is the value
-%longestWordListStart=();		#Chinese character as key in the hash table, length of the longest word starting with
-								# this character is the value in the table
-
-#reading the dictionary
+# reading the dictionary
 print STDERR "Reading dictionary $dictFileName\n";
 open dictFile, $dictFileName;
 
-while(<dictFile>){
-	s/\x0A//;
-	s/\x0D//;
+while (<dictFile>){
+    chomp;
+    my ($thisChnWord, $thisFreq) = split;
 
-	s/\x20/\t/g;
+    $wordFreqList{$thisChnWord}=$thisFreq;
 
-	@entries=split(/\t/,$_);
-	
-	$thisChnWord=$entries[1];
-	$thisFreq=$entries[0];
+    my $headChar = substr($thisChnWord, 0, 1);
 
-	$wordFreqList{$thisChnWord}=$thisFreq;
+    #for debug
+    #print STDERR "$thisChnWord \t$headChar\n";
+    my $thisLen = length($thisChnWord);		#the length of the Chinese word in character
 
-	if($thisChnWord=~/[\x00-\x7F]/){
-		#for debug
-		#print STDERR "$thisChnWord\n";
-	}
-	else{
-		$thisChnWord=~/^([\x80-\xFF]{2})/;
-		$headChar=$1;
-
-		#for debug
-		#print STDERR "$thisChnWord \t$headChar\n";
-
-
-		$thisLen=length($thisChnWord)/2;		#the length of the Chinese word in character
-
-		if($longestWordListStart{$headChar}<$thisLen){
-			$longestWordListStart{$headChar}=$thisLen;
-		}
-
-	}
+    if (!exists($longestWordListStart{$headChar})
+	or $longestWordListStart{$headChar}<$thisLen){
+	$longestWordListStart{$headChar}=$thisLen;
+    }
 }
 
 
 print STDERR "Dictionary read.\n";
-
-
 print STDERR "Segmenting...\n";
-while(<STDIN>){
-	s/\x0A//g;
-	s/\x0D//g;
-	
-	$finalResult="";
 
-	$thisSent=$_;
-	$sentLen=length($_);
+while(<>){
+    chomp;
+    my $finalResult = "";
+    my $thisSent = $_;
+    my $partialChnString = "";
 
+    # Break sentence into runs of Hanzi and non-Hanzi
+    foreach my $thisChar (split "", $thisSent) {
+	if ($thisChar =~ /\p{Han}/) {
+	    $partialChnString .= $thisChar;
+	}
+	else {
+	    # A non-Hanzi, so segment everything before it
+	    if ($partialChnString ne ""){
+		my $partialSegString = segmentAString($partialChnString);
+		$finalResult .= $partialSegString;
+		$partialChnString = "";
+	    }
+	    $finalResult .=  $thisChar;
+	}
+    }
+    # Any leftover Hanzi
+    if ($partialChnString ne "") {
+	my $partialSegString=segmentAString($partialChnString);
+	$finalResult .= $partialSegString;
 	$partialChnString="";
-	
-	$index=0;
+    }
 
-	while($index<$sentLen){
-		$thisChar=substr($thisSent, $index,1);
-		
-		if($thisChar ge "\x80")	{		#this is half of a Chinese character
-			$thisChar=substr($thisSent,$index,2);
-			$index+=2;
-
-			$partialChnString=$partialChnString.$thisChar;
-
-		}
-		else{
-			$index++;
-
-			if($partialChnString ne ""){
-				$partialSegString=segmentAString($partialChnString);
-				$finalResult=$finalResult.$partialSegString;
-				
-				$partialChnString="";
-				$partialSegString="";
-			}
-
-			$finalResult=$finalResult.$thisChar;
-
-		}
-	}
-
-	#in case of pure Chinese characters
-	if($partialChnString ne ""){
-		$partialSegString=segmentAString($partialChnString);
-		$finalResult=$finalResult.$partialSegString;
-		
-		$partialChnString="";
-		$partialSegString="";
-	}
-
-	$finalResult=~s/^\x20+//;
-	$finalResult=~s/\x20+\Z//;
-	$finalResult=~s/\x20+/\x20/g;
-	print "$finalResult\n";
-
+    print "$finalResult\n";
 }
 
+# segmenting a string of Chinese characters, there should be no non-Chinese character in the string
+sub segmentAString {
+    my $inputString=$_[0];
+    my $result="";
 
-sub segmentAString{		#segmenting a string of Chinese characters, there should be no non-Chinese character in the string
-	$inputString=$_[0];
-	$result="";
+    #for debug
+    #print STDERR "Try to segment string $inputString\n";
 
+    my $lenOfString=length($inputString);
+    my @arcTable=();
+
+    #----------------------------------------------------------
+    #step0, initialize the arcTable
+    for (my $i=0;$i<$lenOfString;$i++) {
+	for (my $j=0;$j<$lenOfString;$j++) {
+	    if ($i==$j) {
+		$arcTable[$i][$j]=1;				
+	    } else {
+		$arcTable[$i][$j]=-1;
+	    }
+	}
+    }
+
+
+    #-----------------------------------------------------------
+    #step1: search for all possible arcs in the input string
+    #		and create an array for them
+
+    for (my $currentPos=0;$currentPos<$lenOfString;$currentPos++) { #currentPos is the index of Chinese character
+	my $currentChar=substr($inputString,$currentPos,1);
+
+	#from this position, try to find all possible words led by this character
+	my $possibleLen=$longestWordListStart{$currentChar};
+	$possibleLen = 0 unless defined $possibleLen;
 
 	#for debug
-	#print STDERR "Try to segment string $inputString\n";
+	#print STDERR "\n$currentChar=$possibleLen\n";
 
-	$lenOfString=length($inputString)/2;
-
-
-	@arcTable=();
-	@arcTable=();
-
-	#----------------------------------------------------------
-	#step0, initialize the arcTable
-	for($i=0;$i<$lenOfString;$i++){
-		for($j=0;$j<$lenOfString;$j++){
-			if($i==$j){
-				$arcTable[$i][$j]=1;				
-			}
-			else{
-				$arcTable[$i][$j]=-1;
-			}
-		}
+	if (($possibleLen+$currentPos)> ($lenOfString-1)) {
+	    $possibleLen=$lenOfString-$currentPos;
 	}
 
+	while ($possibleLen>=2) { #all possible words with more than 2 characters
+	    my $subString=substr($inputString,$currentPos,$possibleLen);
 
-	#-----------------------------------------------------------
-	#step1: search for all possible arcs in the input string
-	#		and create an array for them
+	    #for debug
+	    #print STDERR "s=$subString\n";
 
-	for($currentPos=0;$currentPos<$lenOfString;$currentPos++){			#currentPos is the index of Chinese character
-		$currentChar=substr($inputString,$currentPos*2,2);
-
-
-
-		#from this position, try to find all possible words led by this character
-		$possibleLen=$longestWordListStart{$currentChar};
-
-		#for debug
-		#print STDERR "\n$currentChar=$possibleLen\n";
-
-		if(($possibleLen+$currentPos)> ($lenOfString-1)){
-			$possibleLen=$lenOfString-$currentPos;
-		}
-
-		while($possibleLen>=2){		#all possible words with more than 2 characters
-			$subString=substr($inputString,$currentPos*2,$possibleLen*2);
-
-			#for debug
-			#print STDERR "s=$subString\n";
-
-			if($wordFreqList{$subString}){
+	    if ($wordFreqList{$subString}) {
 				#for debug
 				#print STDERR "$subString found\n";
 
-				$arcTable[$currentPos][$currentPos+$possibleLen-1]=$wordFreqList{$subString};
-			}
+		$arcTable[$currentPos][$currentPos+$possibleLen-1]=$wordFreqList{$subString};
+	    }
 
 
-			$possibleLen--;
-		}
-
+	    $possibleLen--;
 	}
 
-	#for debug
-	#for($i=0;$i<$lenOfString;$i++){
-	#	for($j=0;$j<$lenOfString;$j++){
-	#		print "  ",$arcTable[$i][$j];				
-	#	}
-	#	print "\n";
-	#}
+    }
+
+    #for debug
+    #for($i=0;$i<$lenOfString;$i++){
+    #	for($j=0;$j<$lenOfString;$j++){
+    #		print "  ",$arcTable[$i][$j];				
+    #	}
+    #	print "\n";
+    #}
 
 
-	#--------------------------------------------------------------------------
-	#step2: from the arc table, try to find the best path as segmentation at
-	#each point use the longest possible arc
-	# Try from two directions for the search: left to right and right to left
-	# using the one with higher product of frequency of the arcs
+    #--------------------------------------------------------------------------
+    #step2: from the arc table, try to find the best path as segmentation at
+    #each point use the longest possible arc
+    # Try from two directions for the search: left to right and right to left
+    # using the one with higher product of frequency of the arcs
 
-	@leftRightSegLabel=();
-	@rightLeftSegLabel=();
+    my @leftRightSegLabel=();
+    my @rightLeftSegLabel=();
 
-	#initialize the segmentation label array
-	for($k=0;$k<$lenOfString;$k++){
-		$leftRightSegLabel[$k]=0;
-		$rightLeftSegLabel[$k]=0;
-	}
+    #initialize the segmentation label array
+    for (my $k=0;$k<$lenOfString;$k++) {
+	$leftRightSegLabel[$k]=0;
+	$rightLeftSegLabel[$k]=0;
+    }
 	
-	#from left to right
-	#-------------------------------
-	$leftToRightFreq=0;
+    #from left to right
+    #-------------------------------
+    my $leftToRightFreq=0;
 
-	$thisCharIndex=0;
-	$charIndexEnd=$lenOfString-1;
+    my $thisCharIndex=0;
+    my $charIndexEnd=$lenOfString-1;
 
 
-	while($thisCharIndex<$lenOfString){
-		$endCharIndex=$charIndexEnd;
+    while ($thisCharIndex<$lenOfString) {
+	my $endCharIndex=$charIndexEnd;
 
-		$found=0;
+	my $found=0;
 
-		while((!$found)&&($endCharIndex>=$thisCharIndex)){
-			if($arcTable[$thisCharIndex][$endCharIndex]!=-1){
-				$leftToRightFreq+=log($arcTable[$thisCharIndex][$endCharIndex]);
-				$found=1;
-			}
-			else{
-				$endCharIndex--;
-			}
-		}
-
-		$leftRightSegLabel[$endCharIndex]=1;
-		$thisCharIndex=$endCharIndex+1;
+	while ((!$found)&&($endCharIndex>=$thisCharIndex)) {
+	    if ($arcTable[$thisCharIndex][$endCharIndex]!=-1) {
+		$leftToRightFreq+=log($arcTable[$thisCharIndex][$endCharIndex]);
+		$found=1;
+	    } else {
+		$endCharIndex--;
+	    }
 	}
 
-	#for debug
-	#print STDERR @leftRightSegLabel,"\n $leftToRightFreq\n";
+	$leftRightSegLabel[$endCharIndex]=1;
+	$thisCharIndex=$endCharIndex+1;
+    }
 
-	#from right to left
-	#---------------------------------
-	$rightToLeftFreq=0;
-	$thisCharIndex=$lenOfString-1;
+    #for debug
+    #print STDERR @leftRightSegLabel,"\n $leftToRightFreq\n";
 
-	while($thisCharIndex>=0){
-		$startCharIndex=0;
+    #from right to left
+    #---------------------------------
+    my $rightToLeftFreq=0;
+    $thisCharIndex=$lenOfString-1;
 
-		$found=0;
-		while((!$found)&&($startCharIndex<=$thisCharIndex)){
-			if($arcTable[$startCharIndex][$thisCharIndex]!=-1){
-				$found=1;
-				$rightToLeftFreq+=log($arcTable[$startCharIndex][$thisCharIndex]);
-			}
-			else{
-				$startCharIndex++;
-			}
-		}
+    while ($thisCharIndex>=0) {
+	my $startCharIndex=0;
 
-		$rightLeftSegLabel[$startCharIndex]=1;
-		$thisCharIndex=$startCharIndex-1;
+	my $found=0;
+	while ((!$found)&&($startCharIndex<=$thisCharIndex)) {
+	    if ($arcTable[$startCharIndex][$thisCharIndex]!=-1) {
+		$found=1;
+		$rightToLeftFreq+=log($arcTable[$startCharIndex][$thisCharIndex]);
+	    } else {
+		$startCharIndex++;
+	    }
 	}
 
-	#for debug
-	#print STDERR @rightLeftSegLabel,"\n $rightToLeftFreq\n";
+	$rightLeftSegLabel[$startCharIndex]=1;
+	$thisCharIndex=$startCharIndex-1;
+    }
+
+    #for debug
+    #print STDERR @rightLeftSegLabel,"\n $rightToLeftFreq\n";
 
 
-	#---------------------------------------------------------------------------------
-	# Step3: create result
-	if($leftToRightFreq>$rightToLeftFreq){			#using left to right solution, prefer right to left
-		for($p=0;$p<$lenOfString;$p++){
-			$result=$result.substr($inputString, $p*2, 2);
+    #---------------------------------------------------------------------------------
+    # Step3: create result
+    if ($leftToRightFreq>$rightToLeftFreq) { #using left to right solution, prefer right to left
+	for (my $p=0;$p<$lenOfString;$p++) {
+	    $result=$result.substr($inputString, $p, 1);
 
-			if($leftRightSegLabel[$p]==1){
-				$result=$result." ";
-			}
-		}
+	    if ($leftRightSegLabel[$p]==1) {
+		$result=$result." ";
+	    }
 	}
-	else{
-		for($p=0;$p<$lenOfString;$p++){
-			if($rightLeftSegLabel[$p]==1){
-				$result=$result." ";
-			}
-			$result=$result.substr($inputString, $p*2, 2);
-		}
+    } else {
+	for (my $p=0;$p<$lenOfString;$p++) {
+	    if ($rightLeftSegLabel[$p]==1) {
+		$result=$result." ";
+	    }
+	    $result=$result.substr($inputString, $p, 1);
 	}
+    }
 
-	$result=~s/^\x20+//;
-	$result=~s/\x20+\Z//;
+    $result=~s/^\s+//;
+    $result=~s/\s+$//;
 
-	#for debug
-	#print "result=$result\n";
+    #for debug
+    #print "result=$result\n";
 
-	return " $result ";
-
+    return " $result ";
 }
