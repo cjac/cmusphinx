@@ -69,7 +69,7 @@ sub system_log {
 }
 
 # Command-line options
-my @argspec = ('npart=i', 'part=i', 'ctlfile=s', 'cepext=s', 'cepdir=s',
+my @argspec = ('npart=i', 'part=i', 'ctlfile|ctl=s', 'cepext=s', 'cepdir=s',
 	       'rawdir=s', 'expid=s', 'feat=s', 'acmoddir=s', 'mdef=s',
 	       'mean=s', 'var=s', 'mixw=s', 'tmat=s', 'args=s', 'ceplen=i',
 	       'mfclogdir=s', 'lattice', 'matchseg', 'matchconf', 'ctm',
@@ -88,7 +88,7 @@ my @argspec = ('npart=i', 'part=i', 'ctlfile=s', 'cepext=s', 'cepdir=s',
 	       'beam=s', 'pbeam=s', 'wbeam=s', 'maxhistpf=i', "lda=s", "ldadim=i",
 	       'maxhmmpf=i', 'maxwpf=i', 'maxcdsenpf=i', 'senmgau=s', "mllrctl=s",
 	       'cmn=s', 'uw=s', 'wip=s', 'logbase=s', 'lmfile=s', 'mllr=s',
-	       'Nlextree=s', 'other=s', 'reffile=s', 'pbs', 'alignonly', 'qname=s',
+	       'Nlextree=s', 'other=s', 'reffile|ref=s', 'pbs', 'alignonly', 'qname=s',
 	       'mapfn=s', 'phnfn=s', 'cbdir=s', 'hmmdir=s', 'hmmdirlist=s', 'adchdr=i',	       
 	       'adcin=s', "min_endfr=i", "dagfudge=i", 'srate=i', "insert_sil", 'zcae2=s',
 	       'fwdflatefwid=i', 'fwdflatsfwin=i', 'sendumpfn=s', 'varfloor=s',
