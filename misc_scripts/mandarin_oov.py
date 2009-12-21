@@ -15,8 +15,10 @@ def read_arpa(arpa):
         if indata and spam == u"\\1-grams:\n":
             in1gram = True
             continue
-        if in1gram and spam == "\n":
+        if in1gram and spam == u"\\2-grams:\n":
             break
+        if spam == u"\n":
+            continue
         if in1gram:
             prob, word, bo = spam.split()
             words.add(word)
@@ -113,6 +115,7 @@ if __name__ == '__main__':
             oovset[w] = oovset.get(w, 0) + 1
         noov += len(oov)
         nwords += len(seg)
+        print u" ".join(seg).encode('utf8')
     print "%d words, %d oovs, OOV rate %.2f%%" % (nwords, noov, float(noov)/nwords*100)
     if noov > 0:
         print "OOVs and counts:"
