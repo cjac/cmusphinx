@@ -103,7 +103,7 @@ int
 main(int argc, char *argv[])
 {
 	cmd_ln_t *config;
-	ngram_model_t *lm;
+	ngram_model_t *lm = NULL;
 	logmath_t *lmath;
         int itype, otype;
 

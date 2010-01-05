@@ -700,11 +700,20 @@ fe_openfiles(globals_t * P, fe_t * FE, char *infile, FILE **fh_in,
         *line = 0;
         got_it = 0;
         while (strcmp(line, "end_head") && !got_it) {
-            fscanf(fp2, "%s", line);
+            if (fscanf(fp2, "%s", line) != 1) {
+                E_ERROR_SYSTEM("NIST header read error %s", infile);
+                return (FE_INPUT_FILE_READ_ERROR);
+            }
             if (!strcmp(line, "sample_byte_format")) {
-                fscanf(fp2, "%s", line);
+                if (fscanf(fp2, "%s", line) != 1) {
+                    E_ERROR_SYSTEM("NIST header read error %s", infile);
+                    return (FE_INPUT_FILE_READ_ERROR);
+                }
                 if (!strcmp(line, "-s2")) {
-                    fscanf(fp2, "%s", line);
+                    if (fscanf(fp2, "%s", line) != 1) {
+                        E_ERROR_SYSTEM("NIST header read error %s", infile);
+                        return (FE_INPUT_FILE_READ_ERROR);
+                    }
                     if (!strcmp(line, "01")) {
                         P->input_endian = LITTLE;
                         got_it = 1;
@@ -1075,7 +1084,10 @@ fe_convert_with_dct(globals_t * P, fe_t * FE, char *infile, char *outfile)
     fseek(ifh, 0, SEEK_END);
     ifsize = ftell(ifh);
     fseek(ifh, 0, SEEK_SET);
-    fread(&nfloats, 4, 1, ifh);
+    if (fread(&nfloats, 4, 1, ifh) != 1) {
+        E_ERROR_SYSTEM("Failed to read number of floats");
+        goto error_out;
+    }
     if (nfloats != ifsize / 4 - 1) {
         E_INFO("Will byteswap %s (%x != %x)\n",
                infile, nfloats, ifsize / 4 - 1);
@@ -1085,7 +1097,7 @@ fe_convert_with_dct(globals_t * P, fe_t * FE, char *infile, char *outfile)
     if (nfloats != ifsize / 4 - 1) {
         E_ERROR("Size of file doesn't match header: %d != %d\n",
                 nfloats, ifsize / 4 - 1);
-        return (FE_INPUT_FILE_READ_ERROR);
+        goto error_out;
     }
     if (P->convert == CEP2SPEC) {
         input_ncoeffs = cmd_ln_int32_r(P->config, "-ncep");
@@ -1130,6 +1142,8 @@ fe_convert_with_dct(globals_t * P, fe_t * FE, char *infile, char *outfile)
         if (fwrite(logspec, 4, output_ncoeffs, ofh) < output_ncoeffs) {
             E_ERROR_SYSTEM("Failed to write %d coeffs to %s",
                            output_ncoeffs, outfile);
+            fclose(ifh);
+            fclose(ofh);
             ckd_free(logspec);
             return (FE_OUTPUT_FILE_WRITE_ERROR);
         }
@@ -1137,13 +1151,18 @@ fe_convert_with_dct(globals_t * P, fe_t * FE, char *infile, char *outfile)
     if (!feof(ifh)) {
         E_ERROR("Short read in input file %s\n", infile);
         ckd_free(logspec);
-        return (FE_INPUT_FILE_READ_ERROR);
+        goto error_out;
     }
     fclose(ifh);
     fclose(ofh);
     ckd_free(logspec);
-
     return FE_SUCCESS;
+
+error_out:
+    fclose(ifh);
+    fclose(ofh);
+    return (FE_INPUT_FILE_READ_ERROR);
+
 }
 
 

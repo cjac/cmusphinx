@@ -117,7 +117,8 @@ fopen_comp(const char *file, const char *mode, int32 * ispipe)
                 command = string_join("bunzip2" EXEEXT, " -c ", file, NULL);
                 break;
             default:
-                E_FATAL("Unknown  compression type %d\n", isgz);
+                E_ERROR("Unknown compression type %d\n", isgz);
+                return NULL;
             }
             if ((fp = popen(command, mode)) == NULL) {
                 E_ERROR_SYSTEM("popen (%s,%s) failed\n", command, mode);
@@ -139,7 +140,8 @@ fopen_comp(const char *file, const char *mode, int32 * ispipe)
                 command = string_join("bzip2" EXEEXT, " > ", file, NULL);
                 break;
             default:
-                E_FATAL("Unknown compression type %d\n", isgz);
+                E_ERROR("Unknown compression type %d\n", isgz);
+                return NULL;
             }
             if ((fp = popen(command, mode)) == NULL) {
                 E_ERROR_SYSTEM("popen (%s,%s) failed\n", command, mode);
