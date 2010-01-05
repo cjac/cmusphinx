@@ -98,7 +98,6 @@ if($mode == 1){  ### GB -> HEX for lexicon
 	$temphex .= HexFn->hex2str($frag)." ";
       }
     }
-    chop($temphex);
     $output = $temphex.$uttid."\n";
     print OUTPUTFILE $output;
   }
