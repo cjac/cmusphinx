@@ -37,7 +37,7 @@ if($mode == 1){  ### GB -> HEX for lexicon
     @frag = split(/ /, $infile);
     $temphex = "";
     foreach $frag(@frag){
-      if ($frag =~ m,^</?s>|\+\+.*\+\+$,) {
+      if ($frag =~ m,^</?.*>|\+\+.*\+\+$,) {
 	$temphex .= $frag." ";
       }else{
 	$temphex .= HexFn->str2hex($frag)." ";
@@ -92,7 +92,7 @@ if($mode == 1){  ### GB -> HEX for lexicon
     @frag = split(/ /, $infile);
     $temphex = "";
     foreach $frag(@frag){
-      if ($frag =~ m,^</?s>|\+\+.*\+\+$,) {
+      if ($frag =~ m,^</?.*>|\+\+.*\+\+$,) {
 	$temphex .= $frag." ";
       }else{
 	$temphex .= HexFn->hex2str($frag)." ";
