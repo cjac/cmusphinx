@@ -36,7 +36,7 @@ collapsed.
 4) Certain systematic pronunciation (actually LTS rule) errors were
 corrected. (Specifically McXxxx and O'Xxxxx forms.)
 
-5) Serendipitiously discovered errors (encountered in the course of the
+5) Serendipitously discovered errors (encountered in the course of the
 above clean-ups) were corrected. 
 
 6) Proper names in the top 10k found in the 1990 US Census and not already
@@ -52,7 +52,7 @@ added words from DeepSpeak and TIMIT sx
 switched the pronunciation order for AND to make reduced form first.
 
 [20071029] (air)
-removed some variants
+removed some bogus variants
 
 [200803] (air)
 cmudict has been placed under version control in cmusphinx on Sourceforge. 
