@@ -157,7 +157,8 @@ ms_mgau_model_t* ms_mgau_init (const char *meanfile,	/**< In: File containing me
 							   me! This is confusing!*/
 			       const char* lambdafile, /**< In: Interplation file */
 			       int32 topn,        /**< In: Top-n gaussian will be computed */
-			       logmath_t *logmath
+			       logmath_t *logmath,
+                               mdef_t *mdef
     );
 
 /** Free memory allocated by ms_mgau_init */

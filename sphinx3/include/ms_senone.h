@@ -112,6 +112,7 @@
 
 #include "s3types.h"
 #include <logmath.h>
+#include "mdef.h"
 #include "ms_gauden.h"
 
 /** \file ms_senone.h
@@ -169,7 +170,8 @@ senone_t *senone_init (const char *mixwfile,		/**< In: mixing weights file */
 			        			   senone to mixture gaussian codebook.
 				        		   If NULL all senones map to codebook 0 */
 		       float32 mixwfloor,	/**< In: Floor value for senone weights */
-		       logmath_t *logmath
+		       logmath_t *logmath,
+                       mdef_t *mdef
     );
 
 /** Release memory allocated by senone_init. */

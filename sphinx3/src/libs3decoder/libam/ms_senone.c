@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -114,7 +115,7 @@
 
 #include "ms_senone.h"
 #include "logs3.h"
-
+#include "mdef.h"
 #include "bio.h"
 #include <string.h>
 #include <assert.h>
@@ -358,7 +359,8 @@ senone_mixw_read(senone_t * s, const char *file_name)
 
 
 senone_t *
-senone_init(const char *mixwfile, const char *sen2mgau_map_file, float32 mixwfloor, logmath_t *logmath)
+senone_init(const char *mixwfile, const char *sen2mgau_map_file, float32 mixwfloor,
+	    logmath_t *logmath, mdef_t *mdef)
 {
     senone_t *s;
     int32 n = 0, i;
@@ -375,6 +377,8 @@ senone_init(const char *mixwfile, const char *sen2mgau_map_file, float32 mixwflo
     else if (strcmp(sen2mgau_map_file, ".cont.") == 0
              || strcmp(sen2mgau_map_file, ".s3cont.") == 0)
         s->n_gauden = 2;        /* HACK!! Dummy value >1 for the moment; fixed below */
+    else if (strcmp(sen2mgau_map_file, ".ptm.") == 0)
+	s->n_gauden = mdef_n_ciphone(mdef);
     else {
         senone_mgau_map_read(s, sen2mgau_map_file);
         n = s->n_sen;
@@ -385,6 +389,12 @@ senone_init(const char *mixwfile, const char *sen2mgau_map_file, float32 mixwflo
     if (strcmp(sen2mgau_map_file, ".semi.") == 0) {
         /* All-to-1 senones-codebook mapping */
         s->mgau = (s3mgauid_t *) ckd_calloc(s->n_sen, sizeof(s3mgauid_t));
+    }
+    else if (strcmp(sen2mgau_map_file, ".ptm.") == 0) {
+        /* Senone to CI-phone senones-codebook mapping */
+        s->mgau = (s3mgauid_t *) ckd_calloc(s->n_sen, sizeof(s3mgauid_t));
+        for (i = 0; i < s->n_sen; i++)
+	    s->mgau[i] = mdef_sen2cimap(mdef)[i];
     }
     else if (strcmp(sen2mgau_map_file, ".cont.") == 0
              || strcmp(sen2mgau_map_file, ".s3cont.") == 0) {

@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -149,7 +150,7 @@ ms_mgau_init(const char *meanfile,
              const char *varfile, float64 varfloor,
              const char *mixwfile, float64 mixwfloor,
              int32 precomp, const char *senmgau, const char *lambdafile,
-	     int32 _topn, logmath_t *logmath)
+	     int32 _topn, logmath_t *logmath, mdef_t *mdef)
 {
     /* Codebooks */
     int32 i;
@@ -167,7 +168,7 @@ ms_mgau_init(const char *meanfile,
 
     msg->g = gauden_init(meanfile, varfile, varfloor, precomp, logmath);
 
-    msg->s = senone_init(mixwfile, senmgau, mixwfloor, logmath);
+    msg->s = senone_init(mixwfile, senmgau, mixwfloor, logmath, mdef);
 
     g = ms_mgau_gauden(msg);
     s = ms_mgau_senone(msg);

@@ -338,7 +338,9 @@ s3_am_init(kbcore_t * kbc)
             }
         }
     }
-    else if (strcmp(fn, ".semi.") == 0 || strcmp(fn, ".s3cont.") == 0) {
+    else if (strcmp(fn, ".semi.") == 0
+	     || strcmp(fn, ".ptm.") == 0
+	     || strcmp(fn, ".s3cont.") == 0) {
         senone_t *sen;
         /* Multiple stream Gaussian mixture Initialization */
         E_INFO("Using multi-stream GMM computation\n");
@@ -352,7 +354,7 @@ s3_am_init(kbcore_t * kbc)
                                     cmd_ln_exists_r(config, "-lambda")
                                     ? cmd_ln_str_r(config, "-lambda") : NULL,
                                     cmd_ln_int32_r(config, "-topn"),
-                                    kbc->logmath);
+                                    kbc->logmath, kbc->mdef);
         sen = ms_mgau_senone(kbc->ms_mgau);
         /* Verify senone parameters against model definition parameters */
         if (kbc->mdef->n_sen != sen->n_sen)
@@ -360,7 +362,7 @@ s3_am_init(kbcore_t * kbc)
                     kbc->mdef->n_sen, sen->n_sen);
     }
     else {
-        E_FATAL("Feature should be either .semi. or .cont., is %s\n", fn);
+        E_FATAL("Feature should be either .semi., .cont., or .ptm., is %s\n", fn);
     }
 
 
