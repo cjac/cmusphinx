@@ -56,7 +56,7 @@ my %histo = ();   # some statistics on variants
 my %dict = ("" => {VARIANT => [], COMMENT => ""} );    # words end up in here
 my $last = "";  # the last word processed
 
-get_dict(\%dict,\%header,*IN);  # process the entries
+&get_dict(\%dict,\%header,*IN);  # process the entries
 
 # print special comments (copyright, etc.)
 foreach my $h (sort keys %header) { print OUT "$header{$h}"; }

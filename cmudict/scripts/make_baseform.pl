@@ -46,8 +46,11 @@
 # [20090309] (air) fixed duplicate pron and collation bugs
 # [20090331] (air) restored standard collation order (since other stuff deppends on it)
 # [20090629] (air) do not put comments into SPHINX_40 version; not all software deals
+# [20100118] (air) added $VERBOSE; this should really be a cmdline flag...
 #
 
+
+$VERBOSE = 0;
 
 my $basecount = 0;
 my $dupl = 0;
@@ -140,7 +143,7 @@ sub get_dict {
     # old baseform; see if, after removed stress, pron is a duplicate
     foreach $var ( @{$dict->{$root}} ) {
 	if ( $var eq $pron ) {
-	    print STDERR "duplicate entry: $root ($variant) $pron\n";
+	    if ($VERBOSE) {print STDERR "duplicate entry: $root ($variant) $pron\n";}
 	    $dupl++;
 	    $pron = "";
 	    last;

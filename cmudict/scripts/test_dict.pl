@@ -56,6 +56,8 @@
 # not all conventions checked however (eg, for multiple pronunciations)
 #
 
+my $ErrFlag = 0;
+
 use Getopt::Std; use vars qw/ $opt_p $opt_n /;
 if ($#ARGV<0) { die("usage: test_dict -p <phonefile> [-n <noisefile>] <dictfile>\n"); }
 getopt('p:n:'); $phonefile = $opt_p; $noisefile = $opt_n;
@@ -82,19 +84,19 @@ while (<DICT>) {
 
     ($lead = $_) =~ s/^\s*(.+)/$1/;
     ($trail = $_) =~ s/(.+?)\s*$/$1/;
-    if ($line ne $trail) { print "ERROR: trailing space in '$line'!\n"; }
-    if ($line ne $lead) { print "ERROR: leading space in '$line'!\n"; }
-    if ( $last ge $word ) { print "ERROR: collation sequence for $last, $word wrong\n"; }
+    if ($line ne $trail) { print "ERROR: trailing space in '$line'!\n"; $ErrFlag++;}
+    if ($line ne $lead) { print "ERROR: leading space in '$line'!\n"; $ErrFlag++;}
+    if ( $last ge $word ) { print "ERROR: words out of order: $last, $word\n"; $ErrFlag++;}
 
     # check for legal symbols
     @sym = split(/\s/,$pron);
     $errs = "";
     foreach $s (@sym) {	if ( ! $phone{$s} ) { $errs .= " $s"; } else { $phone{$s}++; } }
-    if ($errs ne "") { print "ERROR: $word has illegal symbols: '$errs'\n"; }
+    if ($errs ne "") { print "ERROR: $word has illegal symbols: '$errs'\n"; $ErrFlag++;}
 
     # bad format
     @line = split (/\t/,$line);
-    if ( $#line != 1 ) { print "WARNING: tabbing error (",$#line, ") in: $line\n"; }
+    if ( $#line != 1 ) { print "ERROR: bad tabbing (",$#line, ") in: $line\n"; $ErrFlag++;}
     $word_cnt++;
     $last = $word;
 }
@@ -102,10 +104,14 @@ close(DICT);
 
 # check for duplicates entries
 foreach $x (keys %dict) {
-    if ($dict{$x}>1) { print "ERROR: $x occurs ", $dict{$x}, " times!\n"; }
+    if ($dict{$x}>1) { print "ERROR: $x occurs ", $dict{$x}, " times!\n"; $ErrFlag++;}
 }
 
-print STDERR "processed $word_cnt words.\n";
+print STDERR "..processed $word_cnt words\n";
+if ($ErrFlag > 0) {
+    print STDERR "..$ErrFlag error(s) found\n";
+    exit 1;
+}
 
 # print out the phone counts
 # foreach (sort keys %phone) { print STDERR "$_\t$phone{$_}\n"; }

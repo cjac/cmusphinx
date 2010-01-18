@@ -96,9 +96,6 @@ while (<DICT>) {
     ($word,$pron) = split (/\s+/,$line,2);
     $dict{$word}++;
 
-    # word order
-    if ( $last ge $word ) { print "ERROR: collation sequence for $last, $word wrong\n"; }
-
     # check tabbing
     my @line = split (/  /,$line);
     if ( ($line[0] ne $word) or (scalar @line ne 2) ) { 
@@ -130,6 +127,14 @@ while (<DICT>) {
     }
     if ($errs ne "") { print "ERROR: $word has illegal symbols: '$errs'\n"; }
 
+
+    # word order
+    if ( &strip_variant($last) gt &strip_variant($word) ) {
+	print "ERROR: collation sequence for $last, $word wrong\n";
+	print "\t",&strip_variant($last)," ?? ",&strip_variant($word),"\n";
+    }
+
+    # tests passed (or not) keep going
     $word_cnt++;
     $last = $word;
 }
@@ -140,9 +145,24 @@ foreach my $x (keys %dict) {
     if ($dict{$x}>1) { print "ERROR: '$x' occurs ", $dict{$x}, " times!\n"; }
 }
 
-print "processed $word_cnt words.\n";
+print "\nprocessed $word_cnt words\n";
 
 # print out the phone counts
-foreach (sort keys %phone) { print "$_\t$phone{$_}\n"; }
+$last = "";
+foreach (sort keys %phone) {
+    if ( substr($_,0,2) eq substr($last,0,2) ) { print "\t| "; } else { print "\n  "; }
+    print "$_\t$phone{$_}";
+    $last = $_;
+}
+print "\n";
 
 #
+
+sub strip_variant {
+    my $token = shift;
+    my $result = "";
+    if ($token =~ /(..*?)\(/) { $result = $1; } else { return $token; }
+    return $result;
+}
+
+###
