@@ -1,150 +1,56 @@
 \documentclass{article}
 \title{Scalable Speech Recognition Using Distributed Annotators} 
+\author{David Huggins-Daines}
 \begin{document}
+\maketitle
+
 \begin{abstract}
 
-  With the advent of smartphones and other networked portable
-  computing devices, it has become commonplace for people to have
-  several ``personal computers'' with which they interact on a daily
-  basis.  As part of our ongoing research into note-taking and
-  personal information managment using speech, we would like to be
-  able to collect, process, and access information extracted from
-  speech data on all of these various devices.  Unfortunately,
-  portable devices are highly constrained by considerations of size,
-  cost, and power consumption, and are not capable of performing
-  large-vocabulary continuous speech recognition and information
-  extraction.  As a step towards a fully distributed personal
-  knowledge management system, I propose a distributed approach to
-  multi-pass speech recognition, where at each pass, information is
-  extracted on each device at a level of processing commensurate with
-  its abilities, and stored in a compact form suitable for
-  synchronization over low-power personal area networks.  Contrary to
-  previous approaches to distributed speech recognition, this method
-  does not presume the existence of a centralized compute server.  In
-  addition, these distributed annotators will be capable of operating
-  time-synchronously to accelerate speech recognition on
-  multiprocessing systems.
-  
+
 \end{abstract}
+
+\tableofcontents{}
+
+\section{Introduction}
+\label{sec:intro}
+
+As Moore's Law continues to give us more and smaller transistors,
+computers as we know them are undergoing a radical transformation.  We
+are currently witnessing the nascent ubiquity of intelligent mobile
+devices; for instance, the cellular phones of today are more capable
+in terms of raw processor speed than the personal computers of a mere
+10 years ago.  Many people are now rarely outside an arm's reach of
+two or more fully programmable, multimedia capable and Internet
+connected devices, be they smartphones, laptops, or conventional PCs
+and workstations.  Wireless networks, too, have become ubiquitous, as
+they provide a convenient way both to access Internet content and move
+data between mobile devices.
+
+In some respects, however, the growth curve of computational capacity
+has begun to flatten.  The single-threaded performance of modern CPUs
+has mostly stopped increasing, as clock speeds have levelled off and
+gains in instruction-level parallelism are becoming increasingly hard
+to come by.  In addition, as more and more interesting applications
+rely on Internet access, network latency rather than processor speed
+has become the deciding factor in whether a computer performs
+adequately.
+
+What do these trends mean for the future of automatic speech
+recognition?  This thesis is an attempt to answer this question, by
+proposing an approach to speech recognition based on the concept of
+lightweight, independent {\em annotators} which collaborate, either
+sequentially or in parallel, on a structured representation of speech.
 
 \section{Automatic Speech Recognition}
 \label{sec:asr}
 
-Applications
-
-Problems
-
-\subsection{Feature Extraction}
-\label{sec:fe}
-
-Source-filter model of speech production
-
-Autoregressive (LPC) Analysis
-
-Cepstral Analysis
-
-Mel-frequency Cepstral Coefficients
-
-Fixed-Point Implementation of MFCC
-
-Feature Normalization
-
-\subsection{Acoustic Modeling}
-\label{sec:am}
-
-Hidden Markov Models
-
-Modeling output probabilities with Gaussian Mixture Models
-
-State and Mixture tying
-
-Dimensionality Reduction - PCA, LDA, MLLT
-
-Speaker Adaptive Modeling - MAP, MLLR
-
-Model compression and quantization - SDCHMM, qHMM
-
-\subsection{Language Modeling}
-\label{sec:lm}
-
-Finite-State Grammars
-
-History-Based (N-Gram) Statistical Language Models
-
-Model compression and quantization
-
-\subsection{Search}
-\label{sec:search}
-
-Time-Synchronous Viterbi Beam Search
-
-Lattice Rescoring and Multi-Pass Search
-
-Previous work in parallel search - moderately and massively parallel decoders
-
-\section{Distributed Computing}
-\label{sec:pdc}
-
-Two instances of the same problem - network of heterogeneous devices,
-asymmetric multiprocessor.
-
-\subsection{Distributed Computing Architectures}
-\label{sec:arch}
-
-Taxonomy of computer architectures - SISD, SIMD, MIMD
-
-Topologies of distributed computing projects - hierarchical or peer-to-peer
-
-Because of the problems of limited network bandwidth and latency and
-the need to access information as quickly as possible, this thesis
-proposes a peer-to-peer approach to distributed speech recognition.
-
-\subsection{Challenges for Distributed ASR}
-\label{sec:challenges}
-
-``Distributed Speech Recognition'' is not the subject of this thesis,
-and it doesn't work particularly well anyway.
-
-Relative percentage of time spent in FE, GMM, HMM, LM varies with
-vocabulary size.
-
-Serial dependencies in search
-
-\section{Preliminary Work}
-\label{sec:prelim}
-
-Compression of semi-continuous models
-
-Pipelined multi-pass search
-
-\section{Proposed Work}
-\label{sec:proposed}
-
-I propose to recast the problem of automatic speech recognition as a
-system of distributed {\em annotators} which operate on a structured
-representation of speech.  The operation by which these annotators
-combine their knowledge is a {\em merging} operation.  This is the
-same principle as used by distributed revision control systems, except
-that:
-
-\begin{itemize}
-\item The modifications and additions in this system are often
-  automatically generated (but need not be).
-\item The merging operation is {\em probabilistic}.  A revision
-  control system relies on human input to resolve conflicts, and
-  expects conflicts to have a unique resolution.  In this system,
-  conflicts have a ``soft'' resolution in favor of the MAP hypothesis
-  given the current state of knowledge.
-\end{itemize}
+\section{Thesis Statement}
+\label{sec:thesis}
 
 
-\section{Evaluation Metrics}
-\label{sec:eval}
 
-\section{Contributions and Time-Line}
-\label{sec:contrib}
 
 \bibliographystyle{apalike}
-\bibliography{asrtts}
+\bibliography{proposal}
 
 \end{document}
