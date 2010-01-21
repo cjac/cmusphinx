@@ -1,5 +1,5 @@
 \documentclass{article}
-\title{Scalable Multi-Pass Speech Recognition for Low-Power Networks of Heterogeneous Devices} 
+\title{Scalable Speech Recognition Using Distributed Annotators} 
 \begin{document}
 \begin{abstract}
 
@@ -20,10 +20,10 @@
   its abilities, and stored in a compact form suitable for
   synchronization over low-power personal area networks.  Contrary to
   previous approaches to distributed speech recognition, this method
-  does not presume the existence of a centralized compute server.
-  Furthermore, I will also demonstrate the suitability of this
-  approach for accelerating speech recognition on asymmetric
-  multiprocessors.
+  does not presume the existence of a centralized compute server.  In
+  addition, these distributed annotators will be capable of operating
+  time-synchronously to accelerate speech recognition on
+  multiprocessing systems.
   
 \end{abstract}
 
@@ -110,75 +110,12 @@ vocabulary size.
 
 Serial dependencies in search
 
-\subsection{Distributed Revision Control}
-
-The paradigm used for distributed speech recognition in this thesis is
-based on the {\em distributed revision control} systems currently
-becoming popular in the software development world.
-
-Traditional revision control systems such as SourceSafe require all
-users to work within a single shared source tree.  In order to work on
-a file, it is necessary to ``check out'' that file, which places a
-lock on it preventing others from modifying it.  While this model
-works reasonably well when all developers are in close proximity to
-each other, it becomes unmanageable when developers are distributed
-among different organizations and locations.
-
-The Concurrent Versions System (CVS) introduced the separation between
-the {\em repository} and the {\em working copy}.  Each developer has
-their own working copy in which they can make changes.  Before
-committing, they must synchronize their copy with the repository and
-resolve any conflicts.  This process of synchronization is known as
-{\em merging} with the repository.  Since developers are free to make
-their own changes locally without preventing others from working, this
-model scales much better to large, widely-distributed development
-teams.  Virtually every major open-source software project has used
-CVS, or its descendant Subversion, at one point.
-
-Frustration with many of the limitations of CVS led to the development
-of Subversion, which can be thought of as ``CVS done right''.  One of
-the many problems with CVS is that when dealing with remote
-repositories, every operation requires a connection to the server,
-thus making it impossible to perform even simple operations such as
-``diff'' and ``revert'' without a network connection.  Subversion
-deals with this problem by caching the base revision locally, so that
-checking for or undoing local modifications can be done without
-contacting the repository.
-
-There are several lingering problems with the centralized repository
-approach to revision control.  Since projects typically enforce some
-policy with regard to the quality of checkins to the main repository,
-developers will often delay committing changes.  While it is clearly
-desirable for the main repository to contain working code, this can
-lead to rather large commits which may fix multiple bugs or introduce
-multiple features.  The history of changes made to the working copy is
-lost.  Likewise, when a developer updates from the repository, merging
-it with their local copy, the changes made locally may be overwritten,
-and are lost forever.
-
-Distributed revision control systems address these problems by erasing
-the distinction between the repository and the working copy.  With a
-distributed revision control system, instead of ``checking out'' a
-working copy, a developer ``clones'' the main repository, producing a
-local branch.  The developer can then commit changes to this branch
-without affecting the main repository.  Then, when it's time to commit
-these changes, the developer ``pulls'' updates from the main
-repository, merges their local changes, and then ``pushes'' any
-updates back.  This workflow solves both of the problems mentioned
-above - disconnected operation is possible (even committing changes
-can be done offline), and the local revision history is not lost.
-
-In addition to allowing disconnected operation and removing the effect
-of network latency on simple operations, this type of revision control
-can be more robust, since it removes the single point of failure in
-centralized systems.
-
 \section{Preliminary Work}
 \label{sec:prelim}
 
 Compression of semi-continuous models
 
-DSP implementation of front-end and GMM computation
+Pipelined multi-pass search
 
 \section{Proposed Work}
 \label{sec:proposed}
