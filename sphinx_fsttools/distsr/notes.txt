@@ -1,12 +1,21 @@
-Things that are important to stress:
+Main themes of this thesis (in order):
 
- * Why this is not "Distributed Speech Recognition"
-   - Information is extracted at a higher level than just MFCCs
-   - The results are immediately useful on the client side
-   - The architecture is peer-to-peer
-   - The architecture does not assume a reliable, always-on network
+ * Scalable, adaptive acoustic models for ASR on heterogeneous networks
 
- * Why this is relevant to asymmetric multiprocessing
-   - Past research has shown that (live-mode) ASR is not
-     parallelizable in a symmetric fashion
-   - 
+ * Speech recognition using distributed annotators
+
+ * Generic data structures for efficient speech processing
+
+Plan for research, implementation, writing:
+
+ * Continue work on semi-continuous model compression
+
+ * Implement stuff from Nokia papers for comparison
+
+ * Create semi-continuous models from continuous ones (enhanced SubVQ)
+
+ * Implement unscaled compressed SCHMM for adaptive modeling
+
+   - Decide whether semi-continous models are justified
+
+   - Compare with adaptation on Nokia-style quantized HMMs
