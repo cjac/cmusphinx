@@ -96,7 +96,7 @@ a common architecture, which is presented visually in Figure
 in greater detail in the following subsections.
 
 \subsection{Acoustic Modeling}
-\label{sec:hmm}
+\label{sec:am}
 
 The principal question in building an ASR system is how to represent
 the underlying entities which we are attempting to recognize.  ASR is
@@ -240,14 +240,42 @@ Gaussian distributions.
 \subsubsection{Lexicon Tree Search}
 \label{sec:lextree}
 
+Static lexicon tree search (old Sphinx papers, Ney 1992?)
+
+Word-conditioned lexicon tree search \cite{kanthak2000}
+
 \subsubsection{Finite State Transducer Search}
 \label{sec:fst}
+
+WFST search \cite{mohri2000}
+
+Comparison of WFST and tree search \cite{kanthak2002}
+
+Saon, Povey, and Zweig ``extremely fast decoder'' \cite{saon2006}
 
 \subsubsection{Word Lattice Generation}
 \label{sec:lattice}
 
+Hermann Ney paper on word graphs
+
+Saon, Povey, and Zweig redux
+
+On-line lattice generation \cite{sagerer1996}
+
 \section{The PocketSphinx Speech Recognition System}
 \label{sec:pocketsphinx}
+
+\subsection{Design Goals}
+\label{sec:design}
+
+Simplicity of implementation
+
+Reasonable default settings
+
+Small code and data footprint
+
+Memory efficiency
+
 
 \section{Parallel and Distributed ASR}
 \label{sec:pdasr}
@@ -272,15 +300,46 @@ Consensus network based combination \cite{mangu2000}
 \section{Preliminary Work}
 \label{sec:prelim}
 
+\subsection{Pipelined Multi-Pass Search}
+\label{sec:pipeline}
+
+It was suggested, though not implemented, in \cite{mosur1996} that the
+multiple passes of search used in the Sphinx decoder could be
+pipelined and run in separate threads.
+
+\subsection{Incremental Lattice Combination}
+\label{sec:incrlat}
 
 
 \section{Proposed Work}
 \label{sec:proposed}
 
+Finite State Transducer search for PocketSphinx
+
+Architecture for Parallel and Distributed decoding with annotators
+
+Lattice combination between heterogeneous systems
+
+Probabilistic lattice combination
+
+\section{Evaluation Metrics}
+\label{sec:eval}
+
+Metric for measuring speed-accuracy tradeoff
+
 \section{Contributions and Timeline}
 \label{sec:contrib}
 
-
+\begin{itemize}
+\item We will extend the concept of word lattice combination to
+  heterogeneous systems with prior probabilities.
+\item We will formulate a probabilistic merging operation over word
+  lattices which subsumes existing fast-match and multi-pass search
+  algorithms.
+\item We will demonstrate that this approach scales across multiple
+  CPU cores as well as multiple networked devices, as measured by the
+  optimal speed-accuracy tradeoff achieved.
+\end{itemize}
 
 \bibliographystyle{plain}
 \bibliography{proposal}
