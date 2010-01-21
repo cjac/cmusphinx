@@ -1,0 +1,20 @@
+CMU Sphinx finite-state transducer tools
+----------------------------------------
+
+This directory contains tools for creating finite-state transducers
+from Sphinx acoustic and language models.  It uses the OpenFst toolkit
+(http://www.openfst.org/) for FST operations.
+
+Tools provided here are:
+
+sphinx_am_fst - Convert a Sphinx model definition file to a
+	        finite-state transducer mapping senone sequences to
+	        phone sequences.
+
+sphinx_dict_fst - Convert a Sphinx pronunciation dictionary to a
+		  finite-state transducer mapping phone sequences to
+		  words.
+
+sphinx_lm_fst - Convert a language model in ARPA or DMP format to a
+	        weighted finite-state acceptor, using negative log
+	        probabilities as arc weights.
