@@ -104,20 +104,24 @@ fundamentally a {\em classification} problem, and thus recognition
 consists, at some level, of matching an input against a set of
 reference patterns and classifying it as ``belonging'' to one class or
 another.  However, due to the non-stationary nature of speech, ASR is
-also a {\em sequence matching} problem
+also a {\em sequence matching} problem.
 
 \subsubsection{Dynamic Time Warping}
 \label{sec:dtw}
+
+One of the most successful early approaches to ASR is the {\em dynamic
+  time warping} algorithm, first described in \cite{itakura1975}
 
 \subsubsection{Hidden Markov Models}
 \label{sec:hmm}
 
 Hidden Markov Models (hereafter referred to as HMMs) are a
-mathematical formalism for pattern recognition which have proven to be
-extremely useful in modeling speech, both for recognition
-\cite{rabiner1989} and for synthesis \cite{masuko1996}.
+mathematical formalism for pattern recognition, first desribed in
+\cite{baum1966}, which have proven to be extremely useful in modeling
+speech, both for recognition \cite{rabiner1989} and for synthesis
+\cite{masuko1996}.
 
-In HMM based recognition, rather than having a template against which
+In HMM-based recognition, rather than having a template against which
 incoming speech is matched directly, we construct a probabilistic
 model of the underlying speech generation process, and evaluate
 incoming speech against this model.  As with all generative models of
@@ -141,10 +145,10 @@ some variant thereof.  This representation is unsuitable for automatic
 speech recognition for several reasons.  The most important is that
 the human perceptual system distinguishes between classes of speech
 sounds primarily through coarse distinctions in frequency domain, and
-therefore a spectrally based representation is more efficient.  Also,
-the raw speech signal is non-stationary and therefore cannot be
-meaningfully analyzed as a whole.  Therefore, it must be segmented
-into smaller units.
+therefore a spectral representation is more useful.  Also, the raw
+speech signal is non-stationary and therefore cannot be meaningfully
+analyzed as a whole.  Therefore, it must be segmented into smaller
+units.
 
 The approach used by most current systems to deal with the
 non-stationarity of speech is to segment the audio into evenly spaced
@@ -218,9 +222,9 @@ Discriminant.  Heteroscedastic Linear Discriminant Analysis (HLDA).
 MLLT \cite{gopinath1998} is another linear transformation which was
 designed to compensate for the error introduced by using multivariate
 Gaussians with diagonal covariance matrices to model speech sounds,
-which will be discussed further in \ref{sec:gmm}.  It has been shown
-to be a variety of HLDA, but empirically it has been shown to be
-useful as a postprocessing step after applying a discriminative
+which will be discussed further in Section \ref{sec:gmm}.  While in
+fact this is simply a variety of HLDA, empirically it has been shown
+to be useful as a postprocessing step after applying a discriminative
 transform.
 
 \subsection{Observation Density Calculation}
@@ -230,9 +234,17 @@ In most modern HMM-based speech recognition systems, the state
 observation probabilities are modeled using mixtures of multivariate
 Gaussian distributions.
 
-
 \subsection{Search}
 \label{sec:search}
+
+\subsubsection{Lexicon Tree Search}
+\label{sec:lextree}
+
+\subsubsection{Finite State Transducer Search}
+\label{sec:fst}
+
+\subsubsection{Word Lattice Generation}
+\label{sec:lattice}
 
 \section{The PocketSphinx Speech Recognition System}
 \label{sec:pocketsphinx}
@@ -240,24 +252,34 @@ Gaussian distributions.
 \section{Parallel and Distributed ASR}
 \label{sec:pdasr}
 
-Ravi's really old paper about parallel ASR
+Ravi's really old paper about parallel ASR \cite{mosur1993}
 
 Phillips parallel recognizer \cite{phillips1999}
 
 NEC paper about block-based phoneme lookahead on cellphones \cite{ishikawa2006}
 
-Japanese paper about massively parallel decoding
+Japanese paper about massively parallel decoding \cite{shinozaki2004}
 
 \section{Hypothesis and System Combination}
 \label{sec:hypcomb}
 
-ROVER (CITE)
+ROVER \cite{fiscus1997}
 
-Rita Singh's hypothesis combination (CITE)
+Rita Singh and Xiang Li's lattice combination \cite{li2002}
 
-Xiang Li's lattice combination \cite{li2005}
+Consensus network based combination \cite{mangu2000}
 
-Consensus network \cite{mangu1999} based combination (CITE)
+\section{Preliminary Work}
+\label{sec:prelim}
+
+
+
+\section{Proposed Work}
+\label{sec:proposed}
+
+\section{Contributions and Timeline}
+\label{sec:contrib}
+
 
 
 \bibliographystyle{plain}
