@@ -243,10 +243,9 @@ add_mgram_states(StdVectorFst *model, int m,
 }
 
 static void
-add_ngram_arcs(StdVectorFst *model, hash_table_t *sidtab,
+add_ngram_arcs(StdVectorFst *model, int n, hash_table_t *sidtab,
                ngram_model_t *lm, logmath_t *lmath)
 {
-    int n = ngram_model_get_size(lm);
     ngram_iter_t *itor = ngram_model_mgrams(lm, n-1);
 
     /* Add arcs for all N-grams to N-1-gram states. */
@@ -398,7 +397,7 @@ main(int argc, char *argv[])
     }
 
     /* Now do N-grams. */
-    add_ngram_arcs(&model, sidtab, lm, lmath);
+    add_ngram_arcs(&model, n, sidtab, lm, lmath);
 
     /* Find backoff paths which overestimate probabilities and remove
      * them by creating explicit backoff states (Allauzen, 2003) */
