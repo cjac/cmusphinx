@@ -1,0 +1,65 @@
+\documentclass{article}
+\author{David Huggins-Daines ({\tt dhuggins@cs.cmu.edu})}
+\title{Multimodal Personal Idea Management}
+\begin{document}
+\maketitle
+
+\section{Introduction}
+\label{sec:intro}
+
+The popularity of ``personal wikis'' for note taking, organization of
+tasks and ideas, and web publishing has been growing recently.  These
+tools exist somewhere between a personal or group blog and a
+full-fledged collaborative Wiki.  While they are primarily used by a
+single person and are closed to outside authors, they have the
+hierarchical, link-based structure of a Wiki, as opposed to the
+linear, time-based structure of a blog.  The attractive features of
+such systems include the ease of creating, editing, and linking between
+pages and the ability to track changes.
+
+While a blog or wiki can be a powerful tool for taking notes and
+developing one's ideas, it is no substitute for spoken
+``brainstorming'' - that is, talking about one's ideas, often with an
+interlocutor or a group, in order to fully develop them.  Therefore, I
+propose to combine the functions of a personal wiki for knowledge
+management with a conversational interface for note-taking and
+brainstorming.  The construction of such a system entails a number of
+interesting problems in automatic speech recognition and synthesis,
+dialog, and natural language processing.  My goal is focus primarily
+on the speech recognition aspects of the system, though insofar as
+integration with higher-level knowledge sources is required, I may
+conduct research in these areas as well.
+
+\section{Prior Work and Inspiration}
+\label{sec:prior}
+
+IRC (Internet Relay Chat) channels frequently employ automated agents
+known as ``bots'' which use simple pattern matching to answer
+questions posed by channel users.  In some cases these bots are also
+programmed to passively acquire factoids from the text stream.  A
+prime example of this is the Infobot (http://www.infobot.org/) and its
+descendants, which are often used to ``remember'' channel rules,
+trivia, and frequently asked questions about the topic of the channel.
+
+The speech interface group in the MIT Media Lab has done a large
+amount of work on so-called ``memory prosthesis'', which has been
+recently commercialized in the form of the ReQall system.  In contrast
+to these systems, the work I propose will be more interactive in
+nature, rather than simply being a passive listener.  In addition, I
+intend to use the recorded and recognized audio in an off-line editing
+and publishing system, and to use feedback from this editing system to
+adapt the speech recognition system.
+
+The RubberSquid service (http://www.rubbersquid.com/) is perhaps the
+closest existing system to what I'm proposing.  Other ``semantic
+wiki'' systems incorporate similar features.
+
+The user interface for note taking and editing may draw upon the
+SmartNotes and Sublime projects here at CMU.
+
+\section{Description}
+\label{sec:description}
+
+
+
+\end{document}

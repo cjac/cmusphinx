@@ -1,0 +1,28 @@
+These are structured from least complex to most complex.
+
+Quick notes
+-----------
+
+The user presses a talk button on the device and speaks
+one or two utterances.  For example this could be a reminder of
+something that needs to be done later, or a phone number, or some sort
+of factoid to be remembered.
+
+Brainstorming
+-------------
+
+The user dictates a free-form stream of speech.  This may contain
+embedded hints as to topics or pages in which to classify the speech.
+The system may provide audible feedback at utterance boundaries.
+
+Recall
+------
+
+The user seeks to retrieve a note or factoid, or wishes to replay a
+section of dictated text.  The user can use a combination of keyword
+search and date/time range search.
+
+ "I'm looking for conversations on speech recognition"
+ "What things do I have to do this afternoon"
+ "What is my advisor's phone number"
+

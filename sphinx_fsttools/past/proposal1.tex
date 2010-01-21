@@ -1,0 +1,92 @@
+\documentclass{article}
+
+\title{Unified Modeling and Multi-Resolution Search for Speech
+  Recognition, Coding, and Synthesis}
+
+\author{David Huggins-Daines}
+\usepackage{times}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+  I propose to construct a system which uses a unified,
+  speaker-adaptive acoustic and pronunciation model for both speech
+  synthesis and recognition.  This system will be open-source, based
+  on the CMU PocketSphinx and Flite recognition and synthesis systems,
+  and will be optimized for embedded and handheld devices.  I intend
+  to use it to test ideas in search, acoustic modeling and
+  pronunciation modeling which may be relevant to both ASR and TTS,
+  particularly with respect to dialog systems and other applications
+  which integrate the two technologies.
+\end{abstract}
+
+\section{Prior Work}
+\label{sec:prior}
+
+This proposal ultimately has its roots in the ``Trainable Speech
+Synthesis'' technique described in \cite{Donovan1996}.  In the
+trainable synthesis system, a standard HMM-based speech recognition
+system is used to automatically segment the training corpus into a set
+of subphonetic units, which are mapped to phones through decision-tree
+clustering based on phonetic context.  Initially, these units were
+represented as single acoustic parameter vectors, but the quality of
+the synthesis which resulted from this approach was considered to be
+substandard.  Therefore, the final system was a more conventional
+concatenative unit-selection synthesizer based on HMM-state sized
+units.
+
+Contemporary with Donovan's work, but more relevant to this proposal,
+is the ``HMM-Based TTS'' system described in \cite{Masuko1996}.  In
+this system, as above, continuous-density HMMs are used to segment the
+training corpus into units, each of which corresponds to an HMM state.
+However, the units are represented compactly as single parameter
+vectors.  In order to produce natural and intelligible output, pitch
+and voicing (and more recently, duration) are modeled jointly with the
+spectrum, and a principled form of interpolation between parameter
+vectors is used \cite{Tokuda2000} which uses the same time-derivative
+information commonly used in HMM-based ASR systems.
+
+The idea of sharing the same set of HMMs between a speech recognizer
+and synthesizer is not a new one.  It has typically been applied in
+very low bitrate speech coders, notably in \cite{Tokuda1998}.  More
+recently, this system has been extended to be speaker-adaptive
+\cite{Masuko2006}.  While some of the work described in this proposal
+simply consists of understanding, reimplementing, and replicating the
+work of Tokuda, Masuko, et al., my goals are somewhat different.
+
+\section{Research Questions}
+\label{sec:goals}
+
+\begin{itemize}
+\item What can speech synthesis learn from recognition, and vice
+  versa? (see \cite{Ostendorf2002})
+\item What are the essential differences in the modeling strategies
+  required for synthesis as opposed to recognition?  For example, what
+  is an appropriate objective function for use in training a set of
+  models for synthesis vs. recognition? (see \cite{Bulyko2002})
+\item What are the essential differences in the acoustic features
+  required for synthesis as opposed to recognition?
+\item To what extent do the answers to the questions above reflect
+  the results of neurolinguistic studies on production and perception?
+\end{itemize}
+
+\subsection{Acoustic and Pronunciation Modeling}
+\label{sec:am}
+
+\begin{itemize}
+\item How closely do the classes used in acoustic modeling really
+  correspond to the symbolic information (e.g. phonesets, articulatory
+  features) used to generate them?
+\item What is the effect of discriminative methods such as HLDA, fMPE,
+  MMIE, MPE, and so forth on this relationship?
+\item How useful is it to have models that are faithful to the
+  human-readable coding system?
+\item Loosening the phoneme constraint on acoustic modeling?
+\end{itemize}
+
+\section{Bibliography}
+ 
+\bibliographystyle{apalike}
+\bibliography{asrtts}
+\end{document}

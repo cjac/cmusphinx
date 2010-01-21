@@ -1,0 +1,159 @@
+\documentclass{article}
+\author{David Huggins-Daines ({\tt dhuggins@cs.cmu.edu})}
+\title{Multimodal Personal Knowledge Management}
+\begin{document}
+\maketitle
+
+\section{Introduction}
+\label{sec:intro}
+
+The popularity of ``personal wikis'' for note taking, organization of
+tasks and ideas, and web publishing has been growing recently.  These
+tools exist somewhere between a personal or group blog and a
+full-fledged collaborative Wiki.  While they are primarily used by a
+single person and are closed to outside authors, they have the
+hierarchical, link-based structure of a Wiki, as opposed to the
+linear, time-based structure of a blog.  The attractive features of
+such systems include the ease of creating, editing, and linking between
+pages and the ability to track changes.
+
+While a blog or wiki can be a powerful tool for taking notes and
+developing one's ideas, it is no substitute for spoken
+``brainstorming'' - that is, talking about one's ideas, often with an
+interlocutor or a group, in order to fully develop them.  Therefore, I
+propose to combine the functions of a personal wiki for knowledge
+management with a conversational interface for note-taking and
+brainstorming.  The construction of such a system entails a number of
+interesting problems in automatic speech recognition and synthesis,
+dialog, and natural language processing.  My goal is focus primarily
+on the speech recognition aspects of the system, though insofar as
+integration with higher-level knowledge sources is required, I may
+conduct research in these areas as well.
+
+\section{Prior Work and Inspiration}
+\label{sec:prior}
+
+IRC (Internet Relay Chat) channels frequently employ automated agents
+known as ``bots'' which use simple pattern matching to answer
+questions posed by channel users.  In some cases these bots are also
+programmed to passively acquire factoids from the text stream.  A
+prime example of this is the Infobot (http://www.infobot.org/) and its
+descendants, which are often used to ``remember'' channel rules,
+trivia, and frequently asked questions about the topic of the channel.
+
+The speech interface group in the MIT Media Lab has done a large
+amount of work on so-called ``memory prosthesis'', which has been
+recently commercialized in the form of the ReQall system.  In contrast
+to these systems, the work I propose will be more interactive in
+nature, rather than simply being a passive listener.  In addition, I
+intend to use the recorded and recognized audio in an off-line editing
+and publishing system, and to use feedback from this editing system to
+adapt and improve both the speech recognition system and the search
+and browsing functionality.
+
+The RubberSquid service (http://www.rubbersquid.com/) is perhaps the
+closest existing system to what I'm proposing.  Other ``semantic
+wiki'' systems incorporate similar features.
+
+The user interface for note taking and editing may draw upon the
+SmartNotes and Sublime projects here at CMU.
+
+To any extent possible, the ``backend'' of the system will build upon
+open-source wiki and semantic web technologies.
+
+\section{Description}
+\label{sec:description}
+
+The core of the system consists of a knowledge base, which consists of
+a set of interlinked pages, each consisting of a list of sentences.
+The web interface allows direct editing and manipulation of pages in a
+Wiki-like fashion.  Each page roughly corresponds to a single topic or
+concept in an ontology, and enters into semantic relationships with
+the pages to which it links.  One goal of the system is to learn to
+identify these relationships from user input - that is, to use
+information obtained from manual annotation of existing data to
+identify potential links and annotations in new data.  This is
+particularly relevant for speech input, where it is not easy to
+explicitly specify links.
+
+In parallel to the set of pages, there exists a set of
+``conversations'' which correspond to sessions in the speech recording
+and interaction interface.  Each conversation consists of a list of
+utterances, which may or may not correspond to sentences.  There is a
+many-to-many mapping between conversations and pages.  That is, one
+conversation may touch a number of different pages, and one page may
+incorporate multiple conversations.  This entails a topic segmentation
+over each conversation.
+
+Matching utterances to pages (i.e. topic segmentation) can be done
+through the conversational interface or through the web interface.  In
+the conversational domain, an interactive interface will be provided
+for switching topics and defining new topics.  Outside of this
+interface the system will primarily operate in a free dictation mode.  
+
+The system will be designed for off-line usage via a mobile device -
+in this case only the conversational interface will be available.
+Synchronization of the knowledge base between the mobile device and
+the web server will be achieved using DAV, using a Subversion
+repository as the backing store to allow for revision control.  The
+baseline hardware requirements for the mobile device will be similar
+to the capabilities of the Nokia N800 Internet Tablet, namely a 300MHz
+or faster CPU and 256MB of flash memory.
+
+In the web interface it will be possible not only to match utterances
+to pages (through a drag-and-drop interface using interactive web
+technologies) but also make corrections to the speech recognition
+results.  When changes to the utterance text are committed, the system
+will perform adaptive and corrective training on its acoustic and
+language models based on these corrections.  In addition, any text
+entered into the Wiki directly from the web will be used for language
+model and topic model adaptation.  The goal is that, over time, the
+system should approach 100\% accuracy for a given speaker, except in
+the case of new words.
+
+To learn new words, the system may use intermediate levels of
+representation between the phoneme and HMM state level.  Recognition
+results will be stored as acoustic features along with segmentation
+and pitch information sufficient to allow intelligible reconstruction
+of the original speech.
+
+\section{Challenges}
+\label{sec:challenges}
+
+\begin{itemize}
+\item Integrating dialog and dictation
+\item Continuous acoustic and language model adaptation
+\item Mobile device implementation
+\item Topic segmentation
+\end{itemize}
+
+\section{Implementation Plan}
+\label{sec:plan}
+
+\subsection{Conversational Interface}
+\label{sec:conv}
+
+\begin{itemize}
+\item Framework for mobile mixed dialog/dictation
+\item Free dictation mode
+\item Topic definition mode
+\item Browsing and query mode
+\end{itemize}
+
+\subsection{Web Interface}
+\label{sec:webint}
+
+\begin{itemize}
+\item Wiki editing interface
+\item Conversation editing interface
+\item Topic segmentation and conversation/wiki integration interface
+\end{itemize}
+
+\subsection{Knowledge Base}
+\label{sec:kb}
+
+\begin{itemize}
+\item 
+\end{itemize}
+
+\end{document}

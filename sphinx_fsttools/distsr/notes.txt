@@ -1,0 +1,12 @@
+Things that are important to stress:
+
+ * Why this is not "Distributed Speech Recognition"
+   - Information is extracted at a higher level than just MFCCs
+   - The results are immediately useful on the client side
+   - The architecture is peer-to-peer
+   - The architecture does not assume a reliable, always-on network
+
+ * Why this is relevant to asymmetric multiprocessing
+   - Past research has shown that (live-mode) ASR is not
+     parallelizable in a symmetric fashion
+   - 

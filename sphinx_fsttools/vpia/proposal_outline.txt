@@ -1,0 +1,30 @@
+System Concept
+--------------
+
+Voice-driven personal wiki:
+
+ * Tool for organizing work and ideas
+ * Simple document structure
+ * Automatic linking
+ * Automatic classification of incoming utterances
+
+Personal knowledge manager:
+
+ * Quick notes capability - todo lists, factoids
+ * Query system for notes and conversations
+ * Summarization of pages
+ * Interactive voice editing of notes and factoids
+
+Refinements beyond a dictation system:
+
+ * Structured information (pages, links)
+ * Automatic factoid extraction and classification
+ * Interactive speech query interface
+
+Data Organization
+-----------------
+
+Pages (a.k.a. Topics)
+Factoids (a.k.a. Notes)
+Utterances
+Sub-utterance structure
