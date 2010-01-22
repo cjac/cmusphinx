@@ -89,10 +89,6 @@ static const arg_t args[] = {
       ARG_STRING,
       NULL,
       "Write symbol table file for states to this file" },
-    { "-closure",
-      ARG_BOOLEAN,
-      "yes",
-      "Output Kleene closure of dictionary" },
     { "-maxn",
       ARG_INT32,
       "0",
@@ -427,9 +423,6 @@ main(int argc, char *argv[])
      * containing epsilon arcs).  We should connect it though to
      * remove impossible word sequences.  However, this means the
      * state symbol table would be meaningless.  So don't do that. */
-
-    if (cmd_ln_boolean_r(config, "-closure"))
-        Closure(&model, CLOSURE_PLUS);
 
     /* Also sort it so it can be composed with a dictionary. */
     ArcSort(&model, ILabelCompare<StdArc>());
