@@ -186,6 +186,26 @@ cdef class NGramModel:
         self.uw = uw
         ngram_model_apply_weights(self.lm, lw, wip, uw)
 
+    def get_size(self):
+        """
+        Get the order of this model (i.e. the "N" in "N-gram")
+
+        @return: Order of this model
+        @rtype: int
+        """
+        return ngram_model_get_size(self.lm)
+
+    def get_counts(self):
+        """
+        Get the counts of each size of N-gram.
+
+        @return: Counts of 1, 2, ..., N grams
+        @rtype: tuple(int)
+        """
+        cdef int *counts
+        counts = ngram_model_get_counts(self.lm)
+        return tuple([counts[i] for i in range(ngram_model_get_size(self.lm))])
+
     def wid(self, word):
         """
         Get the internal ID for a word.
@@ -372,6 +392,31 @@ cdef class NGramIter:
         itor.itor = ngram_iter_successors(self.itor)
         return itor
 
+def binstr(str val, int nbits):
+    """
+    Silly function to format a string as a binary string
+    """
+    cdef int i
+    outstr = ""
+    for c in val:
+        cval = ord(c)
+        cnb = min(8, nbits)
+        for i in range(0,cnb):
+            outstr += "%d" % ((cval & (1 << 7-i)) != 0)
+        nbits -= 8
+    return outstr
+
+def bincw(int cw, int nbits):
+    """
+    Silly function to format an int as a binary string
+    """
+    cdef int i
+    outstr = ""
+    for i in range(0,nbits):
+        outstr = "%s" % (cw & 1) + outstr
+        cw >>= 1
+    return outstr
+
 cdef class HuffCode:
     """
     Huffman coding class.
@@ -405,11 +450,14 @@ cdef class HuffCode:
         nsym = len(alphabet)
         frequencies = <int *>ckd_calloc(nsym, sizeof(int))
         symbols = <char **>ckd_calloc(nsym, sizeof(char *))
+        # Need to create separate Python objects for each string,
+        # otherwise we get random duplicates of the codewords...
+        bogus = []
         for i, spam in enumerate(alphabet):
             sym, freq = spam
-            sss = str(sym)
+            bogus.append(repr(sym))
             frequencies[i] = freq
-            symbols[i] = sss
+            symbols[i] = bogus[-1]
         self.hc = huff_code_build_str(symbols, frequencies, nsym)
         ckd_free(frequencies)
         ckd_free(symbols)
@@ -442,51 +490,64 @@ cdef class HuffCode:
         cdef char *output
         
         for sym in seq:
-            cwlen = huff_code_encode_str(self.hc, sym, &cw)
+            sss = repr(sym)
+            cwlen = huff_code_encode_str(self.hc, sss, &cw)
             nbits += cwlen
         nbytes = int((nbits + 7) / 8)
         offset = 0
         output = <char *>PyMem_Malloc(nbytes + 1)
         output[nbytes] = 0
         i = 0
+        nbits = 0
         for sym in seq:
-            cwlen = huff_code_encode_str(self.hc, sym, &cw)
-            #dstr = "".join([("%02x" % ord(b)) for b in output[0:i]])
-            #print "sym: %s cw: %.*x buf: %02x offset: %d output: %s" \
-            #      % (sym, cwlen, cw, buf, offset, dstr)
-            # Do one byte at a time
+            sss = repr(sym)
+            cwlen = huff_code_encode_str(self.hc, sss, &cw)
+            #print "sym: %s cw: %s buf: %s output: %s" \
+            #      % (sym, bincw(cw, cwlen), bincw(buf >> (8-offset), offset),
+            #         binstr(output, nbits))
+            #print "cwlen",cwlen
+            # Do one byte at a time while full bytes are available
             while cwlen >= 8:
-                # Fill low bits of buf
+                # Fill low bits of buf with high bits of cw
                 buf |= (cw >> (cwlen - (8 - offset))) & ((1 << (8 - offset)) - 1)
                 # Append buf to output
-                #print "adding: %02x cwlen %d => %d" % (buf, cwlen, cwlen - 8)
                 output[i] = buf
                 i += 1
-                # Fill high bits of buf
+                nbits += 8
+                # Fill high bits of buf with low bits of this byte
                 cwlen -= 8
                 buf = (cw >> cwlen) & ((1 << offset) - 1)
                 buf <<= (8-offset)
-            # Do one last byte if necessary
+                #print "cwlen",cwlen
+            # Now cwlen will be less than 8, but it might still be
+            # more than the available space in buf.
             if cwlen >= (8 - offset):
-                # Fill low bits of buf
+                # Fill low bits of buf with (8-offset) highest bits of cw
                 buf |= (cw >> (cwlen - (8 - offset))) & ((1 << (8 - offset)) - 1)
                 # Append buf to output
-                #print "adding: %02x cwlen %d => %d" % (buf, cwlen, cwlen - (8 - offset))
                 output[i] = buf
                 i += 1
+                nbits += 8
+                # cwlen is down to the remaining bits
                 cwlen -= (8 - offset)
-            # Add remaining bits to buf
+                # Offset is now zero since we just completed and emptied buf
+                offset = 0
+                # buf is zero, because we just emptied it without putting stuff in
+                buf = 0
+                #print "cwlen",cwlen
+                # Any remaining  bits will be taken care of below (we hope)
+            # Add remaining high bits of cw to low bits of buf
+            #print "cwlen",cwlen
             buf |= ((cw & ((1 << cwlen) - 1)) << (8 - offset - cwlen))
             offset += cwlen
-            #dstr = "".join([("%02x" % ord(b)) for b in output[0:i]])
-            #print "after buf: %02x offset: %d output: %s" \
-            #      % (buf, offset, dstr)
+            #print "after buf: %s output: %s" \
+            #      % (bincw(buf >> (8-offset), offset), binstr(output, nbits))
         if offset > 0:
             # Append buf to output
             output[i] = buf
+            nbits += offset
             i += 1
-        #dstr = "".join([("%02x" % ord(b)) for b in output[0:i]])
-        #print "output:", dstr
+        #print "output:", binstr(output, nbits)
         outstr = PyString_FromStringAndSize(output, nbytes)
         PyMem_Free(output)
         return (outstr, offset)
@@ -529,7 +590,8 @@ cdef class HuffCode:
         if self.fh == None:
             raise RuntimeError, "No file is attached"
         for sym in seq:
-            huff_code_encode_str(self.hc, sym, NULL)
+            strsym = repr(sym)
+            huff_code_encode_str(self.hc, strsym, NULL)
 
     def decode_from_file(self):
         cdef char *sym
