@@ -34,6 +34,7 @@
 #  Sphinx III
 #
 # ====================================================================
+AUTOMAKE_OPTIONS = -Wno-portability
 
 INCLUDES = -I$(top_srcdir) \
 	-I$(top_srcdir)/src \

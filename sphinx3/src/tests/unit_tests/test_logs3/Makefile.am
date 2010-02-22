@@ -8,4 +8,4 @@ INCLUDES = \
 LDADD = ${top_builddir}/src/libs3decoder/libs3decoder.la \
         -lsphinxbase -lm @ad_libs@
 
-TESTS = $(wildcard _*.test) 
+TESTS = _testlogs3_1.test

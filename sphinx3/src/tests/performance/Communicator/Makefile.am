@@ -35,9 +35,10 @@
 #
 # ====================================================================
 
+AUTOMAKE_OPTIONS = -Wno-portability
+
 INCLUDES = -I$(top_srcdir)/include \
        -I$(top_builddir)/include
-
 
 LDADD = $(top_builddir)/src/libs3decoder/libs3decoder.la \
 	$(top_builddir)/src/libs3audio/libs3audio.la \

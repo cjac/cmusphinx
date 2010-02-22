@@ -8,4 +8,4 @@ LDADD = ${top_builddir}/src/libs3decoder/libs3decoder.la \
         -lsphinxbase @ad_libs@ -lm
 AM_LDFLAGS = -static
 
-TESTS = $(wildcard _*.test) 
+TESTS = _testhmm_tidigits.test

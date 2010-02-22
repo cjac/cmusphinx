@@ -35,6 +35,8 @@
 #
 # ====================================================================
 
+AUTOMAKE_OPTIONS = -Wno-portability
+
 INCLUDES = -I$(top_srcdir)/include \
        -I$(top_builddir)/include
 
