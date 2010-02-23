@@ -1,0 +1,2370 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head>
+  <title>Robust Group Tutorial</title>
+
+<STYLE TYPE="text/css">
+     pre { font-size: medium; background: #f0f8ff; padding: 2mm; border-style: ridge ; color: teal}
+     code {font-size: medium; color: teal; font-weight: bold}
+     keyword {font-weight: bold; font-style: italic }
+</STYLE>
+
+<script type="text/javascript">
+
+<!--
+
+function zizi(titi){
+
+var fifi='mailto:';
+
+var domeniu="@cs.cmu.edu";
+
+this.location=fifi+titi+domeniu;
+
+};//-->
+
+</script>
+
+  </head>
+<body bgcolor="#ffffff">
+
+<center>
+<h1>Carnegie Mellon University</h1>
+
+<a href="http://www.speech.cs.cmu.edu/"><img
+src="http://www.speech.cs.cmu.edu/images/title.gif" align="middle"
+height="80"></a>
+
+<br>
+
+<a href="http://www.cs.cmu.edu/">School of Computer Science</a><br> 
+
+<a href="http://www.ece.cmu.edu/">Department of Electrical &amp;
+Computer Engineering</a><br>
+
+<hr noshade="noshade">
+<font color="blue" size="3">
+<a href="http://www.cs.cmu.edu/~robust/"><b>Robust group</b></a>'s
+Open Source Tutorial<br>Learning to use the CMU SPHINX Automatic Speech
+Recognition system
+</font>
+<hr noshade="noshade">
+</center>
+
+
+
+<ul>
+
+
+<li><a href="#introduction">Introduction</a>
+<ul>
+<li><a href="#traincomponent">Components provided for training</a>
+</li>
+<li><a href="#decodecomponent">Components provided for decoding</a>
+</li>
+</ul>
+</li>
+<li><a href="#setup">Setting up your system</a>
+</li>
+<ul>
+<li><a href="#setuprequire">Required software before you start</a>
+</li>
+<li><a href="#setupdata">Setting up the data</a>
+</li>
+<li><a href="#setuptrain">Setting up the trainer</a>
+</li>
+<li><a href="#setupdecode">Setting up the decoder</a>
+</li>
+</ul>
+<li><a href="#prelimtraining">How to perform a preliminary training run</a>
+</li>
+<li><a href="#prelimdecode">How to perform a preliminary decode</a>
+</li>
+<li><a href="#tools">Miscellaneous tools</a>
+</li>
+<li><a href="#expected">How you are expected to use this tutorial</a>
+</li>
+<li><a href="#train">How to train, and key training issues</a>
+</li>
+<li><a href="#decode"> How to decode, and key decoding issues</a>
+</li>
+<li><a href="#app1">Appendix 1: Phone Merging</a>
+</li>
+<li><a href="#app2">Appendix 2: HMM Topology with Skip State Transitions</a>
+</li>
+<li><a href="#app3">Appendix 3: State Tying</a>
+</li>
+<li><a href="#app4">Appendix 4: Language Model and Language Weight</a>
+</li>
+</ul>
+
+
+
+<h2><a name="introduction"></a>Introduction</h2>
+
+
+<p>
+In this tutorial, you will learn to handle a complete state-of-the-art
+HMM-based speech recognition system. The system you will use is the
+SPHINX system, designed at Carnegie Mellon University. SPHINX is one
+of the best and most versatile recognition systems in the world
+today.
+</p>
+
+<p>
+An HMM-based system, like all other speech recognition systems,
+functions by first learning the characteristics (or parameters) of a
+set of sound units, and then using what it has learned about the units
+to find the most probable sequence of sound units for a given speech
+signal. The process of learning about the sound units is called
+<keyword>training</keyword>. The process of using the knowledge
+acquired to deduce the most probable sequence of units in a given
+signal is called <keyword>decoding</keyword>, or simply recognition.
+</p>
+
+<p>
+Accordingly, you will need those components of the SPHINX system
+that you can use for training and for recognition. In other words, you
+will need the SPHINX <keyword>trainer</keyword> and a SPHINX
+<keyword>decoder</keyword>.
+</p>
+
+<p> 
+You will be given instructions on how to download, compile, and run the
+components needed to build a complete speech recognition system. Namely,
+you will be given instructions on how to use <a
+href="#SphinxTrain">SphinxTrain</a> and <a href="#sphinx3">SPHINX-3</a>.
+Please check a <href="http://cmusphinx.org">CMUSphinx</a> project page
+for more details on available decoders and their applications. This
+tutorial does not instruct you on how to build a language model, but you
+can check the <a href="http://www.speech.cs.cmu.edu/SLM_info.html">CMU
+SLM Toolkit</a> page for an excellent manual.
+</p>
+
+<p>
+At the end of this tutorial, you will be in a position to train and
+use this system for your own recognition tasks. More importantly,
+through your exposure to this system, you will have learned about
+several important issues involved in using a real HMM-based ASR
+system.
+</p>
+
+<p><b>Important note for members of the Sphinx group</b>: This
+tutorial <a href="#pbs">now supports the PBS queue</a>.  The internal,
+csh-based <a href="http://www.cs.cmu.edu/~robust/Tutorial">Robust
+tutorial</a> is still available, though its use is discouraged.
+</p>
+
+<h3><a name="traincomponent"></a>Components provided for training</h3>
+
+
+
+<p>
+The SPHINX trainer consists of a set of programs, each responsible for
+a well defined task, and a set of scripts that organizes the order in
+which the programs are called. You have to compile the code in your
+favorite platform.
+</p>
+
+<p>
+The trainer learns the parameters of the models of the sound units
+using a set of sample speech signals. This is called a
+<keyword>training database</keyword>. A choice of training databases
+will also be provided to you. The trainer also needs to be told which
+sound units you want it to learn the parameters of, and at least the
+sequence in which they occur in every speech signal in your training
+database. This information is provided to the trainer through a file
+called the <keyword>transcript file</keyword>, in which the sequence
+of words and non-speech sounds are written exactly as they occurred in
+a speech signal, followed by a tag which can be used to associate this
+sequence with the corresponding speech signal. The trainer then looks
+into a <keyword>dictionary</keyword> which maps every word to a
+sequence of sound units, to derive the sequence of sound units
+associated with each signal. Thus, in addition to the speech signals,
+you will also be given a set of transcripts for the database (in a
+single file) and two dictionaries, one in which legitimate words in
+the language are mapped sequences of sound units (or sub-word units),
+and another in which non-speech sounds are mapped to corresponding
+non-speech or speech-like sound units. We will refer to the former as
+the <keyword>language dictionary</keyword> and the latter as the
+<keyword>filler dictionary</keyword>.
+
+</p>
+
+<p>
+In summary, the components provided to you for training will be:
+</p>
+
+<ol>
+<li>The trainer source code
+</li>
+<li>The acoustic signals
+</li>
+<li>The corresponding transcript file
+</li>
+<li>A language dictionary
+</li>
+<li>A filler dictionary
+</li>
+</ol>
+
+<h3><a name="decodecomponent"></a>Components provided for decoding</h3>
+
+<p>
+The decoder also consists of a set of programs, which have been
+compiled to give a single executable that will perform the recognition
+task, given the right inputs. The inputs that need to be given are:
+the trained acoustic models, a model index file, a language model, a
+language dictionary, a filler dictionary, and the set of acoustic
+signals that need to be recognized. The data to be recognized are
+commonly referred to as <keyword>test data</keyword>.
+</p>
+
+<p>
+In summary, the components provided to you for decoding will be:
+</p>
+
+<ol>
+<li>The decoder source code
+</li>
+<li>The language dictionary
+</li>
+<li>The filler dictionary
+</li>
+<li>The language model
+</li>
+<li>The test data
+</li>
+</ol>
+
+
+<p>
+In addition to these components, you will need the acoustic models
+that you have trained for recognition. You will have to provide these
+to the decoder. While you train the acoustic models, the trainer will
+generate appropriately named model-index files. A model-index file
+simply contains numerical identifiers for each state of each HMM,
+which are used by the trainer and the decoder to access the correct
+sets of parameters for those HMM states.  With any given set of
+acoustic models, the corresponding model-index file must be used for
+decoding. If you would like to know more about the structure of the
+model-index file, you will find a description following the link
+<a href="http://www.speech.cs.cmu.edu/sphinxman/scriptman1.html#20">
+Creating the CI model definition file</a>.
+
+</p>
+
+<p>
+</p>
+
+<h2><a name="setup"></a>Setting up your system</h2>
+
+<p>You will have to download and build several components to set up
+the complete systems. Provided you have all the necessary software,
+you will have to download the data package, the trainer, and one of
+the SPHINX decoders. The following instructions detail the steps.
+</p>
+
+<h3><a name="setuprequire"></a>Required software before you start</h3>
+
+<p>You will need Perl to run the provided scripts, and a C compiler to
+compile the source code.
+</p>
+
+<h4>Perl</h4>
+
+<p>You will need Perl to use the scripts provided. Linux usually comes
+with some version of Perl. If you do not have Perl installed, please
+check the <a href="http://www.perl.org">Perl</a> site, where you can
+download it for free.
+</p>
+
+<p>For Windows, a popular version, <a
+href="http://www.activestate.com/Products/ActivePerl/">ActivePerl</a>,
+is available from ActiveState. If you are using Windows, even if you
+have cygwin installed, ActivePerl is better at handling the end of
+line character, and it is faster than cygwin's Perl. Additionally, if
+a package is missing from the distribution, you can easily download
+and install it using the <code>ppm</code> utility. For example, to
+install the <code>File::Copy</code> module, all you have to do is:
+</p>
+<pre>
+perl ppm install File::Copy
+</pre>
+
+<h4>C Compiler</h4>
+
+<p>SphinxTrain and SPHINX-3 use GNU autoconf to find out basic
+information about your system, and should compile on most Unix and
+Unix-like systems, and certainly on Linux. The code compiles using GNU's
+make and GNU's C compiler (<code>gcc</code>), available in all Linux
+distributions, and available for free for most platforms. </p>
+
+<p>We also provide files supporting compilation using Microsoft's
+Visual C++, i.e., the solution (<code>.sln</code>) and project
+(<code>.vcproj</code>) files needed to compile code in native Windows
+format.
+</p>
+
+<h4><a name="alignment"></a>Word Alignment</h4>
+
+<p>You will need a word alignment program if you want to measure the
+accuracy of a decoder. A commonly used one, available from the
+National Institute of Standards and Technology (NIST), is
+<code>sclite</code>, provided as part of their scoring packages. You
+will find their scoring packages in the <a
+href="http://www.nist.gov/speech/tools/">NIST tools</a>
+page. The software is available for those in the speech group at
+<code>~robust/archive/third_party_packages/NIST_scoring_tools/sctk/linux/bin/sclite</code>.
+</p>
+
+<p>Internally, at CMU, you may also want to use the <code>align</code>
+program, which does the same job as the NIST program, but does not
+have some of the features. You can find it in the robust home
+directory at
+<code>~robust/archive/third_party_packages/align/linux/align</code>.
+</p>
+
+<h3><a name="setupdata"></a>Setting up the data</h3>
+
+<p>The Sphinx Group makes it available two audio databases that can be
+used with this tutorial. Each has its peculiarities, and are provided
+just as a convenience. The data provided are not sufficient to build a
+high performance speech recognition system. They are only provided
+with the goal of helping you learn how to use the system.
+</p>
+<p>The databases are provided at the <a
+href="http://www.speech.cs.cmu.edu/databases">Databases</a>
+page. Choose either <a
+href="http://www.speech.cs.cmu.edu/databases/an4">AN4</a> or <a
+href="http://www.speech.cs.cmu.edu/databases/rm1">RM1</a>. AN4
+includes the audio, but it is a very small database. You can choose it
+if you want to include the creation of feature files in your
+experiments. RM1 is a little larger, thus resulting in a system with
+slightly better performance. Audio is not provided, since it is
+licensed material. We provide the feature files used directly by the
+trainer and decoders. For more information about RM1, please check
+with the <a
+href="http://www.ldc.upenn.edu/Catalog/LDC93S3B.html">LDC</a>.
+</p>
+
+<p>The steps involved:</p>
+<ol>
+<li>Create a directory for the system, and move to that directory:
+<pre>
+mkdir tutorial
+cd tutorial
+</pre>
+</li>
+<li>Download the audio tarball, either <a
+href="http://www.speech.cs.cmu.edu/databases/an4/an4_sphere.tar.gz">AN4</a>
+or <a
+href="http://www.speech.cs.cmu.edu/databases/rm1/rm1_cepstra.tar.gz">RM1</a>,
+by clicking on the link and choosing "Save" when the dialog window
+appears. Save it to the same <code>tutorial</code> directory you just
+created. For those not familiar with the term, a
+<keyword>tarball</keyword> in our context is a file with extension
+<code>.tar.gz</code>. Extract the contents as follows.
+</li>
+<ul>
+<li>
+In Windows, using the Windows Explorer, go to the
+<code>tutorial</code> directory, right-click the audio tarball, and
+choose "Extract to here" in the WinZip menu.
+</li>
+<li>
+In Linux/Unix:
+<pre>
+# If you are using AN4
+gunzip -c an4_sphere.tar.gz | tar xf -
+# If you are using RM1
+gunzip -c rm1_cepstra.tar.gz | tar xf -
+</pre>
+</li>
+</ul>
+</li>
+</ol>
+
+
+<p>By the time you finish this, you will have a <code>tutorial</code>
+directory with the following contents</p>
+<pre>
+<ul><li>tutorial<ul><li>an4</li><li>an4_sphere.tar.gz</li></ul></li></ul></pre>
+<p>Or</p>
+<pre>
+<ul><li>tutorial<ul><li>rm1</li><li>rm1_cepstra.tar.gz</li></ul></li></ul></pre>
+
+<h3><a name="setuptrain"></a>Setting up the trainer</h3>
+
+<h4>Code retrieval</h4> 
+
+<p>SphinxTrain can be retrieved using <a href="#trainsvn">subversion</a> (svn) or
+by downloading a <a href="#traintarball">tarball</a>. svn makes it
+easier to update the code as new changes are added to the repository,
+but requires you to install svn. The tarball is more readily
+available.</p>
+
+<p>You can find more information about svn at the <a
+href="http://subversion.tigris.org/">SVN Home</a>.</p>
+
+<ul>
+<li><a name="trainsvn">Using svn
+<pre>
+svn co https://cmusphinx.svn.sourceforge.net:/svnroot/cmusphinx/trunk/SphinxTrain
+</pre>
+</li>
+<li><a name="traintarball">Using the tarball, download the <a
+href="http://cmusphinx.org/download/nightly/SphinxTrain.nightly.tar.gz">SphinxTrain
+tarball</a> by clicking on the link and choosing "Save" when the
+dialog window appears. Save it to the same <code>tutorial</code>
+directory. Extract the contents as follows.
+<ul>
+<li>
+In Windows, using the Windows Explorer, go to the
+<code>tutorial</code> directory, right-click the SphinxTrain tarball, and
+choose "Extract to here" in the WinZip menu.
+</li>
+<li>
+In Linux/Unix:
+<pre>
+gunzip -c SphinxTrain.nightly.tar.gz | tar xf -
+</pre>
+</li>
+</ul>
+</li>
+</ul>
+
+<p>Further details about download options are available in the <a
+href="http://cmusphinx.org/">cmusphinx.org</a> page, under the header
+<i>Download instructions</i>
+</p>
+
+<p>By the time you finish this, you will have a <code>tutorial</code>
+directory with the following contents</p>
+<pre>
+<ul><li>tutorial<ul><li>an4</li><li>an4_sphere.tar.gz</li><li>SphinxTrain</li><li>SphinxTrain.nightly.tar.gz</li></ul></li></ul></pre>
+<p>Or</p>
+<pre>
+<ul><li>tutorial<ul><li>rm1</li><li>rm1_cepstra.tar.gz</li><li>SphinxTrain</li><li>SphinxTrain.nightly.tar.gz</li></ul></li></ul></pre>
+<h4>Compilation</h4>
+<p>In Linux/Unix:</p>
+<pre>
+cd SphinxTrain
+configure
+make
+</pre>
+<p>In Windows:
+</p>
+<ol>
+<li>Double click the file
+<code>tutorial/SphinxTrain/SphinxTrain.sln</code>. This will open MS
+Visual C++, if you have it installed. If you do not, please contact <a
+href="http://www.microsoft.com">Microsoft</a>.
+</li>
+<li>In the Menu <code>Build</code> choose <code>Batch Build</code>,
+and select all items. Click on <code>Rebuild All</code> This will
+build all executables needed by the trainer.
+</li>
+</ol>
+<h4>Tutorial Setup</h4> <p>After compiling the code, you will have to
+setup the tutorial by copying all relevant executables and scripts to
+the same area as the data. Assuming your current working directory is
+<code>tutorial</code>, you will need to do the following.</p>
+<pre>
+cd SphinxTrain
+# If you installed AN4
+perl scripts_pl/setup_tutorial.pl an4
+# If you installed RM1
+perl scripts_pl/setup_tutorial.pl rm1
+</pre>
+
+<h3><a name="setupdecode"></a>Setting up the decoder</h3>
+
+    <center><a href="http://www.sourceforge.net"> <img
+    src="http://sflogo.sourceforge.net/sflogo.php?group_id=1904&amp;type=1"
+    width="88" height="31" border="0" alt="SourceForge Logo"></a>
+    <br>Hosted by SourceForge.net</center>
+
+<p>The Sphinx Group has several different decoders whose features can
+guide you in choosing the best one for your application. Roughly,
+these can be described as follows.</p>
+
+<ul>
+
+<li><a href="#pocketsphinx">PocketSphinx</a>: This is a modernized
+version of Sphinx-2, specially optimized for embedded and handheld
+systems.  It also consumes on average 20% less memory and 5-20% less
+CPU time than SPHINX-2.  However, it is under active development, so
+the interface and feature set may be unstable.</li>
+
+<li><a href="#sphinx3">SPHINX-3</a>: Uses continuous HMMs. It can
+handle both live and batch decoding.  Currently, it is the decoder most
+actively developed.</li>
+
+<li><a href="#sphinx4">SPHINX-4</a>: Uses continuous HMMs. It was
+written in the Java programming language. It provides high flexibility
+and great accuracy and speed for small tasks.</li>
+</ul>
+
+For your application you can choose any decoder suitable for you, but 
+in this tutorial we'll use SPHINX-3 as a base decoder. It's a good idea
+to test your model with SPHINX-3 first to detect errors on early stages.
+
+<p><b><a name="sphinx3">SPHINX-3 Installation</b></p>
+
+<h4>Code retrieval</h4> 
+
+<p>SPHINX-3 can be retrieved using <a href="#sphinx3svn">subversion</a> (svn) or by
+downloading a <a href="#sphinx3tarball">tarball</a>. svn makes it
+easier to update the code as new changes are added to the repository,
+but requires you to install svn. The tarball is more readily
+available. SPHINX-3 is also available as a <a
+href="http://sourceforge.net/project/showfiles.php?group_id=1904&package_id=68406">release</a>
+from <a href="http://sourceforge.net">SourceForge.net</a>. Since the
+release is a tarball, we will not provide separate instructions for
+installation of the release.</p>
+
+<p>You can find more information about svn at the <a
+href="http://subversion.tigris.org/">SVN Home</a>.</p>
+
+<ul>
+<li><a name="sphinx3svn">Using svn
+<pre>
+svn co https://cmusphinx.svn.sourceforge.net:/svnroot/cmusphinx/trunk/sphinxbase
+svn co https://cmusphinx.svn.sourceforge.net:/svnroot/cmusphinx/trunk/sphinx3
+</pre>
+</li>
+<li><a name="sphinx3tarball">Using the tarball, download the <a
+href="http://cmusphinx.org/download/nightly/sphinx3.nightly.tar.gz">sphinx3
+tarball</a>
+and <a
+href="http://cmusphinx.org/download/nightly/sphinxbase.nightly.tar.gz">sphinxbase</a> by clicking on the link and choosing "Save" when the
+dialog window appears. Save them to the same <code>tutorial</code>
+directory. Extract the contents as follows.
+<ul>
+<li>
+In Windows, using the Windows Explorer, go to the
+<code>tutorial</code> directory, right-click the sphinxbase and sphinx3 tarballs, and
+choose "Extract to here" in the WinZip menu.
+</li>
+<li>
+In Linux/Unix:
+<pre>
+gunzip -c sphinxbase.nightly.tar.gz | tar xf -
+gunzip -c sphinx3.nightly.tar.gz | tar xf -
+</pre>
+</li>
+</ul>
+</li>
+</ul>
+
+<p>Further details about download options are available in the <a
+href="http://cmusphinx.org/">cmusphinx.org</a> page, under the header
+<i>Download instructions</i>
+</p>
+
+<p>By the time you finish this, you will have a <code>tutorial</code>
+directory with the following contents</p>
+<pre>
+<ul><li>tutorial<ul><li>an4</li><li>an4_sphere.tar.gz</li><li>SphinxTrain</li><li>SphinxTrain.nightly.tar.gz</li><li>sphinx3</li><li>sphinx3.nightly.tar.gz</li><li>sphinxbase</li><li>sphinxbase.nightly.tar.gz</li></ul></li></ul></pre>
+<p>Or</p>
+<pre>
+<ul><li>tutorial<ul><li>rm1</li><li>rm1_cepstra.tar.gz</li><li>SphinxTrain</li><li>SphinxTrain.nightly.tar.gz</li><li>sphinx3</li><li>sphinx3.nightly.tar.gz</li><li>sphinxbase</li><li>sphinxbase.nightly.tar.gz</li></ul></li></ul></pre>
+<h4>Compilation</h4>
+<p>In Linux/Unix:</p>
+<pre>
+# Compile sphinxbase
+cd sphinxbase
+# If you used svn, you will need to run autogen.sh, commented out
+# here. If you downloaded the tarball, you do not need to run it.
+#
+# ./autogen.sh
+./configure
+make
+
+# Compile SPHINX-3
+cd sphinx3
+# If you used svn, you will need to run autogen.sh, commented out
+# here. If you downloaded the tarball, you do not need to run it.
+#
+# ./autogen.sh
+configure --prefix=`pwd`/build --with-sphinxbase=`pwd`/../sphinxbase
+make
+make install
+</pre>
+<p>In Windows, if you download SphinxBase from the release system, please rename it (e.g. from 'sphinxbase-0.1') to 'sphinxbase' and then:
+</p>
+<ol>
+<li>Double click the file
+<code>tutorial/sphinxbase/sphinxbase.sln</code>. This will open MS
+Visual C++, if you have it installed. If you do not, please contact <a
+href="http://www.microsoft.com">Microsoft</a>.
+</li>
+<li>In the Menu <code>Build</code> choose <code>Batch Build</code>,
+and select all items. Click on <code>Rebuild All</code> This will
+build all libraries in the SphinxBase package.
+</li>
+<li>Double click the file
+<code>tutorial/sphinx3/programs.sln</code>. This will open MS
+Visual C++, if you have it installed. If you do not, please contact <a
+href="http://www.microsoft.com">Microsoft</a>.
+</li>
+<li>In the Menu <code>Build</code> choose <code>Batch Build</code>,
+and select all items. Click on <code>Rebuild All</code> This will
+build all executables in the SPHINX-3 package.
+</li>
+</ol>
+<h4>Tutorial Setup</h4>
+
+<p>After compiling the code, you will have to setup the tutorial by
+copying all relevant executables and scripts to the same area as the
+data. Assuming your current working directory is
+<code>tutorial</code>, you will need to do the following.</p>
+<pre>
+cd sphinx3
+# If you installed AN4
+perl scripts/setup_tutorial.pl an4
+# If you installed RM1
+perl scripts/setup_tutorial.pl rm1
+</pre>
+
+<h2><a name="prelimtraining"></a>How to perform a preliminary training run</h2>
+
+<p>Go to the directory where you installed the data. If you have been
+following the instructions so far, in linux, it should be as easy as:
+</p>
+<pre>
+# If you are using AN4
+cd ../an4
+# If you are using RM1
+cd ../rm1
+</pre>
+
+<p>and in Windows:
+</p>
+
+<pre>
+# If you are using AN4
+cd ..\an4
+# If you are using RM1
+cd ..\rm1
+</pre>
+
+<p>
+The scripts should work "out of the box", unless you are training
+models for PocketSphinx. In this case, you have to edit
+the file <code>etc/sphinx_train.cfg</code>, uncommenting the line
+defining the variable <code>$CFG_HMM_TYPE</code> so that it looks like
+the box below.
+</p>
+
+<pre>
+#$CFG_HMM_TYPE = '.cont.'; # Sphinx III
+$CFG_HMM_TYPE  = '.semi.'; # Sphinx II
+</pre>
+
+<p><a name="npart"></a>
+On Linux machines, you can set up the scripts to take advantage of
+multiple CPUs.  To do this, edit <code>etc/sphinx_train.cfg</code>,
+change the line defining the variable <code>$CFG_NPART</code> to match
+the number of CPUs in your system, and edit the line defining
+<code>$CFG_QUEUE_TYPE</code> to the following:
+</p>
+
+<pre>
+# Queue::POSIX for multiple CPUs on a local machine
+# Queue::PBS to use a PBS/TORQUE queue
+$CFG_QUEUE_TYPE = "Queue::POSIX";
+</pre>
+
+<p><a name="pbs"></a>If you have a grid of computers running the <a
+href="http://www.clusterresources.com/pages/products/torque-resource-manager.php">TORQUE</a>
+or <a href="http://www.openpbs.org">PBS</a> batch system, you can
+schedule training jobs to be run on the grid by defining
+<code>$CFG_NPART</code> as noted <a href="#npart">above</a> and
+editing <code>$CFG_QUEUE_TYPE</code> like the following:
+
+<pre>
+# Queue::POSIX for multiple CPUs on a local machine
+# Queue::PBS to use a PBS/TORQUE queue
+$CFG_QUEUE_TYPE = "Queue::PBS";
+</pre>
+
+<p>
+The system does not directly work with acoustic signals. The signals
+are first transformed into a sequence of feature vectors, which are
+used in place of the actual acoustic signals. To perform this
+transformation (or parameterization) from within the directory
+<code>an4</code>, type the following command on the command line. If
+you are using Windows instead of linux, please replace the
+<code>/</code> character with <code>\</code>. Notice that if you
+downloaded <code>rm1</code> instead, the files are already provided in
+cepstra format, so you do not need, and in fact, cannot, follow this
+step.
+</p>
+
+<pre>
+perl scripts_pl/make_feats.pl  -ctl etc/an4_train.fileids
+</pre>
+
+<p>
+This script will compute, for each training utterance, a sequence of
+13-dimensional vectors (feature vectors) consisting of the
+Mel-frequency cepstral coefficients (<keyword>MFCC</keyword>s). Note
+that the list of wave files contains a list with the full paths to the
+audio files. Since the data are all located in the same directory as
+you are working, the paths are relative, not absolute. You may have to
+change this, as well as the <code>an4_test.fileids</code> file, if the
+location of data is different. This step takes approximately 10
+minutes to complete on a fast machine, but time may vary. As it is
+running, you might want to continuing reading.  The MFCCs will be
+placed automatically in a directory called <code>./feat</code>. Note
+that the type of features vectors you compute from the speech signals
+for training and recognition, outside of this tutorial, is not
+restricted to MFCCs. You could use any reasonable parameterization
+technique instead, and compute features other than MFCCs. SPHINX-3 and
+SPHINX-4 can use features of any type or dimensionality. In this
+tutorial, however, you will use MFCCs for two reasons: a) they are
+currently known to result in the best recognition performance in
+HMM-based systems under most acoustic conditions, and b) this tutorial
+is not intended to cover the signal processing aspects of speech
+parameterization and only aims for a standard usable platform in this
+respect. Now you can begin to train the system.
+</p>
+
+<p>
+In the scripts directory (<code>./scripts_pl</code>), there are
+several directories numbered sequentially from <code>00*</code>
+through <code>99*</code>. Each directory either has a directory named
+<code>slave*.pl</code> or it has a single file with extension
+<code>.pl</code>. Sequentially go through the directories and execute
+either the  the
+<code>slave*.pl</code> or the single <code>.pl</code> file, as below. As
+usual, if you are using Windows instead of linux, you have to replace
+the <code>/</code> character with <code>\</code>.
+</p>
+
+<pre>
+perl scripts_pl/00.verify/verify_all.pl
+perl scripts_pl/10.vector_quantize/slave.VQ.pl
+perl scripts_pl/20.ci_hmm/slave_convg.pl
+perl scripts_pl/30.cd_hmm_untied/slave_convg.pl
+perl scripts_pl/40.buildtrees/slave.treebuilder.pl
+perl scripts_pl/45.prunetree/slave-state-tying.pl
+perl scripts_pl/50.cd_hmm_tied/slave_convg.pl
+perl scripts_pl/90.deleted_interpolation/deleted_interpolation.pl
+perl scripts_pl/99.make_s2_models/make_s2_models.pl
+</pre>
+
+<p>Alternatively, you can simply run the RunAll.pl script provided.
+</p>
+<pre>
+perl scripts_pl/RunAll.pl
+</pre>
+
+<p>From here on, we will refer to the script that you have to run in
+each directory as simply <code>slave*.pl</code>. In directories where
+no such a file exists, please understand it as the single
+<code>.pl</code> file present in that directory.
+</p>
+
+<p>The scripts will launch jobs on your machine, and the jobs will
+take a few minutes each to run through. Before you run any script,
+note the directory contents of your current directory. After you run
+each <code>slave*.pl</code> note the contents again. Several new
+directories will have been created. These directories contain files
+which are being generated in the course of your training. At this
+point you need not know about the contents of these directories,
+though some of the directory names may be self explanatory and you may
+explore them if you are curious. 
+
+<p>One of the files that appears in your current directory is an
+<code>.html</code> file, named <code>an4.html</code> or
+<code>rm1.html</code>, depending on which database you are using. This
+file will contain a status report of jobs already executed. Verify
+that the job you launched completed successfully. Only then launch the
+next <code>slave*.pl</code> in the specified sequence. Repeat this
+process until you have run the <code>slave*.pl</code> in all
+directories.
+</p>
+
+<p>
+Note that in the process of going through the scripts in
+<code>00*</code> through <code>99*</code>, you will have generated
+several sets of acoustic models, each of which could be used for
+recognition. Notice also that some of the steps are required only for
+the creation of semi-continuous models. If
+you execute these steps while creating continuous models, the scripts
+will benignly do nothing. Once the jobs launched from
+<code>20.ci_hmm</code> have run to completion, you will have trained
+the Context-Independent (CI) models for the sub-word units in your
+dictionary.  When the jobs launched from the
+<code>30.cd_hmm_untied</code> directory run to completion, you will
+have trained the models for Context-Dependent sub-word units
+(triphones) with untied states. These are called CD-untied models and
+are necessary for building decision trees in order to tie states. The
+jobs in <code>40.buildtrees</code> will build decision trees for each
+state of each sub-word unit. The jobs in <code>45.prunetree</code>
+will prune the decision trees and tie the states. Following this, the
+jobs in <code>50.cd-hmm_tied</code> will train the final models for the
+triphones in your training corpus. These are called CD-tied
+models. The CD-tied models are trained in many stages. We begin with 1
+Gaussian per state HMMs, following which we train 2 Gaussian per state
+HMMs and so on till the desired number of Gaussians per State have
+been trained. The jobs in <code>50.cd-hmm_tied</code> will automatically
+train all these intermediate CD-tied models.  At the end of
+<i>any</i> stage you may use the models for recognition. Remember that
+you may decode even while the training is in progress, provided you
+are certain that you have crossed the stage which generates the models
+you want to decode with. Before you decode, however, read the section
+called <a href=#decode>How to decode, and key decoding issues</a> to
+learn a little more about decoding. This section also provides all the
+commands needed for decoding with each of these models.
+
+
+</p>
+
+<p>
+You have now completed your training. The final models and location
+will depend on the database and the model type that you are using. If
+you are using RM1 to train continuous models, you will find the
+parameters of the final 8 Gaussian/state 3-state CD-tied acoustic
+models (HMMs) with 1000 tied states in a directory called
+<code>./model_parameters/rm1.cd_cont_1000_8/</code>. You will also find
+a model-index file for these models called <code>rm1.1000.mdef</code>
+in <code>./model_architecture/</code> . This file, as mentioned
+before, is used by the system to associate the appropriate set of HMM
+parameters with the HMM for each sound unit you are modeling. The
+training process will be explained in greater detail later in this
+document. If, however, you trained semi-continuous models with AN4,
+the final models will be located at
+<code>./model_parameters/an4.1000.s2models</code>, where you will find
+all files need to decode with pocketsphinx.
+</p>
+
+<p>
+During training a few noncritical errors will appear like:
+<pre>
+This step had 6 ERROR messages and 2 WARNING messages. Please check the log file for details. 
+</pre>
+Don't care about them, it's perfectly fine to have several alignment errors in
+a database. The main sources of errors are small amount of data like in
+an4 and the bad quality of recordings. This cause "final state not reached"
+errors in the log or "mgau less then zero" errors. If there are too many errors, it 
+means something goes wrong though and it's time to check the training setup.
+</p>
+
+<p>
+</p>
+
+<h2><a name="prelimdecode"></a>How to perform a preliminary decode</h2>
+
+<p>
+Decoding is relatively simple to perform.  First, compute MFCC
+features for all of the test utterances in the test set. If you
+downloaded <code>rm1</code>, the files are already provided in cepstra
+format, so you do not need, and in fact, cannot, follow this step. To
+compute MFCCs from the wave files, from the top level directory,
+namely <code>an4</code>, type the following from the command line:
+</p>
+
+<pre>
+perl scripts_pl/make_feats.pl  -ctl etc/an4_test.fileids
+</pre>
+
+<p>
+This will take approximately 10 minutes to run.
+</p>
+
+
+<p>
+You are now ready to decode. Type the command below.
+</p>
+
+<pre>
+perl scripts_pl/decode/slave.pl
+</pre>
+
+<p>
+This uses all of the components provided to you for decoding,
+<i>including</i> the acoustic models and model-index file that you
+have generated in your preliminary training run, to perform
+recognition on your test data.  When the recognition job is complete,
+the script computes the recognition Word Error Rate
+(<keyword>WER</keyword>) or Sentence Error Rate
+(<keyword>SER</keyword>). Notice that the script comes with a very
+simple built-in function that computes the SER. Unless you are using
+CMU machines, if you want to compute the WER you will have to download
+and compile code to do so. A popular one, used as a standard in the
+research community, is available from NIST. Check the section on <a
+href="#alignment">Word Alignment</a>.
+</p>
+
+<p>
+If you provide a program that does alignment, you can change the
+file <code>etc/sphinx_decode.cfg</code> to use it. You have to change the
+following line:
+</p>
+
+<pre>
+$DEC_CFG_ALIGN = "builtin";
+</pre>
+
+<p>If you are running the scripts at CMU, the line above will default to:
+</p>
+<pre>
+$DEC_CFG_ALIGN = \\
+"/afs/cs.cmu.edu/user/robust/archive/third_party_packages/NIST_scoring_tools/sctk/linux/bin/sclite";
+</pre>
+
+</p>
+
+<p>
+When you run the decode script, it will print information about the
+accuracy in the top level <code>.html</code> page for your
+experiment. It will also create two sets of files. One of these sets,
+with extension </code>.match</code>, contains the hypothesis as output
+by the decoder. The other set, with extension </code>.align</code>,
+contains the alignment generated by your alignment program, or by the
+built-in script, with the result of the comparison between the decoder
+hypothesis and the provided transcriptions. If you used the NIST tool,
+the <code>.html</code> file will contain a line such as the following
+if you used <code>an4</code>:
+</p>
+
+<pre>
+SENTENCE ERROR: 56.154% (73/130)   WORD ERROR RATE: 16.429% (127/773)
+</pre>
+<p>or this if you used <code>rm1</code>
+</p>
+<pre>
+SENTENCE ERROR: 38.833% (233/600)   WORD ERROR RATE: 7.640% (434/5681)
+</pre>
+
+
+<p>
+The second percentage number (9.470%) is the WER and has been obtained
+using the 8 Gaussians per state HMMs that you have just trained in the
+preliminary training run. Other numbers in the above output will be
+explained later in this document. The WER may vary depending on which
+decoder you used.
+</p>
+
+<p>
+If you used the built-in script, the line will look like this:
+</p>
+
+<pre>
+SENTENCE ERROR: 56.154% (73/130)
+</pre>
+
+
+<p>
+Notice that the reported error rates refer to word error rate (WER) in
+the first case, and sentence error rate (SER) in the second, so you
+can expect them to be wildly different.
+</p>
+
+<h2><a name="tools"></a>Miscellaneous tools</h2>
+
+
+
+<p>
+Three tools are provided that can help you find problems with your
+setup. You will find two of these executables in the directory <code>
+bin</code>. You can download and install the third as indicated below.
+</p>
+
+<ol>
+
+
+<li><code>mk_mdef_gen</code>: Phone and triphone frequency analysis
+tool. You can use this to count the relative frequencies of occurrence
+of your basic sound units (phones and triphones) in the training
+database. Since HMMs are statistical models, what you are aiming for
+is to design your basic units such that they occur frequently enough
+for their models to be well estimated, while maintaining enough
+information to minimize confusions between words. This issue is
+explained in greater detail in <a href="#app1">Appendix 1</a>.
+</li>
+
+<li>
+<code>printp</code>: Tool for viewing the model parameters being estimated.
+</li>
+
+<li>
+<code>cepview</code>: Tool for viewing the MFCC files. Available as a
+<a
+href="http://cmusphinx.org/download/nightly/cepview.nightly.tar.gz">tarball</a>
+</li>
+</ol>
+
+
+<h2><a name="expected"></a>How you are expected to use this tutorial</h2>
+
+
+
+<p>
+You are expected to train the SPHINX system using all the components
+provided for training. The trainer will generate a set of acoustic
+models. You are expected to use these acoustic models and the rest of
+the decoder components to recognize what has been said in the test
+data set. You are expected to compare your recognition output to the
+"correct" sequence of words that have been spoken in the test data set
+(these will also be given to you), and find out the percentage of
+errors you made (the word error rate, WER, or the sentence error rate,
+SER).
+</p>
+
+<p>
+In the course of training the system, you are encouraged to use what
+you know about HMM-based ASR systems to manipulate the training
+process or the training parameters in order to achieve the lowest
+error rate on the test data. You may also adjust the decoder
+parameters for this and study the recognition outputs to re-decode
+with adjusted parameters, if you wish. At the end of this tutorial,
+you will benefit by being able to answer to the question:
+</p>
+
+<p>
+<i>Q. What is your word or sentence error rate, what did you do to
+achieve it, and why? </i>
+</p>
+
+<p>
+A satisfactory answer to this question would comprise of any well
+thought out and justified manipulation of any training file(s) or
+parameter(s). Remember that speech recognition is a complex engineering
+problem and that you are not expected to be able to manipulate all aspects
+of the system in a single tutorial session.
+</p>
+
+
+<h2><a name="train"></a>How to train, and key training issues</h2>
+
+<p>
+You are now ready to begin your own exercises. For every training and
+decoding run, you will need to first give it a name. We will refer to
+the experiment name of your choice by <code>$taskname</code>.  For
+example, the names given to the experiments using the two available
+databases are <i>an4</i>, and <i>rm1</i>.  Your choice of
+<code>$taskname</code> will be used automatically in all the files for
+that training and recognition run for easy identification. All
+directories and files needed for this experiment will be copied to a
+directory named <code>$taskname</code>. Some of these files, such as
+data, will be provided by you (maybe copied from either
+<code>tutorial/an4</code> or <code>tutorial/rm1</code>). Other files
+will be automatically copied from the trainer or decoder
+installations. 
+</p>
+<p>A new task is created from an existing one in a directory
+named <code>$taskname</code> in parallel to the existing one. Assuming
+that you are copying a setup from the existing setup named
+<code>tutorial/an4</code>, the new task will be located at
+<code>tutorial/$taskname</code>. Remember to replace
+<code>$taskname</code> with the name of your choice.
+</p>
+
+<p>In the following example, we do just that: we copy a setup from the
+<code>an4</code> setup. Notice that your current working directory is
+the existing setup. The new one will be created by the script.
+</p>
+<pre>
+cd an4
+perl scripts_pl/copy_setup.pl -task $taskname
+</pre>
+
+<p>
+This will create a new setup by rerunning the <code>SphinxTrain</code>
+setup, then rerunning the decoder setup using the same decoder as used
+by the originating setup (in this case, <code>an4</code>), and then
+copying the configuration files, located under <code>etc</code>, to
+the new setup, with the file names matching the new task's.
+</p>
+
+<p>Be warned that the <code>copy_setup.pl</code> script also copies
+the data, located under <code>feat</code> and <code>wav</code>, to the
+new location. If your dataset is large, this duplication may be
+wasting disk space. A great option would be to just link the data
+directories. The script, as is, does not support this because not all
+operating systems can create symbolic links.
+</p>
+
+<p>
+After this you will work entirely within this <code>$taskname</code>
+directory.
+</p>
+
+<p>
+Your tutorial exercise begins with training the system using the MFCC
+feature files that you have already computed during your preliminary
+run. However, when you train this time, you will be required to take
+certain decisions based on what you know and the information that is
+provided to you in this document. The decisions that you take will
+affect the quality of the models that you train, and thereby the
+recognition performance of the system.
+</p>
+
+<p>
+You must now go through the following steps in sequence.
+</p>
+
+<ol>
+
+
+<li>Parameterize the training database, if you used the
+<code>an4</code> database or are using your own data. If you used
+<code>an4</code>, you have already done this for every training
+utterance during your preliminary run. If you used <code>rm1</code>,
+the data were provided already parameterized. At this point you do not
+have to do anything further except to note that in the speech
+recognition field it is common practice to call each file in a
+database an "utterance". The signal in an "utterance" may not
+necessarily be a full sentence. You can view the cepstra in any file
+by using the tool <code>cepview</code>.
+</li>
+<br>
+<li>Decide what sound units you are going to ask the system to
+train. To do this, look at the language dictionary
+<code>$taskname/etc/$taskname.dic</code> and the filler dictionary
+<code>$taskname/etc/$taskname.filler</code>, and note the sound units
+in these. A list of all sound units in these dictionaries is also
+written in the file <code>$taskname/etc/$taskname.phone</code>. Study
+the dictionaries and decide if the sound units are adequate for
+recognition. In order to be able to perform good recognition, sound
+units must not be confusable, and must be consistently used in the
+dictionary. Look at <a href="#app1">Appendix 1</a> for an explanation.
+
+<p></p>
+<p>
+Also check whether these units, and the triphones they can form (for
+which you will be building models ultimately), are well represented in
+the training data. It is important that the sound units being modeled
+be well represented in the training data in order to estimate the
+statistical parameters of their HMMs reliably. To study their
+occurrence frequencies in the data, you may use the tool
+<code>mk_mdef_gen</code>. Based on your study, see if you can come up
+with a better set of sound units to train.
+</p>
+
+<p>
+You can restructure the set of sound units given in the dictionaries
+by merging or splitting existing sound units in them. By merging of
+sound units we mean the clustering of two or more different sound units into
+a single entity. For example, you may want to model the sounds "Z" and
+"S" as a single unit (instead of maintaining them as separate
+units). To merge these units, which are represented by the symbols Z
+and S in the language dictionary given, simply replace all instances
+of Z and S in the dictionary by a common symbol (which could be Z_S,
+or an entirely new symbol). By splitting of sound units we mean the
+introduction of multiple new sound units in place of a single sound
+unit. This is the inverse process of merging. For example, if you
+found a language dictionary where all instances of the sounds Z and S
+were represented by the same symbol, you might want to replace this
+symbol by Z for some words and S for others. Sound units can also be
+restructured by grouping specific sequences of sound into a single
+sound. For example, you could change all instances of the sequence "IX
+D" into a single sound IX_D. This would introduce a new symbol in the
+dictionary while maintaining all previously existing ones. The number
+of sound units is effectively increased by one in this case. There are
+other techniques used for redefining sound units for a given task. If
+you can think of any other way of redefining dictionaries or sound
+units that you can properly justify, we encourage you to try it.
+</p>
+
+<p>
+Once you re-design your units, alter the file
+<code>$taskname/etc/$taskname.phone</code> accordingly. Make sure you
+do not have spurious empty spaces or lines in this file.
+</p>
+
+<p>
+Alternatively, you may bypass this design procedure and use the
+phone list and dictionaries as they have been provided to you. You will
+have occasion to change other things in the training later.
+</p>
+</li>
+
+<li>Once you have fixed your dictionaries and the phone list file, edit
+the file <code>etc/sphinx_train.cfg</code> in
+<code>tutorial/$taskname/</code> to change the following training
+parameters.
+
+<p></p>
+
+<ul>
+<li><code>$CFG_DICTIONARY =</code> your training dictionary with full
+path (do not change if you have decided not to change the dictionary)
+</li>
+
+<br>
+
+<li><code>$CFG_FILLERDICT =</code> your filler dictionary with full
+path (do not change if you have decided not to change the dictionary)
+</li>
+
+<br>
+
+<li><code>$CFG_RAWPHONEFILE =</code> your phone list with full path
+(do not change if you have decided not to change the dictionary)
+</li>
+
+<br>
+
+<li><code>$CFG_HMM_TYPE = </code> this variable could have the values
+<code>.semi.</code> or <code>.cont.</code>. Notice the dots "."
+surrounding the string. Use <code>.semi.</code> if you are training
+semi-continuous HMMs, mostly for Pocketsphinx, or <code>.cont.</code>
+if you are training continuous HMMs (required for SPHINX-4, and the
+most common choice for SPHINX-3)
+</li>
+
+<br>
+
+<li><code>$CFG_STATESPERHMM = </code> it could be any integer, but we 
+recommend 3 or 5. The number of states in an HMMs
+is related to the time-varying characteristics of the sound
+units. Sound units which are highly time-varying need more states to
+represent them. The time-varying nature of the sounds is also partly
+captured by the <code>$CFG_SKIPSTATE</code> variable that is described
+below.
+</li>
+
+<br>
+
+<li><code>$CFG_SKIPSTATE =</code>set this to <code>no</code> or
+<code>yes</code>. This variable controls the topology of your
+HMMs. When set to <code>yes</code>, it allows the HMMs to skip
+states. However, note that the HMM topology used in this system is a
+strict left-to-right Bakis topology. If you set this variable to
+<code>no</code>, any given state can only transition to the next
+state. In all cases, self transitions are allowed. See the figures in
+<a href="#app2">Appendix 2</a> for further reference. You will find
+the HMM topology file, conveniently named
+<code>$taskname.topology</code>, in the directory called
+<code>model_architecture/</code> in your current base directory
+(<code>$taskname</code>).
+</li>
+
+<br>
+
+<li>
+<code>$CFG_FINAL_NUM_DENSITIES =</code> if you are training semi-continuous models, set
+this number, as well as <code>$CFG_INITIAL_NUM_DENSITIES</code>, to
+256. For continuous, set
+<code>$CFG_INITIAL_NUM_DENSITIES</code> to 1 and
+<code>$CFG_FINAL_NUM_DENSITIES</code> to any number from 1 to 8. Going
+beyond 8 is not advised because of the small training data set you
+have been provided with. The distribution of each state of each HMM is
+modeled by a mixture of Gaussians. This variable determines the number
+of Gaussians in this mixture. The number of HMM parameters to be
+estimated increases as the number of Gaussians in the mixture
+increases. Therefore, increasing the value of this variable may result
+in less data being available to estimate the parameters of every
+Gaussian. However, increasing its value also results in finer models,
+which can lead to better recognition. Therefore, it is necessary at
+this point to think judiciously about the value of this variable,
+keeping both these issues in mind. Remember that it is possible to
+overcome data insufficiency problems by sharing the Gaussian mixtures
+amongst many HMM states. When multiple HMM states share the same
+Gaussian mixture, they are said to be shared or tied. These shared
+states are called tied states (also referred to as senones). The
+number of mixtures you train will ultimately be exactly equal to the
+number of tied states you specify, which in turn can be controlled by
+the <code>$CFG_N_TIED_STATES</code> parameter described
+below.
+</li>
+
+<br>
+
+<li><code>$CFG_N_TIED_STATES =</code> set this number to any value
+between 500 and 2500. This variable allows you to specify the total
+number of shared state distributions in your final set of trained HMMs
+(your acoustic models). States are shared to overcome problems of data
+insufficiency for any state of any HMM. The sharing is done in such a
+way as to preserve the "individuality" of each HMM, in that only the
+states with the most similar distributions are
+<keyword>tied</keyword>. The <code>$CFG_N_TIED_STATES</code> parameter
+controls the degree of tying. If it is small, a larger number of
+possibly dissimilar states may be tied, causing reduction in
+recognition performance. On the other hand, if this parameter is too
+large, there may be insufficient data to learn the parameters of the
+Gaussian mixtures for all tied states. (An explanation of state tying
+is provided in <a href="#app3">Appendix 3</a>). If you are curious,
+you can see which states the system has tied for you by looking at the
+ASCII file
+<code>$taskname/model_architecture/$taskname.$CFG_N_TIED_STATES.mdef</code>
+and comparing it with the file
+<code>$taskname/model_architecture/$taskname.untied.mdef</code>.
+These files list the phones and triphones for which you are training
+models, and assign numerical identifiers to each state of their HMMs.
+</li>
+
+<br>
+
+<li><code>$CFG_CONVERGENCE_RATIO =</code> set this to a number between
+0.1 to 0.001. This number is the ratio of the difference in likelihood
+between the current and the previous iteration of Baum-Welch to the
+total likelihood in the previous iteration. Note here that the rate of
+convergence is dependent on several factors such as initialization,
+the total number of parameters being estimated, the total amount of
+training data, and the inherent variability in the characteristics of
+the training data. The more iterations of Baum-Welch you run, the
+better you will learn the distributions of your data. However, the
+minor changes that are obtained at higher iterations of the Baum-Welch
+algorithm may not affect the performance of the system. Keeping this
+in mind, decide on how many iterations you want your Baum-Welch
+training to run in each stage. This is a subjective decision which has
+to be made based on the first convergence ratio which you will find
+written at the end of the log file for the second iteration of your
+Baum-Welch training
+(<code>$taskname/logdir/0*/$taskname.*.2.norm.log</code>. Usually,
+5-15 iterations are enough, depending on the amount of data you
+have. Do not train beyond 15 iterations. Since the amount of training
+data is not large you will over-train the models to the training data.
+</li>
+
+<br>
+
+<li><code>$CFG_NITER = </code> set this to an integer number between 5 to
+15.  This limits the number of iterations of Baum-Welch to the value
+of <code>$CFG_NITER</code>.
+</li>
+</ul>
+
+
+<p>
+Once you have made all the changes desired, you must train a new set
+of models.  You can accomplish this by re-running all the
+<code>slave*.pl</code> scripts from the directories
+<code>$taskname/scripts_pl/00*</code> through
+<code>$taskname/scripts_pl/09*</code>, or simply by running <code>perl
+scripts_pl/RunAll.pl</code>.
+</p>
+
+</li>
+</ol>
+
+
+<h2><a name="decode"></a>How to decode, and key decoding issues</h2>
+
+<ol>
+
+
+<li>The first step in decoding is to compute the MFCC features for your
+test utterances. Since you have already done this in the preliminary
+run, you do not have to repeat the process here.
+
+<p></p>
+
+<li>You may change decoder parameters, affecting the recognition
+results, by editing the file <code>etc/sphinx_decode.cfg</code> in
+<code>tutorial/$taskname/</code>. Some of the interesting parameters
+follow.
+
+<p></p>
+
+<ul>
+<li><code>$DEC_CFG_DICTIONARY = </code> the dictionary used by the
+decoder. It may or may not be the same as the one used for
+training. The set of phones has be be contained in the set of phones
+from the trainer dictionary. The set of words can be larger. Normally,
+though, the decoder dictionary is the same as the trainer one,
+especially for small databases.
+</li>
+
+<br>
+
+<li><code>$DEC_CFG_FILLERDICT = </code> the filler dictionary.
+</li>
+
+<br>
+
+<li><code>$DEC_CFG_GAUSSIANS = </code> the number of densities in the
+model used by the decoder. If you trained continuous models, the
+process of training creates intermediate models where the number of
+Gaussians is 1, 2, 4, 8, etc, up to the total number you chose. You
+can use any of those in the decoder. In fact, you are encouraged to do
+so, so you get a sense of how this affects the recognition
+accuracy. You are encouraged to find the best number of densities for
+databases with different complexities.
+</li>
+
+<br>
+
+<li><code>$DEC_CFG_MODEL_NAME = </code> the model name. It defaults to
+using the context dependent (CD) tied state models with the number of
+senones and number of densities specified in the training step. You are
+encouraged to also use the CD untied and also the context independent
+(CI) models to get a sense to how accuracy changes. </li>
+
+<br>
+
+<li><code>$DEC_CFG_LANGUAGEWEIGHT</code> the language weight. A value
+between 6 and 13 is recommended. The default depends on the database
+that you downloaded. The language model and the language weight are
+described in <a href="#app4">Appendix 4</a>. Remember that the
+language weight decides how much relative importance you will give to
+the actual acoustic probabilities of the words in the hypothesis. A
+low language weight gives more leeway for words with high acoustic
+probabilities to be hypothesized, at the risk of hypothesizing
+spurious words.
+</li>
+
+<br>
+
+<li><code>$DEC_CFG_ALIGN = </code> the path to the program that
+performs word alignment, or <code>builtin</code>, if you do not have
+one.
+</li>
+</ul>
+
+<p>
+You may decode several times with changing the variables above
+without re-training the acoustic models, to decide what is best for
+you.
+</p>
+</li>
+
+<li>The script <code>scripts_pl/decode/slave.pl</code> already
+computes the word or sentence accuracy when it finishes decoding. It
+will add a line to the top level <code>.html</code> page that looks
+like the following if you are using NIST's <code>sclite</code>.
+
+<pre>
+SENTENCE ERROR: 38.833% (233/600)   WORD ERROR RATE: 7.640% (434/5681)
+</pre>
+
+<p>
+In this line the first percentage indicates the percentage of words in
+the test set that were correctly recognized. However, this is not a
+sufficient metric - it is possible to correctly hypothesize all the
+words in the test utterances merely by hypothesizing a large number of
+words for each word in the test set. The spurious words, called
+insertions, must also be penalized when measuring the performance of
+the system. The second percentage indicates the number of hypothesized
+words that were erroneous as a percentage of the actual number of
+words in the test set. This includes both words that were wrongly
+hypothesized (or deleted) and words that were spuriously
+inserted. Since the recognizer can, in principle, hypothesize many
+more spurious words than there are words in the test set, the percentage of
+errors can actually be greater than 100.
+</p>
+
+<p> In the example above, using <code>rm1</code>, of the 5681 words in
+the reference test transcripts 5247 words (92.36%) were correctly
+hypothesized. In the process the recognizer hypothesized 434 spurious
+words (these include insertions, deletions and substitutions).  You
+will find your recognition hypotheses in files called <code>*.match
+</code> in the directory <code>$taskname/result/</code>.  </p>
+
+<p>
+In the same directory, you will also generate files named
+ <code>$taskname/result/*.align</code> in which your
+hypotheses are aligned against the reference sentences. You can study
+this file to examine the errors that were made. The list of confusions
+at the end of this file allows you to subjectively determine why
+particular errors were made by the recognizer. For example, if the
+word "FOR" has been hypothesized as the word "FOUR" almost all the
+time, perhaps you need to correct the pronunciation for the word FOR
+in your decoding dictionary and include a pronunciation that maps the
+word FOR to the units used in the mapping of the word FOUR. Once you
+make these corrections, you must re-decode.
+</p>
+
+<p>If you are using the built-in method, the line reporting accuracy
+will look like the following if you used <code>an4</code>.
+</p>
+<pre>
+SENTENCE ERROR: 56.154% (73/130)
+</pre>
+<p>The meaning of numbers is parallel to the description above, but in
+this case, the numbers refer to sentences, not to words.
+</p>
+</li>
+</ol>
+
+<pagebreak>
+</pagebreak>
+
+<center><h2><a name="app1"></a>Appendix 1: Phone Merging</h2></center>
+ 
+<p>
+If your transcript file has the following entries:
+</p><p>
+THIS CAR THAT CAT (file1)<br>
+CAT THAT RAT (file2)<br>
+THESE STARS (file3)<br>
+</p><p>
+and your language dictionary has the following entries for these
+words:
+
+</p><p>
+<table>
+<tbody><tr><td>CAT</td><td>K</td><td>AE</td><td>T</td><td><br>
+</td><td><br>
+</td></tr>
+<tr><td>CAR</td><td>K</td><td>AA</td><td>R</td><td>&nbsp;</td><td><br>
+</td></tr>
+<tr><td>RAT</td><td>R</td><td>AE</td><td>T</td><td>&nbsp;</td><td><br>
+</td></tr>
+<tr><td>STARS</td><td>S</td><td>T</td><td>AA</td><td>R</td><td>S</td></tr>
+<tr><td>THIS</td><td>DH</td><td>I</td><td>S</td><td>&nbsp;</td><td><br>
+</td></tr>
+<tr><td>THAT</td><td>DH</td><td>AE</td><td>T</td><td>&nbsp;</td><td><br>
+</td></tr>
+<tr><td>THESE</td><td>DH</td><td>IY</td><td>Z</td><td><br>
+</td><td><br>
+</td></tr>
+</tbody></table>
+
+</p><p>
+then the occurrence frequencies for each of the phones are as follows
+(in a real scenario where you are training triphone models, you will
+have to count the triphones too):
+
+</p><p>
+<table>
+<tbody><tr><td>K</td><td>3</td><td>&nbsp;</td><td>S</td><td>3</td></tr>
+<tr><td>AE</td><td>5</td><td>&nbsp;</td><td>IY</td><td>1</td></tr>
+<tr><td>T</td><td>6</td><td>&nbsp;</td><td>I</td><td>1</td></tr>
+<tr><td>AA</td><td>2</td><td>&nbsp;</td><td>DH</td><td>4</td></tr>
+<tr><td>R</td><td>3</td><td>&nbsp;</td><td>Z</td><td>1</td></tr>
+</tbody></table>
+
+</p><p>
+Since there are only single instances of the sound units IY and I, and
+they represent very similar sounds, we can merge them into a single
+unit that we will represent by I_IY. We can also think of merging the
+sound units S and Z which represent very similar sounds, since there
+is only one instance of the unit Z. However, if we merge I and IY, and
+we also merge S and Z, the words THESE and THIS will not be
+distinguishable. They will have the same pronunciation as you can see
+in the following dictionary with merged units:
+
+</p><p>
+<table>
+<tbody><tr><td>CAT</td><td>K</td><td>AE</td><td>T</td><td><br>
+</td><td><br>
+</td></tr>
+<tr><td>CAR</td><td>K</td><td>AA</td><td>R</td><td><br>
+</td><td><br>
+</td></tr>
+<tr><td>RAT</td><td>R</td><td>AE</td><td>T</td><td><br>
+</td><td><br>
+</td></tr>
+<tr><td>STARS</td><td>S_Z</td><td>T</td><td>AA</td><td>R</td><td>S_Z</td></tr>
+<tr><td>THIS</td><td>DH</td><td>I_IY</td><td>S_Z</td><td><br>
+</td><td><br>
+</td></tr>
+<tr><td>THAT</td><td>DH</td><td>AE</td><td>T</td><td>&nbsp;</td><td><br>
+</td></tr>
+<tr><td>THESE</td><td>DH</td><td>I_IY</td><td>S_Z</td><td><br>
+</td><td><br>
+</td></tr>
+</tbody></table>
+
+</p><p>
+If it is important in your task to be able to distinguish between THIS
+and THESE, at least one of these two merges should not be performed.
+</p><p>
+
+<pagebreak>
+</pagebreak></p>
+
+<center><h2><a name="app2"></a>Appendix 2: HMM Topology with Skip
+State Transitions</h2></center>
+<p>
+&nbsp;
+</p><div>
+<map name="labnotes-1"></map>
+<img src="labnotes-1.gif" usemap="#labnotes-1">
+</div>
+<p>
+&nbsp;
+</p><div>
+<map name="labnotes-2"></map>
+<img src="labnotes-2.gif" usemap="#labnotes-2">
+</div>
+<p>
+<pagebreak>
+</pagebreak></p>
+
+<center><h2><a name="app3"></a>Appendix 3: State Tying</h2></center>
+
+<p>
+Consider the following sentence. 
+</p>
+
+<p>
+CAT THESE RAT THAT
+</p>
+
+<p>
+Using the first dictionary given in <a href="#app1">Appendix 1</a>,
+this sentence can be expanded to the following sequence of sound
+units:
+
+</p><p>
+
+&lt;sil&gt; K AE T DH IY Z R AE T DH AE T &lt;sil&gt;
+
+</p><p>
+Silences (denoted as &lt;sil&gt; have been appended to the beginning
+and the end of the sequence to indicate that the sentence is preceded
+and followed by silence. This sequence of sound units has the
+following sequence of triphones
+
+</p><p>
+
+K(sil,AE) AE(K,T) T(AE,DH) DH(T,IY) IY(DH,Z) Z(IY,R) R(Z,AE) AE(R,T) 
+T(AE,DH) DH(T,AE) AE(DH,T) T(AE,sil)
+
+</p><p>
+where A(B,C) represents an instance of the sound A when the preceding
+sound is B and the following sound is C. If each of these triphones
+were to be modeled by a separate HMM, the system would need 33 unique
+states, which we number as follows:
+
+</p><p>
+<table>
+<tbody>
+<tr>
+<td>
+
+K(sil,AE)
+</td>
+<td>
+
+0
+</td>
+<td>
+
+1
+</td>
+<td>
+
+2
+</td>
+</tr>
+<tr>
+<td>
+
+AE(K,T)
+</td>
+<td>
+
+3
+</td>
+<td>
+
+4
+</td>
+<td>
+
+5
+</td>
+</tr>
+<tr>
+<td>
+
+T(AE,DH)
+</td>
+<td>
+
+6
+</td>
+<td>
+
+7
+</td>
+<td>
+
+8
+</td>
+</tr>
+<tr>
+<td>
+
+DH(T,IY)
+</td>
+<td>
+
+9
+</td>
+<td>
+
+10
+</td>
+<td>
+
+11
+</td>
+</tr>
+<tr>
+<td>
+
+IY(DH,Z)
+</td>
+<td>
+
+12
+</td>
+<td>
+
+13
+</td>
+<td>
+
+14
+</td>
+</tr>
+<tr>
+<td>
+
+Z(IY,R)
+</td>
+<td>
+
+15
+</td>
+<td>
+
+16
+</td>
+<td>
+
+17
+</td>
+</tr>
+<tr>
+<td>
+
+R(Z,AE)
+</td>
+<td>
+
+18
+</td>
+<td>
+
+19
+</td>
+<td>
+
+20
+</td>
+</tr>
+<tr>
+<td>
+
+AE(R,T)
+</td>
+<td>
+
+21
+</td>
+<td>
+
+22
+</td>
+<td>
+
+23
+</td>
+</tr>
+<tr>
+<td>
+
+DH(T,AE)
+</td>
+<td>
+
+24
+</td>
+<td>
+
+25
+</td>
+<td>
+
+26
+</td>
+</tr>
+<tr>
+<td>
+
+AE(DH,T)
+</td>
+<td>
+
+27
+</td>
+<td>
+
+28
+</td>
+<td>
+
+29
+</td>
+</tr>
+<tr>
+<td>
+
+T(AE,sil)
+</td>
+<td>
+
+30
+</td>
+<td>
+
+31
+</td>
+<td>
+
+32
+</td>
+</tr>
+</tbody></table>
+</code>
+</p><p>
+Here the numbers following any triphone represent the global indices
+of the HMM states for that triphone. We note here that except for the
+triphone T(AE,DH), all other triphones occur only once in the
+utterance. Thus, if we were to model all triphones independently, all
+33 HMM states must be trained. We note here that when DH is preceded
+by the phone T, the realization of the initial portion of DH would be
+very similar, irrespective of the phone following DH. Thus, the
+initial state of the triphones DH(T,IY) and DH(T,AE) can be
+tied. Using similar logic, the final states of AE(DH,T) and AE(R,T)
+can be tied. Other such pairs also occur in this example. Tying states
+using this logic would change the above table to:
+
+</p><p>
+<table>
+<tbody><tr>
+<td>
+
+K(sil,AE)
+</td>
+<td>
+
+0
+</td>
+<td>
+
+1
+</td>
+<td>
+
+2
+</td>
+</tr>
+<tr>
+<td>
+
+AE(K,T)
+</td>
+<td>
+
+3
+</td>
+<td>
+
+4
+</td>
+<td>
+
+5
+</td>
+</tr>
+<tr>
+<td>
+
+T(AE,DH)
+</td>
+<td>
+
+6
+</td>
+<td>
+
+7
+</td>
+<td>
+
+8
+</td>
+</tr>
+<tr>
+<td>
+
+DH(T,IY)
+</td>
+<td>
+
+9
+</td>
+<td>
+
+10
+</td>
+<td>
+
+11
+</td>
+</tr>
+<tr>
+<td>
+
+IY(DH,Z)
+</td>
+<td>
+
+12
+</td>
+<td>
+
+13
+</td>
+<td>
+
+14
+</td>
+</tr>
+<tr>
+<td>
+
+Z(IY,R)
+</td>
+<td>
+
+15
+</td>
+<td>
+
+16
+</td>
+<td>
+
+17
+</td>
+</tr>
+<tr>
+<td>
+
+R(Z,AE)
+</td>
+<td>
+
+18
+</td>
+<td>
+
+19
+</td>
+<td>
+
+20
+</td>
+</tr>
+<tr>
+<td>
+
+AE(R,T)
+</td>
+<td>
+
+21
+</td>
+<td>
+
+22
+</td>
+<td>
+
+5
+</td>
+</tr>
+<tr>
+<td>
+
+DH(T,AE)
+</td>
+<td>
+
+9
+</td>
+<td>
+
+23
+</td>
+<td>
+
+24
+</td>
+</tr>
+<tr>
+<td>
+
+AE(DH,T)
+</td>
+<td>
+
+25
+</td>
+<td>
+
+26
+</td>
+<td>
+
+5
+</td>
+</tr>
+<tr>
+<td>
+
+T(AE,sil)
+</td>
+<td>
+
+6
+</td>
+<td>
+
+27
+</td>
+<td>
+
+28
+</td>
+</tr>
+</tbody></table>
+</p><p>
+This reduces the total number of HMM states for which distributions
+must be learned, to 29. But further reductions can be achieved. We
+might note that the initial portion of realizations of the phone AE
+when the preceding phone is R is somewhat similar to the initial
+portions of the same phone when the preceding phone is DH (due to,
+say, spectral considerations). We could therefore tie the first states
+of the triphones AE(DH,T) and AE(R,T). Using similar logic other
+states may be tied to change the above table to:
+</p><p>
+<table>
+<tbody><tr>
+<td>
+
+K(sil,AE)
+</td>
+<td>
+
+0
+</td>
+<td>
+
+1
+</td>
+<td>
+
+2
+</td>
+</tr>
+<tr>
+<td>
+
+AE(K,T)
+</td>
+<td>
+
+3
+</td>
+<td>
+
+4
+</td>
+<td>
+
+5
+</td>
+</tr>
+<tr>
+<td>
+
+T(AE,DH)
+</td>
+<td>
+
+6
+</td>
+<td>
+
+7
+</td>
+<td>
+
+8
+</td>
+</tr>
+<tr>
+<td>
+
+DH(T,IY)
+</td>
+<td>
+
+9
+</td>
+<td>
+
+10
+</td>
+<td>
+
+11
+</td>
+</tr>
+<tr>
+<td>
+
+IY(DH,Z)
+</td>
+<td>
+
+12
+</td>
+<td>
+
+13
+</td>
+<td>
+
+14
+</td>
+</tr>
+<tr>
+<td>
+
+Z(IY,R)
+</td>
+<td>
+
+15
+</td>
+<td>
+
+16
+</td>
+<td>
+
+17
+</td>
+</tr>
+<tr>
+<td>
+
+R(Z,AE)
+</td>
+<td>
+
+18
+</td>
+<td>
+
+19
+</td>
+<td>
+
+20
+</td>
+</tr>
+<tr>
+<td>
+
+AE(R,T)
+</td>
+<td>
+
+21
+</td>
+<td>
+
+22
+</td>
+<td>
+
+5
+</td>
+</tr>
+<tr>
+<td>
+
+DH(T,AE)
+</td>
+<td>
+
+9
+</td>
+<td>
+
+23
+</td>
+<td>
+
+11
+</td>
+</tr>
+<tr>
+<td>
+
+AE(DH,T)
+</td>
+<td>
+
+21
+</td>
+<td>
+
+24
+</td>
+<td>
+
+5
+</td>
+</tr>
+<tr>
+<td>
+
+T(AE,sil)
+</td>
+<td>
+
+6
+</td>
+<td>
+
+25
+</td>
+<td>
+
+26
+</td>
+</tr>
+</tbody></table>
+
+
+</p>
+
+<p>
+We now have only 27 HMM states, instead of the 33 we began with. In
+larger data sets with many more triphones, the reduction in the total
+number of triphones can be very dramatic. The state tying can reduce
+the total number of HMM states by one or two orders of magnitude.
+</p>
+
+<p>
+In the examples above, state-tying has been
+performed based purely on acoustic-phonetic criteria. However, in a
+typical HMM-based recognition system such as SPHINX, state tying is
+performed not based on acoustic-phonetic rules, but on other data
+driven and statistical criteria. These methods are known to result in
+much better recognition performance.
+</p>
+
+<p>
+</p>
+
+<center><h2><a name="app4"></a>Appendix 4: Language Model and Language
+Weight</h2></center>
+<p>
+<code>Language Model</code>: Speech recognition systems treat the
+recognition process as one of maximum a-posteriori estimation, where
+the most likely sequence of words is estimated, given the sequence of
+feature vectors for the speech signal. Mathematically, this can be
+represented as 
+</p><p>
+<i>
+Word1 Word2 Word3 ... = <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+argmax<sub>Wd1 Wd2 ...</sub>{P(feature vectors|Wd1 Wd2 ...) P(Wd1 Wd2 ...)}
+</i>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(1)
+
+</p><p>
+where Word1.Word2... is the recognized sequence of words and
+Wd1.Wd2... is any sequence of words. The argument on the right hand
+side of Equation 1 has two components: the probability of the feature
+vectors, given a sequence of words <i>P(feature vectors| Wd1 Wd2
+...)</i>, and the probability of the sequence of words itself,
+<i>P(Wd1 Wd2 ...)</i> . The first component is provided by the
+HMMs. The second component, also called the language component, is
+provided by a language model.
+
+</p><p>
+The most commonly used language models are N-gram language
+models. These models assume that the probability of any word in a
+sequence of words depends only on the previous N words in the
+sequence. Thus, a 2-gram or bigram language model would compute
+<i>P(Wd1 Wd2 ...)</i> as
+
+</p><p>
+<i>
+P(Wd1 Wd2 Wd3 Wd4 ...) = P(Wd1)P(Wd2|Wd1)P(Wd3|Wd2)P(Wd4|Wd3)...
+</i>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(2)
+
+
+</p><p>
+Similarly, a 3-gram or trigram model would compute it as
+</p><p>
+</p><p>
+</p><p>
+<i>
+P(Wd1 Wd2 Wd3 ...) = P(Wd1)P(Wd2|Wd1)P(Wd3|Wd2,Wd1)P(Wd4|Wd3,Wd2) ...
+</i>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(3)
+
+
+</p><p>
+The language model provided for this tutorial is a bigram language model.
+</p><p>
+<code>Language Weight</code>: Although strict maximum a posteriori
+estimation would follow Equation (1), in practice the language
+probability is raised to an exponent for recognition. Although there
+is no clear statistical justification for this, it is frequently
+explained as "balancing" of language and acoustic probability
+components during recognition and is known to be very important for
+good recognition. The recognition equation thus becomes
+</p><p>
+</p><p>
+<i>
+Word1 Word2 Word3 ... = <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+argmax<sub>Wd1 Wd2 ...</sub>{P(feature vectors|Wd1 Wd2 ...)P(Wd1 Wd2
+...)<sup>alpha</sup>}
+</i>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(4)
+
+</p>
+
+<p>
+Here <i>alpha</i> is the language weight. Optimal values of
+<i>alpha</i> typically lie between 6 and 11.
+</p>
+
+<hr noshade="noshade">
+
+This page was created by <a href="javascript:zizi('egouvea')">Evandro
+Gouv&ecirc;a</a>, adapted from a page created by Rita Singh</a>. For
+comments, suggestions, or questions, contact the author.<br>
+<i>
+<!-- hhmts start -->
+Last modified: Fri Sep 12 11:06:36 EDT 2008
+<!-- hhmts end -->
+</i>
+<br>
+
+</body></html>
