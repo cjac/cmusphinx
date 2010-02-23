@@ -28,7 +28,7 @@ for module in cmuclmtk sphinx2 sphinx3 sphinxbase SphinxTrain; do
     (
     svn export https://cmusphinx.svn.sourceforge.net/svnroot/cmusphinx/trunk/$module/doc $module > /dev/null
     cd $module > /dev/null
-    rsync -e ssh -auv --delete . $SF_USER@web.sourceforge.net:/home/groups/c/cm/cmusphinx/htdocs/$module/doc > /dev/null
+    rsync -e ssh -auv --delete . $SF_USER@web.sourceforge.net:/home/groups/c/cm/cmusphinx/htdocs/doc/$module > /dev/null
 )
 done
 
