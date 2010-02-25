@@ -19,7 +19,6 @@ svn export https://cmusphinx.svn.sourceforge.net/svnroot/cmusphinx/trunk/web  > 
 #popd > /dev/null
 
 pushd web/htdocs/html > /dev/null
-make > /dev/null
 rsync -e ssh -auv --delete . $SF_USER@web.sourceforge.net:/home/groups/c/cm/cmusphinx/htdocs/html > /dev/null
 rsync -e ssh -lptgoDuv * www.speech.cs.cmu.edu:/usr1/httpd/html/sphinx > /dev/null
 popd > /dev/null
