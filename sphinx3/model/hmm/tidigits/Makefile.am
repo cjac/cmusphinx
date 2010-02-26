@@ -1,2 +1,5 @@
-#SUBDIRS = cepstra wd_dependent_phone.cd_continuous_8gau
+hmmdir = $(prefix)/share/sphinx3/model/hmm/tidigits
+
+nobase_hmm_DATA = @tidigitsdata@
+
 EXTRA_DIST = @tidigitsdata@

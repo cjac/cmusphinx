@@ -62,20 +62,29 @@ AC_DEFUN([CC_ATTRIBUTE_VISIBILITY], [
 
 CC_ATTRIBUTE_VISIBILITY
 
-epdata=`ls -1 $srcdir/model/ep | egrep -v '(Makefile|CVS)'`
+dnl
+dnl Automatically collect installed files
+dnl
+
+epdata=`(cd $srcdir/model/ep && find . -type f -print | egrep -v '(Makefile|\.svn)')`
 epdata=`echo $epdata`
+AC_SUBST(epdata)
 
-hmmdata=`ls -1 $srcdir/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd | egrep -v '(Makefile|CVS)'`
+hmmdata=`(cd $srcdir/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd && find . -type f -print | egrep -v '(Makefile|\.svn)')`
 hmmdata=`echo $hmmdata`
+AC_SUBST(hmmdata)
 
-tidigitsdata=`(cd $srcdir/model/hmm/tidigits && find . -type f -print | egrep -v '(Makefile|CVS|\.svn)')`
+tidigitsdata=`(cd $srcdir/model/hmm/tidigits && find . -type f -print | egrep -v '(Makefile|\.svn)')`
 tidigitsdata=`echo $tidigitsdata`
+AC_SUBST(tidigitsdata)
 
-lmdata=`ls -1 $srcdir/model/lm/an4 | egrep -v '(Makefile|CVS)' | sed 's/\.in//g'`
+lmdata=`(cd $srcdir/model/lm/an4 && find . -type f -print | egrep -v '(Makefile|\.svn)' | sed 's/\.in//g')`
 lmdata=`echo $lmdata`
+AC_SUBST(lmdata)
 
-docdata=`ls -1 $srcdir/doc | egrep -v '(Makefile|CVS)'`
+docdata=`(cd $srcdir/doc && find . -type f -print | egrep -v '(Makefile|\.svn)')`
 docdata=`echo $docdata`
+AC_SUBST(docdata)
 
 dnl
 dnl Get SphinxBase source from command line if given
@@ -145,11 +154,6 @@ fi
 AC_PATH_PROG(PERL,perl)
 AC_PATH_PROG(CSH,csh)
 AC_SUBST(sphinxbase)
-AC_SUBST(docdata)
-AC_SUBST(epdata)
-AC_SUBST(hmmdata)
-AC_SUBST(lmdata)
-AC_SUBST(tidigitsdata)
 AC_SUBST(ad_files)
 AC_SUBST(ad_libs)
 AC_SUBST(ad_backend)
