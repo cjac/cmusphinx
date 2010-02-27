@@ -116,10 +116,10 @@ createNightlyBuild sphinx4 sphinx4
 createNightlyBuild sphinxbase sphinxbase
 createNightlyBuild pocketsphinx pocketsphinx
 createNightlyBuild SphinxTrain SphinxTrain
-createNightlyBuild archive_s3/s3 s3flat
-createNightlyBuild share/cepview cepview
-createNightlyBuild share/lm3g2dmp lm3g2dmp
-createNightlyBuild SimpleLM SimpleLM
+#createNightlyBuild archive_s3/s3 s3flat
+#createNightlyBuild share/cepview cepview
+#createNightlyBuild share/lm3g2dmp lm3g2dmp
+#createNightlyBuild SimpleLM SimpleLM
 popd
 nightlypage=nightlybuild.html
 nightlyBuildPage $nightlypage
