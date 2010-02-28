@@ -169,7 +169,7 @@ fclose_comp(FILE * fp, int32 ispipe)
 {
     if (ispipe) {
 #ifdef HAVE_POPEN
-#if defined(WIN32)
+#if defined(_WIN32)
         _pclose(fp);
 #else
         pclose(fp);
@@ -295,6 +295,8 @@ lineiter_next(lineiter_t *li)
 void
 lineiter_free(lineiter_t *li)
 {
+    if (li == NULL)
+        return;
     ckd_free(li->buf);
     ckd_free(li);
 }

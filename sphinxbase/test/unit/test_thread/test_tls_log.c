@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <sbthread.h>
+#include <strfuncs.h>
 #include <fe.h>
 #include <ckd_alloc.h>
 #include <err.h>
@@ -30,7 +31,7 @@ process(sbthread_t *th)
 	err_set_logfp(logfh);
 	if ((fe = fe_init_auto_r(sbthread_config(th))) == NULL)
 		return -1;
-	if ((raw = fopen(DATADIR "/chan3.raw", "rb")) == NULL)
+	if ((raw = fopen(TESTDATADIR "/chan3.raw", "rb")) == NULL)
 		return -1;
 	fseek(raw, 0, SEEK_END);
 	fsize = ftell(raw);
@@ -79,8 +80,9 @@ main(int argc, char *argv[])
 		sprintf(logfile, "%03d.log", i);
 		TEST_ASSERT(logfh = fopen(logfile, "r"));
 		while (fgets(line, sizeof(line), logfh)) {
-			printf("%s: %s", logfile, line);
-			TEST_EQUAL(0, strcmp(line, "INFO: test_tls_log.c(43): nfr = 1436\n"));
+			string_trim(line, STRING_BOTH);
+			printf("%s: |%s|\n", logfile, line);
+			TEST_EQUAL(0, strcmp(line, "INFO: test_tls_log.c(44): nfr = 1436"));
 		}
 		fclose(logfh);
 	}
