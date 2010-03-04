@@ -780,7 +780,8 @@ ctl_infile(char *file, const char *dir, const char *ext, const char *utt)
 
 
 void
-ctl_outfile(char *file, const char *dir, const char *ext, const char *utt, const char *uttid)
+ctl_outfile(char *file, const char *dir, const char *ext,
+	    const char *utt, const char *uttid, int build_dirs)
 {
     int32 k;
 
@@ -804,5 +805,13 @@ ctl_outfile(char *file, const char *dir, const char *ext, const char *utt, const
     if (ext && (ext[0] != '\0')) {
         strcat(file, ".");
         strcat(file, ext);
+    }
+
+    /* Build output directory structure if possible/requested */
+    if (build_dirs) {
+        char *dirname = ckd_salloc(file);
+        path2dirname(file, dirname);
+        build_directory(dirname);
+        ckd_free(dirname);
     }
 }

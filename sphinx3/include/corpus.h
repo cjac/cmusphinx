@@ -305,7 +305,8 @@ void ctl_outfile (char *file,	/**< Out: Generated filename (allocated by caller)
 		  const char *utt,	/**< In: Utterance file pathname, absolute or relative,
 					   with or without extension.  This is usually the first
 					   field in a control file. */
-		  const char *uttid	/**< In: Utterance ID (derived from the control file */
+		  const char *uttid,	/**< In: Utterance ID (derived from the control file */
+                  int build_dirs        /**< In: Create parent directories if true */
     );
 
 #if 0

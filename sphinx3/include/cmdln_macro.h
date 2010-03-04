@@ -454,6 +454,10 @@ us a better architecture.
       ARG_STRING,                                               \
       NULL,                                                     \
             "Log file (default stdout/stderr)" },               \
+    { "-build_outdirs",                                         \
+        ARG_BOOLEAN,                                            \
+            "yes",                                              \
+            "Create parent directories for output files" },     \
     { "-debug",                                                 \
             ARG_INT32,                                          \
             NULL,                                               \

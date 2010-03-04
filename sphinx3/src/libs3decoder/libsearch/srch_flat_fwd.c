@@ -350,7 +350,8 @@ srch_FLAT_FWD_begin(void *srch)
     /* If input lattice file containing word candidates to be searched specified; use it */
     if (fwg->word_cand_dir) {
         ctl_outfile(str, fwg->word_cand_dir, fwg->latfile_ext,
-                    (s->uttfile ? s->uttfile : s->uttid), s->uttid);
+                    (s->uttfile ? s->uttfile : s->uttid), s->uttid,
+                    cmd_ln_boolean_r(kbcore_config(s->kbc), "-build_outdirs"));
         E_INFO("Reading input lattice: %s\n", str);
 
         if ((fp = fopen_compchk(str, &ispipe)) == NULL)
@@ -753,7 +754,8 @@ srch_FLAT_FWD_dag_dump(void *srch, dag_t *dag)
     ctl_outfile(str,
                 cmd_ln_str_r(kbcore_config(fwg->kbcore), "-outlatdir"),
                 cmd_ln_str_r(kbcore_config(fwg->kbcore), "-latext"),
-                (s->uttfile ? s->uttfile : s->uttid), s->uttid);
+                (s->uttfile ? s->uttfile : s->uttid), s->uttid,
+                cmd_ln_boolean_r(kbcore_config(fwg->kbcore), "-build_outdirs"));
     E_INFO("Writing lattice file: %s\n", str);
     latticehist_dag_write(fwg->lathist,
                           str,
@@ -778,10 +780,13 @@ srch_FLAT_FWD_nbest_impl(void *srch,           /**< A void pointer to a search s
     fwg = (srch_FLAT_FWD_graph_t *) s->grh->graph_struct;
     assert(fwg->lathist);
 
-    if (!(cmd_ln_exists_r(kbcore_config(fwg->kbcore), "-nbestdir") && cmd_ln_str_r(kbcore_config(fwg->kbcore), "-nbestdir")))
+    if (!(cmd_ln_exists_r(kbcore_config(fwg->kbcore), "-nbestdir")
+          && cmd_ln_str_r(kbcore_config(fwg->kbcore), "-nbestdir")))
         return NULL;
-    ctl_outfile(str, cmd_ln_str_r(kbcore_config(fwg->kbcore), "-nbestdir"), cmd_ln_str_r(kbcore_config(fwg->kbcore), "-nbestext"),
-                (s->uttfile ? s->uttfile : s->uttid), s->uttid);
+    ctl_outfile(str, cmd_ln_str_r(kbcore_config(fwg->kbcore), "-nbestdir"),
+                cmd_ln_str_r(kbcore_config(fwg->kbcore), "-nbestext"),
+                (s->uttfile ? s->uttfile : s->uttid), s->uttid,
+                cmd_ln_boolean_r(kbcore_config(fwg->kbcore), "-build_outdirs"));
 
     bestpathlw = cmd_ln_float32_r(kbcore_config(fwg->kbcore), "-bestpathlw");
     lwf = bestpathlw ? (bestpathlw / cmd_ln_float32_r(kbcore_config(fwg->kbcore), "-lw")) : 1.0;

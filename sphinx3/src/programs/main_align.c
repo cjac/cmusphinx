@@ -215,7 +215,9 @@
 #include "agc.h"
 #include "cmn.h"
 #include "bio.h"
+#include "pio.h"
 #include "feat.h"
+#include "filename.h"
 #include "cmd_ln.h"
 
 /* ARCHAN: Dangerous routine :-)*/
@@ -448,6 +450,14 @@ build_output_uttfile(char *buf, char *dir, char *uttid, char *ctlspec)
         strcpy(buf, dir);
         buf[k] = '/';
         strcpy(buf + k + 1, uttid);
+    }
+    /* Build output directory structure if possible/requested (it is
+     * by default). */
+    if (cmd_ln_boolean("-build_outdirs")) {
+        char *dirname = ckd_salloc(buf);
+        path2dirname(buf, dirname);
+        build_directory(dirname);
+        ckd_free(dirname);
     }
 }
 

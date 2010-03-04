@@ -1205,7 +1205,8 @@ srch_allphone_nbest_impl(void *srch,          /**< A void pointer to a search st
         return NULL;
     ctl_outfile(str, cmd_ln_str_r(kbcore_config(s->kbc), "-nbestdir"),
 		cmd_ln_str_r(kbcore_config(s->kbc), "-nbestext"),
-                (s->uttfile ? s->uttfile : s->uttid), s->uttid);
+                (s->uttfile ? s->uttfile : s->uttid), s->uttid,
+		cmd_ln_boolean_r(kbcore_config(s->kbc), "-build_outdirs"));
 
     bestpathlw = cmd_ln_float32_r(kbcore_config(s->kbc), "-bestpathlw");
     lwf = bestpathlw ? (bestpathlw / cmd_ln_float32_r(kbcore_config(s->kbc), "-lw")) : 1.0;

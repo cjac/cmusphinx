@@ -570,8 +570,10 @@ srch_utt_end(srch_t * s)
 	/* HTK lattices are generic */
 	if (0 == strcmp(cmd_ln_str_r(kbcore_config(s->kbc), "-outlatfmt"), "htk")) {
 	    char str[2048];
-	    ctl_outfile(str, cmd_ln_str_r(kbcore_config(s->kbc), "-outlatdir"), cmd_ln_str_r(kbcore_config(s->kbc), "-latext"),
-			(s->uttfile ? s->uttfile : s->uttid), s->uttid);
+	    ctl_outfile(str, cmd_ln_str_r(kbcore_config(s->kbc), "-outlatdir"),
+			cmd_ln_str_r(kbcore_config(s->kbc), "-latext"),
+			(s->uttfile ? s->uttfile : s->uttid), s->uttid,
+			cmd_ln_boolean_r(kbcore_config(s->kbc), "-build_outdirs"));
 	    E_INFO("Writing lattice file in HTK format: %s\n", str);
 	    dag_write_htk(s->dag, str, s->uttid, kbcore_lm(s->kbc), kbcore_dict(s->kbc));
 	}
@@ -585,8 +587,11 @@ srch_utt_end(srch_t * s)
 	    /* But probably not. */
 	    else {
 		char str[2048];
-		ctl_outfile(str, cmd_ln_str_r(kbcore_config(s->kbc), "-outlatdir"), cmd_ln_str_r(kbcore_config(s->kbc), "-latext"),
-			    (s->uttfile ? s->uttfile : s->uttid), s->uttid);
+		ctl_outfile(str, cmd_ln_str_r(kbcore_config(s->kbc), "-outlatdir"),
+			    cmd_ln_str_r(kbcore_config(s->kbc), "-latext"),
+			    (s->uttfile ? s->uttfile : s->uttid), s->uttid,
+			    cmd_ln_boolean_r(kbcore_config(s->kbc), "-build_outdirs"));
+
 		E_INFO("Writing lattice file: %s\n", str);
 		dag_write(s->dag, str, kbcore_lm(s->kbc), kbcore_dict(s->kbc));
 	    }
