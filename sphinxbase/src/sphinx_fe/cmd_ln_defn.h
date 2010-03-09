@@ -111,14 +111,24 @@ static arg_t defn[] = {
     "Control file for batch processing" },
   
   { "-nskip",
-    ARG_STRING,
-    NULL,
+    ARG_INT32,
+    "0",
     "If a control file was specified, the number of utterances to skip at the head of the file" },
   
   { "-runlen",
-    ARG_STRING,
-    NULL,
-    "If a control file was specified, the number of utterances to process (see -nskip too)" },
+    ARG_INT32,
+    "-1",
+    "If a control file was specified, the number of utterances to process, or -1 for all" },
+
+  { "-part",
+    ARG_INT32,
+    "0",
+    "Index of the part to run (supersedes -nskip and -runlen if non-zero)" },
+  
+  { "-npart",
+    ARG_INT32,
+    "0",
+    "Number of parts to run in (supersedes -nskip and -runlen if non-zero)" },
   
   { "-di",
     ARG_STRING,
@@ -170,10 +180,10 @@ static arg_t defn[] = {
     "1",
     "Channel to process" },
   
-  { "-feat",
+  { "-ofmt",
     ARG_STRING,
     "sphinx",
-    "Format of output files - currently only 'sphinx' is supported, 'htk' might work soon too." },
+    "Format of output files - one of sphinx, htk, text." },
   
   { "-mach_endian",
     ARG_STRING,

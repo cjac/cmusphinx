@@ -56,6 +56,18 @@
 #include "sphinx_wave2feat.h"
 #include "cmd_ln_defn.h"
 
+typedef struct audio_type_s {
+    char const *name;
+    int (*detect)(sphinx_wave2feat_t *wtf, char const *infile);
+    int (*decode)(sphinx_wave2feat_t *wtf);
+} audio_type_t;
+
+typedef struct output_type_s {
+    char const *name;
+    int (*output_header)(sphinx_wave2feat_t *wtf, int nfloat);
+    int (*output_frames)(sphinx_wave2feat_t *wtf, mfcc_t **frames, int nfr);
+} output_type_t;
+
 struct sphinx_wave2feat_s {
     int refcount;     /**< Reference count. */
     cmd_ln_t *config; /**< Configuration parameters. */
@@ -71,9 +83,10 @@ struct sphinx_wave2feat_s {
     int veclen;       /**< Length of each output vector. */
     int in_veclen;    /**< Length of each input vector (for cep<->spec). */
     int byteswap;     /**< Whether byteswapping is necessary. */
+    output_type_t const *ot;/**< Output type object. */
 };
 
-/** RIFF 44-byte header structure for MS wav files */
+/** RIFF 44-byte header structure for MS wav files. */
 typedef struct RIFFHeader{
     char rifftag[4];      /* "RIFF" string */
     int32 TotalLength;      /* Total length */
@@ -88,28 +101,6 @@ typedef struct RIFFHeader{
     char datatag[4];      /* "data" string */
     int32 datalength;       /* Raw data length */
 } MSWAV_hdr;
-
-/**
- * Output frames from sphinx_wave2feat_t, in whatever format, etc, is configured.
- *
- * @return 0 for success, <0 for error.
- */
-static int
-output_frames(sphinx_wave2feat_t *wtf, mfcc_t **frames, int nfr)
-{
-    int i, nfloat = 0;
-
-    fe_mfcc_to_float(wtf->fe, frames, (float32 **)frames, nfr);
-    for (i = 0; i < nfr; ++i) {
-        if (fwrite(frames[i], sizeof(float32), wtf->veclen, wtf->outfh) != wtf->veclen) {
-            E_ERROR_SYSTEM("Writing %d values to %s failed",
-                           wtf->veclen, wtf->outfile);
-            return -1;
-        }
-        nfloat += wtf->veclen;
-    }
-    return nfloat;
-}
 
 /**
  * Detect RIFF file and parse its header if detected.
@@ -314,7 +305,7 @@ decode_pcm(sphinx_wave2feat_t *wtf)
             nfr = nvec;
             fe_process_frames(wtf->fe, &inspeech, &nsamp, wtf->feat, &nfr);
             if (nfr) {
-                if ((n = output_frames(wtf, wtf->feat, nfr)) < 0)
+                if ((n = (*wtf->ot->output_frames)(wtf, wtf->feat, nfr)) < 0)
                     return -1;
                 nfloat += n;
             }
@@ -324,7 +315,7 @@ decode_pcm(sphinx_wave2feat_t *wtf)
     /* Now process any leftover audio frames. */
     fe_end_utt(wtf->fe, wtf->feat[0], &nfr);
     if (nfr) {
-        if ((n = output_frames(wtf, wtf->feat, nfr)) < 0)
+        if ((n = (*wtf->ot->output_frames)(wtf, wtf->feat, nfr)) < 0)
             return -1;
         nfloat += n;
     }
@@ -374,7 +365,7 @@ decode_sphinx_mfc(sphinx_wave2feat_t *wtf)
                 fe_mfcc_dct3(wtf->fe, wtf->feat[i], wtf->feat[i]);
             }
         }
-        if ((n = output_frames(wtf, wtf->feat, nfr)) < 0)
+        if ((n = (*wtf->ot->output_frames)(wtf, wtf->feat, nfr)) < 0)
             return -1;
         nfloat += n;
     }
@@ -384,15 +375,211 @@ decode_sphinx_mfc(sphinx_wave2feat_t *wtf)
     return nfloat;
 }
 
+static const audio_type_t types[] = {
+    { "-mswav", &detect_riff, &decode_pcm },
+    { "-nist", &detect_nist, &decode_pcm },
+#ifdef HAVE_SNDFILE
+    { "-sndfile", &detect_sndfile, &decode_sndfile },
+#endif
+    { "-raw", &detect_raw, &decode_pcm }
+};
+static const int ntypes = sizeof(types)/sizeof(types[0]);
+static const audio_type_t mfcc_type = {
+    "sphinx_mfc", &detect_sphinx_mfc, &decode_sphinx_mfc
+};
+
+/**
+ * Output sphinx format "header"
+ *
+ * @return 0 for success, <0 for error.
+ */
+static int
+output_header_sphinx(sphinx_wave2feat_t *wtf, int32 nfloat)
+{
+    if (fwrite(&nfloat, 4, 1, wtf->outfh) != 1) {
+        E_ERROR_SYSTEM("Failed to write to %s", wtf->outfile);
+        return -1;
+    }
+    return 0;
+}
+
+/**
+ * Output frames in sphinx format.
+ *
+ * @return 0 for success, <0 for error.
+ */
+static int
+output_frames_sphinx(sphinx_wave2feat_t *wtf, mfcc_t **frames, int nfr)
+{
+    int i, nfloat = 0;
+
+    fe_mfcc_to_float(wtf->fe, frames, (float32 **)frames, nfr);
+    for (i = 0; i < nfr; ++i) {
+        if (fwrite(frames[i], sizeof(float32), wtf->veclen, wtf->outfh) != wtf->veclen) {
+            E_ERROR_SYSTEM("Writing %d values to %s failed",
+                           wtf->veclen, wtf->outfile);
+            return -1;
+        }
+        nfloat += wtf->veclen;
+    }
+    return nfloat;
+}
+
+typedef enum htk_feature_kind_e {
+    WAVEFORM = 0,   /* PCM audio (rarely used) */
+    LPC = 1,        /* LPC filter coefficients */
+    LPCREFC = 2,    /* LPC reflection coefficients */
+    LPCEPSTRA = 3,  /* LPC-based cepstral coefficients */
+    LPCDELCEP = 4,  /* LPCC plus deltas */
+    IREFC = 5,      /* 16-bit integer LPC reflection coefficients */
+    MFCC = 6,       /* MFCCs */
+    FBANK = 7,      /* Log mel spectrum */
+    MELSPEC = 8,    /* Linear mel spectrum */
+    USER = 9,       /* User defined */
+    DISCRETE = 10,  /* Vector quantized data */
+    PLP = 11        /* PLP coefficients */
+} htk_feature_kind_t;
+
+typedef enum htk_feature_flag_e {
+    _E = 0000100, /* has energy */
+    _N = 0000200, /* absolute energy supressed */
+    _D = 0000400, /* has delta coefficients */
+    _A = 0001000, /* has acceleration (delta-delta) coefficients */
+    _C = 0002000, /* is compressed */
+    _Z = 0004000, /* has zero mean static coefficients (i.e. CMN) */
+    _K = 0010000, /* has CRC checksum */
+    _O = 0020000, /* has 0th cepstral coefficient */
+    _V = 0040000, /* has VQ data */
+    _T = 0100000  /* has third differential coefficients */
+} htk_feature_flag_t;
+
+/**
+ * Output HTK format header.
+ */
+static int
+output_header_htk(sphinx_wave2feat_t *wtf, int32 nfloat)
+{
+    int32 samp_period;
+    int16 samp_size;
+    int16 param_kind;
+    int swap = FALSE;
+
+    /* HTK files are big-endian. */
+    if (0 == strcmp("little", cmd_ln_str_r(wtf->config, "-mach_endian")))
+        swap = TRUE;
+    /* Same file size thing as in Sphinx files (I think) */
+    if (swap) SWAP_INT32(&nfloat);
+    if (fwrite(&nfloat, 4, 1, wtf->outfh) != 1)
+        return -1;
+    /* Sample period in 100ns units. */
+    samp_period = (int32)(1e+7 / cmd_ln_float32_r(wtf->config, "-frate"));
+    if (swap) SWAP_INT32(&samp_period);
+    if (fwrite(&samp_period, 4, 1, wtf->outfh) != 1)
+        return -1;
+    /* Sample size - veclen * sizeof each sample. */
+    samp_size = wtf->veclen * 4;
+    if (swap) SWAP_INT16(&samp_size);
+    if (fwrite(&samp_size, 2, 1, wtf->outfh) != 1)
+        return -1;
+    /* Format and flags. */
+    if (cmd_ln_boolean_r(wtf->config, "-logspec")
+        || cmd_ln_boolean_r(wtf->config, "-cep2spec"))
+        param_kind = FBANK; /* log mel-filter bank outputs */
+    else
+        param_kind = MFCC | _O; /* MFCC + CEP0 (note reordering...) */
+    if (swap) SWAP_INT16(&param_kind);
+    if (fwrite(&param_kind, 2, 1, wtf->outfh) != 1)
+        return -1;
+
+    return 0;
+}
+
+/**
+ * Output frames in HTK format.
+ */
+static int
+output_frames_htk(sphinx_wave2feat_t *wtf, mfcc_t **frames, int nfr)
+{
+    int i, j, swap, htk_reorder, nfloat = 0;
+
+    fe_mfcc_to_float(wtf->fe, frames, (float32 **)frames, nfr);
+    /* This is possibly inefficient, but probably not a big deal. */
+    swap = (0 == strcmp("little", cmd_ln_str_r(wtf->config, "-mach_endian")));
+    htk_reorder = (0 == strcmp("htk", wtf->ot->name)
+                   && !(cmd_ln_boolean_r(wtf->config, "-logspec")
+                        || cmd_ln_boolean_r(wtf->config, "-cep2spec")));
+    for (i = 0; i < nfr; ++i) {
+        if (htk_reorder) {
+            mfcc_t c0 = frames[i][0];
+            memmove(frames[i] + 1, frames[i], (wtf->veclen - 1) * 4);
+            frames[i][wtf->veclen - 1] = c0;
+        }
+        if (swap)
+            for (j = 0; j < wtf->veclen; ++j)
+                SWAP_FLOAT32(frames[i] + j);
+        if (fwrite(frames[i], sizeof(float32), wtf->veclen, wtf->outfh) != wtf->veclen) {
+            E_ERROR_SYSTEM("Writing %d values to %s failed",
+                           wtf->veclen, wtf->outfile);
+            return -1;
+        }
+        nfloat += wtf->veclen;
+    }
+    return nfloat;
+}
+
+/**
+ * Output frames in text format.
+ */
+static int
+output_frames_text(sphinx_wave2feat_t *wtf, mfcc_t **frames, int nfr)
+{
+    int i, j, nfloat = 0;
+
+    fe_mfcc_to_float(wtf->fe, frames, (float32 **)frames, nfr);
+    for (i = 0; i < nfr; ++i) {
+        for (j = 0; j < wtf->veclen; ++j) {
+            fprintf(wtf->outfh, "%.5g", frames[i][j]);
+            if (j == wtf->veclen - 1)
+                fprintf(wtf->outfh, "\n");
+            else
+                fprintf(wtf->outfh, " ");
+        }
+        nfloat += wtf->veclen;
+    }
+    return nfloat;
+}
+
+static const output_type_t outtypes[] = {
+    { "sphinx", &output_header_sphinx, &output_frames_sphinx },
+    { "htk", &output_header_htk, &output_frames_htk },
+    { "text", NULL, &output_frames_text }
+};
+static const int nouttypes = sizeof(outtypes)/sizeof(outtypes[0]);
+
 sphinx_wave2feat_t *
 sphinx_wave2feat_init(cmd_ln_t *config)
 {
     sphinx_wave2feat_t *wtf;
+    int i;
 
     wtf = ckd_calloc(1, sizeof(*wtf));
     wtf->refcount = 1;
     wtf->config = cmd_ln_retain(config);
     wtf->fe = fe_init_auto_r(wtf->config);
+    wtf->ot = outtypes; /* Default (sphinx) type. */
+    for (i = 0; i < nouttypes; ++i) {
+        output_type_t const *otype = &outtypes[i];
+        if (0 == strcmp(cmd_ln_str_r(config, "-ofmt"), otype->name)) {
+            wtf->ot = otype;
+            break;
+        }
+    }
+    if (i == nouttypes) {
+        E_ERROR("Unknown output type: '%s'\n",
+                cmd_ln_str_r(config, "-ofmt"));
+        sphinx_wave2feat_free(wtf);
+        return NULL;
+    }
 
     return wtf;
 }
@@ -426,25 +613,6 @@ sphinx_wave2feat_retain(sphinx_wave2feat_t *wtf)
     ++wtf->refcount;
     return wtf;
 }
-
-typedef struct audio_type_s {
-    char const *name;
-    int (*detect)(sphinx_wave2feat_t *wtf, char const *infile);
-    int (*decode)(sphinx_wave2feat_t *wtf);
-} audio_type_t;
-
-static const audio_type_t types[] = {
-    { "-mswav", &detect_riff, &decode_pcm },
-    { "-nist", &detect_nist, &decode_pcm },
-#ifdef HAVE_SNDFILE
-    { "-sndfile", &detect_sndfile, &decode_sndfile },
-#endif
-    { "-raw", &detect_raw, &decode_pcm },
-};
-static const int ntypes = sizeof(types)/sizeof(types[0]);
-static const audio_type_t mfcc_type = {
-    "sphinx_mfc", &detect_sphinx_mfc, &decode_sphinx_mfc
-};
 
 static audio_type_t const *
 detect_audio_type(sphinx_wave2feat_t *wtf, char const *infile)
@@ -494,7 +662,6 @@ sphinx_wave2feat_convert_file(sphinx_wave2feat_t *wtf,
                               char const *infile, char const *outfile)
 {
     int minfft, nfft, nfloat, veclen;
-    int32 zero = 0;
     audio_type_t const *atype;
     int fshift, fsize;
 
@@ -505,8 +672,7 @@ sphinx_wave2feat_convert_file(sphinx_wave2feat_t *wtf,
     if ((atype = detect_audio_type(wtf, infile)) == NULL)
         return -1;
 
-    /* Determine whether to byteswap input (we never byteswap output
-     * anymore) */
+    /* Determine whether to byteswap input. */
     wtf->byteswap = strcmp(cmd_ln_str_r(wtf->config, "-mach_endian"),
                            cmd_ln_str_r(wtf->config, "-input_endian"));
 
@@ -549,27 +715,37 @@ sphinx_wave2feat_convert_file(sphinx_wave2feat_t *wtf,
         E_ERROR_SYSTEM("Failed to open %s for writing", outfile);
         return -1;
     }
-    /* Leave blank space for float count at start of mfcc file. */
-    if (fwrite(&zero, 4, 1, wtf->outfh) != 1) {
-        E_ERROR_SYSTEM("Failed to write to %s", outfile);
-        return -1;
+    /* Write an empty header, which we'll fill in later. */
+    if (wtf->ot->output_header &&
+        (*wtf->ot->output_header)(wtf, 0) < 0) {
+        E_ERROR_SYSTEM("Failed to write empty header to %s\n", outfile);
+        goto error_out;
     }
     wtf->outfile = ckd_salloc(outfile);
 
     if ((nfloat = (*atype->decode)(wtf)) < 0)
         return -1;
 
-    /* Fix up the float count. */
-    if (fseek(wtf->outfh, 0, SEEK_SET) < 0) {
-        E_ERROR_SYSTEM("Failed to seek to beginning of %s\n", outfile);
-    }
-    if (fwrite(&nfloat, 4, 1, wtf->outfh) != 1) {
-        E_ERROR_SYSTEM("Failed to write value count to %s\n", outfile);
+    if (wtf->ot->output_header) {
+        if (fseek(wtf->outfh, 0, SEEK_SET) < 0) {
+            E_ERROR_SYSTEM("Failed to seek to beginning of %s\n", outfile);
+            goto error_out;
+        }
+        if ((*wtf->ot->output_header)(wtf, nfloat) < 0) {
+            E_ERROR_SYSTEM("Failed to write header to %s\n", outfile);
+            goto error_out;
+        }
     }
     fclose(wtf->outfh);
     wtf->outfh = NULL;
 
     return 0;
+error_out:
+    if (wtf->outfh) {
+        fclose(wtf->outfh);
+        wtf->outfh = NULL;
+    }
+    return -1;
 }
 
 void
@@ -610,14 +786,41 @@ run_control_file(sphinx_wave2feat_t *wtf, char const *ctlfile)
 {
     lineiter_t *li;
     FILE *ctlfh;
+    int nskip, runlen, npart;
 
     if ((ctlfh = fopen(ctlfile, "r")) == NULL) {
         E_ERROR_SYSTEM("Failed to open control file %s", ctlfile);
         return -1;
     }
+    nskip = cmd_ln_int32_r(wtf->config, "-nskip");
+    runlen = cmd_ln_int32_r(wtf->config, "-runlen");
+    if ((npart = cmd_ln_int32_r(wtf->config, "-npart"))) {
+        /* Count lines in the file. */
+        int nlines, partlen, part;
+        part = cmd_ln_int32_r(wtf->config, "-part");
+        for (nlines = 0, li = lineiter_start(ctlfh); li; li = lineiter_next(li))
+            ++nlines;
+        fseek(ctlfh, 0, SEEK_SET);
+        partlen = nlines / npart;
+        nskip = partlen * (part - 1);
+        if (part == npart)
+            runlen = -1;
+        else
+            runlen = partlen;
+    }
+    if (runlen != -1)
+        E_INFO("Processing %d utterances at position %d\n", runlen, nskip);
+    else
+        E_INFO("Processing all remaining utterances at position %d\n", nskip);
     for (li = lineiter_start(ctlfh); li; li = lineiter_next(li)) {
         char *infile, *outfile;
         int rv;
+
+        if (nskip-- > 0)
+            continue;
+        if (runlen == 0)
+            break;
+        --runlen;
 
         string_trim(li->buf, STRING_BOTH);
         build_filenames(wtf->config, li->buf, &infile, &outfile);
