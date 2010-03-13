@@ -110,15 +110,17 @@ ps_init_defaults(ps_decoder_t *ps)
     hmmdir = cmd_ln_str_r(ps->config, "-hmm");
     lmfile = cmd_ln_str_r(ps->config, "-lm");
     dictfile = cmd_ln_str_r(ps->config, "-dict");
-    if (hmmdir == NULL) {
+    if (hmmdir == NULL && hmmdir_exists(MODELDIR "/hmm/en_US/hub4wsj_sc_8k")) {
         hmmdir = MODELDIR "/hmm/en_US/hub4wsj_sc_8k";
         cmd_ln_set_str_r(ps->config, "-hmm", hmmdir);
     }
-    if (lmfile == NULL) {
+    if (lmfile == NULL && !cmd_ln_str_r(ps->config, "-fsg")
+        && !cmd_ln_str_r(ps->config, "-jsgf")
+        && file_exists(MODELDIR "/lm/en_US/hub4.5000.DMP")) {
         lmfile = MODELDIR "/lm/en_US/hub4.5000.DMP";
         cmd_ln_set_str_r(ps->config, "-lm", lmfile);
     }
-    if (dictfile == NULL) {
+    if (dictfile == NULL && file_exists(MODELDIR "/lm/en_US/cmu07a.dic")) {
         dictfile = MODELDIR "/lm/en_US/cmu07a.dic";
         cmd_ln_set_str_r(ps->config, "-dict", dictfile);
     }
