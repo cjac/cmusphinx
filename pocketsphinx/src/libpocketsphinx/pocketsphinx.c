@@ -86,7 +86,6 @@ static void
 ps_init_defaults(ps_decoder_t *ps)
 {
     char const *hmmdir, *lmfile, *dictfile;
-    char *tmphmm = NULL, *tmplm = NULL, *tmpdict = NULL;
 
     /* Disable memory mapping on Blackfin (FIXME: should be uClinux in general). */
 #ifdef __ADSPBLACKFIN__
@@ -99,20 +98,35 @@ ps_init_defaults(ps_decoder_t *ps)
     hmmdir = cmd_ln_str_r(ps->config, "-hmm");
     lmfile = cmd_ln_str_r(ps->config, "-lm");
     dictfile = cmd_ln_str_r(ps->config, "-dict");
-    if (hmmdir == NULL)
+    if (hmmdir == NULL) {
         hmmdir = MODELDIR "/hmm/en_US/hub4wsj_sc_8k";
-    if (lmfile == NULL)
+        cmd_ln_set_str_r(ps->config, "-hmm", hmmdir);
+    }
+    if (lmfile == NULL) {
         lmfile = MODELDIR "/lm/en_US/hub4.5000.DMP";
-    if (dictfile == NULL)
+        cmd_ln_set_str_r(ps->config, "-lm", lmfile);
+    }
+    if (dictfile == NULL) {
         dictfile = MODELDIR "/lm/en_US/cmu07a.dic";
+        cmd_ln_set_str_r(ps->config, "-dict", dictfile);
+    }
 
     /* Expand acoustic and language model filenames relative to installation path. */
-    if (hmmdir && !path_is_absolute(hmmdir))
-        hmmdir = tmphmm = string_join(MODELDIR "/hmm/", hmmdir, NULL);
-    if (lmfile && !path_is_absolute(lmfile))
-        lmfile = tmplm = string_join(MODELDIR "/lm/", lmfile, NULL);
-    if (dictfile && !path_is_absolute(dictfile))
-        dictfile = tmpdict = string_join(MODELDIR "/lm/", dictfile, NULL);
+    if (hmmdir && !path_is_absolute(hmmdir)) {
+        char *tmphmm = string_join(MODELDIR "/hmm/", hmmdir, NULL);
+        cmd_ln_set_str_r(ps->config, "-hmm", tmphmm);
+        ckd_free(tmphmm);
+    }
+    if (lmfile && !path_is_absolute(lmfile)) {
+        char *tmplm = string_join(MODELDIR "/lm/", lmfile, NULL);
+        cmd_ln_set_str_r(ps->config, "-lm", tmplm);
+        ckd_free(tmplm);
+    }
+    if (dictfile && !path_is_absolute(dictfile)) {
+        char *tmpdict = string_join(MODELDIR "/lm/", dictfile, NULL);
+        cmd_ln_set_str_r(ps->config, "-dict", tmpdict);
+        ckd_free(tmpdict);
+    }
 #endif
 
     /* Get acoustic model filenames and add them to the command-line */
@@ -128,8 +142,6 @@ ps_init_defaults(ps_decoder_t *ps)
         ps_add_file(ps, "-featparams", hmmdir, "feat.params");
         ps_add_file(ps, "-senmgau", hmmdir, "senmgau");
     }
-    ckd_free(tmphmm);
-    ckd_free(tmplm);
 }
 
 static void
