@@ -71,6 +71,18 @@ file_exists(const char *path)
     return (tmp != NULL);
 }
 
+static int
+hmmdir_exists(const char *path)
+{
+    FILE *tmp;
+    char *mdef = string_join(path, "/mdef", NULL);
+
+    tmp = fopen(mdef, "rb");
+    if (tmp) fclose(tmp);
+    ckd_free(mdef);
+    return (tmp != NULL);
+}
+
 static void
 ps_add_file(ps_decoder_t *ps, const char *arg,
             const char *hmmdir, const char *file)
@@ -112,17 +124,17 @@ ps_init_defaults(ps_decoder_t *ps)
     }
 
     /* Expand acoustic and language model filenames relative to installation path. */
-    if (hmmdir && !path_is_absolute(hmmdir)) {
+    if (hmmdir && !path_is_absolute(hmmdir) && !hmmdir_exists(hmmdir)) {
         char *tmphmm = string_join(MODELDIR "/hmm/", hmmdir, NULL);
         cmd_ln_set_str_r(ps->config, "-hmm", tmphmm);
         ckd_free(tmphmm);
     }
-    if (lmfile && !path_is_absolute(lmfile)) {
+    if (lmfile && !path_is_absolute(lmfile) && !file_exists(lmfile)) {
         char *tmplm = string_join(MODELDIR "/lm/", lmfile, NULL);
         cmd_ln_set_str_r(ps->config, "-lm", tmplm);
         ckd_free(tmplm);
     }
-    if (dictfile && !path_is_absolute(dictfile)) {
+    if (dictfile && !path_is_absolute(dictfile) && !file_exists(dictfile)) {
         char *tmpdict = string_join(MODELDIR "/lm/", dictfile, NULL);
         cmd_ln_set_str_r(ps->config, "-dict", tmpdict);
         ckd_free(tmpdict);
