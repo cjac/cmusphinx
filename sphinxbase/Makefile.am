@@ -17,7 +17,7 @@ EXTRA_DIST = autogen.sh					\
 	m4/lib-prefix.m4				\
 	group/ABLD.BAT					\
 	group/bld.inf					\
-	group/sphinxbase_s60.mmp
+	group/sphinxbase.mmp
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = sphinxbase.pc
