@@ -60,4 +60,6 @@ noinst_HEADERS =				\
 	vector.h
 
 INCLUDES = -I$(top_srcdir)/include \
-           -I$(top_builddir)/include 
+           -I$(top_builddir)/include \
+	   -DMODELDIR=\"${prefix}/share/pocketsphinx/model\"
+
