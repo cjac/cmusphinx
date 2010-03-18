@@ -30,7 +30,6 @@ case $host in
 esac     
 
 AC_PROG_CC
-AC_PROG_CXX
 AM_PROG_LIBTOOL
 AC_WORDS_BIGENDIAN
 AC_CHECK_TYPES(long long)
@@ -249,8 +248,6 @@ model/Makefile
 model/hmm/Makefile
 model/lm/Makefile
 scripts/Makefile
-scripts/pocketsphinx_wsj
-scripts/pocketsphinx_tidigits
 test/Makefile
 test/testfuncs.sh
 test/unit/Makefile
