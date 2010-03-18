@@ -83,7 +83,7 @@ word_graph_dump(char *dir, char *uttfile, char *id, char *latfile_ext, dag_t * d
 
     wg = dag_to_wordgraph(dag, senscale, lm, dict);
 
-    ctl_outfile(filename, dir, latfile_ext, uttfile, id);
+    ctl_outfile(filename, dir, latfile_ext, uttfile, id, TRUE);
 
     E_INFO("Writing lattice file for IBM format: %s\n", filename);
 

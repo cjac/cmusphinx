@@ -32,6 +32,7 @@ libsearch_la_SOURCES = \
 	vithist.c \
 	whmm.c \
 	word_fsg.c \
+	word_graph.c \
 	word_ugprob.c
 
 noinst_HEADERS = \
