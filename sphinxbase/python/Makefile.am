@@ -1,5 +1,8 @@
 EXTRA_DIST = sphinxbase.c \
-	sphinxbase.pyx
+	sphinxbase.pyx \
+	setup_win32.py \
+	sb_test.py \
+	hufftest2.py
 
 pkginclude_HEADERS = sphinxbase.pxd
 
