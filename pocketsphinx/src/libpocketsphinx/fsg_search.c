@@ -331,13 +331,14 @@ static int
 fsg_search_add_altpron(fsg_search_t *fsgs, fsg_model_t *fsg)
 {
     dict_t *dict;
-    int n_alt;
+    int n_alt, n_word;
     int i;
 
     dict = ps_search_dict(fsgs);
     /* Scan FSG's vocabulary for words that have alternate pronunciations. */
     n_alt = 0;
-    for (i = 0; i < fsg_model_n_word(fsg); ++i) {
+    n_word = fsg_model_n_word(fsg);
+    for (i = 0; i < n_word; ++i) {
         char const *word;
         int32 wid;
 
