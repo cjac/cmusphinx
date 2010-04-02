@@ -117,8 +117,6 @@ dict_to_fst(dict_t *dict, bool usealt)
     StdVectorFst *model = new StdVectorFst;
     SymbolTable *isym = new SymbolTable("phones");
     SymbolTable *osym = new SymbolTable("words");
-    model->SetInputSymbols(isym);
-    model->SetOutputSymbols(osym);
     StateId start = model->AddState();
     StateId end = model->AddState();
     model->SetStart(start);
@@ -196,7 +194,8 @@ dict_to_fst(dict_t *dict, bool usealt)
         model->AddArc(n, StdArc(wbound, 0, 0, end));
     }
     hash_table_free(pbsym);
-
+    model->SetInputSymbols(isym);
+    model->SetOutputSymbols(osym);
     return model;
 }
 
