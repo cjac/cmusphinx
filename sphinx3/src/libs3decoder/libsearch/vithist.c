@@ -649,7 +649,7 @@ vithist_prune(vithist_t * vh, dict_t * dict, int32 frm,
 {
     int32 se, fe, filler_done, th;
     vithist_entry_t *ve;
-    heap_t h;
+    heap_t *h;
     s3wid_t *wid;
     int32 i, nhf;
 
