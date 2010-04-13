@@ -402,11 +402,7 @@ static void swap_struct(ng_t *ng)
   ngram_sz_t j;
   for (i=1;i<=ng->n-1;i++) {
     for (j=0;j<=ng->num_kgrams[i];j++){
-#ifdef THIRTYTWOBITS
       SWAPWORD(&ng->word_id[i][j]);
-#else
-      SWAPHALF(&ng->word_id[i][j]);
-#endif
     }
    
     if (ng->four_byte_counts) {
@@ -427,13 +423,7 @@ static void swap_struct(ng_t *ng)
       }
     }
     for (j=0;j<=ng->num_kgrams[i];j++) {
-
-#ifdef THIRTYTWOBITS
       SWAPWORD(&ng->ind[i][j]);
-#else
-      SWAPHALF(&ng->ind[i][j]);
-#endif
-
     }
   }
 } 
