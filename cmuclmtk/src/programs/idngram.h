@@ -223,11 +223,7 @@ void merge_tempfiles (int start_file,
       if (write_ascii) {
 	for (i=0;i<=n-1;i++) {
 
-#ifdef	 THIRTYTWOBITS
 	  if (fprintf(outfile,"%d ",smallest_ngram[i]) < 0) 
-#else
-	  if (fprintf(outfile,"%hu ",smallest_ngram[i]) < 0) 
-#endif
 	    {
 	      quit(-1,"Write error encountered while attempting to merge temporary files.\nAborting, but keeping temporary files.\n");
 	    }
