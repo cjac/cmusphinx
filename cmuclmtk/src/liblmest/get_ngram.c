@@ -55,11 +55,7 @@ int get_ngram(FILE *id_ngram_fp, ngram *ng, flag ascii) {
   if (ascii) {
     for (i=0;i<=ng->n-1;i++) {
 
-#ifdef THIRTYTWOBITS
       if (fscanf(id_ngram_fp,"%d",&ng->id_array[i]) != 1) 
-#else
-      if (fscanf(id_ngram_fp,"%hu",&ng->id_array[i]) != 1)
-#endif
 	{
 	  if (rr_feof(id_ngram_fp)) 
 	    return 0;

@@ -10,11 +10,6 @@ AM_CONFIG_HEADER([config.h])
 # PUT EVETHING IN THIS DIRECTORY
 prefix=`pwd`
 
-dnl Use 16 bit word IDs, only if you care about memory...
-AC_ARG_ENABLE(16bits,
-           [  --enable-16bits         Enable 16 bit word ID support], []
-           [CFLAGS="$CFLAGS -DTHIRTYTWOBITS"]
-)
 AC_ARG_ENABLE(mingw,
 	[  --enable-mingw	  Compile for native Windows execution],
 	[LDFLAGS="-mno-cygwin -L/lib/mingw -L/lib/gcc/i686-pc-mingw32/3.4.4 $LDFLAGS"

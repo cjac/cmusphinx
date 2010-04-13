@@ -54,16 +54,6 @@
 
 #include <stdlib.h>
 
-/*
-  ARCHAN 20060415 : If the code is compiled in the THIRTYTWOBITS
-  mode. A more standard DJB's hash function.  The old hash function,
-  could easily cause collision problem when the number of words is
-  larger than 65535 words.  (I could always have a good night sleep
-  because of this.)
- */
-
-#ifdef THIRTYTWOBITS
-
 #define HASH_VERSION 060414
 
 int sih_key(char* str,unsigned len)
@@ -76,25 +66,6 @@ int sih_key(char* str,unsigned len)
 
   return (hash & 0x7FFFFFFF);
 }
-
-#else
-
-#define HASH_VERSION 940728 /* change this if you change the hash function below */
-#define SIH_KEY(STRING,KEY) {\
-    vocab_sz_t i = 0; \
-    char *pstr = STRING; \
-    KEY = 0; \
-    do {KEY += *pstr++ << (0xF & --i);} while (*pstr);  /* Fil's hash function */ \
-}
-
-int sih_key(char* str,unsigned len)
-{
-  int key;
-  SIH_KEY(str,key);
-  return key;
-}
-
-#endif
 
 vocab_sz_t nearest_prime_up(vocab_sz_t num)
 /* return the nearest prime not smaller than 'num' */

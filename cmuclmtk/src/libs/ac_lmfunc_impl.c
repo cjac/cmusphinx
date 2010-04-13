@@ -173,12 +173,10 @@ int wfreq2vocab_impl(FILE* ifp, FILE* ofp, int cutoff, int vocab_size, int num_r
   if (gt_set) 
     pc_message(verbosity,2,"Size of vocabulary = %d\n",num_to_output);
 
-#ifndef THIRTYTWOBITS  
   if (num_to_output>MAX_UNIGRAM) {
     pc_message(verbosity,1,"Warning : Vocab size exceeds %d. This might cause problems with \n",MAX_UNIGRAM);
     pc_message(verbosity,1,"other tools, since word id's are stored in 2 bytes.\n");
   }
-#endif
 
   if (num_to_output == 0) 
     pc_message(verbosity,1,"Warning : Vocab size = 0.\n");

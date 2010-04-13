@@ -30,10 +30,7 @@ make install
 If you are on a Windows machine you will also need to have Cygwin
 installed (with the developer components).
 
-configure supports two tool-specific options:
-
---enable-32bits	
->> the default is 16bit compilation
+configure supports one tool-specific options:
 
 --enable-mingw 
 >> on Windows only, does a native compilation; otherwise you will be 

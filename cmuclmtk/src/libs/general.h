@@ -78,9 +78,6 @@ typedef int    cluster_t;
 #define BAD_LOG_PROB -99.999
 #define BAD_PROB 1e-99
 
-#ifdef THIRTYTWOBITS
-
-#warning "CMU-Cambridge LM Toolkit V3 alpha is compiled under 32 bits mode.  (Support more than 65536 words in unigram but it's less memory efficient)"
 typedef unsigned int wordid_t;
 
 typedef long long int ngram_sz_t;
@@ -96,21 +93,6 @@ typedef unsigned int fof_sz_t;
 #define DEFAULT_COUNT_TABLE_SIZE 65535
 
 #define BBO_FILE_VERSION 060402
-#else
-
-/*
-#warning "CMU-Cambridge LM Toolkit V3 alpha is compiled under 16 bits mode.  (Support less than 65536 words in unigram but it's more memory-efficient.)"
-*/
-typedef unsigned short wordid_t;
-typedef int ngram_sz_t;
-typedef unsigned int us_ngram_sz_t;
-typedef unsigned short fof_sz_t;
-
-#define MAX_WORDID 65535 
-#define KEY 65000
-#define DEFAULT_COUNT_TABLE_SIZE 65535
-#define BBO_FILE_VERSION 970314
-#endif
 
 typedef us_ngram_sz_t us_vocab_sz_t;
 typedef ngram_sz_t vocab_sz_t; /* tie vocab_sz_t with ngram_sz_t */
