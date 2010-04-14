@@ -6,9 +6,7 @@ AC_INIT([cmucuslmtk], [1.0], [air+logios@cs.cmu.edu])
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([src/liblmest/disc_meth.h])
 AM_CONFIG_HEADER([config.h])
-
-# PUT EVETHING IN THIS DIRECTORY
-prefix=`pwd`
+AM_PROG_LIBTOOL
 
 AC_ARG_ENABLE(mingw,
 	[  --enable-mingw	  Compile for native Windows execution],
@@ -18,8 +16,6 @@ AC_ARG_ENABLE(mingw,
 )
 
 AC_PROG_CC
-AC_PROG_RANLIB
-
 AC_PROG_INSTALL
 
 AC_CHECK_TOOL(AR,ar)

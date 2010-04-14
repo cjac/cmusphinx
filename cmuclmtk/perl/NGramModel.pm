@@ -569,7 +569,7 @@ sub interpolate {
     # Run interpolate to find weights
     my $lambdas = $self->tempfile("lambdas");
     my $logfile = $self->tempfile("interpolate.log");
-    $self->run('interpolate', undef, undef, $logfile,
+    $self->run('lm_interpolate', undef, undef, $logfile,
 	       [ '+', $lm1probs,
 		 '+', $lm2probs,
 		 -out_lambdas => $lambdas ]);

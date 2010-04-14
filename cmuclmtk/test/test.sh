@@ -47,21 +47,6 @@ if (cmp English/emma11.bin.32bits English/emma11.filtered.bin  > /dev/null 2>&1)
 then echo "V3 32BITS idngram2lm BIN PASSED"; else \
 echo "V3 32BITS idngram2lm BIN FAILED"; fi 
 
-#Testing of idngram2lm
- echo "V3 32BITS idngram2lm ARPA ABSOLUTE TXT"
-$BIN/idngram2lm -idngram ./English/emma11.idngram.32bits -vocab ./English/emma11.vocab -absolute -arpa English/emma11.filtered.arpa 2>idngram2lmabs.log
-echo "V3 32BITS idngram2lm ARPA ABSOLUTE TXT PASSED"
-
-#Testing of idngram2lm
- echo "V3 32BITS idngram2lm ARPA LINEAR"
-$BIN/idngram2lm -idngram ./English/emma11.idngram.32bits -vocab ./English/emma11.vocab -linear -arpa English/emma11.filtered.arpa 2>idngram2lmlin.log
-echo "V3 32BITS idngram2lm ARPA LINEAR PASSED"
-
-#Testing of idngram2lm
- echo "V3 32BITS idngram2lm ARPA WITTEN BELL"
-$BIN/idngram2lm -idngram ./English/emma11.idngram.32bits -vocab ./English/emma11.vocab -witten_bell -arpa English/emma11.filtered.arpa 2>idngram2lmwb.log
-echo "V3 32BITS idngram2lm ARPA WITTEN BELL PASSED"
-
 #Testing of binlm2arpa
 echo "V3 32BITS of binlm2arpa"
 $BIN/binlm2arpa -binary ./English/emma11.bin.32bits -arpa convert.arpa 2>binlm2arpa.log
