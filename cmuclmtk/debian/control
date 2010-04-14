@@ -1,0 +1,45 @@
+Source: cmuclmtk
+Section: text
+Priority: extra
+Maintainer: David Huggins-Daines <dhuggins@lima-2>
+Build-Depends: perl (>= 5.8.0-6), debhelper (>= 5), autotools-dev
+Standards-Version: 3.8.4
+Homepage: http://cmusphinx.sourceforge.net/
+
+Package: cmuclmtk
+Architecture: any
+Depends: ${perl:Depends}, ${shlibs:Depends}, ${misc:Depends}
+Description: CMU-Cambridge Language Modeling Toolkit
+ The CMU-Cambridge Language Modeling Toolkit is a free set of tools
+ for constructing and testing statistical N-Gram language models.
+ These models have various applications including speech recognition,
+ machine translation, optical character and handwriting recognition.
+ .
+ This package contains the front-end tools for easy language model
+ training as well as the basic tools for manipulating N-Gram and text files. 
+
+Package: libcmuclmtk0
+Architecture: any
+Section: libs
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: CMU-Cambridge Language Modeling Toolkit
+ The CMU-Cambridge Language Modeling Toolkit is a free set of tools
+ for constructing and testing statistical N-Gram language models.
+ These models have various applications including speech recognition,
+ machine translation, optical character and handwriting recognition.
+ .
+ This package contains the shared library used by the CMU-Cambridge
+ Language Model Toolkit.
+
+Package: libcmuclmtk-dev
+Architecture: any
+Section: libs
+Depends: ${shlibs:Depends}, ${misc:Depends}, libcmuclmtk0 (= ${binary:Version})
+Description: CMU-Cambridge Language Modeling Toolkit
+ The CMU-Cambridge Language Modeling Toolkit is a free set of tools
+ for constructing and testing statistical N-Gram language models.
+ These models have various applications including speech recognition,
+ machine translation, optical character and handwriting recognition.
+ .
+ This package contains the include files and libraries used to compile
+ programs using the CMU-Cambridge Language Model Toolkit.

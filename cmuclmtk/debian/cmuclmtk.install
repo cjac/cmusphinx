@@ -1,0 +1,5 @@
+usr/bin/*
+usr/share/man/man1/*
+usr/share/man/man3/*
+usr/share/perl5/Text/CMU/*/*
+usr/share/perl5/Text/CMU/*
