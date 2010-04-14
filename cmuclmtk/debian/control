@@ -1,7 +1,7 @@
 Source: cmuclmtk
 Section: text
 Priority: extra
-Maintainer: David Huggins-Daines <dhuggins@lima-2>
+Maintainer: David Huggins-Daines <dhuggins@cs.cmu.edu>
 Build-Depends: perl (>= 5.8.0-6), debhelper (>= 5), autotools-dev
 Standards-Version: 3.8.4
 Homepage: http://cmusphinx.sourceforge.net/
@@ -33,7 +33,7 @@ Description: CMU-Cambridge Language Modeling Toolkit
 
 Package: libcmuclmtk-dev
 Architecture: any
-Section: libs
+Section: libdevel
 Depends: ${shlibs:Depends}, ${misc:Depends}, libcmuclmtk0 (= ${binary:Version})
 Description: CMU-Cambridge Language Modeling Toolkit
  The CMU-Cambridge Language Modeling Toolkit is a free set of tools

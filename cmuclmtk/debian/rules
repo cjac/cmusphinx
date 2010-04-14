@@ -56,16 +56,15 @@ clean:
 	dh_testroot
 	rm -f build-arch-stamp build-indep-stamp 
 	[ ! -f Makefile ] || $(MAKE) distclean
-	$(MAKE) -C perl clean
+	$(MAKE) -C perl clean || true
 	$(RM) perl/Makefile.old
 	rm -f config.sub config.guess
-
 	dh_clean 
 
 install:
 	dh_testdir
 	dh_testroot
-	dh_prep
+	dh_clean -k
 	dh_installdirs
 	$(MAKE) DESTDIR=$(CURDIR)/debian/tmp install
 	$(MAKE) -C perl install PREFIX=$(CURDIR)/debian/tmp/usr
@@ -76,7 +75,7 @@ binary-indep: build install
 binary-arch: build install
 	dh_testdir
 	dh_testroot
-	dh_installchangelogs ChangeLog
+	dh_installchangelogs
 	dh_installdocs
 	dh_installexamples
 	dh_install --sourcedir=$(CURDIR)/debian/tmp
