@@ -32,45 +32,47 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use strict;
-package LMTraining;
+package Text::CMU::LMTraining;
 use vars qw($VERSION);
 $VERSION='0.1';
 
-require InputFilter::CMU;
-require InputFilter::ICSI;
-require InputFilter::ISL;
-require InputFilter::NIST;
-require InputFilter::SWB;
-require InputFilter::HUB5;
-require InputFilter::MS98;
+require Text::CMU::InputFilter::CMU;
+require Text::CMU::InputFilter::ICSI;
+require Text::CMU::InputFilter::ISL;
+require Text::CMU::InputFilter::NIST;
+require Text::CMU::InputFilter::SWB;
+require Text::CMU::InputFilter::HUB5;
+require Text::CMU::InputFilter::MS98;
 
-require Vocabulary;
-require NGramModel;
-require NGramFactory;
-require Smoothing;
+require Text::CMU::Vocabulary;
+require Text::CMU::NGramModel;
+require Text::CMU::NGramFactory;
+require Text::CMU::Smoothing;
 
 1;
 __END__
 
 =head1 NAME
 
-LMTraining - Module for CALO language model training
+Text::CMU::LMTraining - Module for language model training
 
 =head1 SYNOPSIS
 
- use LMTraining;
+ use Text::CMU::LMTraining;
 
 =head1 DESCRIPTION
 
 The main purpose of this module is to "pull in" all of the other
 language training modules.  In particular, all C<InputFilter> modules,
-C<NGramModel>, C<NGramFactory>, C<Smoothing>, and C<Vocabulary>.  See
-their individual manual pages for more information.
+C<Text::CMU::NGramModel>, C<Text::CMU::NGramFactory>,
+C<Text::CMU::Smoothing>, and C<Text::CMU::Vocabulary>.  See their
+individual manual pages for more information.
 
 =head1 SEE ALSO
 
-L<NGramFactory>, L<NGramModel>, L<Vocabulary>, L<Smoothing>,
-L<InputFilter>
+L<Text::CMU::NGramFactory>, L<Text::CMU::NGramModel>,
+L<Text::CMU::Vocabulary>, L<Text::CMU::Smoothing>,
+L<Text::CMU::InputFilter>
 
 =head1 AUTHORS
 

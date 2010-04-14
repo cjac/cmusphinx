@@ -1,4 +1,4 @@
-<NGramModel name="interp.test">
+<NGramModel name="interp.test" open="1">
   <Transcripts name="cmu.test">
     t/cmu.test.lsn
   </Transcripts>
@@ -13,11 +13,11 @@
       <Transcripts ref="cmu2.test"/>
     </Vocabulary>
   </Vocabulary>
-  <NGramModel name="cmu.test">
+  <NGramModel name="cmu.test" open="1">
     <Transcripts ref="cmu.test"/>
     <Vocabulary ref="cmu1"/>
   </NGramModel>
-  <NGramModel name="cmu2.test">
+  <NGramModel name="cmu2.test" open="1">
     <Transcripts ref="cmu2.test"/>
     <Vocabulary ref="cmu1"/>
   </NGramModel>

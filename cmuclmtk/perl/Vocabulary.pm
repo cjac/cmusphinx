@@ -32,7 +32,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use strict;
-package Vocabulary;
+package Text::CMU::Vocabulary;
 use IO::File;
 
 sub new {
@@ -84,7 +84,7 @@ sub _add_contents {
 		push @{$self->{sources}}, $object;
 	    }
 	    # Or it could be another <Vocabulary>
-	    elsif ($object->isa('Vocabulary')) {
+	    elsif ($object->isa('Text::CMU::Vocabulary')) {
 		$self->merge($object);
 	    }
 	}
@@ -257,12 +257,12 @@ __END__
 
 =head1 NAME
 
-Vocabulary - Object for creating and manipulating vocabularies
+Text::CMU::Vocabulary - Object for creating and manipulating vocabularies
 
 =head1 SYNOPSIS
 
- use Vocabulary;
- my $v = Vocabulary->new(%options);
+ use Text::CMU::Vocabulary;
+ my $v = Text::CMU::Vocabulary->new(%options);
  $v->add_words(qw(FOO BAR BAZ));
  $v->add_transcript("something.trs");
  my @words = $v->words(%options);

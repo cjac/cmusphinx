@@ -32,7 +32,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use strict;
-package Smoothing;
+package Text::CMU::Smoothing;
 
 sub new {
     my $this = shift;
@@ -73,8 +73,8 @@ sub args {
     return @args;
 }
 
-package Smoothing::GoodTuring;
-use base 'Smoothing';
+package Text::CMU::Smoothing::GoodTuring;
+use base 'Text::CMU::Smoothing';
 
 sub args {
     my $self = shift;
@@ -87,8 +87,8 @@ sub args {
     return @args;
 }
 
-package Smoothing::Linear;
-use base 'Smoothing';
+package Text::CMU::Smoothing::Linear;
+use base 'Text::CMU::Smoothing';
 
 sub args {
     my $self = shift;
@@ -98,8 +98,8 @@ sub args {
     return @args;
 }
 
-package Smoothing::Absolute;
-use base 'Smoothing';
+package Text::CMU::Smoothing::Absolute;
+use base 'Text::CMU::Smoothing';
 
 sub args {
     my $self = shift;
@@ -110,8 +110,8 @@ sub args {
 }
 
 
-package Smoothing::WittenBell;
-use base 'Smoothing';
+package Text::CMU::Smoothing::WittenBell;
+use base 'Text::CMU::Smoothing';
 
 sub args {
     my $self = shift;

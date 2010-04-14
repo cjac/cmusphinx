@@ -75,7 +75,7 @@ pod2usage(-verbose => 0, exitval => 1,
 	  -msg => 'Please specify an input filter with -i.')
     unless defined($opts{inputfilter});
 
-my $class = "InputFilter::$opts{inputfilter}";
+my $class = "Text::CMU::InputFilter::$opts{inputfilter}";
 eval {
     $opts{inputfilter} = $class->new(%opts);
 };
@@ -153,8 +153,8 @@ Take the list of input files from I<LISTING> instead of the command-line.
 
 Use the input filter specified for I<TRANSCRIPTS>.  Currently defined
 input filters are B<CMU>, B<ICSI>, B<ISL>, B<NIST>, and B<SWB>.  These
-are implemented by Perl modules in the C<InputFilter::> namespace.
-See L<InputFilter> for more information.  This is a required argument.
+are implemented by Perl modules in the C<Text::CMU::InputFilter::> namespace.
+See L<Text::CMU::InputFilter> for more information.  This is a required argument.
 
 =item B<--outtrans> | B<-o> I<OUTPUT>
 

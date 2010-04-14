@@ -32,10 +32,10 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use strict;
-package InputFilter::HUB5;
+package Text::CMU::InputFilter::HUB5;
 use File::Basename;
 use IO::File;
-use base 'InputFilter';
+use base 'Text::CMU::InputFilter';
 
 sub process_transcript {
     my ($self, $transfile) = @_;
@@ -217,7 +217,7 @@ __END__
 
 =head1 NAME
 
-InputFilter::HUB5 - Input Filter for HUB5 format transcripts
+Text::CMU::InputFilter::HUB5 - Input Filter for HUB5 format transcripts
 
 =head1 SYNOPSIS
 

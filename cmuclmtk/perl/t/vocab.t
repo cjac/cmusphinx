@@ -1,9 +1,9 @@
 #!/usr/bin/perl -w
 use strict;
-use Vocabulary;
+use Text::CMU::Vocabulary;
 use Test::Simple tests => 8;
 
-ok(my $vocab = Vocabulary->new());
+ok(my $vocab = Text::CMU::Vocabulary->new());
 $vocab->add_words("HELLO");
 $vocab->add_words(qw(HELLO WORLD));
 ok($vocab->count("HELLO") == 2);
@@ -13,7 +13,7 @@ ok($words[0] eq 'HELLO');
 ok(@words = $vocab->words(-top => 1));
 ok($words[0] eq 'HELLO');
 
-$vocab = Vocabulary->new();
+$vocab = Text::CMU::Vocabulary->new();
 $vocab->add_transcript("t/cmu.test.lsn");
 $vocab->save_words("t/cmu.test.vocab.test");
 # Should be no differences except in the comments

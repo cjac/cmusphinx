@@ -32,10 +32,10 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use strict;
-package InputFilter::CMU;
+package Text::CMU::InputFilter::CMU;
 use XML::Parser;
 use IO::File;
-use base 'InputFilter';
+use base 'Text::CMU::InputFilter';
 
 sub initialize {
     my $self = shift;
@@ -205,7 +205,7 @@ __END__
 
 =head1 NAME
 
-InputFilter::CMU - Input filter for CMU format transcripts
+Text::CMU::InputFilter::CMU - Input filter for CMU format transcripts
 
 =head1 SYNOPSIS
 

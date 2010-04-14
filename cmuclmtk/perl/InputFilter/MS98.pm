@@ -32,8 +32,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use strict;
-package InputFilter::MS98;
-use base 'InputFilter';
+package Text::CMU::InputFilter::MS98;
+use base 'Text::CMU::InputFilter';
 
 sub process_transcript {
     my ($self, $transfile) = @_;
@@ -87,7 +87,7 @@ __END__
 
 =head1 NAME
 
-InputFilter::MS98 - Input filter for ISIP MS98 Switchboard transcripts
+Text::CMU::InputFilter::MS98 - Input filter for ISIP MS98 Switchboard transcripts
 
 =head1 SYNOPSIS
 

@@ -32,7 +32,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use strict;
-package FillerMap;
+package Text::CMU::FillerMap;
 use Text::ParseWords;
 
 sub new {
@@ -88,7 +88,7 @@ sub read_file {
     }
 }
 
-package ReplaceList;
+package Text::CMU::ReplaceList;
 
 sub new {
     my $this = shift;
@@ -150,7 +150,7 @@ sub read_file {
     }
 }
 
-package WordList;
+package Text::CMU::WordList;
 sub new {
     my $this = shift;
     my $class = ref $this || $this;
@@ -201,13 +201,13 @@ sub read_file {
     }
 }
 
-package Numbers;
-use base 'WordList';
+package Text::CMU::Numbers;
+use base 'Text::CMU::WordList';
 
-package FilledPauses;
-use base 'WordList';
+package Text::CMU::FilledPauses;
+use base 'Text::CMU::WordList';
 
-package InputFilter;
+package Text::CMU::InputFilter;
 use File::Temp;
 use File::Path;
 use File::Spec::Functions qw(catfile);
@@ -271,20 +271,20 @@ sub initialize {
     }
     if (defined($opts{fillermap})) {
 	print STDERR "Reading $opts{fillermap}\n" if $opts{verbose};
-	$self->{FillerMap} = FillerMap->new(file => $opts{fillermap});
+	$self->{FillerMap} = Text::CMU::FillerMap->new(file => $opts{fillermap});
     }
     if (defined($opts{replacelist})) {
 	print STDERR "Reading $opts{replacelist}\n" if $opts{verbose};
-	$self->{ReplaceList} = ReplaceList->new(file => $opts{replacelist});
+	$self->{ReplaceList} = Text::CMU::ReplaceList->new(file => $opts{replacelist});
     }
     if (defined($opts{filledpauselist})) {
-	$self->{FilledPauses} = WordList->new(file => $opts{filledpauselist});
+	$self->{FilledPauses} = Text::CMU::WordList->new(file => $opts{filledpauselist});
     }
     else {
 	$self->{FilledPauses} = \%FilledPauses;
     }
     if (defined($opts{numberlist})) {
-	$self->{Numbers} = WordList->new(file => $opts{numberlist});
+	$self->{Numbers} = Text::CMU::WordList->new(file => $opts{numberlist});
     }
     else {
 	$self->{Numbers} = \%Numbers;
@@ -522,7 +522,7 @@ __END__
 
 =head1 NAME
 
-InputFilter - Input filter for CALO language and acoustic model training
+Text::CMU::InputFilter - Input filter for language and acoustic model training
 
 =head1 SYNOPSIS
 

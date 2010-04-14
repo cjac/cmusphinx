@@ -1,9 +1,9 @@
 #!/usr/bin/perl -w
 use strict;
-use NGramFactory;
+use Text::CMU::NGramFactory;
 use Test::Simple tests => 6;
 
-ok(my $factory = NGramFactory->new(bindir => "../bin"));
+ok(my $factory = Text::CMU::NGramFactory->new(bindir => "../src/programs"));
 ok(my $ng = $factory->train("t/test_interp.xml"));
 ok($ng->save("t/interp.test.arpa"));
 ok(my $results = $ng->evaluate_sentence("THIS IS A TEST"));

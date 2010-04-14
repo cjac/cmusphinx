@@ -32,7 +32,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use strict;
-package Transcripts;
+package Text::CMU::Transcripts;
 
 sub new {
     my $this = shift;
@@ -99,8 +99,8 @@ sub _add_contents {
     }
 }
 
-package NGramFactory;
-use LMTraining;
+package Text::CMU::NGramFactory;
+use Text::CMU::LMTraining;
 use File::Spec::Functions qw(catdir);
 use File::Path;
 use XML::Parser;
@@ -146,6 +146,9 @@ sub instantiate {
 	my $object;
 	if ($tag) {
 	    my $attr = shift @$content;
+	    if ($tag !~ /^Text::CMU::/) {
+		$tag = "Text::CMU::$tag";
+	    }
 	    if (exists($attr->{ref})) {
 		# Retrieve existing objects from the namespace
 		$object = $self->{$tag}{$attr->{ref}};
@@ -187,14 +190,14 @@ __END__
 
 =head1 NAME
 
-NGramFactory - Build N-Gram language models from XML configuration file
+Text::CMU::NGramFactory - Build N-Gram language models from XML configuration file
 
 =head1 SYNOPSIS
 
- use NGramFactory;
- my $factory = NGramFactory->new();
- my $ngram = NGramFactory->train("config.xml");
- # Proceed as with NGramModel;
+ use Text::CMU::NGramFactory;
+ my $factory = Text::CMU::NGramFactory->new();
+ my $ngram = Text::CMU::NGramFactory->train("config.xml");
+ # Proceed as with Text::CMU::NGramModel;
 
 =head1 DESCRIPTION
 
@@ -202,7 +205,8 @@ NGramFactory - Build N-Gram language models from XML configuration file
 
 =head1 SEE ALSO
 
-L<NGramModel>, L<Vocabulary>, L<Smoothing>, L<InputFilter>
+L<Text::CMU::NGramModel>, L<Text::CMU::Vocabulary>,
+L<Text::CMU::Smoothing>, L<Text::CMU::InputFilter>
 
 =head1 AUTHORS
 

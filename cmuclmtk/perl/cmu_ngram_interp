@@ -42,7 +42,7 @@ use LMTraining;
 Getopt::Long::Configure("no_getopt_compat", "bundling");
 
 my %opts = (
-	    bindir => catdir(dirname($0), "..", "bin")
+	    bindir => catdir(dirname($0), "..", "src", "programs")
 	   );
 GetOptions(\%opts, "help|h", "bindir=s", "output|o=s", "verbose|v", "reverse", "all")
     or pod2usage(-verbose => 1, -exitval => 1);
@@ -60,7 +60,7 @@ $SIG{INT} = sub { exit 1 };
 # Evaluate held out set with each LM to produce a probability stream
 my %pplx;
 foreach my $lm (@lms) {
-    my $ngram = NGramModel->new(verbose => $opts{verbose}, bindir => $opts{bindir});
+    my $ngram = Text::CMU::NGramModel->new(verbose => $opts{verbose}, bindir => $opts{bindir});
     $ngram->load($lm);
     $lm = $ngram;
     my $result = $lm->evaluate($heldout);
@@ -80,7 +80,7 @@ my $last_pplx = $pplx{$lm1};
 print STDERR "\nPerplexity of ", $lm1->tempfile("arpabo"), ": $last_pplx\n";
 foreach my $lm2 (@lms) {
     # Create a new interpolated LM
-    my $lmout = NGramModel->new(verbose => $opts{verbose}, bindir => $opts{bindir});
+    my $lmout = Text::CMU::NGramModel->new(verbose => $opts{verbose}, bindir => $opts{bindir});
     my $pplx = $lmout->interpolate($heldout, $lm1, $lm2);
     print STDERR "Perplexity after adding ", $lm2->tempfile("arpabo"), ": $pplx\n";
     if (defined($last_pplx)

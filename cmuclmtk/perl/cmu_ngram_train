@@ -42,7 +42,7 @@ use Pod::Usage;
 Getopt::Long::Configure("no_getopt_compat", "bundling");
 
 my %opts = (
-	    bindir => catdir(dirname($0), updir(), "bin")
+	    bindir => catdir(dirname($0), updir(), "src", "programs")
 	   );
 GetOptions(\%opts,
 	   "help|h",
@@ -82,9 +82,9 @@ pod2usage(-verbose => 0, -exitval => 1,
     unless @ARGV or $opts{filesfrom};
 
 $opts{n} = 3 unless defined($opts{n});
-$opts{inputfilter} = "InputFilter::$opts{inputfilter}"
+$opts{inputfilter} = "Text::CMU::InputFilter::$opts{inputfilter}"
     if defined $opts{inputfilter};
-$opts{smoothing} = "Smoothing::$opts{smoothing}"
+$opts{smoothing} = "Text::CMU::Smoothing::$opts{smoothing}"
     if defined $opts{smoothing};
 $opts{vocabulary} = Vocabulary->new(vocabfile => $opts{vocabfile})
     if defined $opts{vocabfile};
@@ -92,7 +92,7 @@ $opts{vocabulary} = Vocabulary->new(vocabfile => $opts{vocabfile})
 # Exit cleanly on Ctrl-C so that temporary dirs get cleaned up
 $SIG{INT} = sub { exit 1 };
 
-my $ngram = NGramModel->new(%opts);
+my $ngram = Text::CMU::NGramModel->new(%opts);
 if (defined($opts{filesfrom})) {
     open LIST, "<$opts{filesfrom}" or die "Failed to open file listing $opts{filesfrom}: $!";
     while (<LIST>) {
@@ -238,8 +238,8 @@ unigrams.
 
 Use the input filter specified for I<TRANSCRIPTS>.  Currently defined
 input filters are B<CMU>, B<ICSI>, B<ISL>, B<NIST>, and B<SWB>.  These
-are implemented by Perl modules in the C<InputFilter::> namespace.
-See L<InputFilter> for more information.
+are implemented by Perl modules in the C<Text::CMU::InputFilter::> namespace.
+See L<Text::CMU::InputFilter> for more information.
 
 =item B<--fillermap> | B<-f> I<FILLERMAP>
 
@@ -290,7 +290,7 @@ Include filled pauses (UH, UM, ER, AH, etc) in the text.
 This program reads one or more transcriptions and builds an N-gram
 language model from them in ARPA format.  It allows for a variety of
 input formats, and new ones can be defined by writing Perl modules
-using a simple API (see L<InputFilter>).  A number of options are
+using a simple API (see L<Text::CMU::InputFilter>).  A number of options are
 available for varying the text normalization for experimental
 purposes.
 
@@ -318,34 +318,34 @@ The other formats supported (using the B<--inputfilter> option) are:
 =item CMU
 
 This is the format used for CMU Communicator data.  See
-L<InputFilter::CMU> for more information.
+L<Text::CMU::InputFilter::CMU> for more information.
 
 =item ISL
 
 This is the format used in the ISL Meeting Room transcription project.
-See L<InputFilter::ISL> for more information.
+See L<Text::CMU::InputFilter::ISL> for more information.
 
 =item NIST
 
 This is the format used in the NIST Pilot Meeting corpus.  See
-L<InputFilter::NIST> for more information.
+L<Text::CMU::InputFilter::NIST> for more information.
 
 =item SWB
 
 This is the format used in the Switchboard Transcription Project.  See
-L<InputFilter::SWB> for more information.
+L<Text::CMU::InputFilter::SWB> for more information.
 
 =item ICSI
 
 This is the format used in the ICSI Meeting corpus.  See
-L<InputFilter::ICSI> for more information.
+L<Text::CMU::InputFilter::ICSI> for more information.
 
 =back
 
 =head1 SEE ALSO
 
-L<ngram_test>, L<ngram_interp>, L<InputFilter>, L<NGramModel>,
-L<Smoothing>, L<Vocabulary>
+L<ngram_test>, L<ngram_interp>, L<Text::CMU::InputFilter>, L<Text::CMU::NGramModel>,
+L<Text::CMU::Smoothing>, L<Text::CMU::Vocabulary>
 
 =head1 AUTHOR
 

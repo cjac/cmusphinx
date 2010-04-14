@@ -32,10 +32,10 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use strict;
-package InputFilter::ICSI;
+package Text::CMU::InputFilter::ICSI;
 use IO::File;
 use XML::Parser;
-use base 'InputFilter';
+use base 'Text::CMU::InputFilter';
 
 sub initialize {
     my ($self, %opts) = @_;
@@ -351,7 +351,7 @@ __END__
 
 =head1 NAME
 
-InputFilter::ICSI - Input filter for ICSI format transcripts
+Text::CMU::InputFilter::ICSI - Input filter for ICSI format transcripts
 
 =head1 SYNOPSIS
 

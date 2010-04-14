@@ -33,10 +33,10 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use strict;
-package InputFilter::ISL;
+package Text::CMU::InputFilter::ISL;
 use File::Basename;
 use IO::File;
-use base 'InputFilter';
+use base 'Text::CMU::InputFilter';
 
 sub process_transcript {
     my ($self, $transfile) = @_;
@@ -140,7 +140,7 @@ __END__
 
 =head1 NAME
 
-InputFilter::ISL - Input filter for ISL (VerbMobil) format transcripts
+Text::CMU::InputFilter::ISL - Input filter for ISL (VerbMobil) format transcripts
 
 =head1 SYNOPSIS
 

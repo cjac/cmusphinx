@@ -1,9 +1,9 @@
 #!/usr/bin/perl -w
 use strict;
 use Test::Simple tests => 3;
-use InputFilter::CMU;
+use Text::CMU::InputFilter::CMU;
 
-ok(my $cmu = InputFilter::CMU->new(fillermap => 't/cmu.test.fillermap',
+ok(my $cmu = Text::CMU::InputFilter::CMU->new(fillermap => 't/cmu.test.fillermap',
 				   partials => 1,
 				   upper => 1,
 				   feed => 1,

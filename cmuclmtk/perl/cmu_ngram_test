@@ -44,7 +44,7 @@ use Pod::Usage;
 Getopt::Long::Configure("no_getopt_compat", "bundling");
 
 my %opts = (
-	    bindir => catdir(dirname($0), updir(), "bin")
+	    bindir => catdir(dirname($0), updir(), "src", "programs")
 	   );
 GetOptions(\%opts, "help|h",
 	   "verbose|v",
@@ -68,7 +68,7 @@ pod2usage(-verbose => 0, -exitval => 1,
 	  -msg => 'Please specify an ARPA language model file and test set.'.
 	  "\n(use -h for a summary of usage)") unless @ARGV;
 
-$opts{inputfilter} = "InputFilter::$opts{inputfilter}"
+$opts{inputfilter} = "Text::CMU::InputFilter::$opts{inputfilter}"
     if defined $opts{inputfilter};
 my $ngramfile = shift;
 
@@ -88,7 +88,7 @@ if ($opts{interpolate}) {
     exit 0;
 }
 
-my $ngram = NGramModel->new(%opts);
+my $ngram = Text::CMU::NGramModel->new(%opts);
 $ngram->load($ngramfile);
 
 my $results = $ngram->evaluate([@ARGV]);
@@ -112,16 +112,16 @@ sub test_interpolated {
 	if (defined($opts{tempdir})) {
 	    my $subdir = catdir($opts{tempdir}, $i++);
 	    mkpath($subdir);
-	    $ngram = NGramModel->new(%opts, tempdir => $subdir);
+	    $ngram = Text::CMU::NGramModel->new(%opts, tempdir => $subdir);
 	}
 	else {
-	    $ngram = NGramModel->new(%opts);
+	    $ngram = Text::CMU::NGramModel->new(%opts);
 	}
 	$ngram->load($lm);
 	my $results = $ngram->evaluate(\@files, $ngram->tempfile("fprobs"), 1);
 	printf "%s: Perplexity %.2f OOV rate %s\n",
 	    $lm, $results->perplexity(), $results->oov();
-	# Keep track of the NGramModel object
+	# Keep track of the Text::CMU::NGramModel object
 	$lm = $ngram;
     }
 
@@ -195,8 +195,8 @@ Otherwise, "<s>" will be the only context cue used.
 
 Use the input filter specified for I<TRANSCRIPTS>.  Currently defined
 input filters are B<CMU>, B<ICSI>, B<ISL>, B<NIST>, and B<SWB>.  These
-are implemented by Perl modules in the C<InputFilter::> namespace.
-See L<InputFilter> for more information.
+are implemented by Perl modules in the C<Text::CMU::InputFilter::> namespace.
+See L<Text::CMU::InputFilter> for more information.
 
 =item B<--fillermap> | B<-f> I<FILLERMAP>
 
@@ -236,7 +236,7 @@ Include filled pauses (UH, UM, ER, AH, etc) in the text.
 
 =head1 SEE ALSO
 
-L<ngram_train>, L<ngram_interpolate>, L<NGramModel>, L<InputFilter>
+L<ngram_train>, L<ngram_interpolate>, L<Text::CMU::NGramModel>, L<Text::CMU::InputFilter>
 
 =head1 AUTHOR
 

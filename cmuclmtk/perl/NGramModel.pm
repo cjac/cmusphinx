@@ -33,7 +33,7 @@
 
 use strict;
 
-package Interpolation;
+package Text::CMU::Interpolation;
 
 sub new {
     my $this = shift;
@@ -58,7 +58,7 @@ sub _add_contents {
 		# directory won't die.
 		push @{$self->{sources}}, $object;
 	    }
-	    elsif ($object->isa('NGramModel')) {
+	    elsif ($object->isa('Text::CMU::NGramModel')) {
 		# Add it to inputs
 		push @{$self->{inputs}}, $object;
 	    }
@@ -120,7 +120,7 @@ sub estimate {
     return $last_pplx;
 }
 
-package NGramModel::Evaluation;
+package Text::CMU::NGramModel::Evaluation;
 
 sub perplexity {
     my $self = shift;
@@ -137,15 +137,15 @@ sub ngram_hits {
     return $$self[2+$n];
 }
 
-package NGramModel;
+package Text::CMU::NGramModel;
 use IPC::Open3;
 use File::Spec::Functions qw(catfile devnull file_name_is_absolute);
 use File::Basename;
 use File::Temp;
 use File::Path;
 use File::Copy;
-use Smoothing;
-use InputFilter;
+use Text::CMU::Smoothing;
+use Text::CMU::InputFilter;
 
 sub new {
     my $this = shift;
@@ -158,7 +158,7 @@ sub new {
 use vars qw(%Defaults);
 %Defaults = (
 	     context => [qw(<s>)],
-	     smoothing => 'Smoothing::GoodTuring',
+	     smoothing => 'Text::CMU::Smoothing::GoodTuring',
 	     n => 3
 	    );
 sub initialize {
@@ -229,15 +229,15 @@ sub _add_contents {
 		push @{$self->{sources}}, $object;
 	    }
 	    # Or it could be a <Vocabulary>
-	    elsif ($object->isa('Vocabulary')) {
+	    elsif ($object->isa('Text::CMU::Vocabulary')) {
 		$self->{opts}{vocabulary} = $object;
 	    }
-	    # Or it could be a <Smoothing>
-	    elsif ($object->isa('Smoothing')) {
+	    # Or it could be a <Text::CMU::Smoothing>
+	    elsif ($object->isa('Text::CMU::Smoothing')) {
 		$self->{smoothing} = $object;
 	    }
 	    # Or it could be a <Interpolation>
-	    elsif ($object->isa('Interpolation')) {
+	    elsif ($object->isa('Text::CMU::Interpolation')) {
 		$self->{interpolation} = $object;
 	    }
 	    # Otherwise, ignore it (it could be another NGramModel)
@@ -410,8 +410,8 @@ sub estimate {
     unless (defined($vocab)) {
 	# Pass along any options that might be useful
 	$self->log_message("Building vocabulary");
-	$vocab = Vocabulary->new(transcripts => $self->{transcripts},
-				 %{$self->{opts}});
+	$vocab = Text::CMU::Vocabulary->new(transcripts => $self->{transcripts},
+					    %{$self->{opts}});
     }
     # Add context cues to the vocabulary, or the world will explode
     foreach my $ctx (@{$self->{opts}{context}}) {
@@ -539,7 +539,7 @@ sub evaluate {
 	/(\d+)-grams hit = \S+\s+\(([^\)]+)\)/ and $hit[$1] = $2;
     }
     close $rfh;
-    return bless [$pplx, $oov, @hit], 'NGramModel::Evaluation';
+    return bless [$pplx, $oov, @hit], 'Text::CMU::NGramModel::Evaluation';
 }
 
 sub evaluate_sentence {

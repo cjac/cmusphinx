@@ -32,7 +32,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use strict;
-package NGramModel::NGram;
+package Text::CMU::NGramModel::NGram;
 
 sub words {
     my $self = shift;
@@ -49,7 +49,7 @@ sub bowt {
     return $self->[2];
 }
 
-package NGramModel::ARPA;
+package Text::CMU::NGramModel::ARPA;
 use IO::File;
 
 sub new {
@@ -97,7 +97,7 @@ sub load {
 	}
 	my ($prob, @words) = split;
 	my $bowt = pop @words;
-	push @{$ngrams->[$n]}, bless([$prob, \@words, $bowt], 'NGramModel::NGram');
+	push @{$ngrams->[$n]}, bless([$prob, \@words, $bowt], 'Text::CMU::NGramModel::NGram');
     }
 }
 
@@ -117,11 +117,11 @@ __END__
 
 =head1 NAME
 
-NGramModel::ARPA - Read ARPA-format N-gram language models
+Text::CMU::NGramModel::ARPA - Read ARPA-format N-gram language models
 
 =head1 SYNOPSIS
 
-  my $lm = NGramModel::ARPA->new("foo.arpa");
+  my $lm = Text::CMU::NGramModel::ARPA->new("foo.arpa");
   foreach my $n (1..$lm->n()) {
     foreach my $ng ($lm->ngrams($n)) {
       print "Unigram: ", $ng->words(), " prob: ", $ng->prob(),

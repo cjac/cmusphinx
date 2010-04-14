@@ -32,8 +32,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use strict;
-package InputFilter::SWB;
-use base 'InputFilter';
+package Text::CMU::InputFilter::SWB;
+use base 'Text::CMU::InputFilter';
 
 sub process_transcript {
     my ($self, $transfile) = @_;
@@ -156,7 +156,7 @@ __END__
 
 =head1 NAME
 
-InputFilter::SWB - Input filter for Switchboard format transcripts
+Text::CMU::InputFilter::SWB - Input filter for Switchboard format transcripts
 
 =head1 SYNOPSIS
 

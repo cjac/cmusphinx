@@ -34,8 +34,8 @@
 use strict;
 use File::Basename qw(dirname);
 use lib dirname($0);
-use NGramModel::ARPA;
-use Vocabulary;
+use Text::CMU::NGramModel::ARPA;
+use Text::CMU::Vocabulary;
 use Getopt::Long;
 use IO::File;
 use Pod::Usage;
@@ -78,7 +78,7 @@ $opts{festival} = 'festival' unless defined $opts{festival};
 # Get 1-grams
 my %unigram;
 foreach my $lmfile (@ARGV) {
-    my $lm = NGramModel::ARPA->new($lmfile, 1);
+    my $lm = Text::CMU::NGramModel::ARPA->new($lmfile, 1);
     foreach my $ngram ($lm->ngrams(1)) {
 	my ($word) = $ngram->words();
 	# Use undef to signify that this word exists and yet has no
@@ -90,7 +90,7 @@ foreach my $lmfile (@ARGV) {
 # Get additional 1-grams from vocabulary files if given
 if ($opts{invocab}) {
     foreach my $v (@{$opts{invocab}}) {
-	my $vocab = Vocabulary->new();
+	my $vocab = Text::CMU::Vocabulary->new();
 	$vocab->load_words($v);
 	foreach my $word ($vocab->words()) {
 	    $unigram{$word} = undef;
@@ -101,7 +101,7 @@ if ($opts{invocab}) {
 # Get additional 1-grams from word frequency files if given
 if ($opts{inwfreq}) {
     foreach my $w (@{$opts{inwfreq}}) {
-	my $vocab = Vocabulary->new();
+	my $vocab = Text::CMU::Vocabulary->new();
 	$vocab->load($w);
 	foreach my $word ($vocab->words()) {
 	    $unigram{$word} = undef;
