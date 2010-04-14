@@ -321,20 +321,19 @@ int get_next_ngram_union(char** words,TBROWSE_UNION* bru)
 	k=bru->k;
 	
 	if (!bru->over1 && !bru->over2) {
-		switch (idscmp(bru->id1,bru->id2,k,bru->lm1->vocab,bru->lm2->vocab)) {
-		case 0: 
+		int cmp = idscmp(bru->id1,bru->id2,k,bru->lm1->vocab,bru->lm2->vocab);
+		if (cmp == 0) {
 			ids2words (words,bru->id1,k,bru->lm1->vocab);
 			bru->over1=!get_next_ngram(bru->id1,&bru->br1);
 			bru->over2=!get_next_ngram(bru->id2,&bru->br2);
-			break;
-		case -1:
+		}
+		else if (cmp < 0) {
 			ids2words (words,bru->id1,k,bru->lm1->vocab);
 			bru->over1=!get_next_ngram(bru->id1,&bru->br1);
-			break;
-		case 1:
+		}
+		else if (cmp > 0) {
 			ids2words (words,bru->id2,k,bru->lm2->vocab);
 			bru->over2=!get_next_ngram(bru->id2,&bru->br2);
-			break;
 		}
 		return 1;
 	}
