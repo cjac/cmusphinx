@@ -37,7 +37,7 @@ use File::Basename qw(basename dirname);
 use lib dirname($0);
 use Getopt::Long;
 use Pod::Usage;
-use LMTraining;
+use Text::CMU::LMTraining;
 
 Getopt::Long::Configure("no_getopt_compat", "bundling");
 

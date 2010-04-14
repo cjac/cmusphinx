@@ -37,7 +37,7 @@ use File::Temp qw(tempdir);
 use File::Spec::Functions;
 use File::Path;
 use lib dirname($0);
-use LMTraining;
+use Text::CMU::LMTraining;
 use Getopt::Long;
 use Pod::Usage;
 

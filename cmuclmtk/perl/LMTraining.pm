@@ -34,7 +34,7 @@
 use strict;
 package Text::CMU::LMTraining;
 use vars qw($VERSION);
-$VERSION='0.1';
+$VERSION='0.99.0';
 
 require Text::CMU::InputFilter::CMU;
 require Text::CMU::InputFilter::ICSI;
