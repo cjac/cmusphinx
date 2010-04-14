@@ -710,8 +710,13 @@ int main(int argc, char **argv) {
   get_ngram(ng->id_gram_fp,&current_ngram,is_ascii);
   contains_unks = ngram_chk_contains_unks(&current_ngram,ng->n);
 
+  /* Skip over any unknown words.  They will come first, because <UNK>
+     always has a word ID of zero. */
   while (ng->vocab_type == CLOSED_VOCAB && contains_unks){
-    get_ngram(ng->id_gram_fp,&current_ngram,is_ascii);
+    /* Stop looking if there are no more N-Grams.  Of course, this
+       means training will fail, since there are no unigrams. */
+    if (get_ngram(ng->id_gram_fp,&current_ngram,is_ascii) == 0)
+      break;
     contains_unks = ngram_chk_contains_unks(&current_ngram,ng->n);
   }
 
