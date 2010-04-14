@@ -6,4 +6,4 @@ bin_PROGRAMS = \
 noinst_HEADERS = idngram.h
 
 INCLUDES = -I${top_srcdir}/src/libs -I${top_srcdir}/src/liblmest -I${top_srcdir}/src/win32
-LDADD = $(top_builddir)/src/libcmucuslmtk.la
+LDADD = $(top_builddir)/src/libcmuclmtk.la
