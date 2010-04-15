@@ -44,8 +44,7 @@
 #define TEMP_FILE_ROOT "text2wngram.tmp."
 
 #include <sys/types.h>
-#include <unistd.h>
-/* #include <sys/utsname.h> /**/
+/* #include <sys/utsname.h> */
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

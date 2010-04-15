@@ -74,7 +74,7 @@ default to 1/#-of-models.
   Adapted from the version I wrote for my "lm" software.  */
 
 #include <stdio.h>
-#include <strings.h>
+#include <string.h>
 #include <math.h>
 #include <stdlib.h>
 #include "../libs/general.h"

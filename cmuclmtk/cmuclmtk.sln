@@ -1,9 +1,15 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 9.00
-# Visual Studio 2005
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual C++ Express 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "binlm2arpa", "win32\binlm2arpa.vcproj", "{2D42E007-0BBD-424A-9974-2335ECF5BBC0}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3AF8B015-A80F-4321-8CE2-407B3F4BAF49} = {3AF8B015-A80F-4321-8CE2-407B3F4BAF49}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "evallm", "win32\evallm.vcproj", "{2566E293-7CFE-40FC-A70D-C4228CDE12D5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3AF8B015-A80F-4321-8CE2-407B3F4BAF49} = {3AF8B015-A80F-4321-8CE2-407B3F4BAF49}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "idngram2lm", "win32\idngram2lm.vcproj", "{B817CFAB-C3FC-4F95-98F6-50AEB80B6BF1}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -11,12 +17,24 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "idngram2lm", "win32\idngram
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "idngram2stats", "win32\idngram2stats.vcproj", "{C2E5E86F-4C03-4322-B18A-5AFA20BE34A4}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3AF8B015-A80F-4321-8CE2-407B3F4BAF49} = {3AF8B015-A80F-4321-8CE2-407B3F4BAF49}
+	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "interpolate", "win32\interpolate.vcproj", "{1FF0AF17-1C98-42F3-9EAB-74F8DD7C8892}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lm_interpolate", "win32\interpolate.vcproj", "{1FF0AF17-1C98-42F3-9EAB-74F8DD7C8892}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3AF8B015-A80F-4321-8CE2-407B3F4BAF49} = {3AF8B015-A80F-4321-8CE2-407B3F4BAF49}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mergeidngram", "win32\mergeidngram.vcproj", "{48DA53D6-99B5-4D9E-946F-5BBE30C5FF7B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3AF8B015-A80F-4321-8CE2-407B3F4BAF49} = {3AF8B015-A80F-4321-8CE2-407B3F4BAF49}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ngram2mgram", "win32\ngram2mgram.vcproj", "{BBF782BB-773D-4882-8105-A8477F2F10DE}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3AF8B015-A80F-4321-8CE2-407B3F4BAF49} = {3AF8B015-A80F-4321-8CE2-407B3F4BAF49}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SLM", "win32\SLM.vcproj", "{3AF8B015-A80F-4321-8CE2-407B3F4BAF49}"
 EndProject
@@ -26,12 +44,24 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "text2idngram", "win32\text2
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "text2wfreq", "win32\text2wfreq.vcproj", "{C3D3F185-8A84-41A4-8F6F-F54F74390CB0}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3AF8B015-A80F-4321-8CE2-407B3F4BAF49} = {3AF8B015-A80F-4321-8CE2-407B3F4BAF49}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "text2wngram", "win32\text2wngram.vcproj", "{F72C6F31-45CE-481F-8E83-FE0E67A397C8}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3AF8B015-A80F-4321-8CE2-407B3F4BAF49} = {3AF8B015-A80F-4321-8CE2-407B3F4BAF49}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wfreq2vocab", "win32\wfreq2vocab.vcproj", "{ADC508BA-E8AC-4A10-80BA-44E803232005}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3AF8B015-A80F-4321-8CE2-407B3F4BAF49} = {3AF8B015-A80F-4321-8CE2-407B3F4BAF49}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wngram2idngram", "win32\wngram2idngram.vcproj", "{2216F3B1-7E3F-42AE-9F47-6D15F4551158}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3AF8B015-A80F-4321-8CE2-407B3F4BAF49} = {3AF8B015-A80F-4321-8CE2-407B3F4BAF49}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="9.00"
 	Name="SLM"
 	ProjectGUID="{3AF8B015-A80F-4321-8CE2-407B3F4BAF49}"
 	RootNamespace="SLM"
 	Keyword="Win32Proj"
+	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
 		<Platform
@@ -40,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\src"
+				AdditionalIncludeDirectories="..\src;..\src\liblmest;..\src\libs;..\src\win32"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;SLM_SWAP_BYTES;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -103,7 +104,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="../src"
+				AdditionalIncludeDirectories="..\src;..\src\liblmest;..\src\libs;..\src\win32"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;SLM_SWAP_BYTES;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
