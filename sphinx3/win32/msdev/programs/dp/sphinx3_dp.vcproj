@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="9.00"
 	Name="sphinx3_dp"
 	ProjectGUID="{2CDEE760-4090-4F1B-A828-69227D7E1F25}"
+	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
 		<Platform
@@ -74,10 +75,12 @@
 				OutputFile=".\..\..\..\..\bin\Debug/sphinx3_dp.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="..\..\..\..\..\sphinxbase\lib\Debug"
+				AdditionalLibraryDirectories="..\..\..\..\..\sphinxbase\bin\Debug"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\..\..\..\..\bin\Debug/sphinx3_dp.pdb"
 				SubSystem="1"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -99,9 +102,6 @@
 			/>
 			<Tool
 				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -163,13 +163,15 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib winmm.lib ..\..\..\..\..\sphinxbase\lib\Release\*.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib winmm.lib ..\..\..\..\..\sphinxbase\bin\Release\*.lib"
 				OutputFile=".\..\..\..\..\bin\Release/sphinx3_dp.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="..\..\..\..\..\sphinxbase\lib\Release"
+				AdditionalLibraryDirectories="..\..\..\..\..\sphinxbase\bin\Release"
 				ProgramDatabaseFile=".\..\..\..\..\bin\Release/sphinx3_dp.pdb"
 				SubSystem="1"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -191,9 +193,6 @@
 			/>
 			<Tool
 				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"

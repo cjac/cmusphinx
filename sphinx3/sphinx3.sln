@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 9.00
-# Visual Studio 2005
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual C++ Express 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sphinx3_gausubvq", "win32\msdev\programs\gausubvq\gausubvq.vcproj", "{2960E5DC-C7E3-48B7-8597-FD4ED7F0D3AF}"
 	ProjectSection(ProjectDependencies) = postProject
 		{70216122-60D5-4BCE-A338-048D2778DE55} = {70216122-60D5-4BCE-A338-048D2778DE55}

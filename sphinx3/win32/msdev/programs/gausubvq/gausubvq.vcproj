@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="9.00"
 	Name="sphinx3_gausubvq"
 	ProjectGUID="{2960E5DC-C7E3-48B7-8597-FD4ED7F0D3AF}"
 	RootNamespace="sphinx3_gausubvq"
+	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
 		<Platform
@@ -74,10 +75,12 @@
 				OutputFile=".\..\..\..\..\bin\Debug/sphinx3_gausubvq.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="..\..\..\..\..\sphinxbase\lib\Debug"
+				AdditionalLibraryDirectories="..\..\..\..\..\sphinxbase\bin\Debug"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\..\..\..\..\bin\Debug/gausubvq.pdb"
 				SubSystem="1"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -99,9 +102,6 @@
 			/>
 			<Tool
 				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -163,13 +163,15 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib winmm.lib ..\..\..\..\..\sphinxbase\lib\Release\*.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib winmm.lib ..\..\..\..\..\sphinxbase\bin\Release\*.lib"
 				OutputFile=".\..\..\..\..\bin\Release/sphinx3_gausubvq.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="..\..\..\..\..\sphinxbase\lib\release;&quot;..\..\..\..\..\sphinxbase\lib\Release;&quot;"
+				AdditionalLibraryDirectories="..\..\..\..\..\sphinxbase\bin\release;&quot;..\..\..\..\..\sphinxbase\bin\Release;&quot;"
 				ProgramDatabaseFile=".\..\..\..\..\bin\Release/gausubvq.pdb"
 				SubSystem="1"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -191,9 +193,6 @@
 			/>
 			<Tool
 				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"

@@ -15,7 +15,7 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\..\..\..\lib\Debug"
+			OutputDirectory=".\..\..\..\bin\Debug"
 			IntermediateDirectory=".\Debug"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
@@ -67,7 +67,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile=".\..\..\..\lib\Debug\libAPI.lib"
+				OutputFile=".\..\..\..\bin\Debug\libAPI.lib"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -79,7 +79,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\..\..\..\lib\Debug/libAPI.bsc"
+				OutputFile=".\..\..\..\bin\Debug/libAPI.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -90,7 +90,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\..\..\..\lib\Release"
+			OutputDirectory=".\..\..\..\bin\Release"
 			IntermediateDirectory=".\Release"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
@@ -142,7 +142,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile=".\..\..\..\lib\Release\libAPI.lib"
+				OutputFile=".\..\..\..\bin\Release\libAPI.lib"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -154,7 +154,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\..\..\..\lib\Release/libAPI.bsc"
+				OutputFile=".\..\..\..\bin\Release/libAPI.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
