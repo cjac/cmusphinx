@@ -345,17 +345,39 @@ Here's a quick checklist to verify your data preparation before you train:
 </ol>
 <p>
 <a name="02a"></a>
-<b><u>When you have a very small closed vocabulary (50-60 words)</u></b>
+<b><u>When you have a very small closed vocabulary (5-30 words)</u></b>
 <p>
 If you have only about 50-60 words in your vocabulary, and if your entire
 test data vocabulary is covered by the training data, then you are probably
-better off training word models rather than phone models. To do this, 
-   simply define the phoneset as your set of words themselves and
-   have a dictionary that maps each word to itself and train.
-Also, use a lesser number of fillers, and if you do need to train phone models
-   make sure that each of your tied states has enough counts (at least
-   5 or 10 instances of each).
+better off training word models rather than phone models. Word models
+have word-unique phones.</p>
+
 <p>
+Common practice is to have phoneset that is the same as word set, but
+the thing you need to care about is to have appropriate number of HMM
+states per word. Since words are different in length, number of states
+should be also different. For example, optimal number of states for digits
+recognition task TIDIGITS vary from 9 to 12 states per word depending
+on word length.</p>
+
+<p>
+Since sphinxtrain has fixed number of states per phone, variable
+number of states per word is approached by having multiple word-dependent
+phones. Consider tidigits example:</p>
+<pre>
+eight                EY_eight T_eight (6 states)
+five                 F_five AY_five V_five (9 states)
+four                 F_four OW_four R_four (9 states)
+nine                 N_nine AY_nine N_nine_2 (9 states)
+</pre>
+
+<p>
+Since phones already have context, there is no need to train
+context-dependent models in this case, context independent
+model will be as useful as context-dependent ones. At least
+consider using less senones, tidigits template uses 500.
+</p>
+
 <hr>
 
 <a name="03"></a>
