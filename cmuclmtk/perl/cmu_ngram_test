@@ -44,7 +44,6 @@ use Pod::Usage;
 Getopt::Long::Configure("no_getopt_compat", "bundling");
 
 my %opts = (
-	    bindir => catdir(dirname($0), updir(), "src", "programs")
 	   );
 GetOptions(\%opts, "help|h",
 	   "verbose|v",

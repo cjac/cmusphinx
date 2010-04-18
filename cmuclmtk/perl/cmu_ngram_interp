@@ -42,7 +42,6 @@ use Text::CMU::LMTraining;
 Getopt::Long::Configure("no_getopt_compat", "bundling");
 
 my %opts = (
-	    bindir => catdir(dirname($0), "..", "src", "programs")
 	   );
 GetOptions(\%opts, "help|h", "bindir=s", "output|o=s", "verbose|v", "reverse", "all")
     or pod2usage(-verbose => 1, -exitval => 1);

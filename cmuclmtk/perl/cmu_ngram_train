@@ -42,7 +42,6 @@ use Pod::Usage;
 Getopt::Long::Configure("no_getopt_compat", "bundling");
 
 my %opts = (
-	    bindir => catdir(dirname($0), updir(), "src", "programs")
 	   );
 GetOptions(\%opts,
 	   "help|h",
@@ -86,7 +85,7 @@ $opts{inputfilter} = "Text::CMU::InputFilter::$opts{inputfilter}"
     if defined $opts{inputfilter};
 $opts{smoothing} = "Text::CMU::Smoothing::$opts{smoothing}"
     if defined $opts{smoothing};
-$opts{vocabulary} = Vocabulary->new(vocabfile => $opts{vocabfile})
+$opts{vocabulary} = Text::CMU::Vocabulary->new(vocabfile => $opts{vocabfile})
     if defined $opts{vocabfile};
 
 # Exit cleanly on Ctrl-C so that temporary dirs get cleaned up

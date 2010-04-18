@@ -79,7 +79,7 @@ if (defined $opts{inputfilter}) {
 $opts{tempdir} = tempdir(CLEANUP => 1)
     unless defined $opts{tempdir};
 
-my $vocab = Vocabulary->new(%opts);
+my $vocab = Text::CMU::Vocabulary->new(%opts);
 if (defined($opts{filesfrom})) {
     open LIST, "<$opts{filesfrom}" or die "Failed to open file listing $opts{filesfrom}: $!";
     while (<LIST>) {
@@ -102,7 +102,7 @@ foreach my $transcript (@ARGV) {
 
 if (defined($opts{inwfreq})) {
     foreach my $wfreq (@{$opts{inwfreq}}) {
-	my $ov = Vocabulary->new();
+	my $ov = Text::CMU::Vocabulary->new();
 	$ov->load($wfreq);
 	$vocab->merge($ov);
     }
@@ -110,7 +110,7 @@ if (defined($opts{inwfreq})) {
 
 if (defined($opts{invocab})) {
     foreach my $v (@{$opts{invocab}}) {
-	my $ov = Vocabulary->new();
+	my $ov = Text::CMU::Vocabulary->new();
 	$ov->load_words($v);
 	$vocab->merge($ov);
     }
