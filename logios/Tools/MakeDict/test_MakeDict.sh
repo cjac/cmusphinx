@@ -1,4 +1,4 @@
-#!/usr/bin/sh
+#!/bin/sh
 #
 # test MakeDict for correct installation under linux and cygwin
 # this is a quicky test and may not be completely robust

@@ -2,6 +2,7 @@
 #include <fstream>
 #include <sstream>
 
+#include <stdlib.h>
 #include "PCFG.h"
 #include "debug.h"
 
