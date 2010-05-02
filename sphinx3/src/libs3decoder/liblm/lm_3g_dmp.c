@@ -721,7 +721,7 @@ lm_read_dump_bg(lm_t * lm,             /**< LM */
     if (lm->isLM_IN_MEMORY) {   /* Remember the sentinel */
         if ((lmptr = ckd_calloc(lm->n_bg + 1, mem_sz)) == NULL) {
             E_ERROR
-                ("Fail to allocate memory with size %d for bigram reading. Each bigram with size\n",
+                ("Failed to allocate memory with size %d for bigram reading. Size of each bigram is %d bytes\n",
                  lm->n_bg + 1, mem_sz);
             return LM_FAIL;
         }
