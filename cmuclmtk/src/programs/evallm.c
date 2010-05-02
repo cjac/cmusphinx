@@ -51,6 +51,7 @@
 
 #include "../liblmest/evallm.h"
 #include "../libs/pc_general.h"
+#include "../libs/ac_parsetext.h"
 #include "../libs/general.h"
 #include <stdio.h>
 #include <string.h>

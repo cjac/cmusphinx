@@ -678,6 +678,7 @@ int main (int argc, char **argv) {
    }
 
    if (n_test_items>0) exit((int) test_pp);
+   return 0;
 }
 
 

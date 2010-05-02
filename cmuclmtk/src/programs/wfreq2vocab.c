@@ -44,6 +44,7 @@
 #include <string.h>
 
 #include "../liblmest/toolkit.h"
+#include "../libs/ac_lmfunc_impl.h"
 #include "../libs/general.h"
 #include "../libs/pc_general.h"
 
@@ -68,7 +69,6 @@ int main(int argc, char *argv[]) {
   int vocab_size;
   int cutoff;
   int num_recs;
-  int i;
   FILE *ifp, *ofp;
 
   /* Process command line */

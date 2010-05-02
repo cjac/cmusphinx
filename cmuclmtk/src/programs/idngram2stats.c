@@ -49,6 +49,7 @@
 #include <stdio.h>
 #include "../libs/pc_general.h"
 #include "../liblmest/toolkit.h"
+#include "../liblmest/idngram2lm.h"
 #include "../liblmest/stats.h"
 #include "../libs/general.h"
 
@@ -80,10 +81,6 @@ int main (int argc, char **argv) {
   int pos_of_novelty;
   int nlines;
   int i;
-  int j;
-  int t;
-
-  pos_of_novelty = n; /* Simply for warning-free compilation */
 
   report_version(&argc,argv);
 
@@ -104,9 +101,8 @@ int main (int argc, char **argv) {
 
   current_ngram.n = n;
   previous_ngram.n = n;
+  pos_of_novelty = n;
   
-  pos_of_novelty = n; /* Simply for warning-free compilation */
-
   fof_array = (fof_t **) rr_malloc(sizeof(fof_t *) * (n-1));
   for (i=0;i<=n-2;i++) 
     fof_array[i] = (fof_t *) rr_calloc(fof_size+1,sizeof(fof_t));

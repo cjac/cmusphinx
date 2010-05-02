@@ -67,4 +67,7 @@ int  read_txt2ngram_buffer(FILE* infp,
 int compare_ngrams(const void *ngram1,
 		   const void *ngram2
 		   );
+
+int get_word( FILE *fp , char *word );
+
 #endif

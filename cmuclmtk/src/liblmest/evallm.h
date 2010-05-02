@@ -130,6 +130,19 @@ void arpa_bo_ng_prob(int context_length,
 		     double *p_prob,
 		     int *bo_case);
 
+void generate_words(ng_t *png, 
+                    arpa_lm_t *pang, 
+                    int num_words,
+                    int random_seed,
+                    char *output_filename);
 
+void check_open_close_vocab(arpa_lm_t *arpa_lm, 
+                            char * word_copy, 
+                            int *i);
+
+void show_dot(int j);
+
+void write_arpa_k_gram_header(FILE *fp, 
+                              unsigned short n);
 
 #endif

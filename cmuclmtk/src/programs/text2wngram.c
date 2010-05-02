@@ -340,12 +340,8 @@ int main (int argc, char **argv) {
 
   int counter;
 
-  /*  struct utsname uname_info;  /**/
   char *temp_file_root;
   char *temp_file_ext;
-  char *host_name;
-  int proc_id;
-  char temp_word[500];
 
   flag words_set;
   flag chars_set;

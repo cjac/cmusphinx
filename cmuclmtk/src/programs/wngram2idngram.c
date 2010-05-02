@@ -56,6 +56,8 @@
 #include "../libs/general.h"
 #include "../libs/pc_general.h"
 #include "../programs/idngram.h"
+#include "../libs/ac_parsetext.h"
+#include "../libs/ac_lmfunc_impl.h"
 #include "../libs/ac_hash.h"
 #include "../libs/win32compat.h"
 
@@ -134,9 +136,6 @@ int main(int argc, char *argv[]) {
   int size_of_rec;
   char *temp_file_root;
   char *temp_file_ext;
-  char *host_name;
-  /*   struct utsname uname_info; */
-  int proc_id;
 
   /* Vocab hash table things */
 
