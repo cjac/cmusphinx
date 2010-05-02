@@ -390,7 +390,7 @@ lm3g_dump(char const *file,         /**< the file name */
 
     if (!is32bits && model->n_ug > LM_LEGACY_CONSTANT) {
         E_ERROR
-            ("The model is a 16 bits' one but the number of unigram has more thant 65535 words (>16 bits)");
+            ("This is a 16-bit language model, but there are more than 65535 unigrams in it.");
         return LM_FAIL;
     }
 
