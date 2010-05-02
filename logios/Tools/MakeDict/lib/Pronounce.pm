@@ -38,7 +38,7 @@ sub new {
                 'FORCE' => $params{'FORCE'}
                };
 
-  die "Need to knoe the LOGIOS Tools root." if !defined $params{'TOOLS'};
+  die "Need to know the LOGIOS Tools root." if !defined $params{'TOOLS'};
   require File::Spec->catfile($params{'TOOLS'}, 'lib', 'LogiosLog.pm');
 
   for ('DICTDIR', 'VOCFN', 'OUTFN', 'LOGFN') {
