@@ -27,7 +27,7 @@ sub new {
                                                      'x86-nt/pronounce.exe':
                                                      'x86-linux/pronounce'))),
                 'LEXILIB' => File::Spec->catdir($params{'TOOLS'}, 'MakeDict', 'lib'),
-                'LEXICON' => 'CMUdict_SPHINX_40',
+                'LEXICON' => 'cmudict_SPHINX_40',
                 'OUTDIR' => $params{'DICTDIR'},
                 'WORDFILE' => File::Spec->catfile($params{'DICTDIR'}, $params{'VOCFN'}),
                 'HANDDICT' => ($params{'HANDICFN'}?
@@ -35,7 +35,7 @@ sub new {
                                undef),
                 'OUTFILE' => File::Spec->catfile($params{'DICTDIR'}, $params{'OUTFN'}),
                 'LOGFILE' => File::Spec->catfile($params{'DICTDIR'}, $params{'LOGFN'}),
-                'FORCE' => $params{'FORCE'}
+                'FORCE' => $params{'FORCE'} || 0,
                };
 
   die "Need to know the LOGIOS Tools root." if !defined $params{'TOOLS'};

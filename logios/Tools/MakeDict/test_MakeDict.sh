@@ -37,7 +37,7 @@ echo "all necessary modules available!"
 echo -n "test MakeDict... "
 rm -f test/example.dict test/pronunciation.log
 PGM=make_pronunciation.pl
-if perl $PGM -tools .. -resources test \
+if perl $PGM -tools .. -dictdir test \
     -words example -handdict hand.dict -dict example.dict
 then
     echo " $PGM failed"
