@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 
 # used to create a file containing the most likely pronunciation and 
 # the number of pronunciations for each word in the dictionary
