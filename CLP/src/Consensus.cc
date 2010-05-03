@@ -40,6 +40,7 @@ void Usage() {
 	 << "-i <filelist>    - the input file (default stdin)" << endl
 	 << "-B <basedir>     - base directory for input files (default none)" << endl
 	 << "-x <extension>   - file extension for input files (default none)" << endl
+	 << "-F               - use full path from filelist as label (deafult false)" << endl
 	 << "-c <outfile>     - the output file for the consensus hyp (default stdout)" << endl
 	 << "-C <outdir>      - the output dir for the conf nets in FSM format (default don't output)" << endl   
 	 << "-R <pronfile>    - the file containing the number of prons and the most likely pron for a word" << endl
@@ -96,9 +97,10 @@ bool use_phon_info         = true;
 bool constrain_intra       = false;
 bool constrain_inter       = false;
 
+bool output_fullpath       = false;
 
 int main(int argc, char * argv[]) {
-    GetOpt opt(argc, argv, "fosnbi:c:C:R:S:G:L:l:P:p:I:E:e:W:w:D:T:t:m:M:B:x:");
+    GetOpt opt(argc, argv, "fosnbi:c:C:R:S:G:L:l:P:p:I:E:e:W:w:D:T:t:m:M:B:x:F");
     int ch;
     string infile(""), outfile(""), outdir(""); 
     string pronfile(""),logfile("");
@@ -196,6 +198,9 @@ int main(int argc, char * argv[]) {
 	    case 'x':
 		fileext = opt.optarg;
 		break;
+	    case 'F':
+		output_fullpath = true;
+		break;
             default:
 		Usage();
 		exit(1);
@@ -230,11 +235,13 @@ int main(int argc, char * argv[]) {
     
     first = true;  //we get all the info about the parameters from the first lattice
     
-    string file_name;
+    string file_name, flist_item;
 
-    while(getlineH(flist, file_name)){
+    while(getlineH(flist, flist_item)){
 	if (basedir != "")
-	    file_name = basedir + "/" + file_name;
+	    file_name = basedir + "/" + flist_item;
+	else
+	    file_name = flist_item;
 	if (fileext != "")
 	    file_name += fileext;
       
@@ -457,7 +464,9 @@ int main(int argc, char * argv[]) {
       C.TopSort();                           
       
       // output the consensus hyp and the confusion networks
-      C.print_sausages_FSMformat(outdir, outfile, file_name, lowEpsT, highEpsT, lowWordT, highWordT, P); 
+      C.print_sausages_FSMformat(outdir, outfile, flist_item,
+				 lowEpsT, highEpsT, lowWordT,
+				 highWordT, P, output_fullpath); 
       first = false;
     }
     flist.close();

@@ -758,14 +758,21 @@ Clustering::add_EPS(float DELweight)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void
-Clustering::print_sausages_FSMformat(const string& outdir, const string& outfile, const string& infile, float lowEpsT, float highEpsT, float lowWordT, float highWordT, const Prons& P)
+Clustering::print_sausages_FSMformat(const string& outdir, const string& outfile,
+				     const string& infile, float lowEpsT, float highEpsT,
+				     float lowWordT, float highWordT, const Prons& P,
+				     bool output_fullpath)
 {
   bool std_out = false;
   
-  LineSplitter ls1("/");
-  ls1.Split(infile);
-  string label = ls1[ls1.NoWords()-1];
-  
+  string label;
+  if (output_fullpath)
+      label = infile;
+  else {
+      LineSplitter ls1("/");
+      ls1.Split(infile);
+      label = ls1[ls1.NoWords()-1];
+  }
   LineSplitter ls(".");
   ls.Split(label);
   label = ls[0];

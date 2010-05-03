@@ -35,7 +35,7 @@ class Clustering
   void TopSort();
   
   // print the consensus hypothesis and the confusion networks (with the words in decreasing order of their scores)
-  void print_sausages_FSMformat(const string& outdir, const string& outfile, const string& infile, float lowEpsT, float highEpsT, float lowWordT, float highWordT, const Prons& P);
+  void print_sausages_FSMformat(const string& outdir, const string& outfile, const string& infile, float lowEpsT, float highEpsT, float lowWordT, float highWordT, const Prons& P, bool output_fullpath);
   
   // print the list of clusters, specifying either only the links, or only words, or both 
   void print(const Prons& P, bool print_links, bool print_words);
