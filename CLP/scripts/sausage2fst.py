@@ -10,7 +10,7 @@ Convert sausages from confusion network code to OpenFST files
 """
 
 __author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
-__version__ = "$Revision: 10058 $"
+__version__ = "$Revision$"
 
 import openfst
 import collections
