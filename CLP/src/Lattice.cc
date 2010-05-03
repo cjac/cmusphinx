@@ -7,15 +7,16 @@
 // 05/31/2001    fixed bug in  DFS_visit    
 
 
-#include <stdlib.h>
-#include <iomanip.h>
-#include <stdio.h>
-#include <assert.h>
-#include <iostream.h>
-#include <stdiostream.h>
-#include <algo.h>
-#include <vector.h>
-#include <math.h>
+#include <cstdlib>
+#include <iomanip>
+#include <cstdio>
+#include <cassert>
+#include <iostream>
+#include <algorithm>
+#include <vector>
+#include <cmath>
+
+using namespace std;
 
 #include "Link.h"
 #include "Lattice.h"
@@ -47,6 +48,8 @@ Link::fill_link_fields(const string& idf, const string& entry)
     lm_score = atof((const char*)entry.c_str());
   else if (idf == "r")
     pr_score = atof((const char*)entry.c_str());
+  else if (idf == "p")
+    /* Do nothing, this is a pre-existing posterior... */;
   else if (idf == "score")   // this is for the FSM style input 
     score = atof((const char*)entry.c_str());
   else{
