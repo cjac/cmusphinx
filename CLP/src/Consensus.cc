@@ -30,14 +30,16 @@ using namespace std;
 
 void Usage() {
     cout << "\nUSAGE:\n";
-    cout << "consensus -i <infile> [-c <outfile>] [-C <outdir>] -R <pronfile> [-G <logfile>] [-S <scale>] [-L <LMweight>] [-l <PMweight>] " << endl 
+    cout << "consensus -i <filelist> [-c <outfile>] [-C <outdir>] -R <pronfile> [-G <logfile>] [-S <scale>] [-L <LMweight>] [-l <PMweight>] " << endl 
          << " [-P <PMweight>] [-p <PMoldscale>] [-I <WIP>] [-D <DELweight>] [-T <thresh>] [-t <percentage>] [-m <intraword>] [-M <interword>]  " << endl
          << " [-e <lowEpsT>} [-E <highEpsT>] [-w <lowWordT>] [-W <highWordT>] [-f] [-o] [-s] [-b] [-n]" << endl << endl
 	 << "where " << endl
-	 << "-f               - specifies that the format of the input file is FSM (default SLF)" << endl               
+	 << "-f               - specifies that the format of the input files is FSM (default SLF)" << endl               
 	 << "-o               - don't use the time information available(if) in the file " << endl
 	 << "-s               - don't use the phonetic similarity " << endl   
-	 << "-i <inSLFfile>   - the input file (default stdin)" << endl
+	 << "-i <filelist>    - the input file (default stdin)" << endl
+	 << "-B <basedir>     - base directory for input files (default none)" << endl
+	 << "-x <extension>   - file extension for input files (default none)" << endl
 	 << "-c <outfile>     - the output file for the consensus hyp (default stdout)" << endl
 	 << "-C <outdir>      - the output dir for the conf nets in FSM format (default don't output)" << endl   
 	 << "-R <pronfile>    - the file containing the number of prons and the most likely pron for a word" << endl
@@ -79,7 +81,7 @@ float highWordT  = 1.0;
 string type             = "SLF";
 string method_intraword = "max";
 string method_interword = "max";
- 
+
 bool wdpenalty_was_set     = false;
 bool lmscale_was_set       = false;
 bool lmweight_was_set      = false;
@@ -96,10 +98,12 @@ bool constrain_inter       = false;
 
 
 int main(int argc, char * argv[]) {
-    GetOpt opt(argc, argv, "fosnbi:c:C:R:S:G:L:l:P:p:I:E:e:W:w:D:T:t:m:M:");
+    GetOpt opt(argc, argv, "fosnbi:c:C:R:S:G:L:l:P:p:I:E:e:W:w:D:T:t:m:M:B:x:");
     int ch;
     string infile(""), outfile(""), outdir(""); 
     string pronfile(""),logfile("");
+    string basedir("");
+    string fileext("");
     
     bool first = true;
     while((ch = opt()) != EOF || first){
@@ -186,6 +190,12 @@ int main(int argc, char * argv[]) {
 	    case 'n':
 		constrain_inter = true;
 		break;
+	    case 'B':
+		basedir = opt.optarg;
+		break;
+	    case 'x':
+		fileext = opt.optarg;
+		break;
             default:
 		Usage();
 		exit(1);
@@ -223,10 +233,10 @@ int main(int argc, char * argv[]) {
     string file_name;
 
     while(getlineH(flist, file_name)){
-      // the files are compressed, but in the list of lattices they don't have the extension .gz
-    //  if (file_name.find(".gz") == string::npos)
-//	file_name += ".gz";
-      
+	if (basedir != "")
+	    file_name = basedir + "/" + file_name;
+	if (fileext != "")
+	    file_name += fileext;
       
       // ///////////////////////////////////////////////////////////////////////////////////////
       //											//
