@@ -1,0 +1,21 @@
+
+Formula used for computing the link probabilities is: 1/12*( AC + 12*LM + 12*PR - 0)
+where AC, LM and PR are the unscaled acoustic, language and pronunciation model scores
+
+Pronunciation model: uniform
+Pronunciations file: ../data/prons
+
+Threshold: 1200
+
+Thresholds used for pruning the bins in the confusion networks: lowEpsT(0), highEpsT(1), lowWordT(0), highWordT(1)
+
+Using time information : 1
+Using phon similarity  : 1
+
+Intra-word Clustering method: max (single link clustering method)
+Constrain intra-word clustering: 1
+
+Inter-word Clustering method: max (single link clustering method)
+Constrain inter-word clustering: 1
+
+../bin/Consensus -i ../Lists/latlist -c ../OUT/consensus.score -R ../data/prons -C ../OUT/NETWORKS -S 12 -L 12 -l 1 -P 12 -p 1 -I 0 -T 1200 -b -n -G ../OUT/log

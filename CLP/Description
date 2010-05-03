@@ -1,0 +1,33 @@
+INPUT FILES
+============
+
+The program takes as input either HTK lattices (with words either on the links or in the nodes)
+                           or     FSM lattices 
+
+
+The FSM lattices have the format:
+<start_node> <end_node>  <word>  <score>   
+
+
+Assumptions made:
+==================
+- the graph has only one start node; it can have multiple end nodes
+- the score is natural log of the corresponding probability (I didn't want to add a new 
+  argument to specify the base; I've got lots of arguments already)
+
+
+When there is no time information (e.g. FSM type lattices)
+===========================================================
+The key observation is that even without explicit time information we can still use
+the lattice topology to get an estimate of where in time a particular node is. 
+One estimate is the length of the longest path from the initial node of the graph to it 
+(let's call this estimate max_dist), where the length is measured as the number of phones.
+
+
+Constraining the clustering 
+============================
+Constraining the two clustering stages is provided just as an option. Constraining means: 
+-- don't allow two clusters to merge if they don't overlap in time
+
+Note: If we constrain the inter-word clustering, we need to add an additional unconstrained 
+clustering stage in the end in order to guarrantee a total order

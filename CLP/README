@@ -1,0 +1,24 @@
+Suggested Steps:
+----------------
+
+1) Read README (this file)
+
+2) Read COPYRIGHT (copyright notice; PLEASE READ CAREFULLY!!)
+
+3)(optional) Read some papers (look in the directory PAPERS)
+
+4) Read Description (this is just the beginning of what is supposed to be a description of the system)
+
+5) Read INSTALL and follow the steps there
+
+
+COMMENT:   There are some comments in the programs but not too many... Maybe in the future I will find more time for adding them.  But hopefully with a good understanding of what the programs are supposed to do (read the papers...) following the flow of actions will be easy...
+
+
+Thanks to Roberto Gretter for making the programs portable to other compilers (he  dealt with the casting and scoping issues)
+
+
+Please let me know if YOU have comments  (send them to mangu@us.ibm.com)
+
+  
+

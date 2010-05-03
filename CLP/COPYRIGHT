@@ -1,0 +1,26 @@
+               =======   COPYRIGHT NOTICE   =======
+
+Some classes are copyrighted by:
+
+zio.{h,cc}
+Copyright (c) 1994, SRI International and Andreas Stolcke.
+LineSplitter.{h,cc}
+Copyright (c) 1999, Radu Florian  rflorian@cs.jhu.edu
+GetOpt.{h,cc}
+Copyright (C) 1987, 1989 Free Software Foundation, Inc.
+
+Please read the copyright notice in each of the above files before proceeding.
+
+The rest are copyrighted by:
+Copyright (c) 1998-2000 Lidia Mangu, CLSP, The Johns Hopkins University,
+lidia@cs.jhu.edu
+
+Permission to use, copy, modify and distribute this software and its documentation
+for research purposes only and without fee is hereby granted,
+provided that this entire copyright notice is included on all copies of this
+software and applications and derivations thereof.
+
+This software is provided on an "as is" basis, without warranty of any
+kind, either expressed or implied, as to any matter including, but not
+limited to warranty of fitness of purpose, or merchantability, or
+results obtained from use of this software.

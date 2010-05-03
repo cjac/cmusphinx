@@ -1,0 +1,80 @@
+# -*- Makefile -*-
+
+CXX = g++
+CC  = gcc
+
+LIBPATH = -L/usr/lib
+
+INCPATH =  -I${INCDIR} -I/usr/include/g++ -I/usr/tools/include/g++ -I/usr/tools/include -I../src -I/usr/local/include/g++ -I/usr/include
+
+# math library
+LDLIBS = -lm  
+
+# optimizations for this architecture
+# ARCHOPTIM = -mcpu=pentiumpro
+
+# for optimizing
+OPTIM = -O3 -ffast-math -mcpu=pentiumpro
+
+# for seeing warnings and debugging
+#OPTIM = -g -DDEBUG=3
+# for profiling
+#OPTIM = -g -pg -O3
+
+# this is required for old SunOS
+#OPTIONS = -D__USE_FIXED_PROTOTYPES__ -DFLOAT=float -fexceptions -frtti -m486
+#OPTIONS = -mcpu=pentiumpro
+
+#WARNS = -Wall -fguiding-decls
+#WARNS = -Wall
+WARNS  = -w
+
+CXXFLAGS = ${OPTIM} ${OPTIONS} ${WARNS} ${LIBPATH} ${INCPATH}
+CCFLAGS  = ${OPTIM} ${OPTIONS} ${WARNS} ${LIBPATH} ${INCPATH}
+CFLAGS   = $(CCFLAGS)
+LD = ${CXX} ${CXXFLAGS}
+
+# 2 lines for sunOS
+CCC = ${CXX}
+
+BINDIR  = ../bin
+INCDIR  = ../include
+SRCDIR  = ../src
+TESTDIR = ../test
+
+TARGETS = ${BINDIR}/Consensus ${BINDIR}/Consensus_print
+
+makefile: depend
+
+all: includes ${TARGETS}
+
+clean:
+	-${RM} *.o ../lib/*.a *~
+
+sterile: clean
+	-${RM} *.rpo
+	-${RM} ${TARGETS}
+
+distclean: sterile
+	-${RM} makefile
+
+remake: clean depend
+	${MAKE}
+
+# figure out the dependencies
+
+depend:
+	-$(RM) makefile
+	grep -v '^makefile' Make.depend > makefile
+	echo "" >> makefile
+	echo "# Automatically generated dependencies" >> makefile
+	echo "" >> makefile
+	-${CXX} ${INCPATH} -M *.cc  >> makefile
+
+
+Consensus:      ${INCDIR}/common.h  ${INCDIR}/GetOpt.h ${INCDIR}/Lattice.h ${INCDIR}/Prob.h  ${INCDIR}/LineSplitter.h ${INCDIR}/Prons.h ${INCDIR}/zio.h ${INCDIR}/Cluster.h ${INCDIR}/Clustering.h ${INCDIR}/Link.h ${INCDIR}/Node.h ${INCDIR}/common_lattice.h ${INCDIR}/Similarities.h ${SRCDIR}/common.cc ${SRCDIR}/GetOpt.cc ${SRCDIR}/Lattice.cc ${SRCDIR}/LineSplitter.cc ${SRCDIR}/Prons.cc ${SRCDIR}/zio.cc ${SRCDIR}/Cluster.cc ${SRCDIR}/Clustering.cc ${SRCDIR}/Similarities.cc common.o GetOpt.o Lattice.o LineSplitter.o Prons.o zio.o Cluster.o Clustering.o Similarities.o
+	$(CCC) $(CCFLAGS) -o ${BINDIR}/Consensus Consensus.cc common.o GetOpt.o Lattice.o LineSplitter.o Prons.o zio.o Cluster.o Clustering.o Similarities.o $(LDLIBS)
+
+
+Consensus_print:	${INCDIR}/common.h  ${INCDIR}/GetOpt.h ${INCDIR}/Lattice.h ${INCDIR}/Prob.h  ${INCDIR}/LineSplitter.h ${INCDIR}/Prons.h ${INCDIR}/zio.h ${INCDIR}/Cluster.h ${INCDIR}/Clustering.h ${INCDIR}/Link.h ${INCDIR}/Node.h ${INCDIR}/common_lattice.h ${INCDIR}/Similarities.h ${SRCDIR}/common.cc ${SRCDIR}/GetOpt.cc ${SRCDIR}/Lattice.cc ${SRCDIR}/LineSplitter.cc ${SRCDIR}/Prons.cc ${SRCDIR}/zio.cc ${SRCDIR}/Cluster.cc ${SRCDIR}/Clustering_print.cc ${SRCDIR}/Similarities.cc common.o GetOpt.o Lattice.o LineSplitter.o Prons.o zio.o Cluster.o Clustering_print.o Similarities.o
+	$(CCC) $(CCFLAGS) -o ${BINDIR}/Consensus_print Consensus_print.cc common.o GetOpt.o Lattice.o LineSplitter.o Prons.o zio.o Cluster.o Clustering_print.o Similarities.o $(LDLIBS)			

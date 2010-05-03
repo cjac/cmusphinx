@@ -1,0 +1,60 @@
+How to install the programs
+==========================
+
+1) gunzip CLP.tar.gz
+
+2) tar xf CLP.tar  
+
+3) cd CLP/src
+
+4) .....change the Make.depend file (change LIBPATH and INCPATH)........
+
+5) make -f Make.depend depend
+ 
+6) make Consensus
+  (make Consensus_print)
+
+
+How to do consensual decoding
+=================================
+
+1) cd ../scripts/
+
+2) .....set the values of different parameters in the file 'go.find_consensus.pl'
+
+
+3) .....You need a file containing the words with their most likely pronunciations and 
+        the number of pronunciations (see file data/prons); If you have a pronunciation 
+        dictionary in the format <word> <pronunciation>, you can generate the file needed 
+        by the program using 'scripts/create_pron_file.pl' 
+
+
+4) go.find_consensus.pl <latlist> <pronfile> <output_directory> [<print>]
+   
+        where
+		<latlist>           -- list of all the lattices 
+                                     
+		<pronfile>	    -- the file you created at step 3)
+		<output_directory>  -- the directory in which you want the output
+		<print>             -- 1 if you want to see the clustering steps; default no printing
+
+
+
+RESULT
+========
+
+In <output_directory> you will find:
+
+log              -- specifies the values of the parameters used 
+                    for generating the output,
+
+consensus.score  -- contains the consensus hypothesis in score format
+                    (which can then be scored using NIST scoring programs)
+
+NETWORKS/        -- contains the confusion networks in the FSM
+                    text format (this directory will be produced only if you set 
+                    the value 1 for the variable $want_networks in go.find_consensus.pl)
+
+Note: take a look in OUT/ to see some examples of how the output looks like 
+===========================================================================
+
