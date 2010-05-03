@@ -120,8 +120,9 @@ int main (int argc, char **argv) {
   first_ngram = 1;
   
   while (!rr_feof(stdin)) {
-    for (i=0;i<=n-1;i++)
-      previous_ngram.id_array[i]=current_ngram.id_array[i];
+    
+    if (!first_ngram)
+      ngram_copy(&previous_ngram,&current_ngram,n);
 
     if (get_ngram(stdin,&current_ngram,is_ascii)) {
 
@@ -130,8 +131,11 @@ int main (int argc, char **argv) {
     
       /* Test for where this ngram differs from last - do we have an
 	 out-of-order ngram? */
-
-      pos_of_novelty = ngram_find_pos_of_novelty(&current_ngram,&previous_ngram,n,nlines);
+    
+      if (!first_ngram)
+        pos_of_novelty = ngram_find_pos_of_novelty(&current_ngram,&previous_ngram,n,nlines);
+      else
+        pos_of_novelty = 0;
 
       /* Add new N-gram */
      
@@ -147,15 +151,16 @@ int main (int argc, char **argv) {
 	  
 	  ng_count[i-1] = current_ngram.count;
 	}
-      }else {
+      } else {
 	for (i=n-2;i>=MAX(1,pos_of_novelty);i--) 
 	  ng_count[i-1] = current_ngram.count;
-
-	first_ngram = 0;
       }
 	
       for (i=0;i<=pos_of_novelty-2;i++) 
 	ng_count[i] += current_ngram.count;
+	
+      if (first_ngram)
+        first_ngram = 0;
     }
   }
 
