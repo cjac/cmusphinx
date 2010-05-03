@@ -7,13 +7,15 @@
 #ifndef _common_lattice_h
 #define _common_lattice_h
 
-#include <map.h>
-#include <hash_map.h>
-#include <vector.h>
-#include <slist.h>
-#include <list.h>
+#include <map>
+#include <ext/hash_map>
+#include <vector>
+#include <ext/slist>
+#include <list>
 #include <string>
 
+using namespace std;
+using namespace __gnu_cxx;
 
 typedef unsigned                  LinkId;
 typedef unsigned                  NodeId;
@@ -33,7 +35,6 @@ typedef pair<int,int>             IntInt;
 typedef list<LinkId>              IdsList;
 typedef IdsList::iterator         IdsListIt;
 typedef IdsList::const_iterator   IdsListConstIt;
-
 
 struct ess {
     bool operator() (const IntInt& a, const IntInt& b) const{

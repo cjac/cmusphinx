@@ -29,9 +29,10 @@ extern "C" {
 /* Include declarations files. */
 
 #include <stdio.h>
-#include <stdiostream.h>
 #include <unistd.h>
 /* Constants */
+
+using namespace std;
 
 #define COMPRESS_SUFFIX   ".Z"
 #define GZIP_SUFFIX	  ".gz"

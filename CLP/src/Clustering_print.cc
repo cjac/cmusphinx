@@ -5,13 +5,15 @@
 // Copyright (c) sept 1999      Lidia Mangu  lidia@cs.jhu.edu  All rights reserved.
 //--------------------------------------------------------------------------------------------------------
 
-#include <stdlib.h>
-#include <iomanip.h>
-#include <stdio.h>
-#include <assert.h>
-#include <iostream.h>
-#include <algo.h>
-#include <list.h>
+#include <cstdlib>
+#include <iomanip>
+#include <cstdio>
+#include <cassert>
+#include <iostream>
+#include <algorithm>
+#include <list>
+
+using namespace std;
 
 #include <sys/stat.h>
 #include <sys/types.h>

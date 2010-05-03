@@ -7,9 +7,11 @@
 
 #ifndef _LineSplitter_h_
 #define _LineSplitter_h_
-#include <stdlib.h>
+#include <cstdlib>
 #include <string>
-#include <vector.h>
+#include <vector>
+
+using namespace std;
 
 class LineSplitter {
 protected:

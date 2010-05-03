@@ -9,7 +9,9 @@
 
 #include "common.h"
 #include "common_lattice.h"
-#include <hash_map.h>
+#include <ext/hash_map>
+
+using namespace __gnu_cxx;
 
 struct eqstr
 {
@@ -19,12 +21,16 @@ struct eqstr
 	}
 };
 
+namespace __gnu_cxx {
 template<>
 struct hash<string> {
   size_t operator() (string s) const {
         return __stl_hash_string(s.c_str());
   }
 };
+}
+
+
 
 typedef hash_map<string, int, hash<string>, eqstr> WordIntHMap;
 typedef WordIntHMap::iterator WordIntHMapIt;

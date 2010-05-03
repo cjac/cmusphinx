@@ -2,15 +2,16 @@
 #ifndef _common_h_
 #define _common_h_
 
-#include <assert.h>
-#include <iostream.h>
-#include <iomanip.h>
-#include <fstream.h>
-#include <stdlib.h>
-#include <limits.h>
+#include <cassert>
+#include <iostream>
+#include <iomanip>
+#include <fstream>
+#include <cstdlib>
+#include <climits>
 #include <string>
-#include <hashtable.h>
-#include <math.h>
+#include <cmath>
+
+using namespace std;
 
 int getlineH(istream&, string&);
 string itoa(int);

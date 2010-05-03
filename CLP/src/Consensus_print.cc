@@ -7,14 +7,16 @@
 #include <sys/types.h> // MOD 6/30/2000 - added
 #include <sys/stat.h> // MOD 6/30/2000 - added
 
-#include <stdlib.h>
-#include <limits.h>
-#include <assert.h>
-#include <iostream.h>
-#include <fstream.h>
-#include <iomanip.h>
+#include <cstdlib>
+#include <climits>
+#include <cassert>
+#include <iostream>
+#include <fstream>
+#include <iomanip>
 #include <ctype.h>
 #include <string>
+
+using namespace std;
 
 #include "common_lattice.h"
 #include "zio.h"

@@ -8,14 +8,16 @@
 #ifndef _Similarities_h
 #define _Similarities_h
 
-# include <iostream.h>
-# include <fstream.h>
-# include <iomanip.h>
-# include <stdio.h>
+# include <iostream>
+# include <fstream>
+# include <iomanip>
+# include <cstdio>
 # include <string>
-# include <stdlib.h>
-# include <math.h>
-# include <assert.h> 
+# include <cstdlib>
+# include <cmath>
+# include <cassert> 
+
+using namespace std;
 
 #include "LineSplitter.h"
 

@@ -15,8 +15,10 @@
 #include "LatticeInfo.h"
 
 #include <string>
-#include <map.h>
-#include <vector.h>
+#include <map>
+#include <vector>
+
+using namespace std;
 
 class Lattice
 {

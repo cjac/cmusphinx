@@ -12,6 +12,8 @@
 #include "common_lattice.h"
 #include "Prons.h"
 
+class Lattice;
+
 class Node
 {
   friend class Lattice;

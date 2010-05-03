@@ -5,16 +5,18 @@
 // Copyright (c) 1999      Lidia Mangu  lidia@cs.jhu.edu  All rights reserved.
 //--------------------------------------------------------------------------------------
 
-#include <stdlib.h>
-#include <limits.h>
-#include <assert.h>
-#include <iostream.h>
-#include <fstream.h>
-#include <iomanip.h>
+#include <cstdlib>
+#include <climits>
+#include <cassert>
+#include <iostream>
+#include <fstream>
+#include <iomanip>
 #include <ctype.h>
 #include <string>
 #include <sys/types.h>
 #include <sys/stat.h>
+
+using namespace std;
 
 #include "common_lattice.h"
 #include "zio.h"

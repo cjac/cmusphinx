@@ -17,12 +17,12 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 #include <stdlib.h> // MOD 6/30/2000 - added
 #include <string.h> // MOD 6/30/2000 - added
+#include <alloca.h>
 
 #ifdef __GNUG__
 #pragma implementation
 #endif
 /* AIX requires the alloca decl to be the first thing in the file. */
-extern "C" void *__builtin_alloca(...);
 #include "GetOpt.h"  // MOD 6/30/2000 - "" instead of <>
 
 char* GetOpt::nextchar = 0;

@@ -4,21 +4,25 @@
 // Copyright (c) 1999      Lidia Mangu  lidia@cs.jhu.edu  All rights reserved.
 //-------------------------------------------------------------------------------------------
 
-#include <stdlib.h>
-#include <fstream.h>
+#include <cstdlib>
+#include <fstream>
 #include <string>
-#include <stdio.h>
+#include <cstdio>
+
 #include "Prons.h"
 #include "common_lattice.h"
 #include "LineSplitter.h"
 #include "zio.h"
 
+using namespace std;
+
 Prons::Prons(int s): size(s){};
 
 Prons::Prons(const string& filename)
 {
-    istdiostream f(zopen(filename.c_str(),"rt"));	
-    
+    ifstream f;
+
+    f.open(filename.c_str());
     if(f == NULL) {
 	char str[100];
 	cerr << "ERROR: ReadProns: The required file " << filename << "does not exist or is corupted !!";
@@ -65,7 +69,6 @@ Prons::Prons(const string& filename)
 	size = word2int.size();
     
 	f.sync();
-	zclose(f.rdbuf()->stdiofile());
     }
 }
 

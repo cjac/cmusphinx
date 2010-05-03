@@ -14,7 +14,7 @@ LDLIBS = -lm
 # ARCHOPTIM = -mcpu=pentiumpro
 
 # for optimizing
-OPTIM = -O3 -ffast-math -mcpu=pentiumpro
+OPTIM = -O3 -ffast-math
 
 # for seeing warnings and debugging
 #OPTIM = -g -DDEBUG=3

@@ -5,13 +5,15 @@
 // Copyright (c) 1999      Lidia Mangu  lidia@cs.jhu.edu  All rights reserved.
 //------------------------------------------------------------------------------
 
-#include <stdlib.h>
-#include <iomanip.h>
-#include <stdio.h>
-#include <assert.h>
-#include <iostream.h>
-#include <algo.h>
-#include <list.h>
+#include <cstdlib>
+#include <iomanip>
+#include <cstdio>
+#include <cassert>
+#include <iostream>
+#include <algorithm>
+#include <list>
+
+using namespace std;
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -237,7 +239,7 @@ Clustering::go_cluster(const Prons& P, const int stage, const int mode, const bo
                                                    // the actual similarity values are to be found in 'ordered'
     
   for (int i = 0; i<no_clusters; i++)
-    most_similar[i] = 0;
+      most_similar[i] = C.end();
   
   DblMatrix SIM;	
   SIM.resize(no_clusters);
@@ -264,7 +266,7 @@ Clustering::go_cluster(const Prons& P, const int stage, const int mode, const bo
       unsigned id1 = (*it1).Id();
       
       double max_sim_row = 0;
-      ClusterListIt itmax_row=0;
+      ClusterListIt itmax_row = C.end();
 	
       for (ClusterListIt it2 = C.begin(); it2 != C.end(); it2++){
 	unsigned id2 = (*it2).Id();
@@ -345,7 +347,7 @@ Clustering::go_cluster(const Prons& P, const int stage, const int mode, const bo
 	  }
 	}
       }
-      if (itmax_row != 0)
+      if (itmax_row != C.end())
 	most_similar[id1] = itmax_row;
     }	
     
@@ -365,7 +367,7 @@ Clustering::go_cluster(const Prons& P, const int stage, const int mode, const bo
       for (ClusterListIt it1 = C.begin(); it1 != C.end(); it1++){
 	unsigned id1 = (*it1).Id();
 	
-	if (most_similar[id1] != 0){
+	if (most_similar[id1] != C.end()){
 	  ClusterListIt it2 = most_similar[id1];
 	  unsigned id2 = (*it2).Id();
 	  
@@ -477,7 +479,7 @@ Clustering::go_cluster(const Prons& P, const int stage, const int mode, const bo
 	  if (it1 != itmax2){
 	    unsigned id_source = (*it1).Id();
 	    
-	    if (most_similar[id_source] != 0){
+	    if (most_similar[id_source] != C.end()){
 	      unsigned id_closest = (*most_similar[id_source]).Id();
 	      if (SIM[id_source][id_closest] == -1 || SIM[id_closest][id_source] == -1 || id_source == id1 || id_closest == id1 || id_closest == id2){
 		// if they became ordered after merging, recompute the most similar candidate for it1
@@ -501,7 +503,7 @@ Clustering::go_cluster(const Prons& P, const int stage, const int mode, const bo
 		  most_similar[id_source] = itmax_row;
 		}
 		else{
-		  most_similar[id_source] = 0;
+		    most_similar[id_source] = C.end();
 		}
 	      }
 	      else {
