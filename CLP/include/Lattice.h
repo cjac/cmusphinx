@@ -5,7 +5,6 @@
 #ifndef _Lattice_h
 #define _Lattice_h
 
-#include "zio.h"
 #include "common.h"
 #include "Prob.h"
 #include "Prons.h"

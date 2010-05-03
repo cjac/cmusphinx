@@ -19,7 +19,6 @@
 using namespace std;
 
 #include "common_lattice.h"
-#include "zio.h"
 #include "Prob.h"
 #include "GetOpt.h"
 #include "LatticeInfo.h"

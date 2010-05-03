@@ -23,7 +23,6 @@ using namespace std;
 #include "LineSplitter.h"
 #include "common_lattice.h"
 #include "common.h"
-#include "zio.h"
 
 /* ---------------------------------------------------------------------------------- */
 /* --------------------------- LINK STUFF ----------- ------------------------------- */

@@ -11,7 +11,6 @@
 #ifndef _LatticeInfo_h
 #define _LatticeInfo_h
 
-#include "zio.h"
 #include "Prob.h"
 #include "common_lattice.h"
 #include <string>
