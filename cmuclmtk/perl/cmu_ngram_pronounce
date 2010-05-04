@@ -131,6 +131,8 @@ sub read_dict {
     while (<$fh>) {
 	chomp;
 	my ($word, @phones) = split;
+	# Remove class tags
+	$word =~ s/:[^\(]+//;
 	if ($word =~ s/\((\d+)\)$//) {
 	    unless (ref $dict->{uc$word}) {
 		$dict->{uc$word} = [ $dict->{uc$word} ];
