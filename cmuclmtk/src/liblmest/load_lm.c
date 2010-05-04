@@ -85,6 +85,7 @@ void load_lm(ng_t *ng,
 
   int i;
   ng->disc_meth=NULL;
+  ng->vocab_size = 0;
   ng->bin_fp = rr_iopen(lm_filename);
 
   rr_fread((char*)&ng->version,sizeof(int),1,ng->bin_fp,"from lm file",0);
