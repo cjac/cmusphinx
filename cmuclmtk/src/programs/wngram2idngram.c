@@ -98,6 +98,7 @@ void help_message()
 {
     fprintf(stderr,"wngram2idngram - Convert a word n-gram file to an id n-gram file.\n");
     fprintf(stderr,"Usage : wngram2idngram -vocab .vocab\n");
+    fprintf(stderr,"                       -idngram .idngram\n");
     fprintf(stderr,"                     [ -buffer %d ] \n",STD_MEM);
     fprintf(stderr,"                     [ -hash %d ]\n",DEFAULT_HASH_SIZE);
     fprintf(stderr,"                     [ -temp %s ]\n",DEFAULT_TEMP);
@@ -120,12 +121,14 @@ int main(int argc, char *argv[]) {
   int max_files;
   int number_of_tempfiles;
   char *vocab_filename;
+  char *idngram_filename;
   char tempfiles_directory[1000];
   char temp_word[MAX_WORD_LENGTH];
   char temp_word2[MAX_WORD_LENGTH];
   char temp_word3[MAX_WORD_LENGTH];
   flag contains_unks;
   int position_in_buffer;
+  FILE *outfile;
   FILE *tempfile;
   FILE *non_unk_fp;
   ngram_rec *buffer;
@@ -167,9 +170,13 @@ int main(int argc, char *argv[]) {
   max_files = pc_intarg( &argc, argv, "-files",DEFAULT_MAX_FILES);
   fof_size = pc_intarg(&argc,argv,"-fof_size",10);
   vocab_filename = salloc(pc_stringarg( &argc, argv, "-vocab", "" ));
+  idngram_filename = salloc(pc_stringarg( &argc, argv, "-idngram", "" ));
   
   if (!strcmp("",vocab_filename)) 
     quit(-1,"Error : Must specify a vocabulary file.\n");
+
+  if (!strcmp("",idngram_filename)) 
+    quit(-1,"text2idngram : Error : Must specify idngram file.\n");
     
   strcpy(tempfiles_directory,pc_stringarg( &argc, argv, "-temp",DEFAULT_TEMP));
 
@@ -185,8 +192,11 @@ int main(int argc, char *argv[]) {
   temp_file_root = tempnam(tempfiles_directory,TEMP_FILE_ROOT);
 
   pc_report_unk_args(&argc,argv,verbosity);
+
+  outfile = rr_fopen(idngram_filename,"wb");
   
   pc_message(verbosity,2,"Vocab           : %s\n",vocab_filename);
+  pc_message(verbosity,2,"Output idngram  : %s\n",idngram_filename);
   pc_message(verbosity,2,"Buffer size     : %d\n",buffer_size);
   pc_message(verbosity,2,"Hash table size : %d\n",hash_size);
   pc_message(verbosity,2,"Temp directory  : %s\n",tempfiles_directory);
@@ -431,7 +441,7 @@ int main(int argc, char *argv[]) {
 		    temp_file_root,
 		    temp_file_ext,
 		    max_files,
-		    stdout,
+		    outfile,
 		    write_ascii,
 		    fof_size); 
   }else {
@@ -444,12 +454,13 @@ int main(int argc, char *argv[]) {
 		    temp_file_root,
 		    temp_file_ext,
 		    max_files,
-		    stdout,
+		    outfile,
 		    write_ascii,
 		    fof_size); 
   }
 
   pc_message(verbosity,0,"wngram2idngram : Done.\n");
+  fclose(outfile);
 
   exit(0);
 

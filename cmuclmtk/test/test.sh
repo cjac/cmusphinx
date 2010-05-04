@@ -22,14 +22,14 @@ echo "V3 32BITS wfreq2vocab FAILED"; fi
 
 #Testing of text2idngram binary idngram
 echo "V3 32BITS text2idngram BIN IDNGRAM"
-cat English/emma11.txt.filtered | $BIN/text2idngram -vocab English/emma11.vocab > ./English/emma11.txt.filtered.idngram.32bits 2>text2idngram.log
+cat English/emma11.txt.filtered | $BIN/text2idngram -vocab English/emma11.vocab -idngram ./English/emma11.txt.filtered.idngram.32bits 2>text2idngram.log
 if (cmp English/emma11.idngram.32bits ./English/emma11.txt.filtered.idngram.32bits > /dev/null 2>&1); \
 then echo "V3 32BITS text2idngram BIN IDNGRAM PASSED"; else \
 echo "V3 32BITS text2idngram BIN IDNGRAM FAILED"; fi 
 
 #Testing of text2idngram text idngram 
 echo "V3 32BITS text2idngram TXT IDNGRAM"
-cat English/emma11.txt.filtered | $BIN/text2idngram -vocab English/emma11.vocab -write_ascii > ./English/emma11.txt.filtered.idngram.txt 2>text2idngramtxt.log
+cat English/emma11.txt.filtered | $BIN/text2idngram -vocab English/emma11.vocab -write_ascii -idngram ./English/emma11.txt.filtered.idngram.txt 2>text2idngramtxt.log
 if ($DIFF English/emma11.idngram.txt ./English/emma11.txt.filtered.idngram.txt > /dev/null 2>&1); \
 then echo "V3 32BITS text2idngram TXT IDNGRAM PASSED"; else \
 echo "V3 32BITS text2idngram TXT IDNGRAM FAILED"; fi 

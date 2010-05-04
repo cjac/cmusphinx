@@ -53,7 +53,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
-//#include <unistd.h>
 #include "../liblmest/toolkit.h"
 #include "../libs/general.h"
 #include "../libs/pc_general.h"
@@ -65,6 +64,7 @@ void help_message()
 {
   fprintf(stderr,"text2idngram - Convert a text stream to an id n-gram stream.\n");
   fprintf(stderr,"Usage : text2idngram  -vocab .vocab \n");
+  fprintf(stderr,"                      -idngram .idngram\n");
   fprintf(stderr,"                    [ -buffer 100 ]\n");
   fprintf(stderr,"                    [ -hash %d ]\n",DEFAULT_HASH_SIZE);
   fprintf(stderr,"                    [ -temp %s ]\n",DEFAULT_TEMP);
@@ -85,7 +85,9 @@ void help_message()
 int main(int argc, char *argv[]) {
 
   char *vocab_filename;
+  char *idngram_filename;
   FILE *tempfile;
+  FILE *outfile;
   char tempfiles_directory[1000];
   int verbosity;
 
@@ -123,6 +125,7 @@ int main(int argc, char *argv[]) {
 
   buffer_size    = pc_intarg( &argc, argv, "-buffer",STD_MEM);  
   vocab_filename = salloc(pc_stringarg( &argc, argv, "-vocab", "" ));
+  idngram_filename = salloc(pc_stringarg( &argc, argv, "-idngram", "" ));
   hash_size      = pc_intarg( &argc, argv, "-hash",DEFAULT_HASH_SIZE);
   strcpy(tempfiles_directory,pc_stringarg( &argc, argv, "-temp",DEFAULT_TEMP));
   max_files      = pc_intarg( &argc, argv, "-files",DEFAULT_MAX_FILES);
@@ -139,6 +142,9 @@ int main(int argc, char *argv[]) {
   
   if (!strcmp("",vocab_filename)) 
     quit(-1,"text2idngram : Error : Must specify a vocabulary file.\n");
+
+  if (!strcmp("",idngram_filename)) 
+    quit(-1,"text2idngram : Error : Must specify idngram file.\n");
     
   if (compress_flag) 
     temp_file_ext = salloc(".Z");
@@ -153,12 +159,15 @@ int main(int argc, char *argv[]) {
 
   pc_report_unk_args(&argc,argv,verbosity);
   
+  outfile = rr_fopen(idngram_filename,"wb");
+
   /* If the last charactor in the directory name isn't a / then add one. */
   
   if (tempfiles_directory[strlen(tempfiles_directory)-1] != '/') 
     strcat(tempfiles_directory,"/");
   
   pc_message(verbosity,2,"Vocab                  : %s\n",vocab_filename);
+  pc_message(verbosity,2,"Output idngram         : %s\n",idngram_filename);
   pc_message(verbosity,2,"N-gram buffer size     : %d\n",buffer_size);
   pc_message(verbosity,2,"Hash table size        : %d\n",hash_size);
   pc_message(verbosity,2,"Temp directory         : %s\n",tempfiles_directory);
@@ -211,10 +220,10 @@ int main(int argc, char *argv[]) {
 		  temp_file_root,
 		  temp_file_ext,
 		  max_files,
-		  stdout,
+		  outfile,
 		  write_ascii,
 		  fof_size); 
-
+  fclose(outfile);
   pc_message(verbosity,0,"text2idngram : Done.\n");
 
   exit(0);
