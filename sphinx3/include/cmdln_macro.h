@@ -497,7 +497,7 @@ us a better architecture.
 #define cepstral_input_handling_command_line_macro() \
     { "-cepdir", \
       ARG_STRING, \
-      NULL, \
+      ".", \
       "Input cepstrum files directory (prefixed to filespecs in control file)" }, \
     { "-cepext", \
       ARG_STRING, \
