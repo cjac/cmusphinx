@@ -120,23 +120,28 @@ customize it by running ./configure with an argument, as in
 
 Windows Installation:
 ^^^^^^^^^^^^^^^^^^^^^
-Starting from sphinx 3.7, you need to install sphinxbase before
-installation of sphinx.  The general layout looks like this
+Starting from sphinx 3.7, you need to compile sphinxbase before
+installation of sphinx.  The general layout should look
 
    sphinx3/
    sphinxbase/ 
 
-To compile the sphinx 3.7 in Visual C++ 6.0, 
-1, unzip the file.
-2, click sphinx3.dsw 
-3, build the application projects by clicking "Build" at the tool bar.
+Note that version should be removed from source before compilation,
+that is package should be renamed from sphinx3-3.8 to just sphinx3.
 
-Step 3 can be done easily in VC6.0 by clicking the "Build" menu at
-the top bar, and selecting "Batch Build...". Make sure all projects
-are selected, preferably the "Release" version of each. You can also
-run with the "Debug" version, but this version is usually slower. To
-run the executable, please remember to set the corresponding active
-project.
+To compile the sphinx 3.7 under MS Visual Studio 2008 (or newer - we test
+with Visual C++ 2008 Express):
+
+ 1. load sphinxbase.sln located in sphinxbase directory
+ 2. compile all the projects in SphinxBase (from sphinxbase.sln)
+ 3. load sphinx3.sln in sphinx3 directory
+ 4. compile all the projects in sphinx3
+
+MS Visual Studio will build the executables under .\bin\Release or
+.\bin\Debug (depending on the version you choose on MS Visual Studio),
+and the libraries under .\lib\Release or .\lib\Build. If there will
+be dll issues on startup, make sure you copy sphinxbase.dll to sphinx3
+bin folder.
 
 If you are using cygwin, the installation procedure is very similar to
 the Unix installation. However, there is no audio driver support in
@@ -161,7 +166,3 @@ Ravi Mosur
 Rita Singh (rsingh+@cs.cmu.edu)
 Yitao Sun (yitao@cs.cmu.edu)
 Eric Thayer
-
-
-
-
