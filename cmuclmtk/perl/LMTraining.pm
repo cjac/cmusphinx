@@ -40,6 +40,7 @@ require Text::CMU::InputFilter::CMU;
 require Text::CMU::InputFilter::ICSI;
 require Text::CMU::InputFilter::ISL;
 require Text::CMU::InputFilter::NIST;
+require Text::CMU::InputFilter::LETSGO;
 require Text::CMU::InputFilter::SWB;
 require Text::CMU::InputFilter::HUB5;
 require Text::CMU::InputFilter::MS98;

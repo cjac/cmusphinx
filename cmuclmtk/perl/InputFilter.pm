@@ -82,7 +82,6 @@ sub read_file {
     while (<LIST>) {
 	chomp;
 	s/\015$//;
-	next if /^#/;
 	next if /^\s*$/;
 	add_line($self, $_);
     }

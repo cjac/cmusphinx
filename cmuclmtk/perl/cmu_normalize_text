@@ -34,7 +34,6 @@
 use strict;
 use File::Basename qw(basename dirname);
 use File::Spec::Functions qw(catfile);
-use lib dirname($0);
 use Text::CMU::LMTraining;
 use Getopt::Long;
 use Pod::Usage;
@@ -94,13 +93,15 @@ if (defined($opts{filesfrom})) {
 }
 
 my (@outfiles, @outctls);
+my $idx = 0;
 foreach my $transcript (@ARGV) {
-    my $outfile = catfile($opts{outdir}, basename($transcript). '.lsn');
-    my $outctl = catfile($opts{outdir}, basename($transcript). '.ctl');
+    my $outfile = catfile($opts{outdir}, sprintf("%03d_%s.lsn", $idx, basename($transcript)));
+    my $outctl = catfile($opts{outdir}, sprintf("%03d_%s.ctl", $idx, basename($transcript)));
     print STDERR "Filtering $transcript to $outfile and $outctl\n";
     $opts{inputfilter}->normalize_transcript($transcript, $outfile, $outctl);
     push @outfiles, $outfile;
     push @outctls, $outctl;
+    ++$idx;
 }
 
 # Concatenate the individual files
