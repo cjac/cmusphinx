@@ -56,7 +56,16 @@ sub process_transcript {
 	    my $text = $1;
 
 	    # Fix some class tags
-	    s/: ([a-z])(?=$|\s)/:$1/g;
+	    $text =~ s/: ([a-z])(?=$|\s)/:$1/g;
+	    $text =~ s/:([A-Z])\b/\L:$1/g;
+	    $text =~ s/:bus/b/g;
+
+	    unless ($opts->{crosstalk}) {
+		$text =~ s/(#begin_(background|noise|crosstalk|remark|comment)#)[^#]+#end_\2#//g;
+	    }
+	    unless ($opts->{feed}) {
+		$text =~ s/(#begin_(feed|grouch)#)[^#]+#end_\2#//g;
+	    }
 
 	    # Remove false starts unless otherwise requested
 	    if ($opts->{falsestarts}) {
@@ -98,7 +107,9 @@ sub process_transcript {
 		if (s/[;:]([^;:]+)$//) {
 		    $_ = "<$1>$_</$1>";
 		}
-		push @outtokens, $_;
+		# For LM don't bother with ++FILLERS++
+		push @outtokens, $_
+		    unless /^\+\+.*\+\+$/ and !$opts->{fillers};
 	    }
 	    $self->output_sentence(\@outtokens, $uttid);
 	}
