@@ -428,8 +428,9 @@ sub estimate {
     my $idngramfile = $self->tempfile("idngram");
     $self->log_message("Counting N-grams from all transcripts to $idngramfile");
     $self->text2idngram($self->{transcripts},
-			$idngramfile,
+			undef,
 			[-vocab => $vocabfile,
+			 -idngram => $idngramfile,
 			 -temp => $self->tempdir(),
 			 -n => $self->{opts}{n}])
 	or die "text2idngram failed with status $?";
