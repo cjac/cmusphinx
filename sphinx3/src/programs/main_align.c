@@ -377,10 +377,10 @@ models_init(cmd_ln_t *config)
     /* Dictionary */
     dict = dict_init(kbc->mdef, cmd_ln_str_r(config, "-dict"),
                      cmd_ln_str_r(config, "-fdict"), 
+                     cmd_ln_int32_r(config, "-lts_mismatch"),
 		     cmd_ln_boolean_r(config, "-mdef_fillers"),
 		     /* Never do mdef filler phones. */
 		     FALSE,
-                     cmd_ln_int32_r(config, "-lts_mismatch"),
 		     TRUE);
 
 

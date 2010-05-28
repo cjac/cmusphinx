@@ -524,10 +524,11 @@ kbcore_init(cmd_ln_t *config)
 
         if ((kb->dict =
              dict_init(kb->mdef, str, fdictfile,
+                       cmd_ln_boolean_r(config, "-lts_mismatch"),
 		       cmd_ln_boolean_r(config, "-mdef_fillers"),
 		       (cmd_ln_boolean_r(config, "-mdef_fillers")
-			&& !strcmp("allphone", cmd_ln_str_r(config, "-mode"))),
-                       cmd_ln_boolean_r(config, "-lts_mismatch"),
+			&& (!strcmp("allphone", cmd_ln_str_r(config, "-mode")) 
+			    || cmd_ln_int32_r(config, "-op_mode") == 1)),
                        REPORT_KBCORE)) == NULL)
             E_FATAL("dict_init(%s,%s) failed\n", str, fdictfile ? fdictfile : "");
     }

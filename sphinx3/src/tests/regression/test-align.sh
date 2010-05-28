@@ -20,6 +20,7 @@ run_program sphinx3_align \
 -beam 1e-80 \
 -senmgau .s3cont. \
 -agc max \
+-mdef_fillers yes \
 -fdict $an4lm/filler.dict \
 -dict $an4lm/an4.dict \
 -ctl $an4lm/an4.ctl \
@@ -64,6 +65,7 @@ run_program sphinx3_align \
 -cepdir $an4lm/ \
 -cepext .abcd \
 -insent $an4lm/align.correct \
+-mdef_fillers yes \
 -outsent $tmpout \
 -wdsegdir ./ \
 -phsegdir ./ \

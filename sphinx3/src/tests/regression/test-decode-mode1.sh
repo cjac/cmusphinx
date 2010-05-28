@@ -12,6 +12,7 @@ margs="-logbase 1.0003 \
 -dict $an4lm/an4.phone.dict \
 -fdict $an4lm/filler.dict \
 -ctl $an4lm/an4.ctl \
+-mdef_fillers yes \
 -ctlcount 1 \
 -outlatdir . \
 -phsegdir . \

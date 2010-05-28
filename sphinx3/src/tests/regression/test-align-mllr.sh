@@ -17,6 +17,7 @@ run_program sphinx3_align \
 -tmat $hub4am/transition_matrices \
 -mllr $hub4am/mllr_matrices \
 -feat 1s_c_d_dd \
+-mdef_fillers yes \
 -agc max \
 -topn 1000 \
 -beam 1e-80 \
