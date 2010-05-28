@@ -695,7 +695,7 @@ mgau_mixw_read(mgau_model_t * g, const char *file_name, float64 mixwfloor)
  * flag.
  */
 
-static void
+void
 mgau_uninit_compact(mgau_model_t * g             /**< The Gaussian distribution need to be compacted*/
     )
 {
@@ -787,7 +787,7 @@ mgau_uninit_compact(mgau_model_t * g             /**< The Gaussian distribution 
  * @param floor
  */
 
-static void
+void
 mgau_var_floor(mgau_model_t * g, float64 floor)
 {
     int32 m, c, i, n;

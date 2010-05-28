@@ -107,6 +107,9 @@ adapt_set_mllr(adapt_am_t * ad, mgau_model_t * g, const char *mllrfile,
 	       const char *cb2mllrname, mdef_t * mdef, cmd_ln_t *config)
 {
     int32 *cb2mllr;
+    float32 varfloor;
+    
+    varfloor = cmd_ln_float32_r(config, "-varfloor");
 
     /* Reread the gaussian mean from the file again */
     E_INFO("Reloading mean\n");
@@ -115,6 +118,11 @@ adapt_set_mllr(adapt_am_t * ad, mgau_model_t * g, const char *mllrfile,
     /* Reread the gaussian variance from the file again */
     E_INFO("Reloading variance\n");
     mgau_var_reload(g, cmd_ln_str_r(config, "-var"));
+
+    mgau_uninit_compact(g);     /* Delete uninitialized components */
+
+    if (g->mgau[0].var && varfloor > 0.0)
+        mgau_var_floor(g, varfloor);    /* Variance floor after above compaction */
 
 #if MLLR_DEBUG
     /*This generates huge amount of information */
@@ -147,6 +155,9 @@ adapt_set_mllr(adapt_am_t * ad, mgau_model_t * g, const char *mllrfile,
     /* Transform mean and variance vectors */
     mllr_norm_mgau(g, ad->regA, ad->regB, ad->regH, ad->mllr_nclass, cb2mllr);
     ckd_free(cb2mllr);
+
+    if (g->mgau[0].var && varfloor > 0.0)
+        mgau_var_floor(g, varfloor);    /* Variance floor after above transform */
 
     /* Re-precompute variance things */
     mgau_precomp(g);

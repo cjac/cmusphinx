@@ -377,7 +377,33 @@ int32 mgau_var_reload(mgau_model_t * g,      /**< In/Out: The GMM */
  * Precompute things from the variances.  Not needed unless you explicitly call
  * mgau_var_reload().
  */
+S3DECODER_EXPORT
 int32 mgau_precomp(mgau_model_t * g);
+
+/**
+ * Floor the value of gaussian mixture weight using the parameter floor
+ * @param floor
+ */
+
+S3DECODER_EXPORT 
+void mgau_var_floor(mgau_model_t * g, float64 floor);
+
+/**
+ * Compact each mixture Gaussian in the given model by removing any
+ * uninitialized components.  A component is considered to be
+ * uninitialized if its variance is the 0 vector or if its mean or
+ * variance contain NaN (not-a-numbers).  Compact by copying the data
+ * rather than moving pointers.  Otherwise, malloc pointers could get
+ * corrupted.
+ * 
+ * The past behavior will remove a Gaussian if the mean and variance
+ * vectors are 0-vector. This can be turned on by changing the #if
+ * flag.
+ */
+
+S3DECODER_EXPORT
+void mgau_uninit_compact(mgau_model_t * g);
+
 
 #if 0
 { /* Stop indent from complaining */

@@ -109,7 +109,7 @@ extern "C" {
 
 #define s3_cfg_id2index(x) (x & S3_CFG_INDEX_MASK)
 
-typedef uint32 s3_cfg_id_t;
+typedef size_t s3_cfg_id_t;
 
 typedef struct s3_cfg_rule_s {
   s3_cfg_id_t src;

@@ -112,7 +112,7 @@ static cmd_ln_t *config;
 static hash_table_t *dict_ht;
 static char **word;
 static int32 n_word_alloc;
-static int32 n_word;
+static size_t n_word;
 static int32 silwid;
 
 static node_t *node_alloc;
@@ -141,7 +141,7 @@ filler2phnMap fillpause[] = { {"++UH++", "UH"},
 };
 
 
-static int32
+static size_t
 word2id(char *w)
 {
     void *val;
@@ -154,7 +154,7 @@ word2id(char *w)
         return n_word++;
     }
     else
-        return (int32)val;
+        return (size_t)val;
 }
 
 
