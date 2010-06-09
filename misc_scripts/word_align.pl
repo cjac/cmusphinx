@@ -42,7 +42,7 @@ use constant MATCH => 3;
 use constant SUBST => 4;
 use constant BIG_NUMBER => 1e50;
 
-my ($total_words, $total_match, $total_cost);
+my ($total_words, $total_match, $total_cost, $total_hyp);
 my ($total_ins, $total_del, $total_subst);
 while (defined(my $ref_utt = <REF>)) {
     my $hyp_utt;
@@ -132,13 +132,21 @@ while (defined(my $ref_utt = <REF>)) {
     $total_cost += $cost;
     $total_match += $match;
     $total_words += @ref_words;
+    $total_hyp += @hyp_words;
     $total_ins += $ins;
     $total_del += $del;
     $total_subst += $subst;
 }
 # Print out the total word error and accuracy rates
-my $error = $total_cost/$total_words;
-my $acc = $total_match/$total_words;
+my ($error, $acc);
+if ($total_words == 0) {
+    $error = $total_cost/$total_hyp;
+    $acc = $total_match/$total_hyp;
+}
+else {
+    $error = $total_cost/$total_words;
+    $acc = $total_match/$total_words;
+}
 printf("TOTAL Words: %d Correct: %d Errors: %d\nTOTAL Percent correct = %.2f%% Error = %.2f%% Accuracy = %.2f%%\n",
        $total_words, $total_match, $total_cost, $acc*100, $error*100, 100-$error*100);
 print "TOTAL Insertions: $total_ins Deletions: $total_del Substitutions: $total_subst\n";
