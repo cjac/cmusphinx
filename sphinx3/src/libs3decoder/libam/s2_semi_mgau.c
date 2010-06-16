@@ -44,9 +44,6 @@
 #include <math.h>
 #include <sys/types.h>
 
-#ifndef M_PI 
-#define M_PI 3.14159265358979323846 
-#endif
 
 /* SphinxBase headers */
 #include <sphinx_config.h>
@@ -57,6 +54,7 @@
 #include <err.h>
 #include <prim_type.h>
 #include <vector.h>
+#include <libutil.h>
 
 /* Local headers */
 #include "s2_semi_mgau.h"

@@ -138,6 +138,8 @@
 #include "wid.h"
 #include <string.h>
 
+#include <err.h>
+
 /*
  * Lextree nodes, and the HMMs contained within, are cleared upon creation, and whenever
  * they become active during search.  Thus, when activated during search, they are always

@@ -99,6 +99,8 @@
 #include "genrand.h"
 #include "vector.h"
 
+#include <libutil.h>
+
 float64
 vector_sum_norm(float32 * vec, int32 len)
 {

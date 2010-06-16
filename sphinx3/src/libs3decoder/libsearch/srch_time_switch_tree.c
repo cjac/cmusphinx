@@ -154,6 +154,8 @@
 #include "vithist.h"
 #include <string.h>
 
+#include <err.h>
+
 /** 
     \file srch_time_switch_tree.h 
     \brief implementation of Sphinx 3.5 search (aka s3 fast). 

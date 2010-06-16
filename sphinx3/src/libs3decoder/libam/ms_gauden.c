@@ -122,12 +122,10 @@
 #include <string.h>
 #include <math.h>
 #include <float.h>
+#include <libutil.h>
 
 
 #define GAUDEN_PARAM_VERSION	"1.0"
-
-#undef M_PI
-#define M_PI	3.1415926535897932385e0
 
 
 static float64 min_density;     /* Density values, once converted to (int32)logs3 domain,

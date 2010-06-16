@@ -129,6 +129,7 @@
 #include "logs3.h"
 #include "cont_mgau.h"
 
+#include <libutil.h>
 
 #define MGAU_PARAM_VERSION	"1.0"   /* Sphinx-3 file format version for mean/var */
 #define MGAU_MIXW_VERSION	"1.0"   /* Sphinx-3 file format version for mixw */
