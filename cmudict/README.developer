@@ -11,6 +11,8 @@ been automated. The scripts/ folder contains instructions and scripts
 for routine maintenance. It has everything you should need to get
 started.
 
+Version numbers and files
+-------------------------
 There is no particular rule for incrementing the version number. To
 date the minor version (letter suffix) has been incremented to reflect
 changes in maintainers. Major version increments (right now, the
@@ -18,6 +20,10 @@ decimal) are incurred when some (subjectively) large change
 occurs. For example, the 0.6-->0.7 increment was marked by a large
 number of new entries and by the removal of many incorrect entries
 from the preceeding 0.6e version.
+
+The cmudict.*.phones file lists all legal phones, plus their phonetic class.
+The cmudict.*.symbols file lists all legal phonetic symbols (the only
+substantive difference is that stress combinations are explicitly noted).
 
 
 Projects for the ambitious
