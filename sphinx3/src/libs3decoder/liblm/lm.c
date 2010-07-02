@@ -681,6 +681,20 @@ lm_read_advance2(const char *file, const char *lmname, float64 lw,
         return NULL;
     }
 
+    /* the following code is for MMIE training
+       lqin 2010-03 */
+    lm->ugonly = cmd_ln_boolean("-ugonly");
+    if (lm->ugonly == TRUE)
+        E_INFO("Only use Unigram to compute LM score in decoding\n");
+
+    lm->bgonly = cmd_ln_boolean("-bgonly");
+    if (lm->bgonly == TRUE)
+        E_INFO("Only use Bigram to compute LM score in decoding\n");
+
+    if (lm->ugonly && lm->bgonly) {
+        E_FATAL("Both -ugonly and -bgonly are set to YES\n");
+    }
+    /* end */
 
     lm->name = ckd_salloc(lmname);
     lm->inputenc = IND_BADENCODING;
@@ -1233,8 +1247,11 @@ lm_bg_score(lm_t * lm, s3lmwid32_t lw1, s3lmwid32_t lw2, s3wid_t w2)
 
     is32bits = lm->is32bits;
 
-    if ((lm->n_bg == 0) || (NOT_LMWID(lm, lw1)))
+    /* the following code is modified for MMIE training
+       lqin 2010-03 */
+    if ((lm->n_bg == 0) || (NOT_LMWID(lm, lw1)) || (lm->ugonly == TRUE))
         return (lm_ug_score(lm, lw2, w2));
+    /* end */
 
     lm->n_bg_score++;
 
@@ -1662,8 +1679,11 @@ lm_tg_score(lm_t * lm, s3lmwid32_t lw1, s3lmwid32_t lw2, s3lmwid32_t lw3,
 
     /*    E_INFO("lw1 %d, lw2 %d, lw3 %d is32bits %d BAD_LMWID %d\n",lw1,lw2,lw3,is32bits, BAD_LMWID(lm)); */
 
-    if ((lm->n_tg == 0) || (NOT_LMWID(lm, lw1)))
+    /* the following code is modified for MMIE training
+       lqin 2010-03 */
+    if ((lm->n_tg == 0) || (NOT_LMWID(lm, lw1)) || (lm->bgonly == TRUE) || (lm->ugonly == TRUE))
         return (lm_bg_score(lm, lw2, lw3, w3));
+    /* end */
 
     lm->n_tg_score++;
 

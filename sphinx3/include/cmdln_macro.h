@@ -708,6 +708,21 @@ us a better architecture.
       NULL, \
       "Control file that list the corresponding MLLR matrix for an utterance"}
 
+    /* the following functions are used for MMIE training
+       lqin 2010-03 */
+#define unigram_only_lm_command_line_macro() \
+        { "-ugonly", \
+          ARG_BOOLEAN, \
+          "no", \
+          "Only use Unigram language model in decoding"}
+
+#define bigram_only_lm_command_line_macro() \
+        { "-bgonly", \
+          ARG_BOOLEAN, \
+          "no", \
+          "Only use Bigram language model in decoding"}
+    /* end */
+
 #define control_lm_mllr_file_command_line_macro() \
     control_lm_file_command_line_macro(), \
     control_mllr_file_command_line_macro()

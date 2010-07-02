@@ -605,6 +605,12 @@ typedef struct lm_s {
     lm_tgcache_entry32_t *tgcache32; /** tgcache 32 bits */
 
     /**************************/
+
+    /* the following variables are used for MMIE training
+       lqin 2010-03 */
+    int32 ugonly;      /**< Only use unigram language model in decoding */
+    int32 bgonly;      /**< Only use bigram language model in decoding */
+    /* end */
     
     lmlog_t *bgprob;    /**< Table of actual bigram probs */
     lmlog_t *tgprob;    /**< Table of actual trigram probs */

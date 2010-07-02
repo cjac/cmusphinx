@@ -100,6 +100,12 @@ static arg_t arg[] = {
     finite_state_grammar_command_line_macro(),
     phone_insertion_penalty_command_line_macro(),
 
+    /* the following functions are used for MMIE training
+       lqin 2010-03 */
+    unigram_only_lm_command_line_macro(),
+    bigram_only_lm_command_line_macro(),
+    /* end */
+
     /* Things are yet to refactored */
 #if 0
     /* Commented out; not supported */
