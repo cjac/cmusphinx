@@ -163,12 +163,14 @@ while (<FORMS>) {
     }
 }
 close FORMS;
+use Data::Dumper;
+print Dumper(\@top_level, \@top_level_prob, \@top_level_slots, \@top_level_probs, \@top_level_perm);
 
 #warn join($/, @{$top_level_slots[$#top_level_slots]}), $/;
 
 normalize_random_entry(\@top_level_prob);
 
-foreach (@top_level_prob) {
+foreach (@top_level_probs) {
     normalize_random_entry($_);
 }
 
@@ -513,7 +515,7 @@ sub select_random_entry {
 }
 
 sub normalize_random_entry {
-    local($array) = @_;
+    my $array = shift;
     my $i;
     my $prob = 0;
     my $zero = 0;
@@ -522,21 +524,31 @@ sub normalize_random_entry {
         $$array[0]=1;
         return;
     }
-
-    for ( $i=0; $i<=$#$array; $i++ ) {
-        $prob+=$$array[$i];
-        if ($$array[$i] == 0) {
+    foreach my $i (@$array) {
+        $prob += $i;
+        if ($i == 0) {
             $zero++;
         }
     }
-    die "Not a probability distribution $prob>1\n" if $prob>1;
-
-    if ($zero>0) {
+    # Allow for floating point rounding errors
+    die "Not a probability distribution $prob > 1\n" if ($prob - 1) > 0.01;
+    # Use leftover probability mass on missing entries
+    if ($zero > 0) {
         $prob = (1-$prob)/$zero;
-        for ( $i=0; $i<=$#$array; $i++ ) {
-            $$array[$i] = $prob if $$array[$i]==0;
-        }
-    }   
+	foreach my $i (@$array) {
+	    $i = $prob if $i == 0;
+	}
+    }
+    # Normalize the whole darn thing if it doesn't sum to one.
+    $prob = 0;
+    foreach my $i (@$array) {
+        $prob += $i;
+    }
+    if ($prob < 1.0) {
+	foreach my $i (@$array) {
+	    $i += (1.0 - $prob) / @$array;
+	}
+    }
 }
 
 sub print_net_random {
