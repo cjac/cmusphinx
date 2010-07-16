@@ -163,8 +163,6 @@ while (<FORMS>) {
     }
 }
 close FORMS;
-use Data::Dumper;
-print Dumper(\@top_level, \@top_level_prob, \@top_level_slots, \@top_level_probs, \@top_level_perm);
 
 #warn join($/, @{$top_level_slots[$#top_level_slots]}), $/;
 
