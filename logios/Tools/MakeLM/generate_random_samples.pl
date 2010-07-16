@@ -19,97 +19,97 @@ $leave_out_prob = $leave_out_prob_default;
 $repeat_prob = $repeat_prob_default;
 
 
-while($ARGV[0] =~ /^-.*$/) {	# PROCESS FLAGS
-$_ = shift;
-if($_ eq "-h") {
-$help++;
-next;
-}
-if($_ eq "-n") {
-$n=shift;
-next;
-}
-if($_ eq "-leave_out") {
-$leave_out_prob=shift;
-next;
-}
-if($_ eq "-repeat") {
-$repeat_prob=shift;
-next;
-}
-if($_ eq "-show_break") {
-$show_break++;
-next;
-}
-if($_ eq "-d") {
-$dir=shift;
-next;
-}
-if($_ eq "-forms") {
-$forms=shift;
-next;
-}
-if($_ eq "-warn") {
-$warn++;
-next;
-}
-if($_ eq "-capital") {
-$capital++;
-next;
-}
-if($_ eq "-dictionary") {
-$dictionary++;
-next;
-}
-if($_ eq "-makedict") {
-$makedict++;
-next;
-}
-if($_ eq "-unkdict") {
-$unkdict++;
-next;
-}
-if($_ eq "-vocabulary") {
-$vocabulary++;
-next;
-}
-if($_ eq "-class") {
-$classes++;
-next;
-}
-if($_ eq "-noclass") {
-$noclasses++;
-next;
-}
-if($_ eq "-novariants") {
-$novariants++;
-next;
-}
-if($_ eq "-iclass") {
-$inverse_map++;
-next;
-}
-if($_ eq "-modifyLM") {
-$modify++;
-next;
-}
-if($_ eq "-clausi") {
-$clausi++;
-next;
-}
-if($_ eq "-grammarfile") {
-$grammarfile=shift;
-next; 
-}
-die "Unrecognized command line option $_\nUse generate_random_samples -h for help\n";
+while ($ARGV[0] =~ /^-.*$/) {   # PROCESS FLAGS
+    $_ = shift;
+    if ($_ eq "-h") {
+        $help++;
+        next;
+    }
+    if ($_ eq "-n") {
+        $n=shift;
+        next;
+    }
+    if ($_ eq "-leave_out") {
+        $leave_out_prob=shift;
+        next;
+    }
+    if ($_ eq "-repeat") {
+        $repeat_prob=shift;
+        next;
+    }
+    if ($_ eq "-show_break") {
+        $show_break++;
+        next;
+    }
+    if ($_ eq "-d") {
+        $dir=shift;
+        next;
+    }
+    if ($_ eq "-forms") {
+        $forms=shift;
+        next;
+    }
+    if ($_ eq "-warn") {
+        $warn++;
+        next;
+    }
+    if ($_ eq "-capital") {
+        $capital++;
+        next;
+    }
+    if ($_ eq "-dictionary") {
+        $dictionary++;
+        next;
+    }
+    if ($_ eq "-makedict") {
+        $makedict++;
+        next;
+    }
+    if ($_ eq "-unkdict") {
+        $unkdict++;
+        next;
+    }
+    if ($_ eq "-vocabulary") {
+        $vocabulary++;
+        next;
+    }
+    if ($_ eq "-class") {
+        $classes++;
+        next;
+    }
+    if ($_ eq "-noclass") {
+        $noclasses++;
+        next;
+    }
+    if ($_ eq "-novariants") {
+        $novariants++;
+        next;
+    }
+    if ($_ eq "-iclass") {
+        $inverse_map++;
+        next;
+    }
+    if ($_ eq "-modifyLM") {
+        $modify++;
+        next;
+    }
+    if ($_ eq "-clausi") {
+        $clausi++;
+        next;
+    }
+    if ($_ eq "-grammarfile") {
+        $grammarfile=shift;
+        next; 
+    }
+    die "Unrecognized command line option $_\nUse generate_random_samples -h for help\n";
 }
 
 help() if($help);
 
-if(defined $dir) {
-$currdir=$ENV{PWD};
-die "Cannot change to $dir\n" unless chdir $dir;
-warn "Changed to $dir\n";
+if (defined $dir) {
+    $currdir=$ENV{PWD};
+    die "Cannot change to $dir\n" unless chdir $dir;
+    warn "Changed to $dir\n";
 }
 
 
@@ -120,48 +120,46 @@ $FORMS .= ".$forms" if defined $forms;
 
 open FORMS or die "can't open FORMS file $FORMS\n";
 
-while(<FORMS>) {
+while (<FORMS>) {
 
     $random_perm++ if /%%randomperm%%/;
     
     $prob=get_prob();
     
-    if(s/^\s*FUNCTION:\s*(\S+)//) {
-	my @F = ();
-	my @G = ();
-	$name=$1;
-	print STDERR "The name of the function is >>$name<<\n";
-	undef $nets;
-	push(@top_level,$name);
-	push(@top_level_prob,$prob);
-	push(@top_level_slots,\@F);
-	push(@top_level_probs,\@G);
-	push(@top_level_perm,$random_perm);
-	undef $random_perm;
-	$top_level{$name}++;
+    if (s/^\s*FUNCTION:\s*(\S+)//) {
+        my @F = ();
+        my @G = ();
+        $name=$1;
+        print STDERR "The name of the function is >>$name<<\n";
+        undef $nets;
+        push(@top_level,$name);
+        push(@top_level_prob,$prob);
+        push(@top_level_slots,\@F);
+        push(@top_level_probs,\@G);
+        push(@top_level_perm,$random_perm);
+        undef $random_perm;
+        $top_level{$name}++;
     }    
     next unless defined $name;
     
-    if(/^\s*NETS:/) {
-	$nets++; next;
-    }
-    elsif($nets) {
-	1;
-    }
-    else {
-	next;
+    if (/^\s*NETS:/) {
+        $nets++; next;
+    } elsif ($nets) {
+        1;
+    } else {
+        next;
     }
     
-    if(s/^(\t|\s{2,})(\S+)/$2/) {
-	$entry=$2;
-	if(defined $top_level{$name,$entry}) {
-	    warn "Multiple entry for $entry in function $name\n" ;
-	    next;
-	}
-	push(@{$top_level_slots[$#top_level_slots]},$entry);
-	push(@{$top_level_probs[$#top_level_probs]},$prob);
-	$top_level{$name,$entry}++;
-	$public{$entry}++;
+    if (s/^(\t|\s{2,})(\S+)/$2/) {
+        $entry=$2;
+        if (defined $top_level{$name,$entry}) {
+            warn "Multiple entry for $entry in function $name\n" ;
+            next;
+        }
+        push(@{$top_level_slots[$#top_level_slots]},$entry);
+        push(@{$top_level_probs[$#top_level_probs]},$prob);
+        $top_level{$name,$entry}++;
+        $public{$entry}++;
     }
 }
 close FORMS;
@@ -170,8 +168,8 @@ close FORMS;
 
 normalize_random_entry(\@top_level_prob);
 
-foreach(@top_level_prob) {
-normalize_random_entry($_);
+foreach (@top_level_prob) {
+    normalize_random_entry($_);
 }
 
 
@@ -182,20 +180,20 @@ die "No top-level slots" unless () ne keys %top_level;
 $NETS = "nets";
 
 open NETS;
-while(<NETS>) {
+while (<NETS>) {
     next unless /\S/;
     chomp;
     s/\s+$//;
     
-    if(defined $nets{$_} || defined $nets{"[$_]"}) {
-	warn "Multiple entry for >>$_<< in nets\n" ;
-	next;
+    if (defined $nets{$_} || defined $nets{"[$_]"}) {
+        warn "Multiple entry for >>$_<< in nets\n" ;
+        next;
     }
     $nets{$_}++;
     
-#if(/[^A-Za-z]/) {
+    #if(/[^A-Za-z]/) {
     $_="[$_]";
-#}
+    #}
     $public{$_}++;
 }
 close NETS;
@@ -204,9 +202,9 @@ $nets{"noises"}++ if -r "noises.gra";
 
 @noise=("SegmentNoise","BeginNoise","EndNoise","BreakNoise","RandomNoise");
 
-if($nets{"noises"}) {
-    foreach(@noise) {	
-	$public{$_}++;
+if ($nets{"noises"}) {
+    foreach (@noise) {  
+        $public{$_}++;
     }
 }
 
@@ -220,9 +218,9 @@ if($nets{"noises"}) {
 #}
 load_grammar_file($grammarfile);
 
-if($nets{"noises"}) {
-    foreach(@noise) {	
-	undef $public{$_}  unless defined $rules{$_};
+if ($nets{"noises"}) {
+    foreach (@noise) {  
+        undef $public{$_}  unless defined $rules{$_};
     }
 }
 
@@ -237,201 +235,193 @@ srand;
 check_grammar() if $warn;
 
 
-if($dictionary || $vocabulary || $makedict || $unkdict) {
-  # Print all the defined dictionary/vocabulary entries
-  foreach $slot_ref (@top_level_slots) {
-    foreach(@{$slot_ref}) {
-      $slots{$_}++;
+if ($dictionary || $vocabulary || $makedict || $unkdict) {
+    # Print all the defined dictionary/vocabulary entries
+    foreach $slot_ref (@top_level_slots) {
+        foreach (@{$slot_ref}) {
+            $slots{$_}++;
+        }
     }
-}
-@netname = keys %slots;
-foreach(@noise) {
-push(@netname,$_) if defined $public{$_};
-}
+    @netname = keys %slots;
+    foreach (@noise) {
+        push(@netname,$_) if defined $public{$_};
+    }
 
-build_reachable_dictionary();
-
-
-open(OUT,"| sort -u | perl -pe 's/\\(0\\)\\}/\\}/;'");
-if($vocabulary) {
-foreach(keys %reachable_t) {
-    print OUT "$_\n";
-}
-print OUT "<s>\n</s>\n";
-}
-elsif($dictionary) {
-foreach(keys %reachable_t) {
-    if($class{$_}) {
-	$_=join("\n",print_net_all($_));
-    }
-    print OUT "$_\n";
-}
-}
-else {			# Makedict !!
-			# or unkdict !!
-# Calculate all words that we need from the dictionary
-# Assign an empty list to all of them to get
-# the effective entries
-
-foreach(keys %reachable_t) {
-    next if $class{$_};
-    if(/\266/) {	# In case we have entered that phrase to
-			# the dictionary
-	next if defined $vocab{$_};
-	my @F=();
-	$vocab{$_}=\@F;
-    }
-    if(/\266S$/) {
-	my $word2=$_;
-	$word2=~s/\266S$/\'S/;
-	next if defined $vocab{$word2};
-	my @F=();
-	$vocab{$word2}=\@F;
-    }
-    foreach(split(/\266/,$_)) {
-	next if defined $vocab{$_};
-	my @F=();
-	$vocab{$_}=\@F;
-    }
-}
-foreach(keys %class) {
-    next unless $reachable{$_};
-    foreach(print_net_all($_)) {
-	($word,$class)=split(/:/,$_,2);
-	if($word=~/\266/) { # In case we have entered that phrase to
-			    # the dictionary
-	    next if defined $vocab{$word};
-	    my @F=();
-	    $vocab{$word}=\@F;
-	}
-	if($word=~/\266S$/) {
-	    my $word2=$word;
-	    $word2=~s/\266S$/\'S/;
-	    next if defined $vocab{$word2};
-	    my @F=();
-	    $vocab{$word2}=\@F;
-	}
-	foreach(split(/\266/,$word)) {
-	    next if defined $vocab{$_};
-	    my @F=();
-	    $vocab{$_}=\@F;
-	}
-    }
-}
-
-# Now selectively read the real dictionary from stdin/commandline
-# Also read pronounciation variants
-
-while(<>) {
-    s/^\{?\s*([^\s\}\(]+)(\([^\)]+\))?\s*\}?\s+//;
-    $word=$1;
-    $ref = $vocab{$word};	    
-    s/^\s*\{?\s*//;
-    s/\s*\}?\s*$//;	    
-    foreach $phonem (split) {
-	next unless $phonem=~/\S/ && $phonem=~/^[a-z]/i;
-	$phonem{$phonem}++;
-    }
-    next unless defined $ref;
-    next if $novariants && @{$ref}>0;
-    $pron=$_;
-    push(@{$ref},$pron) unless grep($_ eq $pron,@{$ref})>0;
-}
+    build_reachable_dictionary();
 
 
-if($unkdict) {
-    while(($word,$pron) = each %vocab) {
-	next if $word=~/\266/;
-	print OUT "$word\n" unless @{$pron} ;
-    }
-}
-else {
-    @phonem = sort { $phonem{$a} <=> $phonem{$b} }
-    grep($phonem{$_}>2 && $_ ne "SIL",keys %phonem);
+    open(OUT,"| sort -u | perl -pe 's/\\(0\\)\\}/\\}/;'");
+    if ($vocabulary) {
+        foreach (keys %reachable_t) {
+            print OUT "$_\n";
+        }
+        print OUT "<s>\n</s>\n";
+    } elsif ($dictionary) {
+        foreach (keys %reachable_t) {
+            if ($class{$_}) {
+                $_=join("\n",print_net_all($_));
+            }
+            print OUT "$_\n";
+        }
+    } else {    # Makedict !!
+        # or unkdict !!
+        # Calculate all words that we need from the dictionary
+        # Assign an empty list to all of them to get
+        # the effective entries
+
+        foreach (keys %reachable_t) {
+            next if $class{$_};
+            if (/\266/) {     # In case we have entered that phrase to
+                # the dictionary
+                next if defined $vocab{$_};
+                my @F=();
+                $vocab{$_}=\@F;
+            }
+            if (/\266S$/) {
+                my $word2=$_;
+                $word2=~s/\266S$/\'S/;
+                next if defined $vocab{$word2};
+                my @F=();
+                $vocab{$word2}=\@F;
+            }
+            foreach (split(/\266/,$_)) {
+                next if defined $vocab{$_};
+                my @F=();
+                $vocab{$_}=\@F;
+            }
+        }
+        foreach (keys %class) {
+            next unless $reachable{$_};
+            foreach (print_net_all($_)) {
+                ($word,$class)=split(/:/,$_,2);
+                if ($word=~/\266/) { # In case we have entered that phrase to
+                    # the dictionary
+                    next if defined $vocab{$word};
+                    my @F=();
+                    $vocab{$word}=\@F;
+                }
+                if ($word=~/\266S$/) {
+                    my $word2=$word;
+                    $word2=~s/\266S$/\'S/;
+                    next if defined $vocab{$word2};
+                    my @F=();
+                    $vocab{$word2}=\@F;
+                }
+                foreach (split(/\266/,$word)) {
+                    next if defined $vocab{$_};
+                    my @F=();
+                    $vocab{$_}=\@F;
+                }
+            }
+        }
+
+        # Now selectively read the real dictionary from stdin/commandline
+        # Also read pronounciation variants
+
+        while (<>) {
+            s/^\{?\s*([^\s\}\(]+)(\([^\)]+\))?\s*\}?\s+//;
+            $word=$1;
+            $ref = $vocab{$word};           
+            s/^\s*\{?\s*//;
+            s/\s*\}?\s*$//;         
+            foreach $phonem (split) {
+                next unless $phonem=~/\S/ && $phonem=~/^[a-z]/i;
+                $phonem{$phonem}++;
+            }
+            next unless defined $ref;
+            next if $novariants && @{$ref}>0;
+            $pron=$_;
+            push(@{$ref},$pron) unless grep($_ eq $pron,@{$ref})>0;
+        }
+
+
+        if ($unkdict) {
+            while (($word,$pron) = each %vocab) {
+                next if $word=~/\266/;
+                print OUT "$word\n" unless @{$pron} ;
+            }
+        } else {
+            @phonem = sort { $phonem{$a} <=> $phonem{$b} }
+                grep($phonem{$_}>2 && $_ ne "SIL",keys %phonem);
     
-    # Pick a very seldom phonem for the words that are artifically in the dictionary
-    # to keep the vocabulary module happy
-    # These are specifically the class symbols
+            # Pick a very seldom phonem for the words that are artifically in the dictionary
+            # to keep the vocabulary module happy
+            # These are specifically the class symbols
 
-    $badphonem=$phonem[0];
-    $badphonem.=" $badphonem";$badphonem.=" $badphonem";
-    $badphonem.=" $badphonem";$badphonem.=" $badphonem";
+            $badphonem=$phonem[0];
+            $badphonem.=" $badphonem";$badphonem.=" $badphonem";
+            $badphonem.=" $badphonem";$badphonem.=" $badphonem";
 
-    foreach(keys %reachable_t) {
-	next if $class{$_};
-	print OUT lookup_pronounciation($_,split(/\266/))
+            foreach (keys %reachable_t) {
+                next if $class{$_};
+                print OUT lookup_pronounciation($_,split(/\266/))
+            }
+            foreach (keys %class) {
+                next unless $reachable{$_};
+                print OUT "\{$_\} \{$badphonem\}\n";
+                foreach $symbol (print_net_all($_)) {
+                    ($word,$class)=split(/:/,$symbol,2);
+                    print OUT lookup_pronounciation($symbol,split(/\266/,$word));
+                }
+            }
+            print OUT "{\$} {SIL}\n{(} {SIL}\n{)} {SIL}\n";
+        }
+        close OUT;
     }
-    foreach(keys %class) {
-	next unless $reachable{$_};
-	print OUT "\{$_\} \{$badphonem\}\n";
-	foreach $symbol (print_net_all($_)) {
-	    ($word,$class)=split(/:/,$symbol,2);
-	    print OUT lookup_pronounciation($symbol,split(/\266/,$word));
-	}
+} elsif ($classes) {
+    foreach $class (keys %class) {
+        $_=join(" ",$class,print_net_all($class));
+        print "$_\n";
     }
-    print OUT "{\$} {SIL}\n{(} {SIL}\n{)} {SIL}\n";
-}
-close OUT;
-}
-}
-elsif($classes) {
-foreach $class (keys %class) {
-$_=join(" ",$class,print_net_all($class));
-print "$_\n";
-}
-}
-elsif($inverse_map) {
-foreach $class (keys %class) {
-foreach $classword (print_net_all($class)) {
-    ($word)=split(/:/,$classword);
-    $imap=$inversemap{$word};
-    if(defined $imap) {
-       push(@{$imap},$classword);
+} elsif ($inverse_map) {
+    foreach $class (keys %class) {
+        foreach $classword (print_net_all($class)) {
+            ($word)=split(/:/,$classword);
+            $imap=$inversemap{$word};
+            if (defined $imap) {
+                push(@{$imap},$classword);
+            } else {
+                my(@F)=($classword);
+                $inversemap{$word}=\@F;
+            }
+        }
     }
-    else {
-       my(@F)=($classword);
-       $inversemap{$word}=\@F;
+    while (($word,$imap)=each %inversemap) {
+        print join("\#",@{$imap})." $word\n";
     }
-}
-}
-while(($word,$imap)=each %inversemap) {
-print join("\#",@{$imap})." $word\n";
-}
-}
-elsif($modify) {
+} elsif ($modify) {
 
-while(<>) {
-if(/^\\subsmodel:/) {
-    $skipsmodel++;
-    last;
-}
-print;
-}			       
-if($skipsmodel) {
-while(<>) {
-    if(/^\\end\\/) {
-	last;
+    while (<>) {
+        if (/^\\subsmodel:/) {
+            $skipsmodel++;
+            last;
+        }
+        print;
+    }                          
+    if ($skipsmodel) {
+        while (<>) {
+            if (/^\\end\\/) {
+                last;
+            }
+        }       
+        print while <>;
     }
-}	
-print while <>;
-}
 
-print "\\subsmodel:\n";
-foreach $class (sort keys %class) {
-print "-99.9 $class $class\n";
-@classmembers = print_net_all($class);
-$classpenalty = -log(scalar(@classmembers))/log(10);
-foreach $classmember (sort @classmembers) {
-    $_="$classpenalty $classmember $class\n";
-    print;
-}
-}
-print "\\end\\\n";
-}
-else {				# Print random sentences
-foreach($i=0;$i<$n;$i++) { # Select a top-level frame and generate a sentence for it
-print_random_sentence(select_random_entry(\@top_level_prob,"FORM"));    
-}
+    print "\\subsmodel:\n";
+    foreach $class (sort keys %class) {
+        print "-99.9 $class $class\n";
+        @classmembers = print_net_all($class);
+        $classpenalty = -log(scalar(@classmembers))/log(10);
+        foreach $classmember (sort @classmembers) {
+            $_="$classpenalty $classmember $class\n";
+            print;
+        }
+    }
+    print "\\end\\\n";
+} else {                   # Print random sentences
+    foreach ($i=0;$i<$n;$i++) { # Select a top-level frame and generate a sentence for it
+        print_random_sentence(select_random_entry(\@top_level_prob,"FORM"));    
+    }
 }
 
 
@@ -442,71 +432,68 @@ sub print_random_sentence {
     
     #warn "print_random_sentence: top_level[select] -> $top_level[$select] >> $/";
     
-    if($top_level_perm[$select]) {
-	begin_noise();
-	$break=1;
-	while($break) {
-	    $break=0;
-	    print_net_random(${$top_level_slots[$select]}[$select_local]);
-	    if($break) {
-		break_noise();
-	    }
-	    else {
-		segment_noise();
-	    }
-	}
-	end_noise();
-    }
-    else {
-	begin_noise();
-	#foreach $select_local (@{$top_level_slots[$select]}) {
-	# tk - fix 
-	# I don't understand, but without this fix every line would be a sucession of each net.
-	$select_local = $top_level_slots[$select][int(rand(scalar(@{$top_level_slots[$select]})))];
-	$break=1;
-	while($break) {
-	    $break=0;
-	    print_net_random($select_local);
-	    if($break) {
-		break_noise();
-	    }
-	    else {
-		segment_noise();
-	    }
-	}
-	#}
-	end_noise();
+    if ($top_level_perm[$select]) {
+        begin_noise();
+        $break=1;
+        while ($break) {
+            $break=0;
+            print_net_random(${$top_level_slots[$select]}[$select_local]);
+            if ($break) {
+                break_noise();
+            } else {
+                segment_noise();
+            }
+        }
+        end_noise();
+    } else {
+        begin_noise();
+        #foreach $select_local (@{$top_level_slots[$select]}) {
+        # tk - fix 
+        # I don't understand, but without this fix every line would be a sucession of each net.
+        $select_local = $top_level_slots[$select][int(rand(scalar(@{$top_level_slots[$select]})))];
+        $break=1;
+        while ($break) {
+            $break=0;
+            print_net_random($select_local);
+            if ($break) {
+                break_noise();
+            } else {
+                segment_noise();
+            }
+        }
+        #}
+        end_noise();
     }
     print "\n";
 }
 
-sub begin_noise {
-print_net_random("BeginNoise") if defined $public{"BeginNoise"};
-}    
+    sub begin_noise {
+        print_net_random("BeginNoise") if defined $public{"BeginNoise"};
+    }    
 
 
 sub end_noise {
-print_net_random("EndNoise") if defined $public{"EndNoise"};
+    print_net_random("EndNoise") if defined $public{"EndNoise"};
 }    
 
 
 sub segment_noise {
-print_net_random("SegmentNoise") if defined $public{"SegmentNoise"};
+    print_net_random("SegmentNoise") if defined $public{"SegmentNoise"};
 }    
 
 sub break_noise {
-print_net_random("BreakNoise") if defined $public{"BreakNoise"};
+    print_net_random("BreakNoise") if defined $public{"BreakNoise"};
 }    
 
 sub random_noise {
-print_net_random("RandomNoise") if defined $public{"RandomNoise"};
+    print_net_random("RandomNoise") if defined $public{"RandomNoise"};
 }    
 
 sub random_break {
-if(1-$break_prob<rand()) {
-$break++;
-print " **<** " if $show_break;
-}
+    if (1-$break_prob<rand()) {
+        $break++;
+        print " **<** " if $show_break;
+    }
 }    
 
 
@@ -517,39 +504,39 @@ sub select_random_entry {
     my $return=0;
     my $i=0;
     
-    foreach(@$array) {
-	$prob+=$_;
-	return $i if $random<$prob;
-	$i++;
+    foreach (@$array) {
+        $prob+=$_;
+        return $i if $random<$prob;
+        $i++;
     }
     die "generate_random_samples.pl: $name not a probability distribution: ".join(" ",@{$array})."\n";
 }
 
 sub normalize_random_entry {
-local($array) = @_;
-my $i;
-my $prob = 0;
-my $zero = 0;
+    local($array) = @_;
+    my $i;
+    my $prob = 0;
+    my $zero = 0;
 
-if(@{$array}==1) {
-$$array[0]=1;
-return;
-}
+    if (@{$array}==1) {
+        $$array[0]=1;
+        return;
+    }
 
-for( $i=0; $i<=$#$array; $i++ ) {
-$prob+=$$array[$i];
-if($$array[$i] == 0) {
-    $zero++;
-}
-}
-die "Not a probability distribution $prob>1\n" if $prob>1;
+    for ( $i=0; $i<=$#$array; $i++ ) {
+        $prob+=$$array[$i];
+        if ($$array[$i] == 0) {
+            $zero++;
+        }
+    }
+    die "Not a probability distribution $prob>1\n" if $prob>1;
 
-if($zero>0) {
-$prob = (1-$prob)/$zero;
-for( $i=0; $i<=$#$array; $i++ ) {
-    $$array[$i] = $prob if $$array[$i]==0;
-}
-}	
+    if ($zero>0) {
+        $prob = (1-$prob)/$zero;
+        for ( $i=0; $i<=$#$array; $i++ ) {
+            $$array[$i] = $prob if $$array[$i]==0;
+        }
+    }   
 }
 
 sub print_net_random {
@@ -559,364 +546,353 @@ sub print_net_random {
     
     my($text) = "";
     
-    unless(defined $rules{$netname}) {
-	warn  "Rule for $netname not defined\n" if $warn;
-	return "";
+    unless (defined $rules{$netname}) {
+        warn  "Rule for $netname not defined\n" if $warn;
+        return "";
     }
     
     my($rule_ref) = ${$rules{$netname}}[select_random_entry($rules_prob{$netname},$netname)];
     
-    foreach(@$rule_ref) {
-	($repeat,$type,$body) = split(/,/,$_);
-	
-	while(1) {
-	    if($repeat=~s/\*//g) {
-		last if rand()<$leave_out_prob;
-		$repeat="1" unless $repeat=~/\S/;
-	    }
-	    if($type eq "T" || $class{$body}) {
-		if($clausi) {
-		    print "$body\n"; random_noise();
-		}
-		else {
-		    print "$body "; random_noise();
-		}
-	    }
-	    else {
-		print_net_random($body);
-		random_break();	    
-	    }
-	    return if $break;
-	    last if $repeat eq "1";
-	    last unless rand()<$repeat_prob;
-	}
+    foreach (@$rule_ref) {
+        ($repeat,$type,$body) = split(/,/,$_);
+        
+        while (1) {
+            if ($repeat=~s/\*//g) {
+                last if rand()<$leave_out_prob;
+                $repeat="1" unless $repeat=~/\S/;
+            }
+            if ($type eq "T" || $class{$body}) {
+                if ($clausi) {
+                    print "$body\n"; random_noise();
+                } else {
+                    print "$body "; random_noise();
+                }
+            } else {
+                print_net_random($body);
+                random_break();     
+            }
+            return if $break;
+            last if $repeat eq "1";
+            last unless rand()<$repeat_prob;
+        }
     }
 }
 
 
 
-sub print_net_all {
-local($global_netname) = @_;
-local(%already_visited);
+    sub print_net_all {
+        local($global_netname) = @_;
+        local(%already_visited);
 
-my(@return) = print_net_all2($global_netname);
-my($ret_length)=scalar(@return);
-@return=grep(/\S/,@return);
-warn "$global_netname could expand to empty, ignored\n"
-unless @return==$ret_length;
-@return=grep(($_.=":$global_netname") || 1,@return);
-return @return;
-}
+        my(@return) = print_net_all2($global_netname);
+        my($ret_length)=scalar(@return);
+        @return=grep(/\S/,@return);
+        warn "$global_netname could expand to empty, ignored\n"
+            unless @return==$ret_length;
+        @return=grep(($_.=":$global_netname") || 1,@return);
+        return @return;
+    }
 
 
-sub print_net_all2 {
+    sub print_net_all2 {
 
-my($netname) = shift @_;
-my($repeat,$type,$body,$ruleref);
-my(@returnarray)=();
+        my($netname) = shift @_;
+        my($repeat,$type,$body,$ruleref);
+        my(@returnarray)=();
 
-unless(defined $rules{$netname}) {
-warn  "Rule for $netname not defined\n" if $warn;
-return ();
-}
+        unless (defined $rules{$netname}) {
+            warn  "Rule for $netname not defined\n" if $warn;
+            return ();
+        }
 
-return @_ if $already_visited{$netname}>1;
-$already_visited{$netname}++;
-foreach $ruleref (@{$rules{$netname}}) {
-my(@rulereturn)=@_;
-foreach(@{$ruleref}) {
-    ($repeat,$type,$body) = split(/,/,$_);
+        return @_ if $already_visited{$netname}>1;
+        $already_visited{$netname}++;
+        foreach $ruleref (@{$rules{$netname}}) {
+            my(@rulereturn)=@_;
+            foreach (@{$ruleref}) {
+                ($repeat,$type,$body) = split(/,/,$_);
 
-    my(@localrulereturn)=();
+                my(@localrulereturn)=();
     
-    if($repeat eq "*") {
-	@localrulereturn=@rulereturn;
-	@localrulereturn=("") unless @localrulereturn>0;
-    }
-    warn "Rule for $netname contains repetition $repeat specification -- ignored"
-	unless $repeat eq "1" || $repeat eq "*";
+                if ($repeat eq "*") {
+                    @localrulereturn=@rulereturn;
+                    @localrulereturn=("") unless @localrulereturn>0;
+                }
+                warn "Rule for $netname contains repetition $repeat specification -- ignored"
+                    unless $repeat eq "1" || $repeat eq "*";
 
-    if($type eq "T") {
-	$body = "+$body+" if $body =~ s/^&//;
-	if(@rulereturn) {		    
-	    for($i=0;$i<=$#rulereturn;$i++) {
-		if($rulereturn[$i]=~/\S/) {
-		    $rulereturn[$i].="\266$body";
-		} else {
-		    $rulereturn[$i]="$body";
-		}
-	    }
-	}
-	else {		    
-	    @rulereturn=($body);
-	}
-    }
-    else {		    
-	@rulereturn=print_net_all2($body,@rulereturn);
-    }
-    push(@rulereturn,@localrulereturn);
-}
-push(@returnarray,@rulereturn);
-}
-$already_visited{$netname}--;
-return @returnarray;
-}    
+                if ($type eq "T") {
+                    $body = "+$body+" if $body =~ s/^&//;
+                    if (@rulereturn) {              
+                        for ($i=0;$i<=$#rulereturn;$i++) {
+                            if ($rulereturn[$i]=~/\S/) {
+                                $rulereturn[$i].="\266$body";
+                            } else {
+                                $rulereturn[$i]="$body";
+                            }
+                        }
+                    } else {                
+                        @rulereturn=($body);
+                    }
+                } else {                    
+                    @rulereturn=print_net_all2($body,@rulereturn);
+                }
+                push(@rulereturn,@localrulereturn);
+            }
+            push(@returnarray,@rulereturn);
+        }
+        $already_visited{$netname}--;
+        return @returnarray;
+    }    
 
 
-sub build_reachable_dictionary {
+    sub build_reachable_dictionary {
 
-my($netname);
-my($repeat,$type,$body,$rule_ref);
+        my($netname);
+        my($repeat,$type,$body,$rule_ref);
 
-my($text) = "";
+        my($text) = "";
 
-while(@netname) {
-$netname = shift @netname;
+        while (@netname) {
+            $netname = shift @netname;
 
-if($class{$netname}) {
-    $reachable_t{$netname}++;
-    $reachable{$netname}++;
-    next;
-}
+            if ($class{$netname}) {
+                $reachable_t{$netname}++;
+                $reachable{$netname}++;
+                next;
+            }
 
-unless(defined $rules{$netname}) {
-    warn  "Rule for $netname not defined in build_reachable_dictionary\n" if $warn;
-    return "";
-}
+            unless (defined $rules{$netname}) {
+                warn  "Rule for $netname not defined in build_reachable_dictionary\n" if $warn;
+                return "";
+            }
 
-foreach $rule_ref (@{$rules{$netname}}) {
-    foreach(@{$rule_ref}) {
-	($repeat,$type,$body) = split(/,/,$_);
-	if($type eq "T") {
-	    $reachable_t{$body}++;
-	}
-	else {
-	    unless(exists $reachable{$body}) {
-		push(@netname,$body);
-		$reachable{$body}++;
-	    }
-	}
-    }
-}
-}
-}		
+            foreach $rule_ref (@{$rules{$netname}}) {
+                foreach (@{$rule_ref}) {
+                    ($repeat,$type,$body) = split(/,/,$_);
+                    if ($type eq "T") {
+                        $reachable_t{$body}++;
+                    } else {
+                        unless (exists $reachable{$body}) {
+                            push(@netname,$body);
+                            $reachable{$body}++;
+                        }
+                    }
+                }
+            }
+        }
+    }           
 
 
 sub check_grammar {
 
-while(($definition) = each %public) {
-warn "Net rule $definition not defined\n" unless defined $rules{$definition};
-}
-while(($definition,$count) = each %definition) {
-for($i=1;$i<=$count;$i++) {
-    warn "$definition:$count not defined" unless defined $rules{"$definition:$count"};
-}
-}
+    while (($definition) = each %public) {
+        warn "Net rule $definition not defined\n" unless defined $rules{$definition};
+    }
+    while (($definition,$count) = each %definition) {
+        for ($i=1;$i<=$count;$i++) {
+            warn "$definition:$count not defined" unless defined $rules{"$definition:$count"};
+        }
+    }
 }
 
 
-# see if it's a comment, if so try to find a delimited prob; otherwise nil.
+# see if it's a comment, if so try to find a delimited prob; otherwise uniform
 sub get_prob {
 
-if(s/[\#;]([\s\S]+)//) {
-my $comment=$1;
+    if (s/[\#;]([\s\S]+)//) {
+        my $comment=$1;
 
-if($comment=~/%%CLASS%%/) {
-    $class=1;
-} else {
+        if ($comment=~/%%CLASS%%/) {
+            $class=1;
+        } else {
+            $class=0;
+        }
+
+        return $1 if $comment=~/%%(\S+)%%/;
+    }
     $class=0;
-}
-
-return $1 if $comment=~/%%(\S+)%%/;
-}
-$class=0;
-return 0;
+    return 0;
 }
 
 
 sub load_grammar_file {
-local($GRAMMAR_FILE) = @_;
-local($concept,@rules,@rules_prob);
-local(*GRAMMAR);
+    local($GRAMMAR_FILE) = @_;
+    local($concept,@rules,@rules_prob);
+    local(*GRAMMAR);
 
-#    print STDERR "Reading $GRAMMAR_FILE of $NAME\n";
+    #    print STDERR "Reading $GRAMMAR_FILE of $NAME\n";
 
-$concept = "";
-@rules   = ();
-$conceptclass=0;
-
-open(GRAMMAR,$GRAMMAR_FILE);
-while(<GRAMMAR>) {
-if(/^\#include\s+(\S+)/) {
-    flush_concept();
+    $concept = "";
+    @rules   = ();
     $conceptclass=0;
-    load_grammar_file($1,$NAME);
-}
-else {	    
-#print STDERR ">> $_\n";  ###########
-    $prob=get_prob();     # Get rid of comments, cacth any probs
-    next unless /\S/;  # empty line
-#print STDERR ">> $_\n"; #######
 
-    # Classify line	    
-    if(/^(\S+)/) {		# It's a concept
-	$new_concept=$1;  # var passed via global... aargh!
-	flush_concept();
-	$conceptclass=$class;
-	$concept=$new_concept;
-    }
-    else {
-#print STDERR ">> $_\n"; ##########
-	die "No concept defined" unless $concept=~/\S/;
-	die "No begin-parenthesis in $concept rules $_\n" unless s/^\s+\(\s*//;
-	die "No end-parenthesis in $concept rules $_\n"   unless s/\s*\)\s*$//;
+    open(GRAMMAR,$GRAMMAR_FILE);
+    while (<GRAMMAR>) {
+        if (/^\#include\s+(\S+)/) {
+            flush_concept();
+            $conceptclass=0;
+            load_grammar_file($1,$NAME);
+        } else {            
+            #print STDERR ">> $_\n";  ###########
+            $prob=get_prob();   # Get rid of comments, cacth any probs
+            next unless /\S/;   # empty line
+            #print STDERR ">> $_\n"; #######
 
-	push(@rules,$_);
-	push(@rules_prob,$prob);
+            # Classify line         
+            if (/^(\S+)/) {     # It's a concept
+                $new_concept=$1; # var passed via global... aargh!
+                flush_concept();
+                $conceptclass=$class;
+                $concept=$new_concept;
+            } else {
+                #print STDERR ">> $_\n"; ##########
+                die "No concept defined" unless $concept=~/\S/;
+                die "No begin-parenthesis in $concept rules $_\n" unless s/^\s+\(\s*//;
+                die "No end-parenthesis in $concept rules $_\n"   unless s/\s*\)\s*$//;
+
+                push(@rules,$_);
+                push(@rules_prob,$prob);
+            }
+        }
     }
-}
-}
-flush_concept();
-close GRAMMAR;
+    flush_concept();
+    close GRAMMAR;
 }
 
 
 sub select_random_array {
-local($array_ref) =  $_[0];;
+    local($array_ref) =  $_[0];;
 
-return @$array_ref[int(rand(scalar(@$array_ref)))];
+    return @$array_ref[int(rand(scalar(@$array_ref)))];
 }
 
 
 sub flush_concept {
 
-# Determine the symbol-table-entry for the concept defined
-# If it is a top-level entry, it is globally visible.
-# Otherwise, it is only local and may be multiple definded and
-# overwritten
+    # Determine the symbol-table-entry for the concept defined
+    # If it is a top-level entry, it is globally visible.
+    # Otherwise, it is only local and may be multiple definded and
+    # overwritten
 
-return unless $concept=~/\S/;
+    return unless $concept=~/\S/;
 
-if($public{$concept}) {
-$real_name=$concept;
-}
-else {
-$definition{$NAME,$concept};
-$real_name="$NAME:$concept:".($definition{"$NAME:$concept"}+1);
-}
-
-die "Multiple definition of $real_name\n" if defined $rules{$real_name};
-
-
-my @new_rules = ();
-
-foreach(@rules) {
-my @rule = ();
-#print STDERR ">>> $_\n";
-foreach $body (split) {
-#print STDERR "\t>>> $body "; ##########
-    $repeat = "1";
-    $repeat = $1 if $body=~s/^([\+\*]+)//; # remember if */+ used
-    $body =~ s/^\s+//; $body =~ s/\s+$//; # trim end silences
-#print STDERR " => $body\n"; ################
-    if( ($body=~/^[^A-Z_\-]/) && !($body =~ /^\[.*\]$/)) {
-	$type="T";
-	$body=~s/\+/'/g; # '
-	$body=~tr/a-z/A-Z/ if $capital;
-	$body = "+$body+" if $body =~ s/^&//;
-	$dictionary{$body}++;
+    if ($public{$concept}) {
+        $real_name=$concept;
+    } else {
+        $definition{$NAME,$concept};
+        $real_name="$NAME:$concept:".($definition{"$NAME:$concept"}+1);
     }
-    else {
-	$type="N";
 
-	unless($public{$body}) {
-	    $body="$NAME:$body:".($definition{"$NAME:$body"}+1);
-	}
+    die "Multiple definition of $real_name\n" if defined $rules{$real_name};
+
+
+    my @new_rules = ();
+
+    foreach (@rules) {
+        my @rule = ();
+        #print STDERR ">>> $_\n";
+        foreach $body (split) {
+            #print STDERR "\t>>> $body "; ##########
+            $repeat = "1";
+            $repeat = $1 if $body=~s/^([\+\*]+)//; # remember if */+ used
+            $body =~ s/^\s+//; $body =~ s/\s+$//;  # trim end silences
+            #print STDERR " => $body\n"; ################
+            if ( ($body=~/^[^A-Z_\-]/) && !($body =~ /^\[.*\]$/)) {
+                $type="T";
+                $body=~s/\+/'/g; # '
+                $body=~tr/a-z/A-Z/ if $capital;
+                $body = "+$body+" if $body =~ s/^&//;
+                $dictionary{$body}++;
+            } else {
+                $type="N";
+
+                unless ($public{$body}) {
+                    $body="$NAME:$body:".($definition{"$NAME:$body"}+1);
+                }
+            }
+            push(@rule,"$repeat,$type,$body");
+        }
+
+        push(@new_rules,\@rule);
     }
-    push(@rule,"$repeat,$type,$body");
-}
 
-push(@new_rules,\@rule);
-}
+    $rules{$real_name}=\@new_rules;
 
-$rules{$real_name}=\@new_rules;
-
-my @new_rules_prob = @rules_prob;
-normalize_random_entry(\@new_rules_prob);
-$rules_prob{$real_name}=\@new_rules_prob;
+    my @new_rules_prob = @rules_prob;
+    normalize_random_entry(\@new_rules_prob);
+    $rules_prob{$real_name}=\@new_rules_prob;
 
 
-unless($public{$concept}) {
-$definition{"$NAME:$concept"}++;
-}
+    unless ($public{$concept}) {
+        $definition{"$NAME:$concept"}++;
+    }
 
-@rules = ();
-@rules_prob = ();
-$class{$real_name}++ if $conceptclass && !$noclasses;
+    @rules = ();
+    @rules_prob = ();
+    $class{$real_name}++ if $conceptclass && !$noclasses;
 
-$concept="";
+    $concept="";
 
 }
 
 sub lookup_pronounciation {
 
-local($word) = shift @_;
+    local($word) = shift @_;
 
-local($error)="";
+    local($error)="";
 
-my(@pron);
-my($pronword)=join("\266",@_);
+    my(@pron);
+    my($pronword)=join("\266",@_);
 
-if(defined $vocab{join("\266",@_)} && @{$vocab{join("\266",@_)}}>0) {
-@pron = allchunk(join("\266",@_));
-}
-elsif(($pronword=~s/\266S$/\'S/) && (defined $vocab{$pronword}) && @{$vocab{$pronword}}>0) {
-@pron = allchunk($pronword);
-}
-else {
-@pron = allchunk(@_);
-}
-return $error if $error=~/\S/;	# Error case
-my($ret) = "{$word(0)} {$pron[0]}\n";
-for($i=1;$i<=$#pron;$i++) {
-$ret .= "{$word(".($i+1).")} {$pron[$i]}\n";
-}
-return $ret;
+    if (defined $vocab{join("\266",@_)} && @{$vocab{join("\266",@_)}}>0) {
+        @pron = allchunk(join("\266",@_));
+    } elsif (($pronword=~s/\266S$/\'S/) && (defined $vocab{$pronword}) && @{$vocab{$pronword}}>0) {
+        @pron = allchunk($pronword);
+    } else {
+        @pron = allchunk(@_);
+    }
+    return $error if $error=~/\S/; # Error case
+    my($ret) = "{$word(0)} {$pron[0]}\n";
+    for ($i=1;$i<=$#pron;$i++) {
+        $ret .= "{$word(".($i+1).")} {$pron[$i]}\n";
+    }
+    return $ret;
 }
 
 sub allchunk {
-my $prefix = shift @_;
-my $dictref = $vocab{$prefix};
-my @ret=();
+    my $prefix = shift @_;
+    my $dictref = $vocab{$prefix};
+    my @ret=();
 
-unless((defined $dictref) && (@{$dictref}>0)) {
-$error .= "ERROR: Not all subwords ($prefix) known for $word\n";
-allchunk(@_) unless @_==0;
+    unless ((defined $dictref) && (@{$dictref}>0)) {
+        $error .= "ERROR: Not all subwords ($prefix) known for $word\n";
+        allchunk(@_) unless @_==0;
 
-return ();
-}
+        return ();
+    }
 
-return @{$dictref} if @_==0;
+    return @{$dictref} if @_==0;
 
-my($suff,$pref);
+    my($suff,$pref);
 
-foreach $suff (allchunk(@_)) {
-foreach $pref (@{$dictref}) {
-    push(@ret,"$pref $suff");
-}
-}
-return @ret;	
+    foreach $suff (allchunk(@_)) {
+        foreach $pref (@{$dictref}) {
+            push(@ret,"$pref $suff");
+        }
+    }
+    return @ret;        
 }
     
-	
-	
+        
+        
 
 
 sub help {
-print <<EOT;
+    print <<EOT;
 generate_random_samples -h -n N -break prob -show_break -d dir -forms ext -noclass -warn -capital
-		-clausi -repeat prob -leave_out prob -vocabulary -class -iclass
-		-dictionary -modifyLM [LanguageModel]
+                -clausi -repeat prob -leave_out prob -vocabulary -class -iclass
+                -dictionary -modifyLM [LanguageModel]
 
 
 Generates random sentences from a PHOENIX grammar that is in the
@@ -939,15 +915,15 @@ current directory as if it were a stochastic context free grammmar.
 -class         --  print the classes used
 -iclass        --  print the inverse classes used
 -dictionary    --  only print all the words in the grammar for pronounciation
-	   dictionary construction
+           dictionary construction
 -modifyLM      --  takes an LM from stdin or from files after the options
-	   (possibly with old classes, these will be eliminated)
-	   and adds classes according to the specification by the grammar 
+           (possibly with old classes, these will be eliminated)
+           and adds classes according to the specification by the grammar 
 -makedict      --  takes a dictionary from stdin or from files after the options
-	   and generates a pronounciation dictionary
+           and generates a pronounciation dictionary
 -unkdict       --  takes a dictionary from stdin or from files after the options
-	   and generates a list of unknown words related to that dictionary
-	   The assumtion is, that all word strings are comosed into subwords
+           and generates a list of unknown words related to that dictionary
+           The assumtion is, that all word strings are comosed into subwords
 
 Written by Klaus Ries <ries\@cs.cmu.edu> <kries\@ira.uka.de>
 Copyright (C) 1996,1997 Interactive System Labs and Klaus Ries
@@ -1023,5 +999,5 @@ this event.
 
 
 EOT
-exit(0);
+    exit(0);
 }
