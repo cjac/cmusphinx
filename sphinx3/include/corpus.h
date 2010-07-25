@@ -103,11 +103,10 @@
 
 #include <stdio.h>
 
-#include <hash_table.h>
-#include <profile.h>
+#include <sphinxbase/hash_table.h>
+#include <sphinxbase/profile.h>
+
 #include <s3types.h>
-
-
 
 /** \file corpus.h
  *  \brief Operations on corpus 

@@ -71,9 +71,10 @@
 
 #include <string.h>
 
-#include "pio.h"
+#include <sphinxbase/bio.h>
+#include <sphinxbase/pio.h>
+
 #include "lm.h"
-#include "bio.h"
 #include "logs3.h"
 #include "wid.h"
 

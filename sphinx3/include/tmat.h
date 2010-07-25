@@ -93,7 +93,6 @@
 #include <stdio.h>
 
 #include <s3types.h>
-#include <logmath.h>
 
 /** \file tmat.h
  *  \brief Transition matrix data structure.

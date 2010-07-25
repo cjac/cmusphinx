@@ -166,8 +166,9 @@
 
 #include <string.h>
 
+#include <sphinxbase/bio.h>
+
 #include "lm.h"
-#include "bio.h"
 #include "logs3.h"
 #include "wid.h"
 #include "encoding.h"

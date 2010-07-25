@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include <ckd_alloc.h>
+#include <sphinxbase/ckd_alloc.h>
 #include "hmm.h"
 #include "mdef.h"
 #include "tmat.h"

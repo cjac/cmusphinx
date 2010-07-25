@@ -63,13 +63,13 @@
  */
 
 
-#include "interp.h"
-#include "logs3.h"
-#include "bio.h"
-
 #include <string.h>
 #include <assert.h>
 
+#include <sphinxbase/bio.h>
+
+#include "interp.h"
+#include "logs3.h"
 
 #define INTERP_VERSION "1.0"
 

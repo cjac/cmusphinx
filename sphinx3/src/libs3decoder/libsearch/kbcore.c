@@ -144,12 +144,13 @@
 
 #include <string.h>
 
+#include <sphinxbase/strfuncs.h>
+#include <sphinxbase/fe.h>
+
+#include "cmdln_macro.h"
 #include "kbcore.h"
 #include "logs3.h"
 #include "s3types.h"
-#include "strfuncs.h"
-#include "fe.h"
-#include "cmdln_macro.h"
 #define REPORT_KBCORE 1
 
 

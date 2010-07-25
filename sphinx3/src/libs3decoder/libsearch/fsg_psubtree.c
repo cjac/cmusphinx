@@ -117,8 +117,6 @@
 #include <assert.h>
 
 
-#include "ckd_alloc.h"
-#include "err.h"
 #include "fsg_psubtree.h"
 /*#include "kb.h"*/
 #include "dict.h"

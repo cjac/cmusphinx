@@ -110,10 +110,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "mdef.h"
-#include "ckd_alloc.h"
-#include "err.h"
 
+#include <sphinxbase/ckd_alloc.h>
+#include <sphinxbase/err.h>
+
+#include "mdef.h"
 
 #define MODEL_DEF_VERSION	"0.3"
 

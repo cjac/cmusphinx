@@ -155,7 +155,6 @@
 #include <unistd.h>
 #endif
 
-#include "pio.h"
 #include "astar.h"
 #include "s3types.h"
 #include "mdef.h"

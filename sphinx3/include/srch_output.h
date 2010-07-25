@@ -51,12 +51,12 @@
 
 #include <stdio.h>
 
+#include <sphinxbase/glist.h>
+
 #include <s3types.h>
-#include <glist.h>
 #include <dict.h>
 #include <lm.h>
 #include <search.h>
-
 
 #ifndef _SRCH_OUTPUT_H_
 #define _SRCH_OUTPUT_H_

@@ -59,10 +59,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-#include "lts.h"
-#include "ckd_alloc.h"
-#include "bio.h"
+#include <sphinxbase/ckd_alloc.h>
+#include <sphinxbase/bio.h>
 
+#include "lts.h"
 
 static cst_lts_phone apply_model(cst_lts_letter * vals,
                                  cst_lts_addr start,

@@ -84,7 +84,6 @@
 #include <stdio.h>
 
 #include <s3types.h>
-#include <logmath.h>
 
 /**  \file gs.h
  * \brief (Not opened to public) Gaussian selector Implentation

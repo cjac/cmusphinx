@@ -43,7 +43,7 @@
  *   - Some form of Bakis topology (ie, no cycles, except for self-transitions).
  */
 
-#include <listelem_alloc.h>
+#include <sphinxbase/listelem_alloc.h>
 
 #include "srch.h"
 #include "gmm_wrap.h"

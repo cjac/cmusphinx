@@ -78,9 +78,9 @@
 #include <math.h>
 #include <assert.h>
 
-#include <bio.h>
-#include <ckd_alloc.h>
-#include <pio.h>
+#include <sphinxbase/bio.h>
+#include <sphinxbase/ckd_alloc.h>
+#include <sphinxbase/pio.h>
 
 #include "confidence.h"
 #include "srch_output.h"

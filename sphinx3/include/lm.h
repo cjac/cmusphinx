@@ -140,9 +140,9 @@
 
 #include <stdio.h>
 
-#include <logmath.h>
-#include <hash_table.h>
-#include <cmd_ln.h>
+#include <sphinxbase/logmath.h>
+#include <sphinxbase/hash_table.h>
+#include <sphinxbase/cmd_ln.h>
 
 #ifdef __cplusplus
 extern "C" {

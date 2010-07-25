@@ -1,7 +1,9 @@
 
 #include <assert.h>
 #include <string.h>
-#include "ckd_alloc.h"
+
+#include <sphinxbase/ckd_alloc.h>
+
 #include "logs3.h"
 #include "s3_endpointer.h"
 

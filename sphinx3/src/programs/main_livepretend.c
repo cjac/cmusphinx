@@ -76,7 +76,8 @@
  */
 #include <stdio.h>
 
-#include "info.h"
+#include <sphinxbase/info.h>
+
 #include "s3_decode.h"
 #include "kb.h"
 #include "s3types.h"

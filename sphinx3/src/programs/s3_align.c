@@ -95,9 +95,10 @@
 #include <string.h>
 #include <assert.h>
 
-#include <feat.h>
-#include <strfuncs.h>
-#include <s3types.h>
+#include <sphinxbase/feat.h>
+#include <sphinxbase/strfuncs.h>
+
+#include "s3types.h"
 #include "mdef.h"
 #include "tmat.h"
 #include "dict.h"

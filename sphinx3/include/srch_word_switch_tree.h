@@ -86,8 +86,6 @@
     \brief Implementation of word-switching tree search. 
 */
 
-#include "hash_table.h"
-#include "glist.h"
 #include "s3types.h"
 #include "kb.h"
 #include "lm.h"

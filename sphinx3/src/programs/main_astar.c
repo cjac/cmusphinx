@@ -216,9 +216,10 @@
 #endif
 #include <assert.h>
 
+#include <sphinxbase/info.h>
+#include <sphinxbase/unlimit.h>
+
 #include <s3types.h>
-#include <info.h>
-#include <unlimit.h>
 #include <logs3.h>
 #include <tmat.h>
 #include <mdef.h>
@@ -229,8 +230,8 @@
 #include <wid.h>
 #include <dag.h>
 #include <cmdln_macro.h>
-#include "corpus.h"
-#include "astar.h"
+#include <corpus.h>
+#include <astar.h>
 
 static mdef_t *mdef;            /* Model definition */
 

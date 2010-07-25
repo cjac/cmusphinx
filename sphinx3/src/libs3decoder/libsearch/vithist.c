@@ -124,11 +124,12 @@
  * 		Started.
  */
 
-#include <listelem_alloc.h>
-#include <pio.h>
-#include <heap.h>
-#include <err.h>
 #include <string.h>
+
+#include <sphinxbase/listelem_alloc.h>
+#include <sphinxbase/pio.h>
+#include <sphinxbase/heap.h>
+#include <sphinxbase/err.h>
 
 #include "vithist.h"
 #include "lextree.h"

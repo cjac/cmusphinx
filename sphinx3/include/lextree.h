@@ -113,9 +113,10 @@
 
 #include <stdio.h>
 
-#include <bitvec.h>
-#include <s3types.h>
-#include <glist.h>
+#include <sphinxbase/bitvec.h>
+#include <sphinxbase/strfuncs.h>
+
+#include "s3types.h"
 #include "kbcore.h"
 #include "hmm.h"
 #include "lm.h"

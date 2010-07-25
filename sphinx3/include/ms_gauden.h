@@ -119,7 +119,7 @@
  */
 
 #include <s3types.h>
-#include <logmath.h>
+
 #include "vector.h"
 
 #ifdef __cplusplus

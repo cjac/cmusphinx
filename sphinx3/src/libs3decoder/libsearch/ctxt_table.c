@@ -76,8 +76,9 @@
 
 #include <string.h>
 
+#include <sphinxbase/ckd_alloc.h>
+
 #include <ctxt_table.h>
-#include <ckd_alloc.h>
 
 void
 dump_xwdssidmap(xwdssid_t ** x, mdef_t * mdef)

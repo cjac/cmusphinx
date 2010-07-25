@@ -62,13 +62,12 @@
  * 		Started.
  */
 
+#include <sphinxbase/ckd_alloc.h>
+#include <sphinxbase/err.h>
 
 #include <s3types.h>
-#include <err.h>
-#include <ckd_alloc.h>
 #include <assert.h>
 #include <blkarray_list.h>
-
 
 #define BLKARRAY_DEFAULT_MAXBLKS	16380
 #define BLKARRAY_DEFAULT_BLKSIZE	16380

@@ -69,7 +69,6 @@
 #ifndef _SRCH_DEBUG_H_
 #define _SRCH_DEBUG_H_
 
-#include <glist.h>
 #include "s3types.h"
 #include "dag.h"
 #include "lm.h"

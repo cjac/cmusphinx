@@ -110,8 +110,9 @@
 
 */
 
-#include <cmd_ln.h>
-#include <fe.h>
+#include <sphinxbase/cmd_ln.h>
+#include <sphinxbase/fe.h>
+
 #include "s3types.h"
 #include "sphinx3_export.h"
 #include "kb.h"

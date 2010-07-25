@@ -86,11 +86,11 @@
 
 #include <string.h>
 
+#include <sphinxbase/bio.h>
+
 #include "tmat.h"
-#include "bio.h"
 #include "vector.h"
 #include "logs3.h"
-
 
 #define TMAT_PARAM_VERSION		"1.0"
 

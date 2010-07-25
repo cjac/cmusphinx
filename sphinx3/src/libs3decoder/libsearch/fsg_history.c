@@ -47,16 +47,10 @@
  */
 
 
-/*#include <s2types.h>*/
-#include <err.h>
-#include <ckd_alloc.h>
 #include <assert.h>
 #include <fsg_history.h>
 #include <kb.h>
-/*#include <phone.h>*/
 #include <search.h>
-#include "libutil.h"
-
 
 #define __FSG_DBG__	0
 

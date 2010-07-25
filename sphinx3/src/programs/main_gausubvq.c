@@ -68,12 +68,13 @@
 
 #include <math.h>
 
-#include "info.h"
-#include "unlimit.h"
+#include <sphinxbase/info.h>
+#include <sphinxbase/unlimit.h>
+#include <sphinxbase/feat.h>
+
 #include "cont_mgau.h"
 #include "logs3.h"
 #include "vector.h"
-#include "feat.h"
 #include "cmdln_macro.h"
 
 /** \file main_gausubvq.c 

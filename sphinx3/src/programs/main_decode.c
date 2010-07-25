@@ -59,8 +59,9 @@
 /** \file main_decode.c
  * \brief main function for application decode
  */
-#include "info.h"
-#include "unlimit.h"
+#include <sphinxbase/info.h>
+#include <sphinxbase/unlimit.h>
+
 #include "utt.h"
 #include "kb.h"
 #include "corpus.h"

@@ -98,8 +98,8 @@
 #define _S3_MDEF_H_
 
 #include <stdio.h>
+#include <sphinxbase/hash_table.h>
 
-#include <hash_table.h>
 #include "s3types.h"
 
 #ifdef __cplusplus

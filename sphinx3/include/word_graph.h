@@ -64,8 +64,8 @@
 
 #include <stdio.h>
 
-#include <logmath.h>
-#include <glist.h>
+#include <sphinxbase/profile.h>
+
 #include <s3types.h>
 #include <dag.h>
 #include <dict.h>

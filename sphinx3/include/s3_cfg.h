@@ -56,9 +56,10 @@
 
 #include <stdio.h>
 
-#include <logmath.h>
-#include "prim_type.h"
-#include "hash_table.h"
+#include <sphinxbase/logmath.h>
+#include <sphinxbase/prim_type.h>
+#include <sphinxbase/hash_table.h>
+
 #include "s3_arraylist.h"
 #include "fsg.h"
 

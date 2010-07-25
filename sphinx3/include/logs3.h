@@ -94,7 +94,6 @@
 #define _S3_LOGS3_H_
 
 #include <s3types.h>
-#include <logmath.h>
 
 /** \file logs3.h
  * \brief s3 log table implementation. 

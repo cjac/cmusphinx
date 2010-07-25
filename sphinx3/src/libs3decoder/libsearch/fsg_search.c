@@ -178,14 +178,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
-#include <err.h>
-#include <ckd_alloc.h>
+
+#include <s3types.h>
 #include <fsg_search.h>
 #include <kb.h>
 #include <fsg.h>
 #include <dict.h>
 #include <logs3.h>
-
 #include <srch.h>
 #include <ascr.h>
 

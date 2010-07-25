@@ -114,11 +114,10 @@
 
 #include <stdio.h>
 
-#include <listelem_alloc.h>
-#include <s3types.h>
-#include <cmd_ln.h>
-#include <logmath.h>
+#include <sphinxbase/listelem_alloc.h>
+#include <sphinxbase/cmd_ln.h>
 
+#include "s3types.h"
 #include "search.h"
 #include "dict.h"
 #include "lm.h"

@@ -76,7 +76,8 @@
  *
  */
 
-#include "pio.h"
+#include <sphinxbase/pio.h>
+
 #include "srch_flat_fwd.h"
 #include "srch_flat_fwd_internal.h"
 #include "gmm_wrap.h"

@@ -105,7 +105,6 @@
 #define _S3_CONT_MGAU_H_
 
 #include <s3types.h>
-#include <logmath.h>
 
 /** \file cont_mgau.h
  *  \brief Interface of full GMM computation with integer value of log likelihood. 

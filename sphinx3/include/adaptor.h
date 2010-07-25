@@ -95,7 +95,6 @@
 #include <s3types.h>
 #include <cont_mgau.h>
 #include <mdef.h>
-#include <cmd_ln.h>
 
 #define ADAPTATION_MLLR 0
 

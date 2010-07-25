@@ -60,7 +60,8 @@
 #include <assert.h>
 #include <math.h>
 
-#include "strfuncs.h"
+#include <sphinxbase/strfuncs.h>
+
 #include "lmclass.h"
 #include "logs3.h"
 

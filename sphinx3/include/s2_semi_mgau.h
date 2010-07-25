@@ -43,10 +43,10 @@
 #define __S2_SEMI_MGAU_H__
 
 /* SphinxBase headesr. */
-#include <fe.h>
-#include <feat.h>
-#include <logmath.h>
-#include <mmio.h>
+#include <sphinxbase/fe.h>
+#include <sphinxbase/feat.h>
+#include <sphinxbase/logmath.h>
+#include <sphinxbase/mmio.h>
 
 /* Local headers. */
 #include "s3types.h"

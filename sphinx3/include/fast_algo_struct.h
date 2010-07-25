@@ -121,7 +121,6 @@
 #include <s3types.h>
 #include <mdef.h>
 #include <ascr.h>
-#include <logmath.h>
 
 #ifdef __cplusplus
 extern "C" {

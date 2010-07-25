@@ -84,9 +84,10 @@
 #include <float.h>
 #include <assert.h>
 
-#include <prim_type.h>
-#include <err.h>
-#include <ckd_alloc.h>
+#include <sphinxbase/prim_type.h>
+#include <sphinxbase/err.h>
+#include <sphinxbase/ckd_alloc.h>
+#include <sphinxbase/logmath.h>
 #include <sphinx3_export.h>
 
 /** \file s3types.h

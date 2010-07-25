@@ -96,16 +96,14 @@
 #ifndef _LIBFBS_MS_CONT_MGAU_H_
 #define _LIBFBS_MS_CONT_MGAU_H_
 
-#include <prim_type.h>
-#include <cmd_ln.h>
-#include <logmath.h>
-#include <s3types.h>
-#include <ms_gauden.h>
-#include <ms_senone.h>
-#include <interp.h>
-#include <feat.h>
-#include <mdef.h>
-#include <ascr.h>
+#include <sphinxbase/feat.h>
+
+#include "s3types.h"
+#include "ms_gauden.h"
+#include "ms_senone.h"
+#include "interp.h"
+#include "mdef.h"
+#include "ascr.h"
 
 #ifdef __cplusplus
 extern "C" {

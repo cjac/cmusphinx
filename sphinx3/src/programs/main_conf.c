@@ -90,17 +90,17 @@
 #include <math.h>
 #include <assert.h>
 
-#include "info.h"
-#include "unlimit.h"
+#include <sphinxbase/info.h>
+#include <sphinxbase/unlimit.h>
+
 #include "lm.h"
 #include "fillpen.h"
 #include "dict.h"
 #include "logs3.h"
-#include <cmdln_macro.h>
 #include "corpus.h"
 #include "srch_output.h"
 #include "confidence.h"
-#include "glist.h"
+#include "cmdln_macro.h"
 
 static arg_t defn[] = {
     log_table_command_line_macro(),

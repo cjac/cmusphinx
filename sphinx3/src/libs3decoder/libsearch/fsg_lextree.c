@@ -88,11 +88,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
-#include <ckd_alloc.h>
-#include <err.h>
+
 #include <fsg_lextree.h>
 #include <fsg_search.h>
-
 
 #define __FSG_DBG__		0
 

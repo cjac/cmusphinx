@@ -95,7 +95,6 @@
 
 #include <stdio.h>
 
-#include <glist.h>
 #include <s3types.h>
 #include <blkarray_list.h>
 #include <fsg_psubtree.h>

@@ -94,7 +94,6 @@
 #include <math.h>
 #include <string.h>
 
-#include <logmath.h>
 #include "subvq.h"
 #include "s3types.h"
 

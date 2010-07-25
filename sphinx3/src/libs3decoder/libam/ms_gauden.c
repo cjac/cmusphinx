@@ -112,21 +112,17 @@
  */
 
 
-#include "ms_gauden.h"
-
-/* #include <s3.h> */
-
-#include "bio.h"
-
 #include <assert.h>
 #include <string.h>
 #include <math.h>
 #include <float.h>
-#include <libutil.h>
 
+#include <sphinxbase/bio.h>
+#include <sphinxbase/libutil.h>
+
+#include "ms_gauden.h"
 
 #define GAUDEN_PARAM_VERSION	"1.0"
-
 
 static float64 min_density;     /* Density values, once converted to (int32)logs3 domain,
                                    can underflow (or overflow?), causing headaches all

@@ -96,8 +96,9 @@
 #include <stdlib.h>
 #endif
 
-#include "filename.h"
-#include "pio.h"
+#include <sphinxbase/pio.h>
+#include <sphinxbase/filename.h>
+
 #include "corpus.h"
 #include "kb.h"
 

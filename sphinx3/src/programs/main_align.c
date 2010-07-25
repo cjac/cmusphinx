@@ -205,20 +205,22 @@
 #include <string.h>
 #include <assert.h>
 
+#include <sphinxbase/bio.h>
+#include <sphinxbase/pio.h>
+#include <sphinxbase/feat.h>
+#include <sphinxbase/filename.h>
+#include <sphinxbase/cmd_ln.h>
+#include <sphinxbase/agc.h>
+#include <sphinxbase/cmn.h>
+#include <sphinxbase/info.h>
+#include <sphinxbase/unlimit.h>
+
+
 #include <s3types.h>
-#include "info.h"
-#include "unlimit.h"
 #include "logs3.h"
 #include "tmat.h"
 #include "mdef.h"
 #include "dict.h"
-#include "agc.h"
-#include "cmn.h"
-#include "bio.h"
-#include "pio.h"
-#include "feat.h"
-#include "filename.h"
-#include "cmd_ln.h"
 
 /* ARCHAN: Dangerous routine :-)*/
 #include "s3_align.h"

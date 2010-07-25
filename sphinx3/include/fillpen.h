@@ -77,7 +77,6 @@
 #ifndef _S3_FILLPEN_H_
 #define _S3_FILLPEN_H_
 
-#include <logmath.h>
 #include <s3types.h>
 
 /** \file fillpen.h

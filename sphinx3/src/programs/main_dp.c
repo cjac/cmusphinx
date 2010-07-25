@@ -65,10 +65,11 @@
 #include <string.h>
 #include <assert.h>
 
-#include <cmd_ln.h>
-#include <info.h>
-#include <hash_table.h>
-#include <case.h>
+#include <sphinxbase/cmd_ln.h>
+#include <sphinxbase/info.h>
+#include <sphinxbase/hash_table.h>
+#include <sphinxbase/case.h>
+
 #include <s3types.h>
 
 #define MAX_HYP_LEN	600

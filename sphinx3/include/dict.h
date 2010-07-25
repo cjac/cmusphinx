@@ -108,8 +108,9 @@
 /** \file dict.h
  * \brief Operations on dictionary. 
  */
-#include <hash_table.h>
-#include <s3types.h>
+#include <sphinxbase/hash_table.h>
+
+#include "s3types.h"
 #include "mdef.h"	/* This is still a sore point; dict should be independent of mdef */
 #include "lts.h" 
 

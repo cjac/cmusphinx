@@ -111,7 +111,6 @@
 
 
 #include "s3types.h"
-#include <logmath.h>
 #include "mdef.h"
 #include "ms_gauden.h"
 

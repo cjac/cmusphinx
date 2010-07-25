@@ -101,7 +101,8 @@
 
 #include <string.h>
 
-#include "strfuncs.h"
+#include <sphinxbase/strfuncs.h>
+
 #include "dict.h"
 
 

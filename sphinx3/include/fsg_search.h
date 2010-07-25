@@ -127,10 +127,7 @@
 
 #include <stdio.h>
 
-#include <cmd_ln.h>
-#include <logmath.h>
 #include <s3types.h>
-#include <glist.h>
 #include <word_fsg.h>
 #include <fsg_lextree.h>
 #include <fsg_history.h>

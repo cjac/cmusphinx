@@ -108,9 +108,9 @@
 /** \file s3_align.h
     \brief data structure for alignment
  */
-#include <logmath.h>
-#include <s3types.h>
+#include <sphinxbase/logmath.h>
 
+#include <s3types.h>
 
 #ifdef __cplusplus
 extern "C" {

@@ -159,8 +159,9 @@
 #include <unistd.h>
 #endif
 
-#include <listelem_alloc.h>
-#include <pio.h>
+#include <sphinxbase/listelem_alloc.h>
+#include <sphinxbase/pio.h>
+
 #include "dag.h"
 #include "vithist.h"
 #include "logs3.h"

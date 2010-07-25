@@ -93,8 +93,9 @@
 #include <string.h>
 #include <limits.h>
 
+#include <sphinxbase/ckd_alloc.h>
+
 #include "hmm.h"
-#include "ckd_alloc.h"
 #include "s3types.h"
 
 #define WORST_SCORE S3_LOGPROB_ZERO

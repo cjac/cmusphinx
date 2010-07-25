@@ -122,14 +122,14 @@
 
 #include <string.h>
 #include <math.h>
+#include <sphinxbase/bio.h>
+#include <sphinxbase/libutil.h>
+#include <sphinxbase/matrix.h>
 
-#include "bio.h"
 #include "vector.h"
-#include "matrix.h"
 #include "logs3.h"
 #include "cont_mgau.h"
 
-#include <libutil.h>
 
 #define MGAU_PARAM_VERSION	"1.0"   /* Sphinx-3 file format version for mean/var */
 #define MGAU_MIXW_VERSION	"1.0"   /* Sphinx-3 file format version for mixw */
@@ -664,7 +664,7 @@ mgau_mixw_read(mgau_model_t * g, const char *file_name, float64 mixwfloor)
         }
     }
     if (n_err > 0)
-        E_ERROR("Weight normalization failed for %d senones\n", n_err);
+        E_WARN("Weight normalization failed for %d senones\n", n_err);
     ckd_free(pdf);
 
     if (chksum_present)

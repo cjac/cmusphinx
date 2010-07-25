@@ -81,10 +81,11 @@
 
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <stdio.h>
+
+#include <sphinxbase/ad.h>
 
 #include <s3_decode.h>
-#include <ad.h>
-#include <stdio.h>
 
 #define BUFSIZE 4096
 #define TIMEOUT 100

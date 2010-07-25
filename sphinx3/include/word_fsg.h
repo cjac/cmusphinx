@@ -138,7 +138,6 @@
 #include <stdio.h>
 
 #include <s3types.h>
-#include <glist.h>
 #include <fsg.h>
 #include <kbcore.h>
 #include <dict.h>

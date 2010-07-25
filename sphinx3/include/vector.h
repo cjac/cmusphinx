@@ -65,9 +65,7 @@
     \brief operation on Vector
 */
 #include <stdio.h>
-
 #include <s3types.h>
-#include <logmath.h>
 
 #ifdef __cplusplus
 extern "C" {

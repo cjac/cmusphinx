@@ -152,7 +152,8 @@ date: 2004/08/06 15:07:39;  author: yitao;  state: Exp;
 
 #include <string.h>
 #include <time.h>
-#include <feat.h>
+#include <sphinxbase/feat.h>
+
 #include "s3_decode.h"
 #include "cmdln_macro.h"
 #include "utt.h"

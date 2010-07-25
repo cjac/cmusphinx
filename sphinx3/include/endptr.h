@@ -65,7 +65,8 @@
  *
  */
 
-#include "fe.h"
+#include <sphinxbase/fe.h>
+
 #include "classify.h"
 
 /** \file endptr.h

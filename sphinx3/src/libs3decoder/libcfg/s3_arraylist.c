@@ -2,8 +2,9 @@
 #include <string.h>
 #include <assert.h>
 #include <stdlib.h>
+
+#include "s3types.h"
 #include "s3_arraylist.h"
-#include "ckd_alloc.h"
 
 #define S3_ARRAYLIST_INDEX(_al, _i)	((_al->head + _i) % _al->max)
 

@@ -54,10 +54,11 @@
  * (energy-based endpointer).
  */
 #include <stdio.h>
-#include <ad.h>
-#include <cont_ad.h>
 
-#include "info.h"
+#include <sphinxbase/ad.h>
+#include <sphinxbase/cont_ad.h>
+#include <sphinxbase/info.h>
+
 #include "s3_decode.h"
 #include "kb.h"
 #include "s3types.h"

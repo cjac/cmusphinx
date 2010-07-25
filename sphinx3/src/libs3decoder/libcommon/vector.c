@@ -94,12 +94,12 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "profile.h"
-#include "bitvec.h"
-#include "genrand.h"
-#include "vector.h"
+#include <sphinxbase/profile.h>
+#include <sphinxbase/bitvec.h>
+#include <sphinxbase/libutil.h>
+#include <sphinxbase/genrand.h>
 
-#include <libutil.h>
+#include "vector.h"
 
 float64
 vector_sum_norm(float32 * vec, int32 len)

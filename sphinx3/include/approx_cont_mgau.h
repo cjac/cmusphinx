@@ -72,8 +72,7 @@
 #ifndef _S3_APPROXCONGAU_H_
 #define _S3_APPROXCONGAU_H_
 
-#include <logmath.h>
-#include <profile.h>
+#include <sphinxbase/profile.h>
 #include "cont_mgau.h"
 #include "subvq.h"
 #include "gs.h"

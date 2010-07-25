@@ -80,10 +80,11 @@
 
 #include <string.h>
 
-#include "info.h"
+#include <sphinxbase/info.h>
+#include <sphinxbase/cmd_ln.h>
+
 #include "lm.h"
 #include "s3types.h"
-#include "cmd_ln.h"
 #include "cmdln_macro.h"
 #include "encoding.h"
 

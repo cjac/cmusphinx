@@ -57,8 +57,9 @@
  */
 
 #include <stdio.h>
+#include <sphinxbase/bitvec.h>
+
 #include "gs.h"
-#include "bitvec.h"
 
 int gs_free(gs_t * gs);
 

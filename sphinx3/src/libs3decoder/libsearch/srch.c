@@ -214,10 +214,12 @@
  */
 
 
-#include "pio.h"
+#include <string.h>
+
+#include <sphinxbase/pio.h>
+
 #include "srch.h"
 #include "corpus.h"
-#include <string.h>
 
 #define COMPUTE_HEURISTIC 1
 #define SHOW_SENONE_SCORE_FOR_FRAME 0

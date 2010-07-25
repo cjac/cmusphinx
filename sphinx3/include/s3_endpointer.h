@@ -1,5 +1,4 @@
 
-#include <logmath.h>
 #include "cont_mgau.h"
 
 #ifndef __SPHINX3_ENDPOINTER_H

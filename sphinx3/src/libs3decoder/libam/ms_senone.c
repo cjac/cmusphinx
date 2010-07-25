@@ -112,14 +112,14 @@
  * 		Created.
  */
 
+#include <string.h>
+#include <assert.h>
+
+#include <sphinxbase/bio.h>
 
 #include "ms_senone.h"
 #include "logs3.h"
 #include "mdef.h"
-#include "bio.h"
-#include <string.h>
-#include <assert.h>
-
 
 #define MIXW_PARAM_VERSION	"1.0"
 #define SPDEF_PARAM_VERSION	"1.2"
@@ -338,7 +338,7 @@ senone_mixw_read(senone_t * s, const char *file_name)
         }
     }
     if (n_err > 0)
-        E_ERROR("Weight normalization failed for %d senones\n", n_err);
+        E_WARN("Weight normalization failed for %d senones\n", n_err);
 
     ckd_free(pdf);
 

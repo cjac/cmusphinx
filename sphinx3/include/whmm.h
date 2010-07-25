@@ -86,14 +86,11 @@
 #ifndef _S3_WHMM_H_
 #define _S3_WHMM_H_
 
-
-#include "prim_type.h"
 #include "s3types.h"
 #include "tmat.h"
 #include "dict.h"
 #include "mdef.h"
 #include "hmm.h"
-
 
 #ifdef __cplusplus
 extern "C" {

@@ -47,20 +47,20 @@
 
 /* SphinxBase headers */
 #include <sphinx_config.h>
-#include <cmd_ln.h>
-#include <fixpoint.h>
-#include <ckd_alloc.h>
-#include <bio.h>
-#include <err.h>
-#include <prim_type.h>
-#include <vector.h>
-#include <libutil.h>
+#include <sphinxbase/cmd_ln.h>
+#include <sphinxbase/fixpoint.h>
+#include <sphinxbase/ckd_alloc.h>
+#include <sphinxbase/bio.h>
+#include <sphinxbase/err.h>
+#include <sphinxbase/prim_type.h>
+#include <sphinxbase/libutil.h>
+#include <sphinxbase/ckd_alloc.h>
+#include <sphinxbase/bio.h>
 
 /* Local headers */
+#include "vector.h"
 #include "s2_semi_mgau.h"
 #include "kdtree.h"
-#include "ckd_alloc.h"
-#include "bio.h"
 
 #define MGAU_MIXW_VERSION	"1.0"   /* Sphinx-3 file format version for mixw */
 #define MGAU_PARAM_VERSION	"1.0"   /* Sphinx-3 file format version for mean/var */
@@ -805,7 +805,7 @@ read_mixw(s2_semi_mgau_t * s, char const *file_name, double SmoothMin)
         }
     }
     if (n_err > 0)
-        E_ERROR("Weight normalization failed for %d senones\n", n_err);
+        E_WARN("Weight normalization failed for %d senones\n", n_err);
 
     ckd_free(pdf);
 

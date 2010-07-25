@@ -95,7 +95,8 @@
 #include <string.h>
 #include <assert.h>
 
-#include "filename.h"
+#include <sphinxbase/filename.h>
+
 #include "misc.h"
 #include "dag.h"
 

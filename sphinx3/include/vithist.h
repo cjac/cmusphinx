@@ -126,10 +126,11 @@
 
 #include <stdio.h>
 
-#include <s3types.h>
-#include <cmd_ln.h>
-#include <logmath.h>
-#include <glist.h>
+#include <sphinxbase/cmd_ln.h>
+#include <sphinxbase/logmath.h>
+#include <sphinxbase/glist.h>
+
+#include "s3types.h"
 #include "kbcore.h"
 #include "search.h"
 #include "dict.h"

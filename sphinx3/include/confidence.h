@@ -61,11 +61,10 @@
 
 #include <stdio.h>
 
-#include <logmath.h>
+#include "s3types.h"
 #include "dict.h"
 #include "lm.h"
 #include "fillpen.h"
-#include "s3types.h"
 #include "search.h"
 
 #define CONFIDENCE_MAX_INT 2147483640

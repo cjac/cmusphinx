@@ -50,9 +50,11 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
+
+#include <sphinxbase/err.h>
+#include <sphinxbase/ckd_alloc.h>
+
 #include "kdtree.h"
-#include "err.h"
-#include "ckd_alloc.h"
 #include "s2_semi_mgau.h"
 
 #define S2_NUM_ALPHABET 256

@@ -79,11 +79,11 @@
 #ifndef _CTX_TAB_
 #define _CTX_TAB_
 
+#include <sphinxbase/prim_type.h>
+
 #include <s3types.h>
-#include <prim_type.h>
 #include <mdef.h>
 #include <dict.h>
-
 
 #ifdef __cplusplus
 extern "C" {

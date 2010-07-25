@@ -184,7 +184,6 @@
 #include <stdio.h>
 
 #include <s3types.h>
-#include <glist.h>
 #include "dag.h"
 #include "lm.h"
 #include "ascr.h"

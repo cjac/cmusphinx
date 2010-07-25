@@ -91,9 +91,6 @@
 #ifndef _S3_SUBVQ_H_
 #define _S3_SUBVQ_H_
 
-#include <cmd_ln.h>
-#include <logmath.h>
-
 #include "s3types.h"
 #include "cont_mgau.h"
 #include "vector.h"

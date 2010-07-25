@@ -103,10 +103,10 @@
 #ifndef _S3_KBCORE_H_
 #define _S3_KBCORE_H_
 
+#include <sphinxbase/feat.h>
+
 #include <s3types.h>
-#include <cmd_ln.h>
-#include <logmath.h>
-#include "feat.h"
+
 #include "cont_mgau.h"
 #include "ms_mgau.h"
 #include "s2_semi_mgau.h"

@@ -142,7 +142,6 @@
 #include "gmm_wrap.h"
 #include "astar.h"
 #include "dict.h"
-#include "cmd_ln.h"
 #include "corpus.h"
 
 #define REPORT_SRCH_TST 1

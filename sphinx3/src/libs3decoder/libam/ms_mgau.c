@@ -70,10 +70,11 @@
 
 #include <string.h>
 
+#include <sphinxbase/cmd_ln.h>
+
 #include <ms_mgau.h>
 #include <ms_mllr.h>
 #include <cb2mllr_io.h>
-#include <cmd_ln.h>
 
 /* Wrong place to put it */
 int32

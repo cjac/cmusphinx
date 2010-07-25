@@ -95,9 +95,6 @@
 
 #include <stdio.h>
 
-#include <logmath.h>
-#include <cmd_ln.h>
-
 #include "word_fsg.h"
 #include "fsg_psubtree.h"
 #include "hmm.h"

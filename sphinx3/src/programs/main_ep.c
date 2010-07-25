@@ -38,13 +38,14 @@
 #include <string.h>
 #include <sys/stat.h>
 
+#include <sphinxbase/fe.h>
+#include <sphinxbase/byteorder.h>
+
 #include "s3_endpointer.h"
 #include "classify.h"
 #include "endptr.h"
 #include "logs3.h"
-#include "fe.h"
 #include "cmdln_macro.h"
-#include "byteorder.h"
 
 #define NFR		100
 

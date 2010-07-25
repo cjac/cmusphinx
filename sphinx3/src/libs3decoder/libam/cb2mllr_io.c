@@ -45,11 +45,11 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <sphinxbase/ckd_alloc.h>
+#include <sphinxbase/bio.h>
+#include <sphinxbase/err.h>
 
 #include "cb2mllr_io.h"
-#include "ckd_alloc.h"
-#include "bio.h"
-#include "err.h"
 
 #define IS_MAPPED	1
 #define NOT_MAPPED	0
