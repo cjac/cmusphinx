@@ -91,7 +91,7 @@
 
 
 #include <string.h>
-#include <err.h>
+#include <sphinxbase/err.h>
 
 #include "dict2pid.h"
 #include "logs3.h"

@@ -138,7 +138,7 @@
 #include "wid.h"
 #include <string.h>
 
-#include <err.h>
+#include <sphinxbase/err.h>
 
 /*
  * Lextree nodes, and the HMMs contained within, are cleared upon creation, and whenever

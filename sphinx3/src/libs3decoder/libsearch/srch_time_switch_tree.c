@@ -153,7 +153,7 @@
 #include "vithist.h"
 #include <string.h>
 
-#include <err.h>
+#include <sphinxbase/err.h>
 
 /** 
     \file srch_time_switch_tree.h 

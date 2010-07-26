@@ -79,8 +79,7 @@
 
 #include <stdio.h>
 
-#include <profile.h>
-#include <s3types.h>
+#include <sphinxbase/profile.h>
 #include <lm.h>
 #include <kbcore.h>
 #include <vithist.h>
