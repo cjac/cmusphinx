@@ -1,0 +1,30 @@
+Run convert.py. convert.py takes the following arguments:
+
+HMMDEFS
+ The path to a file that contains all the HTK model definitions.
+
+TIEDLIST
+ The path to a file that contains a list of HTK model names. Each name may
+ be followed by the name of another model name, tying the models together.
+
+ For example:
+ A
+ B
+ A-B+A	B
+ A-B+B	
+ B-B+A
+ B-B+B	B
+
+OUT_PATH
+ The path where the Sphinx 3 model files should be written. This is
+ prepended to each Sphinx 3 file, so it may be a directory, a file prefix or
+ a combination of both.
+
+ For example:
+ ~/dir/prefix.
+ Will result in the following files:
+ ~/dir/prefix.mdef
+ ~/dir/prefix.mean
+ ~/dir/prefix.var
+ ~/dir/prefix.mixw
+ ~/dir/prefix.tmat

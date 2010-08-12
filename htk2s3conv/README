@@ -1,0 +1,82 @@
+This is a Python script that can convert HTK model files to S3 model files.
+
+The script was developed by W.J. Maaskant
+(w.j.maaskant(at)student.utwente.nl) for Fraunhofer IAIS, Germany to perform
+a comparison of HTK, ISIP Prototype, Julius and HTK. For questions about
+Fraunhofer IAIS, please contact Joachim Koehler
+(joachim.koehler(at)iais.fraunhofer.de).
+
+See the LICENSE file for the licensing terms.
+
+Thanks
+------
+Many thanks to David Huggins-Daines for providing detailed information about
+the S3 model file formats.
+
+Requirements
+------------
+The following Python modules are required:
+
+- PLY
+
+This script was developed and tested on openSUSE 10.2.
+
+Capabilities and Limitations
+----------------------------
+This section contains information about the capabilities and limitations of the
+converter. Some limitations are caused by the converter itself, some by
+limitations of Sphinx 3.
+
+- It is assumed that the HTK model file is correct. No checks are made on
+  whether all vectors have the same size, for example.
+
+- The following macro types are supported: ~h ~o ~s ~t ~u ~v. The content of
+  ~o is ignored.
+
+- Feature vectors must have 39 dimensions.
+
+- Only 1 feature stream is supported.
+
+- All models must have the following structure, visualized by a transition
+  matrix:
+   | 1 2 3 4 5
+  -+----------
+  1| 0 1 0 0 0
+  2| 0 * * * *
+  3| 0 * * * *
+  4| 0 * * * *
+  5| 0 0 0 0 0
+
+  ('*' stands for a probability >= 0.)
+  
+  The number of states may be varied.
+
+  The first and last state of the models must be non-emitting.
+
+- All states must have the same number of Gaussian mixtures.
+
+- A monophone model must exist for the base phone of every triphone model.
+  Monophone models with no triphones with that monophone as base phone are
+  allowed.
+
+- Biphone models are not supported.
+
+- If more than 1 mixture is used, state definitions must include the
+  <NUMMIXES> tag. If only 1 mixture is used, state definitions MUST NOT
+  include the <NUMMIXES> tag.
+
+- All vectors (mean, variance, transition probabilities) must be written as
+  a floating point value in this (regular expression) format:
+  -?\d.\d\d\d\d\d\de[+-]\d\d
+
+- Models with base phone "sil" are assumed to be fillers.
+
+Some limitations arise from limitations in Sphinx compared to HTK, and
+(most) limitations arise from the fact that the script was created to
+accomodate my models. However, it's not difficult to change the rules and
+support more features of the HTK model file format.
+
+What you have to do:
+
+- Add or remove the filler attribute to models in the model definitions
+  file, where necessary.
