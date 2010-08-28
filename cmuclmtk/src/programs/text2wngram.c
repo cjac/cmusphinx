@@ -34,14 +34,7 @@
  *
  */
 
-/*
-  [20080222] (air) temporary filenames now generated using tempnam() 
-*/
-
-
-
 #define DEFAULT_MAX_FILES 20
-#define TEMP_FILE_ROOT "text2wngram.tmp."
 
 #include <sys/types.h>
 /* #include <sys/utsname.h> */
@@ -300,7 +293,6 @@ void help_message()
 {
     fprintf(stderr,"text2wngram - Convert a text stream to a word n-gram stream.\n");
     fprintf(stderr,"Usage : text2wngram [ -n 3 ]\n");
-    fprintf(stderr,"                    [ -temp %s ]\n",DEFAULT_TEMP);
     fprintf(stderr,"                    [ -chars %d ]\n",STD_MEM*7000000/11);
     fprintf(stderr,"                    [ -words %d ]\n",STD_MEM*1000000/11);
     fprintf(stderr,"                    [ -gzip | -compress ]\n");
@@ -380,9 +372,6 @@ int main (int argc, char **argv) {
   
   max_files = pc_intarg(&argc, argv,"-files",DEFAULT_MAX_FILES);
 
-  strcpy(temp_directory,pc_stringarg( &argc, argv, "-temp", DEFAULT_TEMP));
-
-
   if (pc_flagarg(&argc,argv,"-compress"))
     temp_file_ext = salloc(".Z");
   else {
@@ -392,7 +381,8 @@ int main (int argc, char **argv) {
       temp_file_ext = salloc("");
   }
 
-  temp_file_root = tempnam(temp_directory, TEMP_FILE_ROOT);
+  strcpy(temp_directory, "cmuclmtk-XXXXXX");
+  temp_file_root = mkdtemp(temp_directory);
 
   pc_report_unk_args(&argc,argv,verbosity);
  

@@ -53,8 +53,6 @@
    RAM, then you could safely triple this figure. */
 
 #define STD_MEM 100
-#define DEFAULT_TEMP "/usr/tmp/"
-
 #define SLM_VERSION 2.05
 
 typedef unsigned short flag;

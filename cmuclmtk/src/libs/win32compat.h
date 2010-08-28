@@ -52,4 +52,7 @@
 // fqfn is "apple/butter/jam.h" on linux and "apple\butter\jam.h" on windows
 char * catfile(int n, ...);
 
+// Creates name for temporary folder
+char* mkdtemp(char *template);
+
 #endif

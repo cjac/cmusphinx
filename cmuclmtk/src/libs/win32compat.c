@@ -43,7 +43,7 @@
 
 #include "win32compat.h"
 
-// concatenates file pieces in a filesystem-idependent way
+// concatenates file pieces in a filesystem-independent way
 char * catfile(int n, ...) {
   va_list args;
   const char * val;
@@ -70,4 +70,9 @@ char * catfile(int n, ...) {
   va_end(args);
 
   return retval;
+}
+
+// Creates name for temporary folder
+char* mkdtemp(char *template) {
+    return mktemp (template);
 }

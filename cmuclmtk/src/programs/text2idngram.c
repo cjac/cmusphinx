@@ -47,7 +47,6 @@
 #define DEFAULT_HASH_SIZE 2000000
 #define DEFAULT_MAX_FILES 20
 #define MAX_N 20
-#define TEMP_FILE_ROOT "text2idngram.temp."
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -59,6 +58,7 @@
 #include "../libs/ac_hash.h"
 #include "../libs/ac_lmfunc_impl.h"
 #include "../programs/idngram.h"
+#include "../libs/win32compat.h"
 
 void help_message()
 {
@@ -67,7 +67,6 @@ void help_message()
   fprintf(stderr,"                      -idngram .idngram\n");
   fprintf(stderr,"                    [ -buffer 100 ]\n");
   fprintf(stderr,"                    [ -hash %d ]\n",DEFAULT_HASH_SIZE);
-  fprintf(stderr,"                    [ -temp %s ]\n",DEFAULT_TEMP);
   fprintf(stderr,"                    [ -files %d ]\n",DEFAULT_MAX_FILES);
   fprintf(stderr,"                    [ -gzip | -compress ]\n");
   fprintf(stderr,"                    [ -verbosity %d ]\n",DEFAULT_VERBOSITY);
@@ -127,7 +126,6 @@ int main(int argc, char *argv[]) {
   vocab_filename = salloc(pc_stringarg( &argc, argv, "-vocab", "" ));
   idngram_filename = salloc(pc_stringarg( &argc, argv, "-idngram", "" ));
   hash_size      = pc_intarg( &argc, argv, "-hash",DEFAULT_HASH_SIZE);
-  strcpy(tempfiles_directory,pc_stringarg( &argc, argv, "-temp",DEFAULT_TEMP));
   max_files      = pc_intarg( &argc, argv, "-files",DEFAULT_MAX_FILES);
   compress_flag  = pc_flagarg(&argc,argv,"-compress");
   gzip_flag      = pc_flagarg(&argc,argv,"-gzip");
@@ -155,16 +153,14 @@ int main(int argc, char *argv[]) {
       temp_file_ext = salloc("");
   }
 
-  temp_file_root = tempnam(tempfiles_directory, TEMP_FILE_ROOT);
 
   pc_report_unk_args(&argc,argv,verbosity);
   
   outfile = rr_fopen(idngram_filename,"wb");
 
   /* If the last charactor in the directory name isn't a / then add one. */
-  
-  if (tempfiles_directory[strlen(tempfiles_directory)-1] != '/') 
-    strcat(tempfiles_directory,"/");
+  strcpy (tempfiles_directory, "cmuclmtk-XXXXXX");
+  temp_file_root = mkdtemp(tempfiles_directory);
   
   pc_message(verbosity,2,"Vocab                  : %s\n",vocab_filename);
   pc_message(verbosity,2,"Output idngram         : %s\n",idngram_filename);

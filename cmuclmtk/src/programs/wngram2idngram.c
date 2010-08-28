@@ -38,24 +38,21 @@
   $Log: wngram2idngram.c,v
  */
 
-/*
-  [20080222] (air) temporary filenames now generated using tempnam() 
-*/
-
 #define DEFAULT_HASH_SIZE 200000
 #define DEFAULT_MAX_FILES 20
 #define MAX_N 20
-#define TEMP_FILE_ROOT "wngram2idngram.temp."
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 /* #include <sys/utsname.h> */
 #include <sys/types.h>
+
+#include "idngram.h"
+
 #include "../liblmest/toolkit.h"
 #include "../libs/general.h"
 #include "../libs/pc_general.h"
-#include "../programs/idngram.h"
 #include "../libs/ac_parsetext.h"
 #include "../libs/ac_lmfunc_impl.h"
 #include "../libs/ac_hash.h"
@@ -101,7 +98,6 @@ void help_message()
     fprintf(stderr,"                       -idngram .idngram\n");
     fprintf(stderr,"                     [ -buffer %d ] \n",STD_MEM);
     fprintf(stderr,"                     [ -hash %d ]\n",DEFAULT_HASH_SIZE);
-    fprintf(stderr,"                     [ -temp %s ]\n",DEFAULT_TEMP);
     fprintf(stderr,"                     [ -files %d ]\n",DEFAULT_MAX_FILES);
     fprintf(stderr,"                     [ -gzip | -compress ]\n");
     fprintf(stderr,"                     [ -verbosity 2 ]\n");
@@ -122,7 +118,7 @@ int main(int argc, char *argv[]) {
   int number_of_tempfiles;
   char *vocab_filename;
   char *idngram_filename;
-  char tempfiles_directory[1000];
+  char temp_directory[1000];
   char temp_word[MAX_WORD_LENGTH];
   char temp_word2[MAX_WORD_LENGTH];
   char temp_word3[MAX_WORD_LENGTH];
@@ -178,8 +174,6 @@ int main(int argc, char *argv[]) {
   if (!strcmp("",idngram_filename)) 
     quit(-1,"text2idngram : Error : Must specify idngram file.\n");
     
-  strcpy(tempfiles_directory,pc_stringarg( &argc, argv, "-temp",DEFAULT_TEMP));
-
   if (pc_flagarg(&argc,argv,"-compress")) 
     temp_file_ext = salloc(".Z");
   else {
@@ -189,7 +183,8 @@ int main(int argc, char *argv[]) {
       temp_file_ext = salloc("");
   }
 
-  temp_file_root = tempnam(tempfiles_directory,TEMP_FILE_ROOT);
+  strcpy(temp_directory, "cmuclmtk-XXXXXX");
+  temp_file_root = mkdtemp(temp_directory);
 
   pc_report_unk_args(&argc,argv,verbosity);
 
@@ -199,7 +194,6 @@ int main(int argc, char *argv[]) {
   pc_message(verbosity,2,"Output idngram  : %s\n",idngram_filename);
   pc_message(verbosity,2,"Buffer size     : %d\n",buffer_size);
   pc_message(verbosity,2,"Hash table size : %d\n",hash_size);
-  pc_message(verbosity,2,"Temp directory  : %s\n",tempfiles_directory);
   pc_message(verbosity,2,"Max open files  : %d\n",max_files);
   pc_message(verbosity,2,"n               : %d\n",n);
   pc_message(verbosity,2,"FOF size               : %d\n",fof_size);  
