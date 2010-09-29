@@ -162,10 +162,15 @@ class HtkConverter(object):
 		# Create a set of all transition matrices.
 		tmats = unique([hmm.tmat for hmm in hmms])
 		self.tmats = tmats
+
+		monophoneStates = unique([state for hmm in self.monophoneHmms for (iState, state) in hmm.states])
 		
 		# Create the State/Tmat-instance to id mappings.
-		for state in states:
+		for state in monophoneStates:
 			self.statesToIds[state] = len(self.statesToIds)
+		for state in states:
+			if not self.statesToIds.has_key(state):
+				self.statesToIds[state] = len(self.statesToIds)
 		for tmat in tmats:
 			self.tmatsToIds[tmat] = len(self.tmatsToIds)
 		
@@ -289,8 +294,8 @@ class HtkConverter(object):
 		states = self.states
 		
 		# Open the output files.
-		mfile = open(self.outprefix + 'mean', 'wb')
-		vfile = open(self.outprefix + 'var', 'wb')
+		mfile = open(self.outprefix + 'means', 'wb')
+		vfile = open(self.outprefix + 'variances', 'wb')
 		
 		# Write the headers.
 		mfile.write('s3\n')
@@ -358,7 +363,7 @@ class HtkConverter(object):
 		states = self.states
 		
 		# Open the output file.
-		file = open(self.outprefix + 'mixw', 'wb')
+		file = open(self.outprefix + 'mixture_weights', 'wb')
 		
 		# Write the header.
 		file.write('s3\n')
@@ -402,7 +407,7 @@ class HtkConverter(object):
 		tmats = self.tmats
 		
 		# Open the output file.
-		file = open(self.outprefix + 'tmat', 'wb')
+		file = open(self.outprefix + 'transition_matrices', 'wb')
 		
 		# Write the header.
 		file.write('s3\n')
